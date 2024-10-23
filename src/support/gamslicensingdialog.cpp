@@ -179,7 +179,13 @@ void GamsLicensingDialog::writeLicenseFile(GamsLicenseInfo &licenseInfo, QString
         if (result == QMessageBox::No)
             return;
         auto licensePath = QFileInfo(licenseFile).absolutePath();
-        QDir(licensePath).mkpath(".");
+        bool success = QDir(licensePath).mkpath(".");
+        if (!success) {
+            auto msg = QString("Could not create license file path (%1).").arg(licensePath);
+            SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
+            QMessageBox::critical(parent, "Unable to create license file path", msg);
+            return;
+        }
     }
 
     if (licenseFile.open(QFile::WriteOnly | QFile::Text)) {
@@ -187,11 +193,10 @@ void GamsLicensingDialog::writeLicenseFile(GamsLicenseInfo &licenseInfo, QString
         stream << license.join("\n");
         licenseFile.close();
     } else {
-        QMessageBox::critical(parent,
-                              "Unable to write gamslice.txt",
-                              "Unable to write " +
-                                  QDir::toNativeSeparators(licenseFile.fileName()) +
-                                  ": " + licenseFile.errorString());
+        auto msg = QString("Unable to write %1 : %2").arg(QDir::toNativeSeparators(licenseFile.fileName()),
+                                                          licenseFile.errorString());
+        SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
+        QMessageBox::critical(parent, "Unable to write gamslice.txt", msg);
     }
 }
 
@@ -199,8 +204,14 @@ void GamsLicensingDialog::createLicenseFileFromClipboard(QWidget *parent)
 {
     GamsLicenseInfo licenseInfo;
     auto license = licenseInfo.licenseFromClipboard();
-    if (license.isEmpty() || !licenseInfo.isLicenseValid(license))
+    if (license.isEmpty())
         return;
+    if (!licenseInfo.isLicenseValid(license)) {
+        auto msg = "The license is invalid and has not been installed. The license is";
+        SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
+        SysLogLocator::systemLog()->append(license.join("\n"), LogMsgType::Error);
+        return;
+    }
     writeLicenseFile(licenseInfo, license, parent, true);
 }
 
@@ -225,7 +236,9 @@ void GamsLicensingDialog::installFile()
     GamsLicenseInfo licenseInfo;
     auto license = licenseInfo.licenseFromFile(fileName);
     if (license.isEmpty() || !licenseInfo.isLicenseValid(license)) {
-        QMessageBox::critical(this, "Invalid License", "The selected license file is invalid and has not been installed.");
+        auto msg = "The selected license file is invalid and has not been installed.";
+        SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
+        QMessageBox::critical(this, "Invalid License", msg);
         return;
     }
     writeLicenseFile(licenseInfo, license, this, false);
