@@ -110,9 +110,9 @@ private:
     // Strings
     QString mTxtCloseGroup = "Close Files in This &Folder";
     QString mTxtCloseProject = "Close &Project";
-    QString mTxtCloseDelProject = "Close and &Delete Project";
+    QString mTxtCloseDelProject = "&Delete Project File";
     QString mTxtCloseFile = "Close &File";
-    QString mTxtCloseDelFile = "Close and &Delete File";
+    QString mTxtCloseDelFile = "&Delete File";
 };
 
 } // namespace studio

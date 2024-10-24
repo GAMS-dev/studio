@@ -97,15 +97,6 @@ Application::~Application()
 
 void Application::init()
 {
-    if (!mCmdParser.logFile().isEmpty()) {
-        QFileInfo log(mCmdParser.logFile());
-        if (QFile::exists(log.absolutePath())) {
-            vCustomLogFile = mCmdParser.logFile();
-            qDebug() << "log additionally to file" << vCustomLogFile;
-            vOriginalLogHandler = qInstallMessageHandler(*logToFile);
-        } else
-            qDebug() << "Error: Couldn't register log file in missing path " << log.absolutePath();
-    }
     CommonPaths::setSystemDir(mCmdParser.gamsDir());
     setOrganizationName(GAMS_ORGANIZATION_STR);
     setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
@@ -113,6 +104,24 @@ void Application::init()
     Settings::createSettings(mCmdParser.ignoreSettings(),
                              mCmdParser.resetSettings(),
                              mCmdParser.resetView());
+    if (Settings::settings()->toBool(skEnableLog) && mCmdParser.logFile().isEmpty())
+        vCustomLogFile = CommonPaths::studioDocumentsDir() + "/studio.log";
+    else if (!mCmdParser.logFile().isEmpty() && mCmdParser.logFile() != "-")
+        vCustomLogFile = mCmdParser.logFile();
+
+    if (!vCustomLogFile.isEmpty()) {
+        if (QFile::exists(vCustomLogFile)) {
+            if (QFile::exists(vCustomLogFile + "~"))
+                QFile::remove(vCustomLogFile + "~");
+            QFile::rename(vCustomLogFile, vCustomLogFile + "~");
+        }
+        QFileInfo log(vCustomLogFile);
+        if (QFile::exists(log.absolutePath())) {
+            qDebug() << "log additionally to file" << vCustomLogFile;
+            vOriginalLogHandler = qInstallMessageHandler(*logToFile);
+        } else
+            qDebug() << "Error: Couldn't register log file in missing path " << log.absolutePath();
+    }
     QStringList success, failed;
     clearWorkspace(Settings::settings()->toBool(skCleanUpWorkspace),
                    Settings::settings()->toString(skCleanUpWorkspaceFilter).split(",", Qt::SkipEmptyParts),

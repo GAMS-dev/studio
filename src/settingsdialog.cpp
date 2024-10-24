@@ -102,9 +102,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     tip = "<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;log, put&quot;)<br>"
     "On external changes, files of this type will be reloaded automatically.";
     ui->edAutoReloadTypes->setToolTip(tip);
+    ui->cb_EnableLog->setToolTip("Logfile location: " + CommonPaths::studioDocumentsDir() + "/studio.log");
 
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
+
 
     connect(this, &SettingsDialog::finished, this, []() {
        Settings::settings()->unblock();
@@ -117,6 +119,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_foregroundOnDemand, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_EnableLog, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->rb_openInCurrentProject, &QRadioButton::toggled, this, &SettingsDialog::setModified);
     connect(ui->cb_optionsStore, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->cbGspNeedsMainFile, &QCheckBox::toggled, this, &SettingsDialog::setModified);
@@ -211,6 +214,7 @@ void SettingsDialog::loadSettings()
     ui->cb_jumptoerror->setChecked(mSettings->toBool(skJumpToError));
     ui->cb_foregroundOnDemand->setChecked(mSettings->toBool(skForegroundOnDemand));
     (mSettings->toBool(skOpenInCurrent) ? ui->rb_openInCurrentProject : ui->rb_openInAnyProject)->setChecked(true);
+    ui->cb_EnableLog->setChecked(mSettings->toBool(skEnableLog));
     ui->cb_optionsStore->setCurrentIndex(mSettings->toBool(skOptionsPerMainFile) ? 1: 0);
     ui->cbGspNeedsMainFile->setChecked(mSettings->toBool(skProGspNeedsMain));
     ui->sbGspByFileCount->setValue(mSettings->toInt(skProGspByFileCount));
@@ -374,6 +378,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skJumpToError, ui->cb_jumptoerror->isChecked());
     mSettings->setBool(skForegroundOnDemand, ui->cb_foregroundOnDemand->isChecked());
     mSettings->setBool(skOpenInCurrent, ui->rb_openInCurrentProject->isChecked());
+    mSettings->setBool(skEnableLog, ui->cb_EnableLog->isChecked());
     mSettings->setBool(skOptionsPerMainFile, ui->cb_optionsStore->currentIndex() == 1);
     mSettings->setBool(skProGspNeedsMain, ui->cbGspNeedsMainFile->isChecked());
     mSettings->setInt(skProGspByFileCount, ui->sbGspByFileCount->value());
@@ -1106,6 +1111,7 @@ void SettingsDialog::checkForUpdates()
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
     mC4U->checkForUpdate(true);
 }
+
 
 }
 }

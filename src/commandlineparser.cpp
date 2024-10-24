@@ -45,7 +45,8 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
     addOption({"reset-settings", "Reset all settings including views to default."});
     addOption({"reset-view", "Reset views and window positions only."});
     addOption({"gams-dir", "Set the GAMS system directory", "path"});
-    addOption({"log", "Set '$HOME/Documents/studio.log' for Studio system log"});
+    addOption({"log", "Set '$HOME/Documents/GAMS/Studio/studio.log' for Studio system log"});
+    addOption({"no-log", "Turns off Studio system log"});
     addOption({"log-file", "Set a log file for Studio system log", "file"});
     addOption({"skip-check-for-update", "Skip all online check for update actions"});
     addOption({"dump-c4u-data", "Dump the C4U respone and additional information if available", "log file path"});
@@ -66,6 +67,8 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
         mGamsDir = this->value("gams-dir");
     if (isSet("log"))
         mLogFile = CommonPaths::studioDocumentsDir() + "/studio.log";
+    if (isSet("no-log"))
+        mLogFile = "-";
     if (isSet("log-file"))
         mLogFile = this->value("log-file");
     if (isSet("skip-check-for-update"))

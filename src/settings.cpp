@@ -333,6 +333,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skForegroundOnDemand, scUser, {"foregroundOnDemand"}, true);
     safelyAdd(res, skOpenInCurrent, scUser, {"openInCurrent"}, false);
     safelyAdd(res, skHistorySize, scUser, {"historySize"}, 20);
+    safelyAdd(res, skEnableLog, scUser, {"enableLog"}, true);
 
     // project settings page
     safelyAdd(res, skProSingleProject, scUser, {"project","singleProject"}, false);
