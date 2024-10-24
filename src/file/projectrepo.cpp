@@ -720,7 +720,7 @@ void ProjectRepo::closeNode(PExFileNode *node)
     QList<PExFileNode*> otherNodes = fileNodes(fm->id());
     otherNodes.removeAll(node);
 
-    if (node->file()->isOpen() && fileNodes(node->file()->id()).size() == 1) {
+    if (node->file()->isOpen() && otherNodes.isEmpty()) {
         DEB() << "Close error: Node has open editors";
         return;
     }

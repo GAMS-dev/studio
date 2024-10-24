@@ -110,6 +110,7 @@ public slots:
     void addFromSchema(const QString& schemaname, int position);
     void appendMapElement(const QModelIndex& index);
     void appendMapElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, int position, const QModelIndex& index);
+    void appendMapSchemaElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, const QModelIndex& parentIndex);
     void appendListElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, const QModelIndex& index);
 
     void insertLastListElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, const QModelIndex& index);
@@ -123,6 +124,7 @@ protected:
     bool isIndexValueValid(int column, ConnectDataItem* item);
     bool hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey, bool samelevel=true) const;
     bool existsUnderSameParent(const QString& tobeinsertSchema, const QModelIndex& parent, bool samelevel=true) const;
+    bool isRequired(const QStringList& tobeinsertSchema, const QStringList& schemaKey) const;
     int numberOfExcludedSibling(ConnectDataItem* item);
     int numberOfExcludedChildren(ConnectDataItem* item);
 
@@ -130,6 +132,7 @@ protected:
     ConnectDataItem* getSchemaParentItem(ConnectDataItem* item);
 
     int whichAnyOfSchema(const YAML::Node &data, ConnectSchema* schema, const QStringList& keylist, const QString& key);
+    int whichOneOfSchema(const YAML::Node &data, ConnectSchema *schema, const QStringList &keylist, const QString &key);
     int whichOneOfSchema(const YAML::Node &data, ConnectSchema* schema, const QString& key);
     void getSchemaListFromData(const YAML::Node& data, QStringList& schemaList);
     void getData(ConnectDataItem* item, YAML::Node& node);

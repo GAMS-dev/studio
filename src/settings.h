@@ -87,6 +87,7 @@ enum SettingsKey {
     skForegroundOnDemand,
     skHistorySize,
     skOpenInCurrent,
+    skEnableLog,
 
     // project settings page
     skProSingleProject,

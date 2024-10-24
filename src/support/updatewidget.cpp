@@ -32,7 +32,7 @@ UpdateWidget::UpdateWidget(QWidget *parent) :
     ui(new Ui::UpdateWidget)
 {
     ui->setupUi(this);
-    connect(ui->closeButton, &QPushButton::clicked, this, [this]{ hide(); });
+    connect(ui->closeButton, &QPushButton::clicked, this, &UpdateWidget::close);
     connect(ui->settingsButton, &QPushButton::clicked, this, &UpdateWidget::openSettings);
     connect(ui->remindButton, &QPushButton::clicked, this, &UpdateWidget::remindMeLater);
 }
@@ -51,6 +51,18 @@ void UpdateWidget::remindMeLater()
 {
     Settings::settings()->setDate(skNextUpdateCheckDate, QDate::currentDate().addDays(1));
     hide();
+}
+
+void UpdateWidget::close()
+{
+    if (Settings::settings()->toInt(skAutoUpdateCheck) < 0)
+        Settings::settings()->setInt(skAutoUpdateCheck, 0);
+    hide();
+}
+
+void UpdateWidget::activateRemindLater(bool remindLater)
+{
+    ui->remindButton->setEnabled(remindLater);
 }
 
 }

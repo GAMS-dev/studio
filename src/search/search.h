@@ -29,13 +29,12 @@ namespace gams {
 namespace studio {
 namespace search {
 
+
 class SearchDialog;
 class AbstractSearchFileHandler;
-
 class Search : public QObject
 {
     Q_OBJECT
-
 public:
     enum Status {
         Searching,
@@ -106,8 +105,7 @@ private:
     void checkFileChanged(const FileId &fileId);
     bool hasResultsForFile(const QString &filePath);
 
-    QFlags<QTextDocument::FindFlag> createFindFlags(const SearchParameters &parameters,
-                                                    Direction direction = Direction::Forward);
+    QFlags<QTextDocument::FindFlag> createFindFlags(const SearchParameters &parameters, Direction direction = Direction::Forward);
 
 private slots:
     void finished();

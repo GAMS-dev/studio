@@ -46,8 +46,12 @@ signals:
 
 private slots:
     void commitAndCloseEditor();
+    void commitAndCloseEditorWithCompleter();
 
 private:
+    mutable QString mOriginalText;
+    mutable QString mLastText;
+    mutable bool mIsCompleter;
     mutable bool mIsLastEditorClosed;
     mutable QWidget* mLastEditor;
 };

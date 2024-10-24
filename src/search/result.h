@@ -32,28 +32,17 @@ class Result
 {
     friend class SearchResultList;
 public:
-    Result();
+    explicit Result(int lineNr, int colNr, int length, const QString &fileLoc, const NodeId& parent, const QString& context = "");
 
-    explicit Result(int lineNr, int colNr, int length, const QString &fileLoc,
-                    const NodeId& parent, const QString& context = "");
-
-    bool operator==(const Result& r1) {
-        return (filePath()==r1.filePath() && lineNr()==r1.lineNr() && colNr()==r1.colNr());
-    }
+    bool operator==(const Result& r1) { return (filepath()==r1.filepath() && lineNr()==r1.lineNr() && colNr()==r1.colNr()); }
 
     int lineNr() const;
     int colNr() const;
-
-    QString filePath() const;
-    void setFilePath(const QString &fp);
-
+    QString filepath() const;
     QString context() const;
     int length() const;
     NodeId parentGroup() const;
     void setParentGroup(const NodeId &parent);
-
-    int logicalIndex() const;
-    void setLogicalIndex(int index);
 
 private:
     static const int MAX_CONTEXT_LENGTH = 60;
@@ -61,10 +50,9 @@ private:
     int mLineNr;
     int mColNr;
     int mLength;
-    QString mFilePath;
+    QString mFilepath;
     QString mContext;
     NodeId mParent;
-    int mLogicalIndex;
 
     QString matchHighlightStart = QString("<b style=background-color:%1;color:%2>")
             .arg(Theme::color(Theme::Edit_matchesBg).name(), QColor(Qt::white).name());

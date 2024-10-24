@@ -169,7 +169,7 @@ public:
     void historyChanged();
     int linesInEditor(QWidget *editor = nullptr);
 
-    void showGamsUpdateWidget(const QString &text);
+    void showGamsUpdateWidget(const QString &text, bool remindLater = true);
 
 #ifdef QWEBENGINE
     help::HelpWidget *helpWidget() const;
@@ -213,7 +213,7 @@ public slots:
     void updateCursorHistoryAvailability();
     void closeProject(gams::studio::PExProjectNode *project);
     void closeFileEditors(const FileId &fileId, bool willReopen = false);
-    void updateResults(search::SearchResultModel* model);
+    void updateResults(search::SearchResultModel* results);
     void closeResultsView();
     void openPinView(int tabIndex, Qt::Orientation orientation);
     void openInPinView(PExProjectNode *project, QWidget *editInMainTabs);
@@ -246,6 +246,7 @@ private slots:
     void neosProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void remoteProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void closeNodeConditionally(gams::studio::PExFileNode *node);
+    void closeAndDeleteFiles(QList<PExFileNode *> fileNodes);
     void addToGroup(gams::studio::PExGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
     void changeToLog(gams::studio::PExAbstractNode* node, bool openOutput, bool createMissing);

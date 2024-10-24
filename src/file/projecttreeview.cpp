@@ -44,8 +44,12 @@ void ProjectTreeView::focusOutEvent(QFocusEvent *event)
     QTreeView::focusOutEvent(event);
 }
 
-void ProjectTreeView::fixFocus()
+void ProjectTreeView::fixFocus(bool delay)
 {
+    if (delay || mDelayUpdate) {
+        mDelayUpdate = delay;
+        return;
+    }
     QModelIndex mi = static_cast<ProjectTreeModel*>(model())->current();
     if (mi.isValid() && currentIndex() != mi)
         setCurrentIndex(mi);

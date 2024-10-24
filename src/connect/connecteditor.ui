@@ -32,7 +32,7 @@
    <item>
     <widget class="QSplitter" name="connectHSplitter">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="handleWidth">
       <number>2</number>
@@ -89,10 +89,10 @@
           <item>
            <spacer name="toolbarHSpacer_1">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeType">
-             <enum>QSizePolicy::Preferred</enum>
+             <enum>QSizePolicy::Policy::Preferred</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -119,7 +119,7 @@
           <item>
            <spacer name="toolbarHSpacer_2">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -156,14 +156,14 @@
           <item>
            <widget class="QCheckBox" name="onlyRequiredAttribute">
             <property name="text">
-             <string>Only required options when adding new agent</string>
+             <string>Add only required options</string>
             </property>
            </widget>
           </item>
           <item>
            <spacer name="selectionHSpacer">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -230,7 +230,7 @@
           <item>
            <spacer name="schemaControlHSpacer">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -293,7 +293,7 @@
           <item>
            <spacer name="helpTreeLabelHSpacer">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>

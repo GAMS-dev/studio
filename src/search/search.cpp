@@ -36,12 +36,9 @@
 namespace gams {
 namespace studio {
 namespace search {
-
 using Qt::UniqueConnection;
 
-Search::Search(SearchDialog *sd, AbstractSearchFileHandler* fileHandler)
-    : mSearchDialog(sd)
-    , mFileHandler(fileHandler)
+Search::Search(SearchDialog *sd, AbstractSearchFileHandler* fileHandler) : mSearchDialog(sd), mFileHandler(fileHandler)
 {
     connect(this, &Search::invalidateResults, mSearchDialog, &SearchDialog::invalidateResultsView);
     connect(this, &Search::selectResult, mSearchDialog, &SearchDialog::selectResult);
@@ -299,7 +296,7 @@ int Search::findNextEntryInCache(Search::Direction direction) {
             Result r = mResults.at(i);
 
             // check if is in same line but behind the cursor
-            if (file == r.filePath()) {
+            if (file == r.filepath()) {
                 allowJumping = true; // allow jumping after searching the current file
 
                 // just jump to next result if in Solver Option Editor
@@ -333,7 +330,7 @@ int Search::findNextEntryInCache(Search::Direction direction) {
                         return (i == MAX_SEARCH_RESULTS) ? -1 : i;
                     }
                 }
-            } else if (file != r.filePath() && allowJumping) {
+            } else if (file != r.filepath() && allowJumping) {
                 // first match in next file
                 return i;
             }
@@ -546,7 +543,7 @@ void Search::finished()
     mSearching = false;
 
     for (const Result &r : std::as_const(mResults))
-        mResultHash[r.filePath()].append(r);
+        mResultHash[r.filepath()].append(r);
 
     mCacheAvailable = mResults.count() > 0;
     mSearchDialog->finalUpdate();

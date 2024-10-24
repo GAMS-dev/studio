@@ -48,6 +48,7 @@ signals:
     void runFile(gams::studio::PExFileNode *fc);
     void setMainFile(gams::studio::PExFileNode *fc);
     void closeFile(gams::studio::PExFileNode* fc);
+    void closeDelFiles(QList<gams::studio::PExFileNode*> fileNodes);
     void addExistingFile(gams::studio::PExGroupNode* group, const QString& file);
     void getSourcePath(QString& source);
     void openLogFor(gams::studio::PExAbstractNode* node, bool openOutput, bool createMissing);
@@ -73,6 +74,7 @@ private slots:
     void onCloseProject();
     void onCloseDelProject();
     void onCloseFile();
+    void onCloseDelFile();
     void onAddExisitingFile();
     void onAddNewFile();
     void onAddNewPfFile();
@@ -108,8 +110,9 @@ private:
     // Strings
     QString mTxtCloseGroup = "Close Files in This &Folder";
     QString mTxtCloseProject = "Close &Project";
-    QString mTxtCloseDelProject = "Close and &Delete Project";
+    QString mTxtCloseDelProject = "&Delete Project File";
     QString mTxtCloseFile = "Close &File";
+    QString mTxtCloseDelFile = "&Delete File";
 };
 
 } // namespace studio

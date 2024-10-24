@@ -25,6 +25,7 @@
 #include "commonpaths.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
+#include "logger.h"
 #include "networkmanager.h"
 #ifndef __APPLE__
 # include "colors/palettemanager.h"
@@ -96,15 +97,6 @@ Application::~Application()
 
 void Application::init()
 {
-    if (!mCmdParser.logFile().isEmpty()) {
-        QFileInfo log(mCmdParser.logFile());
-        if (QFile::exists(log.absolutePath())) {
-            vCustomLogFile = mCmdParser.logFile();
-            qDebug() << "log additionally to file" << vCustomLogFile;
-            vOriginalLogHandler = qInstallMessageHandler(*logToFile);
-        } else
-            qDebug() << "Error: Couldn't register log file in missing path " << log.absolutePath();
-    }
     CommonPaths::setSystemDir(mCmdParser.gamsDir());
     setOrganizationName(GAMS_ORGANIZATION_STR);
     setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
@@ -112,6 +104,24 @@ void Application::init()
     Settings::createSettings(mCmdParser.ignoreSettings(),
                              mCmdParser.resetSettings(),
                              mCmdParser.resetView());
+    if (Settings::settings()->toBool(skEnableLog) && mCmdParser.logFile().isEmpty())
+        vCustomLogFile = CommonPaths::studioDocumentsDir() + "/studio.log";
+    else if (!mCmdParser.logFile().isEmpty() && mCmdParser.logFile() != "-")
+        vCustomLogFile = mCmdParser.logFile();
+
+    if (!vCustomLogFile.isEmpty()) {
+        if (QFile::exists(vCustomLogFile)) {
+            if (QFile::exists(vCustomLogFile + "~"))
+                QFile::remove(vCustomLogFile + "~");
+            QFile::rename(vCustomLogFile, vCustomLogFile + "~");
+        }
+        QFileInfo log(vCustomLogFile);
+        if (QFile::exists(log.absolutePath())) {
+            qDebug() << "log additionally to file" << vCustomLogFile;
+            vOriginalLogHandler = qInstallMessageHandler(*logToFile);
+        } else
+            qDebug() << "Error: Couldn't register log file in missing path " << log.absolutePath();
+    }
     QStringList success, failed;
     clearWorkspace(Settings::settings()->toBool(skCleanUpWorkspace),
                    Settings::settings()->toString(skCleanUpWorkspaceFilter).split(",", Qt::SkipEmptyParts),
@@ -128,6 +138,10 @@ void Application::init()
     mDistribValidator.start();
     listen();
     reportCleanupWsState(success, failed);
+    DEB() << GAMS_PRODUCTNAME_STR << " " << applicationVersion() << " on " << QSysInfo::prettyProductName() << " "
+          << QSysInfo::currentCpuArchitecture() << " build " << QSysInfo::kernelVersion();
+    GamsProcess gp;
+    DEB() << gp.aboutGAMS().split("\n").first();
 }
 
 QString Application::serverName() const

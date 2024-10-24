@@ -18,26 +18,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "searchresultviewitemdelegate.h"
-#include "common.h"
-
 #include <QApplication>
 #include <QPainter>
 #include <QTextCursor>
 #include <QTextDocument>
 
-namespace gams {
-namespace studio {
-namespace search {
-
 SearchResultViewItemDelegate::SearchResultViewItemDelegate(QObject *parent)
     : QStyledItemDelegate{parent}
-{
+{ }
 
-}
-
-void SearchResultViewItemDelegate::paint(QPainter *painter,
-                                         const QStyleOptionViewItem &option,
-                                         const QModelIndex &index) const
+void SearchResultViewItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
+                     const QModelIndex &index) const
 {
     if (!index.isValid())
         return;
@@ -63,17 +54,7 @@ void SearchResultViewItemDelegate::paint(QPainter *painter,
     painter->restore();
 }
 
-QSize SearchResultViewItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
-{
-    auto size = QStyledItemDelegate::sizeHint(option, index);
-    size.setHeight(size.height()*TABLE_ROW_HEIGHT);
-    //size.setWidth(size.width()*TABLE_ROW_HEIGHT);
-    return size;
-}
-
-QString SearchResultViewItemDelegate::elideRichText(const QString &richText,
-                                                    int maxWidth,
-                                                    const QFontMetrics &metrics) const
+QString SearchResultViewItemDelegate::elideRichText(const QString &richText, int maxWidth, const QFontMetrics &metrics) const
 {
     QTextDocument doc;
     doc.setHtml(richText);
@@ -97,8 +78,4 @@ QString SearchResultViewItemDelegate::elideRichText(const QString &richText,
         return doc.toHtml();
     }
     return richText;
-}
-
-}
-}
 }

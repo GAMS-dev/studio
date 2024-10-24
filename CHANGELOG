@@ -2,8 +2,21 @@ Version 1.20.0 *
 ==================
 - t.b.d.
 
-Version 1.19.0
+Version 1.19.1
 ==================
+- added allow to delete files from the Project Explorer
+- added system and version information to the log (created via `--log`)
+- added additional logging for license installation
+- added settings option to switch system logging on/off
+- added information about disabled check for update at startup
+- fixed invalid error mark when the LST file contains wrong position information
+- fixed initialization and validation of options created from Connect schema in Connect Editor
+- fixed adding only required options in Connect Editor
+- fixed saving file in Connect Editor after an edit finished with a mouse click
+- fixed crash and blocking on macOS after interrupting a GAMS run
+- improved license text for time limited licenses
+- improved create a system log file by default and new parameter "--no-log" to deactivate it
+- reverted "improved group search results by file, i.e. a tree view is used instead of a table"
 - upgraded from Qt 6.7.2 to Qt 6.7.3
 
 Version 1.19.0

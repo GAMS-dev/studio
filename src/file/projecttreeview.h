@@ -32,6 +32,7 @@ class ProjectTreeView : public QTreeView
 public:
     explicit ProjectTreeView(QWidget *parent = nullptr);
     static const QString ItemModelDataType;
+    void fixFocus(bool delay = false);
 
 signals:
     void dropFiles(QModelIndex idx, QStringList files, QList<gams::studio::NodeId> knownIds, Qt::DropAction,
@@ -41,7 +42,6 @@ signals:
 
 protected:
     void focusOutEvent(QFocusEvent *event) override;
-    void fixFocus();
     void startDrag(Qt::DropActions supportedActions) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dragMoveEvent(QDragMoveEvent *event) override;
@@ -57,6 +57,7 @@ public slots:
 private:
     QItemSelection mSelectionBeforeDrag;
     bool mHasRunBlocker = false;
+    bool mDelayUpdate = false;
 
 
 };

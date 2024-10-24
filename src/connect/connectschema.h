@@ -166,6 +166,7 @@ public:
     QStringList          excludes;
     bool                 isOneOf;
     bool                 isAnyOf;
+    bool                 empty;
 
     Schema(
         int                        level_,
@@ -193,7 +194,8 @@ public:
         bool                       schemaDefined_=false,
         const QStringList          &excludes_=QStringList(),
         bool                       isOneOf_=false,
-        bool                       _=false
+        bool                       isAnyOf_=false,
+        bool                       empty_=true
     );
 
     bool hasType(SchemaType tt) {
@@ -250,6 +252,7 @@ public:
     bool isNullDefaultAllowed(const QString& key) const;
 
     bool isRequired(const QString& key) const;
+    bool isEmpty(const QString& key) const;
     ValueWrapper getMin(const QString& key) const;
     ValueWrapper getMax(const QString& key) const;
     bool isSchemaDefined(const QString& key) const;

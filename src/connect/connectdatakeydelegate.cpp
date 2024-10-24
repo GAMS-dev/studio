@@ -22,6 +22,8 @@
 #include <QToolTip>
 #include <QLineEdit>
 #include <QComboBox>
+#include <QCompleter>
+#include <QStringListModel>
 
 #include "connectdatakeydelegate.h"
 #include "connectdatamodel.h"
@@ -58,7 +60,7 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
         mSchemaHelpPosition[index.data(Qt::DisplayRole).toString()] =
                     QRect(option->rect.bottomRight().x()-mIconWidth, option->rect.bottomRight().y()-mIconHeight, mIconWidth , mIconHeight);
     } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ListAppend ||
-               checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::MapAppend     ) {
+               checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::MapAppend) {
                option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
                mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
     } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::SchemaAppend) {
@@ -88,19 +90,51 @@ QWidget *ConnectDataKeyDelegate::createEditor(QWidget *parent, const QStyleOptio
                 editor->addItem(keystr+"["+QString::number(i)+"]");
             mLastEditor = editor;
             mIsLastEditorClosed = false;
+        } else {
+            mLastEditor = nullptr;
+            mIsLastEditorClosed = true;
         }
         return editor;
-    }
+    } else if (checkstate_index.data().toInt()==(int)DataCheckState::ElementKey) {
+               QLineEdit* lineEdit = new QLineEdit(parent);
+               QCompleter* completer = new QCompleter(lineEdit);
+               QModelIndex allowedval_index = index.sibling( index.row(), (int)DataItemColumn::AllowedValue );
+               QStringList allowedval_list = allowedval_index.data().toString().split(",");
+               if (!allowedval_index.data().toString().isEmpty() && allowedval_list.size() > 0) {
+                   completer->setModel( new QStringListModel(allowedval_list) );
+               } else {
+                   QModelIndex type_index = index.sibling( index.row(), (int)DataItemColumn::SchemaType );
+                   QStringList type_list = type_index.data().toString().split(",");
+                   if (type_list.contains("boolean", Qt::CaseInsensitive)) {
+                       QStringList boolean_list({ "true", "false"});
+                       completer->setModel( new QStringListModel(boolean_list) );
+                   }
+               }
+               completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
+               completer->setCaseSensitivity(Qt::CaseInsensitive);
+               completer->setMaxVisibleItems(10);
 
-    QLineEdit* lineEdit = new QLineEdit(parent);
-    if (checkstate_index.data(Qt::DisplayRole).toInt()!=(int)DataCheckState::ElementKey &&
-       checkstate_index.data(Qt::DisplayRole).toInt()!=(int)DataCheckState::ElementMap     )
+               lineEdit->setCompleter(completer);
+               lineEdit->adjustSize();
+
+               mLastEditor = lineEdit;
+               mIsLastEditorClosed = false;
+
+               return lineEdit;
+    } else if (checkstate_index.data().toInt()==(int)DataCheckState::ElementMap) {
+        QLineEdit* lineEdit = new QLineEdit(parent);
+        lineEdit->adjustSize();
+
+        mLastEditor = lineEdit;
+        mIsLastEditorClosed = false;
+
         return lineEdit;
-
-    lineEdit->adjustSize();
-    mLastEditor = lineEdit;
-    mIsLastEditorClosed = false;
-    return lineEdit;
+    } else {
+        QLineEdit* lineEdit = new QLineEdit(parent);
+        mLastEditor = nullptr;
+        mIsLastEditorClosed = true;
+        return lineEdit;
+    }
 }
 
 void ConnectDataKeyDelegate::destroyEditor(QWidget *editor, const QModelIndex &index) const
@@ -169,7 +203,7 @@ bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *mode
     if (event->type()==QEvent::MouseButtonRelease) {
         QModelIndex checkstate_index = index.sibling(index.row(), (int)DataItemColumn::CheckState);
         if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ElementKey ||
-            checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ElementMap    ) {
+            checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ElementMap     ) {
              return true;
         }
         const QMouseEvent* const mouseevent = static_cast<const QMouseEvent*>( event );
@@ -222,6 +256,10 @@ bool ConnectDataKeyDelegate::eventFilter(QObject *editor, QEvent *event)
                   commitAndCloseEditor();
                   return true;
        }
+    } else if(event->type()==QEvent::FocusOut) { // only event check not work with completer with listmodel
+             commitAndCloseEditor();
+             return true;
+
     }
     return QStyledItemDelegate::eventFilter(editor, event);
 }

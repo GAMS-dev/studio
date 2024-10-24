@@ -170,6 +170,7 @@ bool ConnectEditor::init(bool quiet)
     ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Default);
     ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::AllowedValue);
     ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::min);
+    ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::Nullable, true );
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::SchemaKey, true );
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::DragEnabled, true );
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::min, true );
@@ -182,8 +183,10 @@ bool ConnectEditor::init(bool quiet)
     connect(keydelegate, &ConnectDataKeyDelegate::requestAppendItem, this, &ConnectEditor::appendItemRequested, Qt::UniqueConnection);
     connect(keydelegate, &ConnectDataKeyDelegate::requestInsertSchemaItem, this, &ConnectEditor::appendSchemaItemRequested, Qt::UniqueConnection);
     connect(keydelegate, &ConnectDataKeyDelegate::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
+    connect(keydelegate, &ConnectDataKeyDelegate::modificationChanged, this, [this]() { ui->dataTreeView->resizeColumnToContents((int)DataItemColumn::Key); });
 
     connect(valuedelegate, &ConnectDataValueDelegate::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
+    connect(valuedelegate, &ConnectDataValueDelegate::modificationChanged, this, [this]() { ui->dataTreeView->resizeColumnToContents((int)DataItemColumn::Value); });
     connect(actiondelegate, &ConnectDataActionDelegate::requestDeleteItem, this, &ConnectEditor::deleteDataItemRequested, Qt::UniqueConnection);
     connect(actiondelegate, &ConnectDataActionDelegate::requestMoveUpItem, this, &ConnectEditor::moveUpDatatItemRequested, Qt::UniqueConnection);
     connect(actiondelegate, &ConnectDataActionDelegate::requestMoveDownItem, this, &ConnectEditor::moveDownDatatItemRequested, Qt::UniqueConnection);
@@ -355,18 +358,18 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
         if (index.parent().isValid() &&
             index.parent().siblingAtColumn((int)DataItemColumn::Undefined).data(Qt::DisplayRole).toBool())
             return;
-        QModelIndex values_idx = index.sibling(index.row(), (int)DataItemColumn::AllowedValue);
-        QStringList schema = values_idx.data().toStringList();
+        QModelIndex values_idx = index.sibling(index.row(), (int)DataItemColumn::SchemaKey);
+        QStringList schema = values_idx.data(Qt::DisplayRole).toString().split(":");
         if ( !schema.isEmpty() ) {
             QString schemaname = schema.at(0);
             schema.removeFirst();
             if (schema.last().compare("-")==0)
                 schema.removeLast();
-            ConnectData* schemadata = mConnect->createDataHolderFromSchema(schemaname, schema, (ui->onlyRequiredAttribute->checkState()==Qt::Checked));
+            ConnectData* schemadata = mConnect->createDataHolderFromSchema(schemaname, schema, (ui->onlyRequiredAttribute->checkState()==Qt::Checked), true);
             mDataModel->appendListElement(schemaname, schema, schemadata, index);
         }
     } else if ((int)DataCheckState::MapAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
-              mDataModel->appendMapElement(index);
+               mDataModel->appendMapElement(index);
     }
 }
 
@@ -384,7 +387,7 @@ void ConnectEditor::appendSchemaItemRequested(const int schemaNumber, const QMod
     QStringList schema = values_idx.data().toString().split(":");
     QString schemaname = "";
     schema << "["+QString::number(schemaNumber)+"]";
-    ConnectData* data = mConnect->createDataHolderFromSchema(schema , (ui->onlyRequiredAttribute->checkState()==Qt::Checked));
+    ConnectData* data = mConnect->createDataHolderFromSchema(schema , (ui->onlyRequiredAttribute->checkState()==Qt::Checked), true);
     if (!schema.isEmpty()) {
         schemaname = schema.first();
         schema.removeFirst();

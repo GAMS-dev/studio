@@ -38,6 +38,8 @@ public:
     explicit UpdateWidget(QWidget *parent = nullptr);
     ~UpdateWidget();
 
+    void activateRemindLater(bool remindLater);
+
     void setText(const QString &text);
 
 signals:
@@ -45,6 +47,7 @@ signals:
 
 private slots:
     void remindMeLater();
+    void close();
 
 private:
     Ui::UpdateWidget *ui;

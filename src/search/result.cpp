@@ -23,18 +23,8 @@ namespace gams {
 namespace studio {
 namespace search {
 
-Result::Result()
-{
-
-}
-
-Result::Result(int lineNr, int colNr, int length, const QString &fileLoc,
-               const NodeId& parent, const QString& context)
-    : mLineNr(lineNr)
-    , mColNr(colNr)
-    , mLength(length)
-    , mFilePath(fileLoc)
-    , mParent(parent)
+Result::Result(int lineNr, int colNr, int length, const QString &fileLoc, const NodeId& parent, const QString& context) :
+    mLineNr(lineNr), mColNr(colNr), mLength(length), mFilepath(fileLoc), mParent(parent)
 {
     int left = qMax(0, colNr - MAX_CONTEXT_LENGTH/2 + length/2);
 
@@ -63,14 +53,9 @@ int Result::colNr() const
     return mColNr;
 }
 
-QString Result::filePath() const
+QString Result::filepath() const
 {
-    return mFilePath;
-}
-
-void Result::setFilePath(const QString &fp)
-{
-    mFilePath = fp;
+    return mFilepath;
 }
 
 QString Result::context() const
@@ -91,16 +76,6 @@ NodeId Result::parentGroup() const
 void Result::setParentGroup(const NodeId &parent)
 {
     mParent = parent;
-}
-
-int Result::logicalIndex() const
-{
-    return mLogicalIndex;
-}
-
-void Result::setLogicalIndex(int index)
-{
-    mLogicalIndex = index;
 }
 
 }

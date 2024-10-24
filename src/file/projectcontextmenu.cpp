@@ -57,6 +57,7 @@ enum ContextAction {
     actCloseDelProject,
     actCloseGroup,
     actCloseFile,
+    actCloseDelFile,
     actSep6,
     actSelectAll,
     actExpandAll,
@@ -158,6 +159,7 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actCloseDelProject, addAction(mTxtCloseDelProject, this, &ProjectContextMenu::onCloseDelProject));
     mActions.insert(actCloseGroup, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseGroup));
     mActions.insert(actCloseFile, addAction(mTxtCloseFile, this, &ProjectContextMenu::onCloseFile));
+    mActions.insert(actCloseDelFile, addAction(mTxtCloseDelFile, this, &ProjectContextMenu::onCloseDelFile));
 
 }
 
@@ -316,11 +318,14 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     mActions[actCloseGroup]->setEnabled(!protectNodes);
     mActions[actCloseFile]->setVisible(fileNode);
     mActions[actCloseFile]->setEnabled(!protectNodes);
+    mActions[actCloseDelFile]->setVisible(fileNode);
+    mActions[actCloseDelFile]->setEnabled(!protectNodes);
 
     mActions[actCloseProject]->setText(mTxtCloseProject + (single ? "" : "s"));
     mActions[actCloseDelProject]->setText(mTxtCloseDelProject + (single ? "" : "s"));
     mActions[actCloseGroup]->setText(mTxtCloseGroup);
-    mActions[actCloseFile]->setText(mTxtCloseFile);
+    mActions[actCloseFile]->setText(mTxtCloseFile + (single ? "" : "s"));
+    mActions[actCloseDelFile]->setText(mTxtCloseDelFile + (single ? "" : "s"));
 
     // create solver option files
     mActions[actSep3]->setVisible(isProject);
@@ -336,6 +341,16 @@ void ProjectContextMenu::onCloseFile()
         PExFileNode *file = node->toFile();
         if (file) emit closeFile(file);
     }
+}
+
+void ProjectContextMenu::onCloseDelFile()
+{
+    QList<PExFileNode *> delFiles;
+    for (PExAbstractNode *node: std::as_const(mNodes)) {
+        PExFileNode *file = node->toFile();
+        if (file) delFiles << file;
+    }
+    if (!delFiles.isEmpty()) emit closeDelFiles(delFiles);
 }
 
 void ProjectContextMenu::onAddExisitingFile()

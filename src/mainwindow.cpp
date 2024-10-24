@@ -277,6 +277,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeProject, this, &MainWindow::closeProject);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
+    connect(&mProjectContextMenu, &ProjectContextMenu::closeDelFiles, this, &MainWindow::closeAndDeleteFiles);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::newFileDialog, this, &MainWindow::newFileDialogPrepare);
@@ -440,10 +441,17 @@ MainWindow::MainWindow(QWidget *parent)
     if (app && app->skipCheckForUpdate()) {
         mC4U.reset(new support::CheckForUpdate(!app->skipCheckForUpdate(), this));
     } else {
-        mC4U.reset(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this));
+        auto check = Settings::settings()->toInt(skAutoUpdateCheck);
+        if (check > 0) {
+            mC4U.reset(new support::CheckForUpdate(check, this));
+        } else {
+            checkForUpdates("On some systems the check for updates during the Studio startup is unstable, so it has been disabled. To activate the check please go to the settings.");
+        }
     }
-    connect(mC4U.get(), &support::CheckForUpdate::versionInformationAvailable,
-            this, [this]{ checkForUpdates(mC4U->versionInformationShort()); });
+    if (mC4U) {
+        connect(mC4U.get(), &support::CheckForUpdate::versionInformationAvailable,
+                this, [this]{ checkForUpdates(mC4U->versionInformationShort()); });
+    }
 
     // Themes
 #ifndef __APPLE__
@@ -534,6 +542,7 @@ MainWindow::~MainWindow()
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
+    mWp->setProperty("WP", "WP");
     //JM: Changed the parameter from (const QString &var) to (QString var) to avoid crash.
     //    When the labels have been recalculated, the string that belongs to the label becomes invalid.
     connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
@@ -1166,6 +1175,13 @@ void MainWindow::openModelFromLibPrepare(const QString &glbFile, const QString &
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite)
 {
     bool openInCurrent = Settings::settings()->toBool(skOpenInCurrent) && mRecent.project();
+
+    // TODO(JM) remove this when issue is fixed
+    DEB() << "Open in current project: " << (Settings::settings()->toBool(skOpenInCurrent) ? "YES" : "NO")
+          << " (project: " << (mRecent.project() ? mRecent.project()->name() : "-none-") << ")";
+    if (!mRecent.project()) DEB() << "   - Editors meta data: " << (mRecent.fileMeta() ? mRecent.fileMeta()->name() + " no."
+                                                                                         + QString::number(mRecent.fileMeta()->projectId())
+                                                                                       : QString("no editor") );
     QString destDir = openInCurrent ? mRecent.project()->workDir() : CommonPaths::defaultWorkingDir();
     if (!QFile::exists(destDir)) {
         DEB() << "No existing workspace defined";
@@ -2754,7 +2770,12 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
     process.setProcessEnvironment(environment);
     SysLogLocator::systemLog()->append("On some Linux distributions GAMS Studio may not be able to start a terminal.", LogMsgType::Info);
 #else
-    process.setProgram("cmd.exe");
+    QString terminalPath = QFileInfo(QStandardPaths::findExecutable("cmd")).absoluteFilePath();
+    if (terminalPath.isEmpty()) {
+        appendSystemLogError("Terminal not found in PATH");
+        return;
+    }
+    process.setProgram(terminalPath);
     process.setArguments({"/k", "title", "GAMS Terminal"});
     process.setWorkingDirectory(workingDir);
     process.setCreateProcessArgumentsModifier([] (QProcess::CreateProcessArguments *args)
@@ -2763,23 +2784,38 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
         args->startupInfo->dwFlags &= ulong(~STARTF_USESTDHANDLES);
     });
 #endif
-    if (!process.startDetached())
+    if (!process.startDetached()) {
         appendSystemLogError("Error opening terminal: " + process.errorString());
+#ifdef _WIN64
+        DEB() << "Path for terminal: " << QFileInfo(QStandardPaths::findExecutable("cmd")).absoluteFilePath();
+#endif
+    }
 }
 
 void MainWindow::on_mainTabs_tabCloseRequested(int index)
 {
-    if (index == 0) {
+    if (index == 0 && ui->mainTabs->widget(index) == mWp) {
         // welcome page is always at index 0
         ui->mainTabs->setTabVisible(index, false);
         mClosedTabs << "WELCOME_PAGE";
         mClosedTabsIndexes << index;
         return;
     }
+    if (ui->mainTabs->widget(index) == mWp) {
+        DEB() << "WelcomePage at wrong position";
+    }
     QWidget* widget = ui->mainTabs->widget(index);
+    if (!widget) {
+        DEB() << "No editor at tab nr " << index;
+        return;
+    }
     FileMeta* fc = mFileMetaRepo.fileMeta(widget);
     if (!fc) {
-        if (widget) DEB() << "Warning: missing meta data for editor at tab nr " << index;
+        DEB() << "Warning: missing meta data for editor at tab nr " << index;
+        ui->mainTabs->removeTab(index);
+        if (widget == mRecent.editor())
+            mSearchDialog->editorChanged(nullptr);
+        mRecent.removeEditor(widget);
         return;
     }
     PExProjectNode *project = mRecent.project();
@@ -5316,6 +5352,27 @@ void MainWindow::closeNodeConditionally(PExFileNode* node)
     mProjectRepo.purgeGroup(group);
 }
 
+void MainWindow::closeAndDeleteFiles(QList<PExFileNode *> fileNodes)
+{
+    if (!fileNodes.size()) return;
+    ui->projectView->fixFocus(true);
+    QString text = QString("Delete %1").arg(fileNodes.size() > 1 ? QString::number(fileNodes.size()) + " files?" : fileNodes.first()->location() + "?");
+    if (MsgBox::question("Delete", text, this, "Yes", "No", "", 0, 1) == 1) {
+        ui->projectView->fixFocus();
+        return;
+    }
+    for (PExFileNode* node : fileNodes) {
+        QString fName = node->location();
+        emit mProjectContextMenu.closeFile(node);
+        QFile file(fName);
+        if (QFile::exists(fName)) {
+            if (!QFile::remove(fName))
+                appendSystemLogWarning("Could not delete " + fName);
+        }
+    }
+    ui->projectView->fixFocus();
+}
+
 /// Closes all open editors and tabs related to a file and remove option history
 /// \param fileId
 ///
@@ -5524,26 +5581,28 @@ void MainWindow::toggleSearchDialog()
     }
 }
 
-void MainWindow::updateResults(search::SearchResultModel* model)
+void MainWindow::updateResults(search::SearchResultModel* results)
 {
     int index = ui->logTabs->indexOf(resultsView()); // did widget exist before?
 
     delete mResultsView;
-    mResultsView = new search::ResultsView(model, this);
-    connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(),
-            &search::SearchDialog::updateMatchLabel, Qt::UniqueConnection);
-    connect(mSearchDialog, &search::SearchDialog::selectResult,
-            mResultsView, &search::ResultsView::selectItem);
+    mResultsView = new search::ResultsView(results, this);
+    connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateMatchLabel, Qt::UniqueConnection);
+    connect(mSearchDialog, &search::SearchDialog::selectResult, mResultsView, &search::ResultsView::selectItem);
 
-    QString pattern = model->searchRegex().pattern().replace("\n", "");
-    QString title("Results: " + pattern + " (" + model->resultCountString() + ")");
+    QString nr;
+    if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
+    else nr = QString::number(results->size());
+
+    QString pattern = results->searchRegex().pattern().replace("\n", "");
+    QString title("Results: " + pattern + " (" + nr + ")");
 
     ui->dockProcessLog->show();
     ui->dockProcessLog->activateWindow();
     ui->dockProcessLog->raise();
 
-    if (index != -1)
-        ui->logTabs->removeTab(index); // remove old result page
+    if (index != -1) ui->logTabs->removeTab(index); // remove old result page
+
     ui->logTabs->addTab(mResultsView, title); // add new result page
     ui->logTabs->setCurrentWidget(mResultsView);
 
@@ -5702,8 +5761,6 @@ void MainWindow::updateFonts(qreal fontSize, const QString &fontFamily)
     setGroupFontSize(fgLog, fontSize + addSize, fontFamily);
     setGroupFontSize(fgTable, fontSize + mTableFontSizeDif);
     mWp->zoomReset();
-    if (mResultsView)
-        mResultsView->resetZoom();
 }
 
 void MainWindow::updateEditorLineWrapping()
@@ -5862,9 +5919,10 @@ int MainWindow::linesInEditor(QWidget* editor) {
     return codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
 }
 
-void MainWindow::showGamsUpdateWidget(const QString &text)
+void MainWindow::showGamsUpdateWidget(const QString &text, bool remindLater)
 {
     if (text.isEmpty()) return;
+    ui->updateWidget->activateRemindLater(remindLater);
     ui->updateWidget->setText(text);
     ui->updateWidget->show();
 }
@@ -6012,10 +6070,6 @@ void MainWindow::on_actionZoom_In_triggered()
 void MainWindow::zoomWidget(QWidget *widget, int range)
 {
     FontGroup fg;
-    if (widget == mResultsView) {
-        range < 0 ? mResultsView->zoomOut() : mResultsView->zoomIn();
-        return;
-    }
     while (widget && !ViewHelper::toAbstractView(widget) && !ViewHelper::toLxiViewer(widget)
            && !ViewHelper::toTextView(widget) && !ViewHelper::toAbstractEdit(widget)
            && widget != mSyslog && widget != mWp && widget != centralWidget()
@@ -6038,9 +6092,8 @@ void MainWindow::zoomWidget(QWidget *widget, int range)
     else if (widget == mWp) {
         emit mWp->zoomRequest(range);
         return;
-    } else {
+    } else
         return;
-    }
 
     qreal fontSize = widget->font().pointSizeF() + range;
     setGroupFontSize(fg, fontSize);
@@ -6816,8 +6869,12 @@ void MainWindow::on_actionNavigator_triggered()
 
 void MainWindow::checkForUpdates(const QString &text)
 {
-    if (!Settings::settings()->toBool(skAutoUpdateCheck))
+    if (Settings::settings()->toInt(skAutoUpdateCheck) < 0) {
+        showGamsUpdateWidget(text, false);
         return;
+    } else if (!Settings::settings()->toInt(skAutoUpdateCheck)) {
+        return;
+    }
     auto nextCheckDate = Settings::settings()->toDate(skNextUpdateCheckDate);
     if (QDate::currentDate() < nextCheckDate)
         return;
@@ -6835,7 +6892,6 @@ QDate MainWindow::nextUpdateCheck()
         return QDate::currentDate().addDays(7);
     return QDate::currentDate().addMonths(1);
 }
-
 
 }
 }

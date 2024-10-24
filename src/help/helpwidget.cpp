@@ -53,7 +53,7 @@ HelpWidget::HelpWidget(QWidget *parent)
     if (app && app->skipCheckForUpdate()) {
         mC4U.reset(new support::CheckForUpdate(!app->skipCheckForUpdate(), this));
     } else {
-        mC4U.reset(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this));
+        mC4U.reset(new support::CheckForUpdate(Settings::settings()->toInt(skAutoUpdateCheck) > 0, this));
     }
 
     ui->setupUi(this);

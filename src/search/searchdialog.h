@@ -67,13 +67,11 @@ public:
 
     void setSearchStatus(Search::Status status, int hits = 0);
 
-    /// \brief jumpToResult jumps to a search result identified by an index.
-    ///        Does not jump if the search cache is outdated.
+    /// \brief jumpToResult jumps to a search result identified by an index. does not jump if the search cache is outdated.
     /// \param index index of a search result in a valid cache
     void jumpToResult(int index);
 
-    /// \brief jumpToResult jumpts to a search result identified by a Result object.
-    ///        Jump position can be wrong if the document changed since the result was generated.
+    /// \brief jumpToResult jumpts to a search result identified by a Result object. Jump position can be wrong if the document changed since the result was generated.
     /// \param r SearchResult to jump to
     void jumpToResult(Result r);
 
@@ -143,9 +141,7 @@ private:
     void checkRegex();
     void updateComponentAvailability();
     void updateClearButton();
-    SearchParameters createSearchParameters(bool showResults,
-                                            bool ignoreReadonly = false,
-                                            bool searchBackwards = false);
+    SearchParameters createSearchParameters(bool showResults, bool ignoreReadonly = false, bool searchBackwards = false);
     FileWorker mFileWorker;
 
 private:
