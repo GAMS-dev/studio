@@ -542,6 +542,7 @@ MainWindow::~MainWindow()
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
+    mWp->setProperty("WP", "WP");
     //JM: Changed the parameter from (const QString &var) to (QString var) to avoid crash.
     //    When the labels have been recalculated, the string that belongs to the label becomes invalid.
     connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
@@ -2793,17 +2794,28 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
 
 void MainWindow::on_mainTabs_tabCloseRequested(int index)
 {
-    if (index == 0) {
+    if (index == 0 && ui->mainTabs->widget(index) == mWp) {
         // welcome page is always at index 0
         ui->mainTabs->setTabVisible(index, false);
         mClosedTabs << "WELCOME_PAGE";
         mClosedTabsIndexes << index;
         return;
     }
+    if (ui->mainTabs->widget(index) == mWp) {
+        DEB() << "WelcomePage at wrong position";
+    }
     QWidget* widget = ui->mainTabs->widget(index);
+    if (!widget) {
+        DEB() << "No editor at tab nr " << index;
+        return;
+    }
     FileMeta* fc = mFileMetaRepo.fileMeta(widget);
     if (!fc) {
-        if (widget) DEB() << "Warning: missing meta data for editor at tab nr " << index;
+        DEB() << "Warning: missing meta data for editor at tab nr " << index;
+        ui->mainTabs->removeTab(index);
+        if (widget == mRecent.editor())
+            mSearchDialog->editorChanged(nullptr);
+        mRecent.removeEditor(widget);
         return;
     }
     PExProjectNode *project = mRecent.project();

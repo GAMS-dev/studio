@@ -9,6 +9,7 @@ Version 1.19.1
 - fixed initialization and validation of options created from Connect schema in Connect Editor 
 - fixed adding only required options in Connect Editor
 - fixed saving file in Connect Editor after an edit finished with a mouse click
+- fixed crash and blocking on macOS after interrupting a GAMS run
 - improved license text for time limited licenses
 - reverted "improved group search results by file, i.e. a tree view is used instead of a table"
 - upgraded from Qt 6.7.2 to Qt 6.7.3

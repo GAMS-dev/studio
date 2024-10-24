@@ -105,7 +105,7 @@ void AbstractProcess::interruptIntern(bool hardKill)
         mProcess.kill();
     else
         mProcess.terminate();
-    mProcess.waitForFinished(-1);
+//    mProcess.waitForFinished(-1); // JM: this causes crashes and other threads by disturbing the process order (#2665, #2668, and probably other)
     emit interruptGenerated();
 #else // Linux
     auto pid = mProcess.processId();

@@ -53,9 +53,26 @@ FileMeta *FileMetaRepo::fileMeta(const QString &location) const
 FileMeta *FileMetaRepo::fileMeta(QWidget* const &editor) const
 {
     if (!editor) return nullptr;
-    if (editor->property("location").isValid())
-        return fileMeta(editor->property("location").toString());
-    else return nullptr;
+    if (editor->property("location").isValid()) {
+        FileMeta *meta = fileMeta(editor->property("location").toString());
+        if (!meta)
+            DEB() << "FileMeta request failed for \'" << editor->property("location").toString() << "'";
+        return meta;
+    } else if (editor->property("WP").toString() == "WP") {
+        return nullptr;
+    } else {
+        DEB() << "No location information for requested editor";
+        FileMeta *res = nullptr;
+        DEB() << " - trying to find file meta";
+        for (FileMeta *meta : fileMetas()) {
+            if (meta->editors().contains(editor)) {
+                DEB() << " - found: " << meta->location();
+                res = meta;
+                break;
+            }
+        }
+        return res;
+    }
 }
 
 const QList<FileMeta *> FileMetaRepo::fileMetas() const
