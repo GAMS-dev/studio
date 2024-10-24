@@ -169,7 +169,7 @@ public:
     void historyChanged();
     int linesInEditor(QWidget *editor = nullptr);
 
-    void showGamsUpdateWidget(const QString &text);
+    void showGamsUpdateWidget(const QString &text, bool remindLater = true);
 
 #ifdef QWEBENGINE
     help::HelpWidget *helpWidget() const;

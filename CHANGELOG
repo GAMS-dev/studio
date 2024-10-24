@@ -10,6 +10,7 @@ Version 1.19.1
 - improved license text for time limited licenses
 - reverted "improved group search results by file, i.e. a tree view is used instead of a table"
 - upgraded from Qt 6.7.2 to Qt 6.7.3
+- added information about disabled check for update at startup
 
 Version 1.19.0
 ==================

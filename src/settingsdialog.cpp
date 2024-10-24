@@ -51,7 +51,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     if (app && app->skipCheckForUpdate()) {
         mC4U.reset(new support::CheckForUpdate(!app->skipCheckForUpdate(), this));
     } else {
-        mC4U.reset(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this));
+        mC4U.reset(new support::CheckForUpdate(Settings::settings()->toInt(skAutoUpdateCheck) > 0, this));
     }
     connect(mC4U.get(), &support::CheckForUpdate::versionInformationAvailable,
             this, [this]{ ui->updateBrowser->setText(mC4U->versionInformation()); });
@@ -303,8 +303,8 @@ void SettingsDialog::loadSettings()
     ui->deleteCommentAboveCheckbox->setChecked(mSettings->toBool(skSoDeleteCommentsAbove));
 
     // update page
-    ui->autoUpdateBox->setCheckState(mSettings->toBool(skAutoUpdateCheck) ? Qt::Checked : Qt::Unchecked);
-    ui->updateIntervalBox->setEnabled(mSettings->toBool(skAutoUpdateCheck));
+    ui->autoUpdateBox->setCheckState(mSettings->toInt(skAutoUpdateCheck) > 0 ? Qt::Checked : Qt::Unchecked);
+    ui->updateIntervalBox->setEnabled(mSettings->toInt(skAutoUpdateCheck) > 0);
     ui->updateIntervalBox->setCurrentIndex(mSettings->toInt(skUpdateInterval));
     mLastCheckDate = mSettings->toDate(skLastUpdateCheckDate);
     ui->lastCheckLabel->setText(mLastCheckDate.toString());
@@ -473,7 +473,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skSoDeleteCommentsAbove, ui->deleteCommentAboveCheckbox->isChecked());
 
     // Check gams update
-    mSettings->setBool(skAutoUpdateCheck, ui->autoUpdateBox->isChecked());
+    mSettings->setInt(skAutoUpdateCheck, ui->autoUpdateBox->isChecked());
     mSettings->setInt(skUpdateInterval, ui->updateIntervalBox->currentIndex());
     mSettings->setDate(skLastUpdateCheckDate, mLastCheckDate);
     mSettings->setDate(skNextUpdateCheckDate, nextCheckDate());
@@ -614,7 +614,7 @@ void SettingsDialog::focusUpdateTab()
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
     auto app = qobject_cast<Application*>(qApp);
     if (app && !app->skipCheckForUpdate()) {
-        mC4U->checkForUpdate(Settings::settings()->toBool(skAutoUpdateCheck));
+        mC4U->checkForUpdate(Settings::settings()->toInt(skAutoUpdateCheck) > 0);
     }
 }
 
@@ -971,7 +971,7 @@ void SettingsDialog::setCheckForUpdateState()
 
 void SettingsDialog::setCheckForUpdateSettingsState()
 {
-    if (Settings::settings()->toBool(skAutoUpdateCheck))
+    if (Settings::settings()->toInt(skAutoUpdateCheck) > 0)
         ui->updateBrowser->setPlainText("Checking for updates...");
     else
         ui->updateBrowser->setPlainText("Please press the Check Now button to manually trigger the update check.");

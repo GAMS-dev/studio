@@ -441,10 +441,17 @@ MainWindow::MainWindow(QWidget *parent)
     if (app && app->skipCheckForUpdate()) {
         mC4U.reset(new support::CheckForUpdate(!app->skipCheckForUpdate(), this));
     } else {
-        mC4U.reset(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this));
+        auto check = Settings::settings()->toInt(skAutoUpdateCheck);
+        if (check > 0) {
+            mC4U.reset(new support::CheckForUpdate(check, this));
+        } else {
+            checkForUpdates("On some systems the check for updates during the Studio startup is unstable, so it has been disabled. To activate the check please go to the settings.");
+        }
     }
-    connect(mC4U.get(), &support::CheckForUpdate::versionInformationAvailable,
-            this, [this]{ checkForUpdates(mC4U->versionInformationShort()); });
+    if (mC4U) {
+        connect(mC4U.get(), &support::CheckForUpdate::versionInformationAvailable,
+                this, [this]{ checkForUpdates(mC4U->versionInformationShort()); });
+    }
 
     // Themes
 #ifndef __APPLE__
@@ -5900,9 +5907,10 @@ int MainWindow::linesInEditor(QWidget* editor) {
     return codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
 }
 
-void MainWindow::showGamsUpdateWidget(const QString &text)
+void MainWindow::showGamsUpdateWidget(const QString &text, bool remindLater)
 {
     if (text.isEmpty()) return;
+    ui->updateWidget->activateRemindLater(remindLater);
     ui->updateWidget->setText(text);
     ui->updateWidget->show();
 }
@@ -6849,8 +6857,12 @@ void MainWindow::on_actionNavigator_triggered()
 
 void MainWindow::checkForUpdates(const QString &text)
 {
-    if (!Settings::settings()->toBool(skAutoUpdateCheck))
+    if (Settings::settings()->toInt(skAutoUpdateCheck) < 0) {
+        showGamsUpdateWidget(text, false);
         return;
+    } else if (!Settings::settings()->toInt(skAutoUpdateCheck)) {
+        return;
+    }
     auto nextCheckDate = Settings::settings()->toDate(skNextUpdateCheckDate);
     if (QDate::currentDate() < nextCheckDate)
         return;
@@ -6868,7 +6880,6 @@ QDate MainWindow::nextUpdateCheck()
         return QDate::currentDate().addDays(7);
     return QDate::currentDate().addMonths(1);
 }
-
 
 }
 }
