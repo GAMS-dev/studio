@@ -1,3 +1,7 @@
+Version 1.19.2 *
+==================
+- improved license file line separator and trailing whitespaces
+
 Version 1.19.1
 ==================
 - added allow to delete files from the Project Explorer

@@ -251,6 +251,9 @@ void GamsLicensingDialog::installAlp()
     GamsGetKeyProcess proc;
     proc.setAlpId(ui->idEdit->text().trimmed());
     auto data = proc.execute().split("\n");
+    for (int i=0; i<data.size(); ++i) {
+        data[i] = data[i].trimmed();
+    }
     GamsLicenseInfo licenseInfo;
     if (data.isEmpty() || !licenseInfo.isLicenseValid(data)) {
         auto str = data.join(" ");
