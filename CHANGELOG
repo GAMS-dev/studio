@@ -1,5 +1,6 @@
 Version 1.19.2 *
 ==================
+- fixed usage of ISO-8859-1 for license file paths on Windows
 - improved license file line separator and trailing whitespaces
 
 Version 1.19.1

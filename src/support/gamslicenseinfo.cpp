@@ -195,7 +195,7 @@ QStringList GamsLicenseInfo::gamsDataLocations()
             dataPaths << QDir::toNativeSeparators(path);
             continue;
         }
-        dataPaths << buffer+offset[i];
+        dataPaths << QString::fromLatin1(buffer+offset[i]);
     }
 #else
     for (int i=0; i<nOffset && i<numdirs; i++) {

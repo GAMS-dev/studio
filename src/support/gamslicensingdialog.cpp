@@ -145,8 +145,9 @@ void GamsLicensingDialog::writeLicenseFile(GamsLicenseInfo &licenseInfo, QString
                                            QWidget *parent, bool clipboard)
 {
     auto liceFile = licenseInfo.gamsConfigLicenseLocation();
-    if (liceFile.isEmpty())
+    if (liceFile.isEmpty()) {
         liceFile = licenseInfo.gamsDataLocations().constFirst() + "/" + CommonPaths::licenseFile();
+    }
     QFile licenseFile(liceFile);
     if (licenseFile.exists()) {
         QString text;
