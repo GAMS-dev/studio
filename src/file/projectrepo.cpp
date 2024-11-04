@@ -506,7 +506,10 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file)
     else addToIndex(file);
 
     // create missing group node for folders
+    QList<PExGroupNode*> unsortedGroup;
+
     PExGroupNode *newParent = project;
+    unsortedGroup << project;
     if (project->type() <= PExProjectNode::tCommon) {
         QDir prjPath(project->location());
         QString relPath = prjPath.relativeFilePath(file->location());
@@ -516,12 +519,14 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file)
         folders.removeLast();
         for (const QString &folderName : std::as_const(folders)) {
             newParent = findOrCreateFolder(folderName, newParent, isAbs);
+            unsortedGroup << newParent;
             isAbs = false;
         }
     }
     // add to (new) destination
     mTreeModel->insertChild(newParent->childCount(), newParent, file);
-    sortChildNodes(project);
+    for (PExGroupNode *group : unsortedGroup)
+        sortChildNodes(group);
     purgeGroup(oldParent);
 }
 
