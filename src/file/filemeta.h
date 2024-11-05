@@ -62,7 +62,7 @@ public:
     FileKind kind() const;
     QString kindAsStr() const;
     QString name(NameModifier mod = NameModifier::raw);
-    FontGroup fontGroup();
+    FontGroup fontGroup(bool forcedAsTextEdit = false);
     QTextDocument* document() const;
     int codecMib() const;
     void setCodecMib(int mib);
