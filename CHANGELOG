@@ -4,6 +4,7 @@ Version 1.19.2 *
 - fixed unsorted files in project subfolder
 - fixed closing Connect editor and Studio on saving connect file
 - fixed Studio version information on macOS (Info.plist)
+- fixed Welcome Page link to the [GAMS Forum](https://forum.gams.com/)
 - improved plain text views for Connect and Solver Option editor by using a fixed font
 - improved license file line separator and trailing whitespaces
 
