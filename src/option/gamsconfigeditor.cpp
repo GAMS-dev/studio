@@ -100,12 +100,12 @@ void GamsConfigEditor::setModified(bool modified)
 void GamsConfigEditor::on_reloadGamsUserConfigFile()
 {
     if (mFileHasChangedExtern) {
-             SysLogLocator::systemLog()->append(QString("Reloading Gams User Configuration from %1").arg(mLocation), LogMsgType::Info);
+             SysLogLocator::systemLog()->append(QString("Reloading GAMS User Configuration from %1").arg(mLocation), LogMsgType::Info);
     } else {
         if (!mGuc->isAvailable()) {
             SysLogLocator::systemLog()->append(mGuc->getLastErrorMessage(), LogMsgType::Warning);
             QMessageBox msgBox;
-            msgBox.setText( QString("The contents of %1 does not conform to Gams Configuration file format.\nThe contents may be lost if continue editing. Try \"Reopen as Text\" to preserve editing the file contents.").arg(mLocation));
+            msgBox.setText( QString("The contents of %1 does not conform to GAMS Configuration file format.\nThe contents may be lost if continue editing. Try \"Reopen as Text\" to preserve editing the file contents.").arg(mLocation));
             msgBox.setIcon( QMessageBox::Warning );
             msgBox.setStandardButtons(QMessageBox::Ok);
             msgBox.exec();
@@ -119,7 +119,7 @@ void GamsConfigEditor::on_reloadGamsUserConfigFile()
     } else {
         SysLogLocator::systemLog()->append(mGuc->getLastErrorMessage(), LogMsgType::Warning);
         QMessageBox msgBox;
-        msgBox.setText( QString("The contents of %1 does not conform to Gams Configuration file format.\nThe contents may be lost if continue editing. Try \"Reopen as Text\" to preserve editing the file contents.").arg(mLocation));
+        msgBox.setText( QString("The contents of %1 does not conform to GAMS Configuration file format.\nThe contents may be lost if continue editing. Try \"Reopen as Text\" to preserve editing the file contents.").arg(mLocation));
         msgBox.setIcon( QMessageBox::Warning );
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.exec();

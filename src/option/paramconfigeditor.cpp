@@ -613,7 +613,7 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
         if (singleEntryExisted ) {
             QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
                 .arg(getParameterTableEntry(indices.at(0).row()),
-                "When a Gams config file contains multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
+                "When a GAMS config file contains multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
                 "The value of all other entries except the last entry will be ignored.");
             int answer = MsgBox::question("Parameter Entry exists", "Parameter '" + optionNameData + "' already exists.",
                                           "How do you want to proceed?", detailText,
@@ -637,7 +637,7 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
             for (QModelIndex &idx : indices)
                 entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getParameterTableEntry(idx.row())));
             QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
-                "When a Gams config file contains multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
+                "When a GAMS config file contains multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
                 "The value of all other entries except the last entry will be ignored.");
             int answer = MsgBox::question("Multiple Parameter Entries exist",
                                           "Multiple entries of Parameter '" + optionNameData + "' already exist.",

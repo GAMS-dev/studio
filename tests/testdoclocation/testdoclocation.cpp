@@ -143,7 +143,7 @@ void TestDocLocation::testLocalFileToOnlineUrl_data()
                               << "https://www.gams.com/latest/docs/RN_29.html#RN_2910";
     QTest::newRow("set definition")   << "docs" << "UG_SetDefinition.html" << "UG_SetDefinition_Introduction"
                                       << "https://www.gams.com/latest/docs/UG_SetDefinition.html#UG_SetDefinition_Introduction";
-    QTest::newRow("Gams param List")  << "docs" << "UG_GamsCall.html"      << "UG_GamsCall_ListOfCommandLineParameters"
+    QTest::newRow("GAMS param List")  << "docs" << "UG_GamsCall.html"      << "UG_GamsCall_ListOfCommandLineParameters"
                                       << "https://www.gams.com/latest/docs/UG_GamsCall.html#UG_GamsCall_ListOfCommandLineParameters";
     QTest::newRow("Cplex Intro")      << "docs" << "S_CPLEX.html"          << "CPLEX_INTRODUCTION"
                                       << "https://www.gams.com/latest/docs/S_CPLEX.html#CPLEX_INTRODUCTION";
@@ -238,7 +238,7 @@ void TestDocLocation::testOnlineUrlToLocalFile_data()
                                       << "docs" << "RN_29.html"    << "RN_2910";
     QTest::newRow("set definition")   << "https://www.gams.com/latest/docs/UG_SetDefinition.html#UG_SetDefinition_Introduction"
                                       << "docs" << "UG_SetDefinition.html" << "UG_SetDefinition_Introduction";
-    QTest::newRow("Gams param List")  << "https://www.gams.com/latest/docs/UG_GamsCall.html#UG_GamsCall_ListOfCommandLineParameters"
+    QTest::newRow("GAMS param List")  << "https://www.gams.com/latest/docs/UG_GamsCall.html#UG_GamsCall_ListOfCommandLineParameters"
                                       << "docs" << "UG_GamsCall.html"      << "UG_GamsCall_ListOfCommandLineParameters";
     QTest::newRow("Cplex Intro")      << "https://www.gams.com/latest/docs/S_CPLEX.html#CPLEX_INTRODUCTION"
                                       << "docs" << "S_CPLEX.html"          << "CPLEX_INTRODUCTION";

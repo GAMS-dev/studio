@@ -218,7 +218,7 @@ void TestGamsOption::testOptionEnumIntValue_data()
     QTest::newRow("TraceOpt_2")  << "TraceOpt"  << true  << 2 << false << 2  << "Solver trace only";
     QTest::newRow("TraceOpt_3")  << "TraceOpt"  << true  << 3 << false << 3  << "Solver trace only in format used for GAMS performance world";
     QTest::newRow("TraceOpt_4")  << "TraceOpt"  << true  << 4 << true  << 4  << "Trace file format supporting NLPEC";
-    QTest::newRow("TraceOpt_5")  << "TraceOpt"  << true  << 5 << false << 5  << "Gams exit trace with all available trace fields";
+    QTest::newRow("TraceOpt_5")  << "TraceOpt"  << true  << 5 << false << 5  << "GAMS exit trace with all available trace fields";
 }
 
 void TestGamsOption::testOptionEnumIntValue()

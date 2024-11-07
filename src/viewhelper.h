@@ -179,7 +179,7 @@ public:
     }
 
     static const QString dialogPfFileFilter() {
-        QString res("Gams Parameter File (*.pf);;");
+        QString res("GAMS Parameter File (*.pf);;");
         res.append("All files (" + allFilesFilter + ")");
         return res;
     }
