@@ -5919,10 +5919,9 @@ int MainWindow::linesInEditor(QWidget* editor) {
     return codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
 }
 
-void MainWindow::showGamsUpdateWidget(const QString &text, bool remindLater)
+void MainWindow::showGamsUpdateWidget(const QString &text)
 {
     if (text.isEmpty()) return;
-    ui->updateWidget->activateRemindLater(remindLater);
     ui->updateWidget->setText(text);
     ui->updateWidget->show();
 }
@@ -6870,7 +6869,7 @@ void MainWindow::on_actionNavigator_triggered()
 void MainWindow::checkForUpdates(const QString &text)
 {
     if (Settings::settings()->toInt(skAutoUpdateCheck) < 0) {
-        showGamsUpdateWidget(text, false);
+        showGamsUpdateWidget(text);
         return;
     } else if (!Settings::settings()->toInt(skAutoUpdateCheck)) {
         return;

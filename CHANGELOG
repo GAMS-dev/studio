@@ -7,6 +7,7 @@ Version 1.19.2 *
 - fixed Welcome Page link to the [GAMS Forum](https://forum.gams.com/)
 - fixed labels containing `Gams` instead of `GAMS`
 - improved plain text views for Connect and Solver Option editor by using a fixed font
+- improved always enable the remind me later button of the check for update widget
 - improved license file line separator and trailing whitespaces
 
 Version 1.19.1
