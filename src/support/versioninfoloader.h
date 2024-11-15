@@ -97,6 +97,7 @@ private:
     int mRemoteStudioVersion = 0;
     QString mRemoteStudioVersionString;
     QStringList mErrorStrings;
+    QStringList mErrorMessages;
     QMap<int, qint64> mDistribVersions;
 
     QFuture<void> mResult;

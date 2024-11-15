@@ -101,7 +101,7 @@ public:
             {StudioSection::SearchAndReplace, "Search and Replace"},
             {StudioSection::ReferenceFileViewer, "Reference File Viewer"},
             {StudioSection::SolverOptionEditor, "Solver Option Editor"},
-            {StudioSection::GamsUserConfigEditor, "Gams Configuration Editor"},
+            {StudioSection::GamsUserConfigEditor, "GAMS Configuration Editor"},
             {StudioSection::OptionEditor, "Option Editor"},
             {StudioSection::ProcessLog, "Process Log"},
             {StudioSection::ParameterFile, "Parameter File"},

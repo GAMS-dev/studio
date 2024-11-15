@@ -22,8 +22,6 @@
 
 #include "abstractview.h"
 
-#include "common.h"
-
 namespace Ui {
 class WelcomePage;
 }

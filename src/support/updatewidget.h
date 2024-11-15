@@ -38,8 +38,6 @@ public:
     explicit UpdateWidget(QWidget *parent = nullptr);
     ~UpdateWidget();
 
-    void activateRemindLater(bool remindLater);
-
     void setText(const QString &text);
 
 signals:

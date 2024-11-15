@@ -326,10 +326,12 @@ QString FileMeta::name(NameModifier mod)
     return mName;
 }
 
-FontGroup FileMeta::fontGroup()
+FontGroup FileMeta::fontGroup(bool forcedAsTextEdit)
 {
     const QSet<FileKind> editKind {FileKind::Gms, FileKind::Lst, FileKind::Lxi, FileKind::None, FileKind::Txt, FileKind::TxtRO};
+    const QSet<FileKind> forcedTextEditKind {FileKind::Opt, FileKind::GCon};
     if (kind() == FileKind::Log) return FontGroup::fgLog;
+    if (forcedAsTextEdit && forcedTextEditKind.contains(kind())) return FontGroup::fgText;
     if (editKind.contains(kind())) return FontGroup::fgText;
     if (document()) return FontGroup::fgText;
     return FontGroup::fgTable;

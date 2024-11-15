@@ -2,6 +2,19 @@ Version 1.20.0 *
 ==================
 - t.b.d.
 
+Version 1.19.2
+==================
+- fixed usage of ISO-8859-1 for license file paths on Windows
+- fixed unsorted files in project subfolder
+- fixed closing Connect editor and Studio on saving connect file
+- fixed Studio version information on macOS (Info.plist)
+- fixed Welcome Page link to the [GAMS Forum](https://forum.gams.com/)
+- fixed labels containing `Gams` instead of `GAMS`
+- fixed System log crash when updated from another thread, e.g. via check for update
+- improved plain text views for Connect and Solver Option editor by using a fixed font
+- improved always enable the remind me later button of the check for update widget
+- improved license file line separator and trailing whitespaces
+
 Version 1.19.1
 ==================
 - added allow to delete files from the Project Explorer

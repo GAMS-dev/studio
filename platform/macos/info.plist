@@ -83,11 +83,11 @@
         <key>CFBundleName</key>
         <string>Studio</string>
         <key>CFBundleVersion</key>
-        <key>x.y.z</key>
+        <string>x.y.z</string>
+        <key>CFBundleShortVersionString</key>
+        <string>x.y.z</string>
         <key>CFBundleDisplayName</key>
         <string>Studio</string>
-        <key>CFBundleGetInfoString</key>
-        <string>Created by GAMS</string>
         <key>CFBundleIconFile</key>
         <string>studio.icns</string>
         <key>CFBundleIdentifier</key>

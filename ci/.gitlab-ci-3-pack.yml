@@ -7,10 +7,17 @@ pack-deg:
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
+    # get version information
+    - |+
+      STUDIO_MAJOR=$(grep "^STUDIO_MAJOR_VERSION=" version | cut -f2 -d"=")
+      STUDIO_MINOR=$(grep "^STUDIO_MINOR_VERSION=" version | cut -f2 -d"=")
+      STUDIO_PATCH=$(grep "^STUDIO_PATCH_LEVEL=" version | cut -f2 -d"=")
+      export VERSION=$STUDIO_MAJOR.$STUDIO_MINOR.$STUDIO_PATCH
     # create directory, sign and create dmg
     - cd build/src/bin
     - mv studio.app "GAMS Studio.app"
     - macdeployqt "GAMS Studio.app" -always-overwrite
+    - sed -i -e "s/x.y.z/$VERSION/g" "GAMS Studio.app/Contents/Info.plist"
     - cp ${WORKSPACE}/CHANGELOG "GAMS Studio.app/Contents/Resources/Changelog"
     - codesign --sign ${GAMS_CODESIGN_IDENTITY} --options runtime --force --deep --timestamp --entitlements ${WORKSPACE}/platform/macos/studio.entitlements.plist "GAMS Studio.app"
     - USE_QWEBENGINE=$(grep "QWEBENGINE=" ${WORKSPACE}/gamsdependency.pri | cut -f2 -d"=")
@@ -67,10 +74,17 @@ pack-dac:
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
+    # get version information
+    - |+
+      STUDIO_MAJOR=$(grep "^STUDIO_MAJOR_VERSION=" version | cut -f2 -d"=")
+      STUDIO_MINOR=$(grep "^STUDIO_MINOR_VERSION=" version | cut -f2 -d"=")
+      STUDIO_PATCH=$(grep "^STUDIO_PATCH_LEVEL=" version | cut -f2 -d"=")
+      export VERSION=$STUDIO_MAJOR.$STUDIO_MINOR.$STUDIO_PATCH
     # create directory, sign and create dmg
     - cd build/src/bin
     - mv studio.app "GAMS Studio.app"
     - macdeployqt "GAMS Studio.app" -always-overwrite
+    - sed -i -e "s/x.y.z/$VERSION/g" "GAMS Studio.app/Contents/Info.plist"
     - cp ${WORKSPACE}/CHANGELOG "GAMS Studio.app/Contents/Resources/Changelog"
     - codesign --sign ${GAMS_CODESIGN_IDENTITY} --options runtime --force --deep --timestamp --entitlements ${WORKSPACE}/platform/macos/studio.entitlements.plist "GAMS Studio.app"
     - USE_QWEBENGINE=$(grep "QWEBENGINE=" ${WORKSPACE}/gamsdependency.pri | cut -f2 -d"=")
@@ -136,17 +150,18 @@ pack-leg:
   - cp -r icons/* appdir/usr/share/pixmaps
   - cp CHANGELOG appdir/usr/resources/Changelog
   # get version information
-  - major=$(grep "^STUDIO_MAJOR_VERSION=" version | cut -f2 -d"=")
-  - minor=$(grep "^STUDIO_MINOR_VERSION=" version | cut -f2 -d"=")
-  - patch=$(grep "^STUDIO_PATCH_LEVEL=" version | cut -f2 -d"=")
-  - export VERSION=$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL
+  - |+
+    STUDIO_MAJOR=$(grep "^STUDIO_MAJOR_VERSION=" version | cut -f2 -d"=")
+    STUDIO_MINOR=$(grep "^STUDIO_MINOR_VERSION=" version | cut -f2 -d"=")
+    STUDIO_PATCH=$(grep "^STUDIO_PATCH_LEVEL=" version | cut -f2 -d"=")
+    export LINUXDEPLOY_OUTPUT_VERSION=$STUDIO_MAJOR.$STUDIO_MINOR.$STUDIO_PATCH
   # create appimage without libnss3.so and libnssutil3.so (currently these libs cause a crash)
   - linuxdeploy-x86_64.AppImage --appdir=appdir --plugin=qt --desktop-file=appdir/usr/share/studio.desktop
   - rm appdir/usr/lib/libnss3.so appdir/usr/lib/libnssutil3.so
   - cp /opt/Qt/${QT_VERSION}/resources/v8_context_snapshot.bin appdir/usr/resources
   - linuxdeploy-plugin-appimage-x86_64.AppImage --appdir=appdir
   # rename the AppImage... for MR artifact exposure
-  - mv GAMS_Studio-${VERSION}-x86_64.AppImage GAMS_Studio-leg-x86_64.AppImage
+  - mv GAMS_Studio-${LINUXDEPLOY_OUTPUT_VERSION}-x86_64.AppImage GAMS_Studio-leg-x86_64.AppImage
   artifacts:
     name: "GAMS_Studio-leg-x86_64"
     paths: ['GAMS_Studio-leg-x86_64.AppImage']

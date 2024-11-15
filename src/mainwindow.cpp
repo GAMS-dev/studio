@@ -1723,7 +1723,7 @@ void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const Q
 
     QString kind = projectOnly ? "Project" : "File";
     QString kind2 = !solverName.isEmpty() ? QString("%1 option file").arg(solverName)
-                                          : pfFileOnly ? QString("Gams Parameter File") : kind.toLower();
+                                          : pfFileOnly ? QString("GAMS Parameter File") : kind.toLower();
     QString filter = !solverName.isEmpty() ? ViewHelper::dialogOptFileFilter(solverName)
                                            : projectOnly ? ViewHelper::dialogProjectFilter().join(";;")
                                                          : pfFileOnly ? ViewHelper::dialogPfFileFilter()
@@ -1950,8 +1950,8 @@ void MainWindow::on_actionSave_As_triggered()
                                                    .arg(QFileInfo(filePath).suffix(), QFileInfo(filePath).fileName())
                                           , this, "Select other", "Continue", "Abort", 0, 2);
             } else if (fileMeta->kind() == FileKind::Guc) {
-                choice = MsgBox::question("Invalid Gams Configuration File Name or Suffix"
-                                          , QString("'%1' is not a valid Gams configuration file name or suffix. File saved as '%1' may not be displayed properly.")
+                choice = MsgBox::question("Invalid GAMS Configuration File Name or Suffix"
+                                          , QString("'%1' is not a valid GAMS configuration file name or suffix. File saved as '%1' may not be displayed properly.")
                                                    .arg(QFileInfo(filePath).fileName())
                                           , this, "Select other", "Continue", "Abort", 0, 2);
             } else {
@@ -5050,7 +5050,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
 //            QTextCodec *codec = QTextCodec::codecForMib(codecMib);
 //            DEB() << "file " << fileMeta->name() << "   codec" << (codec ? codec->name() : QString("???"));
 
-            edit = fileMeta->createEdit(tabWidget, project, getEditorFont(fileMeta->fontGroup()), codecMib, forcedAsTextEditor);
+            edit = fileMeta->createEdit(tabWidget, project, getEditorFont(fileMeta->fontGroup(forcedAsTextEditor)), codecMib, forcedAsTextEditor);
             int tabIndex = fileMeta->addToTab(tabWidget, edit, codecMib, tabStrategy);
             PExAbstractNode *node = mProjectRepo.findFile(fileMeta, project);
             if (!node) node = project;
@@ -5919,10 +5919,9 @@ int MainWindow::linesInEditor(QWidget* editor) {
     return codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
 }
 
-void MainWindow::showGamsUpdateWidget(const QString &text, bool remindLater)
+void MainWindow::showGamsUpdateWidget(const QString &text)
 {
     if (text.isEmpty()) return;
-    ui->updateWidget->activateRemindLater(remindLater);
     ui->updateWidget->setText(text);
     ui->updateWidget->show();
 }
@@ -6870,7 +6869,7 @@ void MainWindow::on_actionNavigator_triggered()
 void MainWindow::checkForUpdates(const QString &text)
 {
     if (Settings::settings()->toInt(skAutoUpdateCheck) < 0) {
-        showGamsUpdateWidget(text, false);
+        showGamsUpdateWidget(text);
         return;
     } else if (!Settings::settings()->toInt(skAutoUpdateCheck)) {
         return;

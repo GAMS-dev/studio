@@ -101,7 +101,7 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actAddNewOpt, newSolverOptionMenu->menuAction());
     int addNewSolverOptActionBaseIndex = actAddNewOpt*1000;
 
-    mActions.insert(actAddNewPf, addAction("Add &New Gams Parameter File", this, &ProjectContextMenu::onAddNewPfFile));
+    mActions.insert(actAddNewPf, addAction("Add &New GAMS Parameter File", this, &ProjectContextMenu::onAddNewPfFile));
 
     QDir sysdir(CommonPaths::systemDir());
     QStringList optFiles = sysdir.entryList(QStringList() << "opt*.def" , QDir::Files);
@@ -273,13 +273,13 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     mActions[actOpenAsText]->setVisible(isOpenableAsText);
 
     if (isReOpenableWithGamsUserConfigEditor)
-        mActions[actReOpen]->setText( "&Reopen File using Gams User Configuration Editor" );
+        mActions[actReOpen]->setText( "&Reopen File using GAMS User Configuration Editor" );
     else if (isReOpenableWithSolverOptionEditor && isOptFile)
         mActions[actReOpen]->setText( "&Reopen File using Solver Option Editor" );
     else if (isReOpenableWithSolverOptionEditor && isPfFile)
-        mActions[actReOpen]->setText( "&Reopen File using Gams Parameter Editor" );
+        mActions[actReOpen]->setText( "&Reopen File using GAMS Parameter Editor" );
     else if (isReopenableWithGamsConnectEditor)
-        mActions[actReOpen]->setText( "&Reopen File using Gams Connect Editor" );
+        mActions[actReOpen]->setText( "&Reopen File using GAMS Connect Editor" );
     else
         mActions[actReOpen]->setText( "&Reopen File using EFI Editor" );
     mActions[actReOpen]->setEnabled(isReOpenable);

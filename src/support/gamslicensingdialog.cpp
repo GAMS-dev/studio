@@ -145,8 +145,9 @@ void GamsLicensingDialog::writeLicenseFile(GamsLicenseInfo &licenseInfo, QString
                                            QWidget *parent, bool clipboard)
 {
     auto liceFile = licenseInfo.gamsConfigLicenseLocation();
-    if (liceFile.isEmpty())
+    if (liceFile.isEmpty()) {
         liceFile = licenseInfo.gamsDataLocations().constFirst() + "/" + CommonPaths::licenseFile();
+    }
     QFile licenseFile(liceFile);
     if (licenseFile.exists()) {
         QString text;
@@ -251,6 +252,9 @@ void GamsLicensingDialog::installAlp()
     GamsGetKeyProcess proc;
     proc.setAlpId(ui->idEdit->text().trimmed());
     auto data = proc.execute().split("\n");
+    for (int i=0; i<data.size(); ++i) {
+        data[i] = data[i].trimmed();
+    }
     GamsLicenseInfo licenseInfo;
     if (data.isEmpty() || !licenseInfo.isLicenseValid(data)) {
         auto str = data.join(" ");

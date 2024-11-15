@@ -60,11 +60,6 @@ void UpdateWidget::close()
     hide();
 }
 
-void UpdateWidget::activateRemindLater(bool remindLater)
-{
-    ui->remindButton->setEnabled(remindLater);
-}
-
 }
 }
 }

@@ -264,15 +264,16 @@ FileId ConnectEditor::fileId() const
 
 bool ConnectEditor::saveAs(const QString &location)
 {
-    bool successs = false;
+    bool success = false;
     ConnectData* data = mDataModel->getConnectData();
     if (data) {
        setModified(false);
        data->unload(location);
        delete data;
        data = NULL;
+       success = true;
     }
-    return successs;
+    return success;
 }
 
 bool ConnectEditor::isModified() const

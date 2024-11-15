@@ -47,7 +47,7 @@ QList<FileType*> FileType::mFileTypes {
     new FileType(FileKind::Pf, {"pf"}, "GAMS Parameter File", false),
     new FileType(FileKind::Guc, {"yaml"}, "GAMS Config File", false),
     new FileType(FileKind::Efi, {"efi"}, "External Files", false),
-    new FileType(FileKind::GCon, {"yaml", "yml"}, "Gams Connect Yaml File", false),
+    new FileType(FileKind::GCon, {"yaml", "yml"}, "GAMS Connect YAML file", false),
 };
 
 FileType *FileType::mNone = new FileType(FileKind::None, {""}, "Unknown File", false);

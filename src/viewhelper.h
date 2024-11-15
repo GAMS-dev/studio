@@ -179,7 +179,7 @@ public:
     }
 
     static const QString dialogPfFileFilter() {
-        QString res("Gams Parameter File (*.pf);;");
+        QString res("GAMS Parameter File (*.pf);;");
         res.append("All files (" + allFilesFilter + ")");
         return res;
     }
@@ -199,7 +199,7 @@ public:
         res << "GAMS Include files (*.inc)"
             << "Option files (*.opt *.op* *.o*)"
             << "GAMS Configuration file (gamsconfig.yaml)"
-            << "Gams Connect Yaml File (*.yaml)"
+            << "GAMS Connect YAML file (*.yaml)"
             << "Parameter file (*.pf)"
             << "Text files (*.txt)"
             << "External files (*.efi)"
@@ -220,7 +220,7 @@ public:
         res << "GAMS Include files (*.inc)"
             << "Option files (*.opt *.op* *.o*)"
             << "GAMS Configuration file (gamsconfig.yaml)"
-            << "GAMS Connect yaml file (*.yaml)"
+            << "GAMS Connect YAML file (*.yaml)"
             << "GAMS Data eXchange (*.gdx)"
             << "Reference files (*.ref)"
             << "Parameter file (*.pf)"

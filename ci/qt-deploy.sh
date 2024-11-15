@@ -22,7 +22,7 @@ README="README.md"
 git config user.name ${GITLAB_USER}
 git config user.email ${GITLAB_USER_EMAIL}
 git checkout $CI_COMMIT_REF_NAME
-perl -pi -e 's/\d+\.\d+\.\d+\.tar\.xz/6\.7\.2\.tar\.xz/g' $README
+perl -pi -e "s/\d+\.\d+\.\d+\.tar\.xz/${QT_VERSION}\.tar\.xz/g" $README
 
 ## README.md commit and push
 CHANGES=$(git diff --name-only $README)
@@ -31,6 +31,7 @@ if [[ "$CHANGES" == "" ]]; then
 else
     echo "update $README Qt everywhere package link"
     git add $README
+    git status
     git commit -m "pipeline updated $README Qt everywhere package link"
     # prevent ci run via -o ci.skip
     git push -o ci.skip

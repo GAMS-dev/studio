@@ -586,6 +586,7 @@ OTHER_FILES +=                                      \
     ../ci/cloudfront-deploy.sh                      \
     ../ci/github-deploy.sh                          \
     ../ci/codechecker.sh                            \
+    ../ci/qt-deploy.sh                              \
     ../ci/skipfile.txt                              \
     ../ci/.gitlab-ci-0-gams.yml                     \
     ../ci/.gitlab-ci-1-build.yml                    \
