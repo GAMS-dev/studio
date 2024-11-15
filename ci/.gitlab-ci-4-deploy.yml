@@ -32,6 +32,7 @@ deploy-github:
 deploy-qt:
   stage: deploy
   tags: [linux]
+  needs: []
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/deployer:latest
     entrypoint: [""]   # prevent startup.sh

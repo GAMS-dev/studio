@@ -31,6 +31,7 @@ if [[ "$CHANGES" == "" ]]; then
 else
     echo "update $README Qt everywhere package link"
     git add $README
+    git status
     git commit -m "pipeline updated $README Qt everywhere package link"
     # prevent ci run via -o ci.skip
     git push -o ci.skip
