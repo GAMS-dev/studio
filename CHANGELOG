@@ -1,6 +1,6 @@
 Version 1.19.3 *
 ==================
-- t.b.d.
+- fixed empty Help View when using Studio on macOS with Apple silicon (ARM)
 
 Version 1.19.2
 ==================

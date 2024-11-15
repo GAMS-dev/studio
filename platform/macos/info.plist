@@ -86,6 +86,8 @@
         <string>x.y.z</string>
         <key>CFBundleShortVersionString</key>
         <string>x.y.z</string>
+        <key>CFBundleDevelopmentRegion</key>
+        <string>en-US</string>
         <key>CFBundleDisplayName</key>
         <string>Studio</string>
         <key>CFBundleIconFile</key>
