@@ -5023,7 +5023,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
     if (edit) {
         if (!project) {
             if (fileMeta->projectId().isValid())
-                project = mProjectRepo.asProject(fileMeta->projectId().isValid());
+                project = mProjectRepo.asProject(fileMeta->projectId());
         }
         if (project) {
             fileMeta->setProjectId(project->id());

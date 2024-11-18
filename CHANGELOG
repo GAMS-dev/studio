@@ -1,6 +1,7 @@
 Version 1.19.3 *
 ==================
 - fixed empty Help View when using Studio on macOS with Apple silicon (ARM)
+- fixed wrong project executed after jumping to a bookmark
 
 Version 1.19.2
 ==================
