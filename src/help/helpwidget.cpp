@@ -26,6 +26,7 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QWebEngineFindTextResult>
+#include <QWebEngineSettings>
 
 #include "application.h"
 #include "helptoolbar.h"
@@ -61,6 +62,8 @@ HelpWidget::HelpWidget(QWidget *parent)
 
     ui->webEngineView->showMaximized();
     ui->webEngineView->setPage( new HelpPage(ui->webEngineView) );
+    QWebEngineSettings* settings = ui->webEngineView->page()->settings();
+    settings->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard, true);
 
     QString startPageUrl = getStartPageUrl().toString();
     ui->actionHome->setToolTip("Start page ("+ startPageUrl +")");
