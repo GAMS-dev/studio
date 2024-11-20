@@ -760,7 +760,10 @@ void MainWindow::initNavigator()
     connect(mNavigatorInput, &NavigatorLineEdit::receivedFocus, this, &MainWindow::on_actionNavigator_triggered);
     connect(mNavigatorInput, &NavigatorLineEdit::lostFocus, mNavigatorDialog, &NavigatorDialog::conditionallyClose);
     connect(mNavigatorInput, &NavigatorLineEdit::sendKeyEvent, mNavigatorDialog, &NavigatorDialog::receiveKeyEvent);
-    connect(ui->mainTabs, &QTabWidget::currentChanged, mNavigatorDialog, &NavigatorDialog::activeFileChanged);
+    connect(ui->mainTabs, &QTabWidget::currentChanged, [this]() {
+        if (!mShutDown)
+            mNavigatorDialog->activeFileChanged();
+    });
 }
 
 void MainWindow::updateCanSave(QWidget* current)
@@ -5023,7 +5026,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
     if (edit) {
         if (!project) {
             if (fileMeta->projectId().isValid())
-                project = mProjectRepo.asProject(fileMeta->projectId().isValid());
+                project = mProjectRepo.asProject(fileMeta->projectId());
         }
         if (project) {
             fileMeta->setProjectId(project->id());
