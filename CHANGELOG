@@ -1,5 +1,6 @@
 Version 1.19.3 *
 ==================
+- added system log messages for check for update
 - fixed empty Help View when using Studio on macOS with Apple silicon (ARM)
 - fixed Studio Windows package does not contain `libcrypto` and `libssl`
 - fixed copying code to clipboard in GAMS Documentation Help view
