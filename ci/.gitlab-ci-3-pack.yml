@@ -186,6 +186,8 @@ pack-wei:
     - cp build/src/bin/* studio
     - cp "/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Redist/MSVC/14.29.30133/x64/Microsoft.VC142.CRT/*" "studio"
     - cp "/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Redist/MSVC/14.29.30133/vc_redist.x64.exe" "studio"
+    - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libcrypto-3-x64.dll" "studio"
+    - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libssl-3-x64.dll" "studio"
     - cd studio
     - windeployqt --release --compiler-runtime --force studio.exe
     - cp ../CHANGELOG "resources/Changelog"
@@ -235,6 +237,8 @@ pack-wei-debug:
     - cp build-debug/src/bin/* studio
     - cp "/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Redist/MSVC/14.29.30133/x64/Microsoft.VC142.CRT/*" "studio"
     - cp "/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Redist/MSVC/14.29.30133/vc_redist.x64.exe" "studio"
+    - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libcrypto-3-x64.*" "studio"
+    - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libssl-3-x64.*" "studio"
     - cd studio
     - windeployqt --debug --compiler-runtime --pdb --force studio.exe
     - cp ../CHANGELOG "resources/Changelog"
