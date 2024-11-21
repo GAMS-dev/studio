@@ -62,6 +62,8 @@ private:
     static void writeLicenseFile(GamsLicenseInfo &licenseInfo, QStringList &license,
                                  QWidget *parent, bool clipboard);
 
+    static void showInvalidGamsPyMessageBox(QWidget *parent);
+
 private:
     Ui::GamsLicensingDialog *ui;
 };
