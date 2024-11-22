@@ -67,6 +67,8 @@ public:
 
     bool isLicenseValid(const QStringList &license);
 
+    bool isGamsLicense(const QStringList &license);
+
     QStringList gamsDataLocations();
 
     QStringList gamsConfigLocations();
@@ -88,8 +90,6 @@ public:
     bool isCurrentMaintenance(int mainDate);
 
     bool isLicenseValidationSuccessful() const;
-
-    bool isLicenseValidForPlatform() const;
 
     bool isGenericLicense() const;
 

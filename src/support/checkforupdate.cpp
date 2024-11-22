@@ -37,6 +37,8 @@ CheckForUpdate::CheckForUpdate(bool downloadVersions, QObject* parent)
 {
     connect(mVersionInfoLoader.get(), &VersionInfoLoader::finished,
             this, &CheckForUpdate::updateVersionInformation);
+    connect(mVersionInfoLoader.get(), &VersionInfoLoader::newErrorMessage,
+            this, &CheckForUpdate::newErrorMessage);
     checkForUpdate(downloadVersions);
 }
 

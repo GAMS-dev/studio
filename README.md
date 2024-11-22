@@ -2,6 +2,30 @@
 
 GAMS Studio is the official development environment of the General Algebraic Modeling System (GAMS). For further information about GAMS please visit the official [GAMS](https://www.gams.com) website, the [GAMS documentation](https://www.gams.com/latest/docs/) or the [GAMS Forum](https://forum.gams.com/), where Studio also has its own [FAQ section](https://forum.gams.com/c/faq/gams-studio-faqs/17).
 
+# How to install
+
+To install GAMS Studio on your system follow the steps for your platform. On Linux and Windows Studio is installed into the GAMS system directory (`<GAMS SysDir>`), which is the installation location of GAMS. Only on macOS Studio will be installed in the Application directory.
+
+## Linux
+
+1. Download the AppImage
+2. Copy the AppImage to the `<GAMS SysDir>\studio`
+3. Make it runnable via `chmod +x <GAMS SysDir>\studio\*.AppImage`
+4. Run Studio via the shell or via your file manager
+
+## macOS
+
+1. Download the DMG for your macOS (Intel - x86 or Apple Silicon - ARM)
+2. Double click on the dmg to open it. A new window should open and show a GAMS icon.
+3. Move the Studio directory (via dragging and dropping the icon) to the Applications directory within your Finder window. Replace any existing old version, if a message is shown.
+4. Go to the Application directory or go to the Launchpad and open the "GAMS Studio"
+
+## Windows
+
+1. Download the zip file and extract it
+2. Copy the new directory (`studio`) to the `<GAMS SysDir>` to replace the previous Studio version or rename the `studio` directory before copying.
+3. Run Studio via double clicking on the `studio.exe`
+
 # How to build
 
 ## 1. Download and install Qt ##

@@ -201,6 +201,12 @@ void GamsLicensingDialog::writeLicenseFile(GamsLicenseInfo &licenseInfo, QString
     }
 }
 
+void GamsLicensingDialog::showInvalidGamsPyMessageBox(QWidget *parent)
+{
+    auto msg = "The selected license seems to be a GAMSPy or GAMSPy++ license and will not be installed. Please retry with a GAMS license.";
+    QMessageBox::critical(parent, "Invalid License", msg);
+}
+
 void GamsLicensingDialog::createLicenseFileFromClipboard(QWidget *parent)
 {
     GamsLicenseInfo licenseInfo;
@@ -213,7 +219,12 @@ void GamsLicensingDialog::createLicenseFileFromClipboard(QWidget *parent)
         SysLogLocator::systemLog()->append(license.join("\n"), LogMsgType::Error);
         return;
     }
-    writeLicenseFile(licenseInfo, license, parent, true);
+    if (licenseInfo.isGamsLicense(license)) {
+        writeLicenseFile(licenseInfo, license, parent, true);
+    } else {
+        auto msg = "The license in the clipboard seams to be a GAMSPy or GAMSPy++ license and will not be installed. Please retry with a GAMS license.";
+        QMessageBox::critical(parent, "Invalid License", msg);
+    }
 }
 
 void GamsLicensingDialog::copyLicenseInfo()
@@ -242,8 +253,12 @@ void GamsLicensingDialog::installFile()
         QMessageBox::critical(this, "Invalid License", msg);
         return;
     }
-    writeLicenseFile(licenseInfo, license, this, false);
-    ui->label->setText(gamsLicense());
+    if (licenseInfo.isGamsLicense(license)) {
+        writeLicenseFile(licenseInfo, license, this, false);
+        ui->label->setText(gamsLicense());
+    } else {
+        showInvalidGamsPyMessageBox(this);
+    }
 }
 
 void GamsLicensingDialog::installAlp()
@@ -251,19 +266,23 @@ void GamsLicensingDialog::installAlp()
     ui->errorLabel->clear();
     GamsGetKeyProcess proc;
     proc.setAlpId(ui->idEdit->text().trimmed());
-    auto data = proc.execute().split("\n");
-    for (int i=0; i<data.size(); ++i) {
-        data[i] = data[i].trimmed();
+    auto license = proc.execute().split("\n");
+    for (int i=0; i<license.size(); ++i) {
+        license[i] = license[i].trimmed();
     }
     GamsLicenseInfo licenseInfo;
-    if (data.isEmpty() || !licenseInfo.isLicenseValid(data)) {
-        auto str = data.join(" ");
+    if (license.isEmpty() || !licenseInfo.isLicenseValid(license)) {
+        auto str = license.join(" ");
         ui->errorLabel->setText(str);
         SysLogLocator::systemLog()->append(str, LogMsgType::Error);
         return;
     }
-    writeLicenseFile(licenseInfo, data, this, false);
-    ui->label->setText(gamsLicense());
+    if (licenseInfo.isGamsLicense(license)) {
+        writeLicenseFile(licenseInfo, license, this, false);
+        ui->label->setText(gamsLicense());
+    } else {
+        showInvalidGamsPyMessageBox(this);
+    }
 }
 
 QString GamsLicensingDialog::header()

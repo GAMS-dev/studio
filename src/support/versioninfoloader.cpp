@@ -133,7 +133,7 @@ void VersionInfoLoader::requestStudioInfo()
 void VersionInfoLoader::distribDownloadFinished(QNetworkReply *reply)
 {
     auto process = [this, reply]{
-        mErrorMessages.clear();
+        QString errorMessage;
         mDistribVersions.clear();
         if (reply->error() == QNetworkReply::NoError) {
             writeDataToLog("No error. Processing GAMS distrib YAML...");
@@ -163,22 +163,23 @@ void VersionInfoLoader::distribDownloadFinished(QNetworkReply *reply)
                     mDistribVersions[id] = date;
                 }
             } catch (const YAML::ParserException& e) {
-                mErrorMessages << QString("Error while checking for updates : %1 : when loading : %2")
+                errorMessage = QString("Error while checking for updates : %1 : when loading : %2")
                                       .arg(e.what(), DistribVersionFile);
             } catch (const std::string& e) {
-                mErrorMessages << QString("Error while checking for updates : %1 : when loading : %2")
-                                    .arg(QString::fromStdString(e), DistribVersionFile);
+                errorMessage = QString("Error while checking for updates : %1 : when loading : %2")
+                                      .arg(QString::fromStdString(e), DistribVersionFile);
             }
         } else {
             mErrorStrings << reply->errorString();
-            mErrorMessages << "Error while checking the GAMS distrib YAML: " + reply->errorString() + "\n";
+            errorMessage = "Error while checking the GAMS distrib YAML: " + reply->errorString() + "\n";
         }
         reply->deleteLater();
-        if (mErrorMessages.isEmpty()) {
+        if (errorMessage.isEmpty()) {
             emit continueProcessing();
         } else {
-            writeDataToLog(mErrorMessages.join("\n").toLatin1());
+            writeDataToLog(errorMessage.toLatin1());
             writeDataToLog("Processing stopped due to previous error.");
+            emit newErrorMessage(errorMessage);
         }
     };
     mResult = QtConcurrent::run(process);
@@ -187,9 +188,11 @@ void VersionInfoLoader::distribDownloadFinished(QNetworkReply *reply)
 void VersionInfoLoader::studioDownloadFinished(QNetworkReply *reply)
 {
     if (reply->error() == QNetworkReply::NoError) {
-        writeDataToLog("No error. Processing GAMS Studio txt...\n");
+        QString error = "No error. Processing GAMS Studio txt...\n";
+        writeDataToLog(error.toLatin1());
         auto data = reply->readLine();
         writeDataToLog(data);
+        emit newErrorMessage(error + data);
         auto match = mStudioRegEx.match(data);
         if (match.hasMatch()) {
             mRemoteStudioVersion = match.captured(1).toInt();
@@ -198,8 +201,8 @@ void VersionInfoLoader::studioDownloadFinished(QNetworkReply *reply)
     } else {
         mErrorStrings << reply->errorString();
         QString error = "Error while checking for GAMS Studio updates: " + reply->errorString();
-        mErrorMessages << error;
         writeDataToLog(error.toLatin1());
+        emit newErrorMessage(error);
     }
     reply->deleteLater();
     emit finished();

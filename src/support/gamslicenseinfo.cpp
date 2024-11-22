@@ -141,16 +141,10 @@ QStringList GamsLicenseInfo::licenseFromClipboard()
 QStringList GamsLicenseInfo::licenseFromFile(const QString &fileName)
 {
     QString data;
-    //bool hasBOM = false;
     QFile file(fileName);
     if (file.exists() && file.open(QFile::ReadOnly | QFile::Text)) {
-        // the BOM seems to be removed by QFile... just ignore it for now
-        //hasBOM = QTextCodec::codecForUtfText(file.peek(4), nullptr) != nullptr;
         data = file.readAll();
     }
-    //if (hasBOM) {
-    //    qDebug() << "BOM" << hasBOM;
-    //}
     return processLicenseData(data);
 }
 
@@ -275,9 +269,17 @@ bool GamsLicenseInfo::isLicenseValidationSuccessful() const
     return !palLicenseValidation(mPAL);
 }
 
-bool GamsLicenseInfo::isLicenseValidForPlatform() const
+bool GamsLicenseInfo::isGamsLicense(const QStringList &license)
 {
-    return false;//palLicenseValidation
+    int i = 1;
+    for (const auto& line: license) {
+        palLicenseRegisterGAMS(mPAL, i++, line.trimmed().toStdString().c_str());
+    }
+    palLicenseRegisterGAMSDone(mPAL);
+    palNetworkLicenseOKSet(mPAL, true);
+    int result = !palLicenseCheckSubSys(mPAL, "07") || !palLicenseCheckSubSys(mPAL, "08");
+    palNetworkLicenseOKSet(mPAL, false);
+    return !result;
 }
 
 bool GamsLicenseInfo::isGenericLicense() const

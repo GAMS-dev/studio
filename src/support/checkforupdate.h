@@ -91,6 +91,7 @@ public slots:
 
 signals:
     void versionInformationAvailable();
+    void newErrorMessage(const QString&);
 
 private slots:
     void updateVersionInformation();
