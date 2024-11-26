@@ -95,8 +95,8 @@ int EnvVarTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant EnvVarTableModel::data(const QModelIndex &index, int role) const
 {
-    int row = index.row();
-    int col = index.column();
+    const int row = index.row();
+    const int col = index.column();
 
     if (mEnvVarItem.isEmpty())
         return QVariant();
@@ -242,7 +242,7 @@ bool EnvVarTableModel::insertRows(int row, int count, const QModelIndex &parent)
 bool EnvVarTableModel::removeRows(int row, int count, const QModelIndex &parent)
 {
     Q_UNUSED(parent)
-    if (count < 1 || row < 0 || row > mEnvVarItem.size() || mEnvVarItem.size() ==0)
+    if (count < 1 || row < 0 || row > mEnvVarItem.size() || mEnvVarItem.isEmpty())
          return false;
 
     beginRemoveRows(QModelIndex(), row, row + count - 1);
@@ -359,7 +359,7 @@ void EnvVarTableModel::on_reloadEnvVarModel(const QList<EnvVarConfigItem *> &con
 
 void EnvVarTableModel::setRowCount(int rows)
 {
-    int rc = mEnvVarItem.size();
+    const int rc = mEnvVarItem.size();
     if (rows < 0 ||  rc == rows)
        return;
 

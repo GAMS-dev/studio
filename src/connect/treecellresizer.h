@@ -34,7 +34,7 @@ public:
     explicit TreeCellResizer(QTreeView *view = nullptr);
 
 protected:
-    bool eventFilter(QObject* object, QEvent* event);
+    bool eventFilter(QObject* object, QEvent* event) override;
 
 private:
     QTreeView* m_view;

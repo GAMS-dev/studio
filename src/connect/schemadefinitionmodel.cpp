@@ -55,14 +55,14 @@ QVariant SchemaDefinitionModel::data(const QModelIndex &index, int role) const
     switch (role) {
     case Qt::UserRole: {
         SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(index.internalPointer());
-        if (index.column()==(int)SchemaItemColumn::SchemaKey)
+        if (index.column()==static_cast<int>(SchemaItemColumn::SchemaKey))
             return QVariant(item->data(index.column()).toStringList().join(":"));
         else
             return QVariant();
     }
     case Qt::DisplayRole: {
         SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(index.internalPointer());
-        if (index.column()==(int)SchemaItemColumn::SchemaKey)
+        if (index.column()==static_cast<int>(SchemaItemColumn::SchemaKey))
             return QVariant(item->data(index.column()).toStringList().join(":"));
         if (index.column()<=item->columnCount()-1) {
             return item->data(index.column());
@@ -72,18 +72,18 @@ QVariant SchemaDefinitionModel::data(const QModelIndex &index, int role) const
     }
     case Qt::ForegroundRole: {
         SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(index.internalPointer());
-        if (index.column()==(int)SchemaItemColumn::Type &&
-            item->data((int)SchemaItemColumn::Type).toString().compare("anyof")==0)
+        if (index.column()==static_cast<int>(SchemaItemColumn::Type) &&
+            item->data(static_cast<int>(SchemaItemColumn::Type)).toString().compare("anyof")==0)
             return  QVariant::fromValue(Theme::color(Theme::Active_Gray));
-        else if (index.column()==(int)SchemaItemColumn::Type &&
-                 item->data((int)SchemaItemColumn::Type).toString().compare("oneof")==0)
+        else if (index.column()==static_cast<int>(SchemaItemColumn::Type) &&
+                 item->data(static_cast<int>(SchemaItemColumn::Type)).toString().compare("oneof")==0)
                   return  QVariant::fromValue(Theme::color(Theme::Active_Gray));
-        else if (index.column()==(int)SchemaItemColumn::Field &&
+        else if (index.column()==static_cast<int>(SchemaItemColumn::Field) &&
                  item->data(index.column()).toString().compare("schema")==0)
                   return  QVariant::fromValue(Theme::color(Theme::Disable_Gray));
-        else if (index.column()==(int)SchemaItemColumn::Field                      &&
-                 item->data((int)SchemaItemColumn::Field).toString().contains("[") &&
-                 item->data((int)SchemaItemColumn::Field).toString().contains("]")    )
+        else if (index.column()==static_cast<int>(SchemaItemColumn::Field)                      &&
+                 item->data(static_cast<int>(SchemaItemColumn::Field)).toString().contains("[") &&
+                 item->data(static_cast<int>(SchemaItemColumn::Field)).toString().contains("]")    )
             return  QVariant::fromValue(Theme::color(Theme::Active_Gray));
         else
             return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
@@ -101,13 +101,14 @@ QVariant SchemaDefinitionModel::data(const QModelIndex &index, int role) const
         }
     }
     case Qt::ToolTipRole: {
-        QModelIndex idx = index.sibling(index.row(), (int)SchemaItemColumn::Field);
+        QModelIndex idx = index.sibling(index.row(), static_cast<int>(SchemaItemColumn::Field));
         SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(idx.internalPointer());
-        if (item->data((int)SchemaItemColumn::Field).toString().compare("schema", Qt::CaseInsensitive)!=0)
+        if (item->data(static_cast<int>(SchemaItemColumn::Field)).toString().compare("schema", Qt::CaseInsensitive)!=0)
             return (
                 QString("<html><head/><body>Drag and drop <span style=' font-weight:600;'>%1</span>  to insert the attribute from definition.</body></html>")
-                       .arg(item->data((int)SchemaItemColumn::Field).toString())
+                    .arg(item->data(static_cast<int>(SchemaItemColumn::Field)).toString())
             );
+        break;
     }
     default:
          break;
@@ -120,7 +121,7 @@ Qt::ItemFlags SchemaDefinitionModel::flags(const QModelIndex &index) const
     Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
     if (!index.isValid())
         return Qt::NoItemFlags;
-    else if (!index.sibling(index.row(), (int)SchemaItemColumn::DragEnabled).data(Qt::DisplayRole).toBool())
+    else if (!index.sibling(index.row(), static_cast<int>(SchemaItemColumn::DragEnabled)).data(Qt::DisplayRole).toBool())
         return defaultFlags;
     else
         return Qt::ItemIsDragEnabled | defaultFlags;
@@ -204,7 +205,7 @@ QMimeData *SchemaDefinitionModel::mimeData(const QModelIndexList &indexes) const
     QDataStream stream(&encodedData, QFile::WriteOnly);
 
     for (const QModelIndex &index : indexes) {
-        const QModelIndex sibling = index.sibling(index.row(), (int)SchemaItemColumn::SchemaKey);
+        const QModelIndex sibling = index.sibling(index.row(), static_cast<int>(SchemaItemColumn::SchemaKey));
         const QString text = QString("schema=%1").arg(sibling.data(Qt::UserRole).toString());
         stream << text;
         break;
@@ -642,7 +643,6 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
             }
             parents.pop_back();
         } else {
-            QStringList anyOfDefinedKeys;
             QList<QVariant> columnData;
             Schema* ss = schema->getSchema(key);
             if (ss && (ss->isOneOf || ss->isAnyOf)) {
@@ -655,7 +655,7 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
                     columnData << "anyof";
                 else
                     addTypeList(ss->types, columnData);
-                columnData << (ss->nullable?"Y":"");;
+                columnData << (ss->nullable?"Y":"");
                 addValue(ss->defaultValue, columnData);
                 QStringList strlist = gettAllAllowedValues(ss);
                 columnData << (strlist.isEmpty() ? "" : strlist.join(","));

@@ -161,8 +161,8 @@ private:
     GamsParameterTableModel* mParameterTableModel;
 };
 
-}
-}
-}
+} // namespace option
+} // namespace studio
+} // namespace gams
 
 #endif // PARAMETEREDITOR_H

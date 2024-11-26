@@ -135,8 +135,8 @@ bool OptionCompleterDelegate::eventFilter(QObject* editor, QEvent* event)
         return false;
 
     if(event->type()==QEvent::KeyPress) {
-       QLineEdit* lineEdit = static_cast<QLineEdit *>(editor);
-       QKeyEvent* keyEvent = static_cast<QKeyEvent *>(event);
+       QLineEdit* lineEdit = dynamic_cast<QLineEdit *>(editor);
+       QKeyEvent* keyEvent = dynamic_cast<QKeyEvent *>(event);
        if (keyEvent->key() == Qt::Key_Escape) {
              emit closeEditor(lineEdit);
              return true;

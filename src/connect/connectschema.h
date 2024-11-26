@@ -98,7 +98,7 @@ union Value  {
     bool operator==(const char* val) const {
         if( stringval == val )
            return true;
-        if( stringval == NULL || val == NULL )
+        if( stringval == nullptr || val == nullptr )
            return false;
         return strcmp(stringval, val) == 0;
     }
@@ -145,7 +145,7 @@ struct ValueWrapper {
     ~ValueWrapper() {
         if (type==SchemaValueType::String) {
             free(value.stringval);
-            value.stringval = NULL;
+            value.stringval = nullptr;
         }
     }
 };

@@ -65,11 +65,11 @@ bool OptionSortFilterProxyModel::filterAcceptsSelfRow(int sourceRow, const QMode
 bool OptionSortFilterProxyModel::hasAcceptedChildren(int sourceRow, const QModelIndex &sourceParent) const
 {
     for (int col=0; col < sourceModel()->columnCount(); ++col) {
-        QModelIndex index = sourceModel()->index(sourceRow, col, sourceParent);
+        const QModelIndex index = sourceModel()->index(sourceRow, col, sourceParent);
         if (!index.isValid())
           continue;
 
-        int childCount = index.model()->rowCount(index);
+        const int childCount = index.model()->rowCount(index);
         if (childCount == 0)
            continue;
 
@@ -88,8 +88,8 @@ bool OptionSortFilterProxyModel::hasAcceptedChildren(int sourceRow, const QModel
 
 bool OptionSortFilterProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
-    QVariant leftData = sourceModel()->data(left);
-    QVariant rightData = sourceModel()->data(right);
+    const QVariant leftData = sourceModel()->data(left);
+    const QVariant rightData = sourceModel()->data(right);
 
     if (leftData.typeId() == QMetaType::QString) {
         return QString::localeAwareCompare(leftData.toString(), rightData.toString()) < 0;

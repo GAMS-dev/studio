@@ -62,12 +62,14 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aRunD
     connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged, this, &ParameterEditor::updateParameterTableModel, Qt::UniqueConnection );
     connect(ui->gamsParameterCommandLine, &CommandLine::parameterEditCancelled, this, &CommandLine::clearFocus, Qt::UniqueConnection);
 
-    QList<OptionItem> optionItem = mOptionTokenizer->tokenize(ui->gamsParameterCommandLine->lineEdit()->text());
-    QString normalizedText = mOptionTokenizer->normalize(optionItem);
+    const QList<OptionItem> optionItem = mOptionTokenizer->tokenize(ui->gamsParameterCommandLine->lineEdit()->text());
+    const QString normalizedText = mOptionTokenizer->normalize(optionItem);
     mParameterTableModel = new GamsParameterTableModel(normalizedText, mOptionTokenizer, this);
     ui->gamsParameterTableView->setModel( mParameterTableModel );
     connect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, &ParameterEditor::updateCommandLineStr,  Qt::UniqueConnection);
     connect(this, &ParameterEditor::commandLineChanged, mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
+    if (!normalizedText.simplified().isEmpty())
+        mParameterTableModel->on_ParameterTableModelChanged(normalizedText);
 
     mOptionCompleter = new OptionCompleterDelegate(mOptionTokenizer, ui->gamsParameterTableView);
     ui->gamsParameterTableView->setItemDelegate( mOptionCompleter );
@@ -91,7 +93,7 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aRunD
 
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->gamsParameterTableView);
     headerView->setSectionResizeMode(QHeaderView::Interactive);
-    QFontMetrics fm(QFont("times", 16));
+    const QFontMetrics fm(QFont("times", 16));
     headerView->setMinimumSectionSize(fm.horizontalAdvance("Key/Value"));
 
     ui->gamsParameterTableView->setHorizontalHeader(headerView);
@@ -100,10 +102,10 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aRunD
         ui->gamsParameterTableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
 
     ui->gamsParameterTableView->verticalHeader()->setMinimumSectionSize(1);
-    ui->gamsParameterTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    ui->gamsParameterTableView->verticalHeader()->setDefaultSectionSize(static_cast<int>(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->gamsParameterTableView->horizontalHeader()->setStretchLastSection(true);
     ui->gamsParameterTableView->verticalHeader()->setMinimumSectionSize(1);
-    ui->gamsParameterTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    ui->gamsParameterTableView->verticalHeader()->setDefaultSectionSize(static_cast<int>(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
@@ -301,13 +303,13 @@ void ParameterEditor::updateCommandLineStr(const QList<OptionItem> &optionItems)
 void ParameterEditor::showParameterContextMenu(const QPoint &pos)
 {
     QModelIndexList indexSelection = ui->gamsParameterTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->gamsParameterTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
     QModelIndexList selection = ui->gamsParameterTableView->selectionModel()->selectedRows();
-    bool thereIsARowSelection = (selection.count() > 0);
-    bool thereIsARow = (ui->gamsParameterTableView->model()->rowCount() > 0);
+    const bool thereIsARowSelection = (selection.count() > 0);
+    const bool thereIsARow = (ui->gamsParameterTableView->model()->rowCount() > 0);
 
     QMenu menu(this);
     const auto actions = ui->gamsParameterTableView->actions();
@@ -337,8 +339,8 @@ void ParameterEditor::showParameterContextMenu(const QPoint &pos)
         } else if (action->objectName().compare("actionShowDefinition_option")==0) {
 
             bool thereIsAnOptionSelection = false;
-            for (QModelIndex s : std::as_const(selection)) {
-                QVariant data = ui->gamsParameterTableView->model()->headerData(s.row(), Qt::Vertical,  Qt::CheckStateRole);
+            for (const QModelIndex s : std::as_const(selection)) {
+                const QVariant data = ui->gamsParameterTableView->model()->headerData(s.row(), Qt::Vertical,  Qt::CheckStateRole);
                 if (Qt::CheckState(data.toUInt())!=Qt::PartiallyChecked) {
                     thereIsAnOptionSelection = true;
                     break;
@@ -366,9 +368,9 @@ void ParameterEditor::showDefinitionContextMenu(const QPoint &pos)
 
     bool hasSelectionBeenAdded = (selection.size()>0);
     // assume single selection
-    for (QModelIndex idx : std::as_const(selection)) {
-        QModelIndex parentIdx = ui->gamsParameterTreeView->model()->parent(idx);
-        QVariant data = (parentIdx.row() < 0) ? ui->gamsParameterTreeView->model()->data(idx, Qt::CheckStateRole)
+    for (const QModelIndex idx : std::as_const(selection)) {
+        const QModelIndex parentIdx = ui->gamsParameterTreeView->model()->parent(idx);
+        const QVariant data = (parentIdx.row() < 0) ? ui->gamsParameterTreeView->model()->data(idx, Qt::CheckStateRole)
                                               : ui->gamsParameterTreeView->model()->data(parentIdx, Qt::CheckStateRole);
         hasSelectionBeenAdded = (Qt::CheckState(data.toInt()) == Qt::Checked);
     }
@@ -397,7 +399,7 @@ void ParameterEditor::showDefinitionContextMenu(const QPoint &pos)
 
 void ParameterEditor::updateRunState(bool isRunnable, bool isRunning)
 {
-    bool activate = isRunnable && !isRunning;
+    const bool activate = isRunnable && !isRunning;
     setRunActionsEnabled(activate);
     setInterruptActionsEnabled(isRunnable && isRunning);
 
@@ -407,43 +409,43 @@ void ParameterEditor::updateRunState(bool isRunnable, bool isRunning)
 
 void ParameterEditor::addParameterFromDefinition(const QModelIndex &index)
 {
-    QModelIndex parentIndex =  ui->gamsParameterTreeView->model()->parent(index);
-    QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->gamsParameterTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) :
-                                                          ui->gamsParameterTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-    QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->gamsParameterTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) :
-                                                        ui->gamsParameterTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
-    QModelIndex entryNumberIndex = (parentIndex.row()<0) ? ui->gamsParameterTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) :
-                                                           ui->gamsParameterTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
-    QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex :
-                                                             ui->gamsParameterTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
+    const QModelIndex parentIndex =  ui->gamsParameterTreeView->model()->parent(index);
+    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->gamsParameterTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                              : ui->gamsParameterTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
+    const QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->gamsParameterTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
+                                                            : ui->gamsParameterTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
+    const QModelIndex entryNumberIndex = (parentIndex.row()<0) ? ui->gamsParameterTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER)
+                                                               : ui->gamsParameterTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
+    const QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex
+                                                                 : ui->gamsParameterTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
 
-    QString optionNameData = ui->gamsParameterTreeView->model()->data(optionNameIndex).toString();
+    const QString optionNameData = ui->gamsParameterTreeView->model()->data(optionNameIndex).toString();
 
-    QString selectedValueData = ui->gamsParameterTreeView->model()->data(selectedValueIndex).toString();
-    QString entryNumberData = ui->gamsParameterTreeView->model()->data(entryNumberIndex).toString();
+    const QString selectedValueData = ui->gamsParameterTreeView->model()->data(selectedValueIndex).toString();
+    const QString entryNumberData = ui->gamsParameterTreeView->model()->data(entryNumberIndex).toString();
 
     QModelIndexList indices = ui->gamsParameterTableView->model()->match(ui->gamsParameterTableView->model()->index(GamsParameterTableModel::COLUMN_OPTION_KEY, GamsParameterTableModel::COLUMN_ENTRY_NUMBER),
                                                                      Qt::DisplayRole,
                                                                      entryNumberData, -1, Qt::MatchExactly|Qt::MatchRecursive);
     ui->gamsParameterTableView->clearSelection();
     QItemSelection selection;
-    for(QModelIndex &idx: indices) {
-        QModelIndex leftIndex  = ui->gamsParameterTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_OPTION_KEY);
-        QModelIndex rightIndex = ui->gamsParameterTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
-        QItemSelection rowSelection(leftIndex, rightIndex);
+    for(const QModelIndex &idx: indices) {
+        const QModelIndex leftIndex  = ui->gamsParameterTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_OPTION_KEY);
+        const QModelIndex rightIndex = ui->gamsParameterTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
+        const QItemSelection rowSelection(leftIndex, rightIndex);
         selection.merge(rowSelection, QItemSelectionModel::Select);
     }
     ui->gamsParameterTableView->selectionModel()->select(selection, QItemSelectionModel::Select);
     int rowToBeAdded = ui->gamsParameterTableView->model()->rowCount();
 
-    bool singleEntryExisted = (indices.size()==1);
-    bool multipleEntryExisted = (indices.size()>1);
+    const bool singleEntryExisted = (indices.size()==1);
+    const bool multipleEntryExisted = (indices.size()>1);
     if (singleEntryExisted ) {
-        QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
+        const QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
             .arg(getParameterTableEntry(indices.at(0).row()),
             "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
             "The value of all other entries except the last entry will be ignored.");
-        int answer = MsgBox::question("Parameter Entry exists", "Parameter '" + optionNameData + "' already exists.",
+        const int answer = MsgBox::question("Parameter Entry exists", "Parameter '" + optionNameData + "' already exists.",
                                       "How do you want to proceed?", detailText,
                                       nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
         switch(answer) {
@@ -458,26 +460,26 @@ void ParameterEditor::addParameterFromDefinition(const QModelIndex &index)
     } else if (multipleEntryExisted) {
         QString entryDetailedText = QString("Entries:\n");
         int i = 0;
-        for (QModelIndex &idx : indices)
+        for (const QModelIndex &idx : indices)
             entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getParameterTableEntry(idx.row())));
-        QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
+        const QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
             "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
             "The value of all other entries except the last entry will be ignored.");
-        int answer = MsgBox::question("Multiple Parameter Entries exist",
+        const int answer = MsgBox::question("Multiple Parameter Entries exist",
                                       "Multiple entries of Parameter '" + optionNameData + "' already exist.",
                                       "How do you want to proceed?", detailText, nullptr,
                                       "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
         switch(answer) {
         case 0: { // delete and replace
             QList<int> overrideIdRowList;
-            for(QModelIndex idx : std::as_const(indices)) { overrideIdRowList.append(idx.row()); }
+            for(const QModelIndex idx : std::as_const(indices)) { overrideIdRowList.append(idx.row()); }
             std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
 
             rowToBeAdded = overrideIdRowList.at(0);
             QItemSelection selection;
-            QModelIndex leftIndex  = ui->gamsParameterTableView->model()->index(rowToBeAdded, GamsParameterTableModel::COLUMN_OPTION_KEY);
-            QModelIndex rightIndex = ui->gamsParameterTableView->model()->index(rowToBeAdded, GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
-            QItemSelection rowSelection(leftIndex, rightIndex);
+            const QModelIndex leftIndex  = ui->gamsParameterTableView->model()->index(rowToBeAdded, GamsParameterTableModel::COLUMN_OPTION_KEY);
+            const QModelIndex rightIndex = ui->gamsParameterTableView->model()->index(rowToBeAdded, GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
+            const QItemSelection rowSelection(leftIndex, rightIndex);
             selection.merge(rowSelection, QItemSelectionModel::Deselect);
             deleteParameter();
             break;
@@ -493,9 +495,9 @@ void ParameterEditor::addParameterFromDefinition(const QModelIndex &index)
     if (rowToBeAdded == ui->gamsParameterTableView->model()->rowCount()) {
         ui->gamsParameterTableView->model()->insertRows(rowToBeAdded, 1, QModelIndex());
     }
-    QModelIndex insertKeyIndex = ui->gamsParameterTableView->model()->index(rowToBeAdded, 0);
-    QModelIndex insertValueIndex = ui->gamsParameterTableView->model()->index(rowToBeAdded, 1);
-    QModelIndex insertEntryIndex = ui->gamsParameterTableView->model()->index(rowToBeAdded, 2);
+    const QModelIndex insertKeyIndex = ui->gamsParameterTableView->model()->index(rowToBeAdded, 0);
+    const QModelIndex insertValueIndex = ui->gamsParameterTableView->model()->index(rowToBeAdded, 1);
+    const QModelIndex insertEntryIndex = ui->gamsParameterTableView->model()->index(rowToBeAdded, 2);
     ui->gamsParameterTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
     ui->gamsParameterTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
     ui->gamsParameterTableView->model()->setData( insertEntryIndex, entryNumberData, Qt::EditRole);
@@ -530,7 +532,7 @@ void ParameterEditor::loadCommandLine(const QStringList &history)
     for (const QString &str: history) {
         ui->gamsParameterCommandLine->insertItem(0, str );
     }
-    if (history.size() > 0) {
+    if (!history.isEmpty()) {
         ui->gamsParameterCommandLine->validateChangedParameter( history.last() );
     }
 
@@ -582,35 +584,35 @@ void ParameterEditor::findAndSelectionParameterFromDefinition()
     if (ui->gamsParameterTableView->model()->rowCount() <= 0)
         return;
 
-    QModelIndex index = ui->gamsParameterTreeView->selectionModel()->currentIndex();
-    QModelIndex parentIndex =  ui->gamsParameterTreeView->model()->parent(index);
+    const QModelIndex index = ui->gamsParameterTreeView->selectionModel()->currentIndex();
+    const QModelIndex parentIndex =  ui->gamsParameterTreeView->model()->parent(index);
 
-    QModelIndex idx = (parentIndex.row()<0) ? ui->gamsParameterTreeView->model()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
-                                            : ui->gamsParameterTreeView->model()->index( parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
-    QVariant data = ui->gamsParameterTreeView->model()->data( idx, Qt::DisplayRole );
+    const QModelIndex idx = (parentIndex.row()<0) ? ui->gamsParameterTreeView->model()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
+                                                  : ui->gamsParameterTreeView->model()->index( parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
+    const QVariant data = ui->gamsParameterTreeView->model()->data( idx, Qt::DisplayRole );
     QModelIndexList indices = ui->gamsParameterTableView->model()->match(ui->gamsParameterTableView->model()->index(0, GamsParameterTableModel::COLUMN_ENTRY_NUMBER),
                                                                        Qt::DisplayRole,
                                                                        data, -1, Qt::MatchExactly|Qt::MatchRecursive);
     ui->gamsParameterTableView->clearSelection();
     ui->gamsParameterTableView->clearFocus();
     QItemSelection selection;
-    for(QModelIndex i :std::as_const(indices)) {
-        QModelIndex valueIndex = ui->gamsParameterTableView->model()->index(i.row(), GamsParameterTableModel::COLUMN_OPTION_VALUE);
-        QString value =  ui->gamsParameterTableView->model()->data( valueIndex, Qt::DisplayRole).toString();
+    for(const QModelIndex i :std::as_const(indices)) {
+        const QModelIndex valueIndex = ui->gamsParameterTableView->model()->index(i.row(), GamsParameterTableModel::COLUMN_OPTION_VALUE);
+        const QString value =  ui->gamsParameterTableView->model()->data( valueIndex, Qt::DisplayRole).toString();
         bool selected = false;
         if (parentIndex.row() < 0) {
             selected = true;
         } else {
-            QModelIndex enumIndex = ui->gamsParameterTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
-            QString enumValue = ui->gamsParameterTreeView->model()->data( enumIndex, Qt::DisplayRole).toString();
+            const QModelIndex enumIndex = ui->gamsParameterTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
+            const QString enumValue = ui->gamsParameterTreeView->model()->data( enumIndex, Qt::DisplayRole).toString();
             if (QString::compare(value, enumValue, Qt::CaseInsensitive)==0)
                 selected = true;
         }
         if (selected) {
-           QModelIndex leftIndex  = ui->gamsParameterTableView->model()->index(i.row(), 0);
-           QModelIndex rightIndex = ui->gamsParameterTableView->model()->index(i.row(), ui->gamsParameterTableView->model()->columnCount() -1);
+           const QModelIndex leftIndex  = ui->gamsParameterTableView->model()->index(i.row(), 0);
+           const QModelIndex rightIndex = ui->gamsParameterTableView->model()->index(i.row(), ui->gamsParameterTableView->model()->columnCount() -1);
 
-           QItemSelection rowSelection(leftIndex, rightIndex);
+           const QItemSelection rowSelection(leftIndex, rightIndex);
            selection.merge(rowSelection, QItemSelectionModel::Select);
         }
     }
@@ -625,11 +627,11 @@ void ParameterEditor::showParameterDefinition()
        return;
 
     QModelIndexList indexSelection = ui->gamsParameterTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->gamsParameterTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
-    QModelIndexList selection = ui->gamsParameterTableView->selectionModel()->selectedRows();
+    const QModelIndexList selection = ui->gamsParameterTableView->selectionModel()->selectedRows();
 
     if (selection.count() <= 0)
        return;
@@ -638,26 +640,26 @@ void ParameterEditor::showParameterDefinition()
 
     QModelIndexList selectIndices;
     for (int i=0; i<selection.count(); i++) {
-            QModelIndex index = selection.at(i);
+            const QModelIndex index = selection.at(i);
             if (Qt::CheckState(ui->gamsParameterTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toUInt())==Qt::PartiallyChecked)
                 continue;
 
-            QString value = ui->gamsParameterTableView->model()->data( index.sibling(index.row(), GamsParameterTableModel::COLUMN_OPTION_VALUE), Qt::DisplayRole).toString();
-            QVariant optionId = ui->gamsParameterTableView->model()->data( index.sibling(index.row(), ui->gamsParameterTableView->model()->columnCount()-1), Qt::DisplayRole);
+            const QString value = ui->gamsParameterTableView->model()->data( index.sibling(index.row(), GamsParameterTableModel::COLUMN_OPTION_VALUE), Qt::DisplayRole).toString();
+            const QVariant optionId = ui->gamsParameterTableView->model()->data( index.sibling(index.row(), ui->gamsParameterTableView->model()->columnCount()-1), Qt::DisplayRole);
             QModelIndexList indices = ui->gamsParameterTreeView->model()->match(ui->gamsParameterTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                                                                Qt::DisplayRole,
                                                                                optionId, 1, Qt::MatchExactly|Qt::MatchRecursive);
-            for(QModelIndex idx : std::as_const(indices)) {
-                QModelIndex  parentIndex =  ui->gamsParameterTreeView->model()->parent(index);
-                QModelIndex optionIdx = ui->gamsParameterTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
+            for(const QModelIndex idx : std::as_const(indices)) {
+                const QModelIndex  parentIndex =  ui->gamsParameterTreeView->model()->parent(index);
+                const QModelIndex optionIdx = ui->gamsParameterTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
                 if (parentIndex.row() < 0) {
                     if (ui->gamsParameterTreeView->model()->hasChildren(optionIdx) && !ui->gamsParameterTreeView->isExpanded(optionIdx))
                         ui->gamsParameterTreeView->expand(optionIdx);
                 }
                 bool found = false;
                 for(int r=0; r <ui->gamsParameterTreeView->model()->rowCount(optionIdx); ++r) {
-                    QModelIndex i = ui->gamsParameterTreeView->model()->index(r, OptionDefinitionModel::COLUMN_OPTION_NAME, optionIdx);
-                    QString enumValue = ui->gamsParameterTreeView->model()->data(i, Qt::DisplayRole).toString();
+                    const QModelIndex i = ui->gamsParameterTreeView->model()->index(r, OptionDefinitionModel::COLUMN_OPTION_NAME, optionIdx);
+                    const QString enumValue = ui->gamsParameterTreeView->model()->data(i, Qt::DisplayRole).toString();
                     if (QString::compare(value, enumValue, Qt::CaseInsensitive) == 0) {
                         selectIndices << i;
                         found = true;
@@ -669,9 +671,9 @@ void ParameterEditor::showParameterDefinition()
             }
     }
     ui->gamsParameterTreeView->selectionModel()->clearSelection();
-    for(QModelIndex idx : std::as_const(selectIndices)) {
+    for(const QModelIndex idx : std::as_const(selectIndices)) {
         QItemSelection selection = ui->gamsParameterTreeView->selectionModel()->selection();
-        QModelIndex  parentIdx =  ui->gamsParameterTreeView->model()->parent(idx);
+        const QModelIndex  parentIdx =  ui->gamsParameterTreeView->model()->parent(idx);
         if (parentIdx.row() < 0) {
             selection.select(ui->gamsParameterTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME),
                              ui->gamsParameterTreeView->model()->index(idx.row(), ui->gamsParameterTreeView->model()->columnCount()-1));
@@ -681,10 +683,10 @@ void ParameterEditor::showParameterDefinition()
         }
         ui->gamsParameterTreeView->selectionModel()->select(selection, QItemSelectionModel::Select);
     }
-    if (selectIndices.size() > 0) {
-        QModelIndex parentIndex = ui->gamsParameterTreeView->model()->parent(selectIndices.first());
-        QModelIndex scrollToIndex = (parentIndex.row() < 0  ? ui->gamsParameterTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
-                                                            : ui->gamsParameterTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex));
+    if (!selectIndices.isEmpty()) {
+        const QModelIndex parentIndex = ui->gamsParameterTreeView->model()->parent(selectIndices.first());
+        const QModelIndex scrollToIndex = (parentIndex.row() < 0  ? ui->gamsParameterTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                                  : ui->gamsParameterTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex));
         ui->gamsParameterTreeView->scrollTo(scrollToIndex, QAbstractItemView::EnsureVisible);
         if (parentIndex.row() >= 0)  {
             ui->gamsParameterTreeView->scrollTo(parentIndex, QAbstractItemView::EnsureVisible);
@@ -704,7 +706,7 @@ void ParameterEditor::showParameterRecurrence()
         return;
     }
 
-    QModelIndexList indexSelection = ui->gamsParameterTableView->selectionModel()->selectedIndexes();
+    const QModelIndexList indexSelection = ui->gamsParameterTableView->selectionModel()->selectedIndexes();
     if (indexSelection.size() <= 0) {
         showParameterDefinition();
         return;
@@ -721,7 +723,7 @@ void ParameterEditor::showParameterRecurrence()
         return;
     }
 
-    for(int row : std::as_const(rowList)) {
+    for(const int row : std::as_const(rowList)) {
         QItemSelection rowSelection = ui->gamsParameterTableView->selectionModel()->selection();
         rowSelection.select(ui->gamsParameterTableView->model()->index(row, 0),
                             ui->gamsParameterTableView->model()->index(row, GamsParameterTableModel::COLUMN_ENTRY_NUMBER));
@@ -737,11 +739,11 @@ void ParameterEditor::deleteParameter()
         return;
 
      QModelIndexList indexSelection = ui->gamsParameterTableView->selectionModel()->selectedIndexes();
-     for(QModelIndex index : std::as_const(indexSelection)) {
+     for(const QModelIndex index : std::as_const(indexSelection)) {
          ui->gamsParameterTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
      }
 
-     QModelIndexList selection = ui->gamsParameterTableView->selectionModel()->selectedRows();
+     const QModelIndexList selection = ui->gamsParameterTableView->selectionModel()->selectedRows();
      if (selection.count() <= 0)
         return;
 
@@ -766,7 +768,7 @@ void ParameterEditor::deleteParameter()
     std::sort(rows.begin(), rows.end());
     int prev = -1;
     for(int i=rows.count()-1; i>=0; i--) {
-        int current = rows[i];
+        const int current = rows[i];
         if (current != prev) {
             ui->gamsParameterTableView->model()->removeRows( current, 1 );
             prev = current;
@@ -789,7 +791,7 @@ void ParameterEditor::deleteAllParameters()
                                                                      Qt::CheckStateRole,
                                                                      Qt::CheckState(Qt::Checked),
                                                                      ui->gamsParameterTreeView->model()->rowCount());
-    for(QModelIndex item : std::as_const(items)) {
+    for(const QModelIndex item : std::as_const(items)) {
         ui->gamsParameterTreeView->model()->setData(item, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
     }
     ui->gamsParameterTreeView->collapseAll();
@@ -804,7 +806,7 @@ void ParameterEditor::insertParameter()
         return;
 
     QModelIndexList indexSelection = ui->gamsParameterTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->gamsParameterTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
@@ -812,19 +814,19 @@ void ParameterEditor::insertParameter()
 
     if (mParameterTableModel->rowCount() <= 0 || selection.count() <= 0) {
         mParameterTableModel->insertRows(mParameterTableModel->rowCount(), 1, QModelIndex());
-        QModelIndex index = mParameterTableModel->index( mParameterTableModel->rowCount()-1, GamsParameterTableModel::COLUMN_OPTION_KEY);
+        const QModelIndex index = mParameterTableModel->index( mParameterTableModel->rowCount()-1, GamsParameterTableModel::COLUMN_OPTION_KEY);
         ui->gamsParameterTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
         ui->gamsParameterTableView->edit( index );
 
         ui->gamsParameterTableView->scrollTo(index, QAbstractItemView::EnsureVisible);
     } else if (selection.count() > 0) {
         QList<int> rows;
-        for(QModelIndex idx : std::as_const(selection)) {
+        for(const QModelIndex idx : std::as_const(selection)) {
             rows.append( idx.row() );
         }
         std::sort(rows.begin(), rows.end());
         ui->gamsParameterTableView->model()->insertRows(rows.at(0), 1, QModelIndex());
-        QModelIndex index = ui->gamsParameterTableView->model()->index(rows.at(0), GamsParameterTableModel::COLUMN_OPTION_KEY);
+        const QModelIndex index = ui->gamsParameterTableView->model()->index(rows.at(0), GamsParameterTableModel::COLUMN_OPTION_KEY);
         ui->gamsParameterTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
         ui->gamsParameterTableView->edit( mParameterTableModel->index(index.row(), GamsParameterTableModel::COLUMN_OPTION_KEY) );
 
@@ -835,11 +837,11 @@ void ParameterEditor::insertParameter()
 void ParameterEditor::moveParameterUp()
 {
     QModelIndexList indexSelection = ui->gamsParameterTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->gamsParameterTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
-    QModelIndexList selection = ui->gamsParameterTableView->selectionModel()->selectedRows();
+    const QModelIndexList selection = ui->gamsParameterTableView->selectionModel()->selectedRows();
     if (selection.count() <= 0)
        return;
 
@@ -849,17 +851,17 @@ void ParameterEditor::moveParameterUp()
        return;
 
     for(int i=0; i<idxSelection.size(); i++) {
-        QModelIndex idx = idxSelection.at(i);
+        const QModelIndex idx = idxSelection.at(i);
         ui->gamsParameterTableView->model()->moveRows(QModelIndex(), idx.row(), 1,
                                                     QModelIndex(), idx.row()-1);
     }
 
     disconnect(ui->gamsParameterTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ParameterEditor::findAndSelectionParameterFromDefinition);
     QItemSelection select;
-    for(QModelIndex indx : std::as_const(idxSelection)) {
-        QModelIndex leftIndex  = ui->gamsParameterTableView->model()->index(indx.row()-1, GamsParameterTableModel::COLUMN_OPTION_KEY);
-        QModelIndex rightIndex = ui->gamsParameterTableView->model()->index(indx.row()-1, GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
-        QItemSelection rowSelection(leftIndex, rightIndex);
+    for(const QModelIndex indx : std::as_const(idxSelection)) {
+        const QModelIndex leftIndex  = ui->gamsParameterTableView->model()->index(indx.row()-1, GamsParameterTableModel::COLUMN_OPTION_KEY);
+        const QModelIndex rightIndex = ui->gamsParameterTableView->model()->index(indx.row()-1, GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
+        const QItemSelection rowSelection(leftIndex, rightIndex);
         select.merge(rowSelection, QItemSelectionModel::Select);
     }
     ui->gamsParameterTableView->selectionModel()->select(select, QItemSelectionModel::ClearAndSelect);
@@ -869,11 +871,11 @@ void ParameterEditor::moveParameterUp()
 void ParameterEditor::moveParameterDown()
 {
     QModelIndexList indexSelection = ui->gamsParameterTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->gamsParameterTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
-    QModelIndexList selection = ui->gamsParameterTableView->selectionModel()->selectedRows();
+    const QModelIndexList selection = ui->gamsParameterTableView->selectionModel()->selectedRows();
     if (selection.count() <= 0)
         return;
 
@@ -883,17 +885,17 @@ void ParameterEditor::moveParameterDown()
        return;
 
     for(int i=0; i<idxSelection.size(); i++) {
-        QModelIndex idx = idxSelection.at(i);
+        const QModelIndex idx = idxSelection.at(i);
         mParameterTableModel->moveRows(QModelIndex(), idx.row(), 1,
                                     QModelIndex(), idx.row()+2);
     }
 
     disconnect(ui->gamsParameterTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ParameterEditor::findAndSelectionParameterFromDefinition);
     QItemSelection select;
-    for(QModelIndex indx : std::as_const(idxSelection)) {
-        QModelIndex leftIndex  = ui->gamsParameterTableView->model()->index(indx.row()+1, GamsParameterTableModel::COLUMN_OPTION_KEY);
-        QModelIndex rightIndex = ui->gamsParameterTableView->model()->index(indx.row()+1, GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
-        QItemSelection rowSelection(leftIndex, rightIndex);
+    for(const QModelIndex indx : std::as_const(idxSelection)) {
+        const QModelIndex leftIndex  = ui->gamsParameterTableView->model()->index(indx.row()+1, GamsParameterTableModel::COLUMN_OPTION_KEY);
+        const QModelIndex rightIndex = ui->gamsParameterTableView->model()->index(indx.row()+1, GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
+        const QItemSelection rowSelection(leftIndex, rightIndex);
         select.merge(rowSelection, QItemSelectionModel::Select);
     }
     ui->gamsParameterTableView->selectionModel()->select(select, QItemSelectionModel::ClearAndSelect);
@@ -926,12 +928,12 @@ void ParameterEditor::on_newTableRowDropped(const QModelIndex &index)
     disconnect(ui->gamsParameterTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ParameterEditor::findAndSelectionParameterFromDefinition);
     ui->gamsParameterTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
 
-    QString optionName = ui->gamsParameterTableView->model()->data(index, Qt::DisplayRole).toString();
+    const QString optionName = ui->gamsParameterTableView->model()->data(index, Qt::DisplayRole).toString();
     QModelIndexList definitionItems = ui->gamsParameterTreeView->model()->match(ui->gamsParameterTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
                                                                      Qt::DisplayRole,
                                                                      optionName, 1);
     mOptionTokenizer->getOption()->setModified(optionName, true);
-    for(QModelIndex item : std::as_const(definitionItems)) {
+    for(const QModelIndex item : std::as_const(definitionItems)) {
         ui->gamsParameterTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
     }
 
@@ -958,8 +960,8 @@ void ParameterEditor::on_parameterTableNameChanged(const QString &from, const QS
                                                                          Qt::DisplayRole,
                                                                          from, 1);
     }
-    for(QModelIndex item : std::as_const(fromDefinitionItems)) {
-        QModelIndex index = ui->gamsParameterTreeView->model()->index(item.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
+    for(const QModelIndex item : std::as_const(fromDefinitionItems)) {
+        const QModelIndex index = ui->gamsParameterTreeView->model()->index(item.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
         ui->gamsParameterTreeView->model()->setData(index, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
     }
 
@@ -971,13 +973,13 @@ void ParameterEditor::on_parameterTableNameChanged(const QString &from, const QS
                                                                          Qt::DisplayRole,
                                                                          to, 1);
     }
-    for(QModelIndex item : std::as_const(toDefinitionItems)) {
-        QModelIndex index = ui->gamsParameterTreeView->model()->index(item.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
+    for(const QModelIndex item : std::as_const(toDefinitionItems)) {
+        const QModelIndex index = ui->gamsParameterTreeView->model()->index(item.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
         ui->gamsParameterTreeView->model()->setData(index, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
     }
 
     ui->gamsParameterTreeView->selectionModel()->clearSelection();
-    if (toDefinitionItems.size() > 0) {
+    if (!toDefinitionItems.isEmpty()) {
         ui->gamsParameterTreeView->selectionModel()->select(
                     QItemSelection (
                         ui->gamsParameterTreeView->model ()->index (toDefinitionItems.first().row() , 0),
@@ -993,18 +995,16 @@ void ParameterEditor::on_parameterValueChanged(const QModelIndex &index)
     disconnect(ui->gamsParameterTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ParameterEditor::findAndSelectionParameterFromDefinition);
     ui->gamsParameterTreeView->selectionModel()->clearSelection();
 
-    QModelIndex idx = index.sibling(index.row(), GamsParameterTableModel::COLUMN_OPTION_KEY);
-    QString data = ui->gamsParameterTableView->model()->data(idx, Qt::DisplayRole).toString();
+    const QModelIndex idx = index.sibling(index.row(), GamsParameterTableModel::COLUMN_OPTION_KEY);
+    const QString data = ui->gamsParameterTableView->model()->data(idx, Qt::DisplayRole).toString();
     QModelIndexList toDefinitionItems = ui->gamsParameterTreeView->model()->match(ui->gamsParameterTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
                                                                      Qt::DisplayRole,
                                                                      data, 1);
-    if (toDefinitionItems.size() <= 0) {
+    if (toDefinitionItems.isEmpty()) {
         toDefinitionItems = ui->gamsParameterTreeView->model()->match(ui->gamsParameterTreeView->model()->index(0, OptionDefinitionModel::COLUMN_SYNONYM),
                                                                          Qt::DisplayRole,
                                                                          data, 1);
-    }
-
-    if (toDefinitionItems.size() > 0) {
+    } else {
         ui->gamsParameterTreeView->selectionModel()->select(
                     QItemSelection (
                         ui->gamsParameterTreeView->model ()->index (toDefinitionItems.first().row() , 0),
@@ -1173,7 +1173,7 @@ void ParameterEditor::addActions()
     ui->gamsParameterTableView->addAction(showDuplicationAction);
 
     QAction* addThisOptionAction = mContextMenu.addAction(Theme::icon(":/%1/plus"), "Add this parameter", this, [this]() {
-        QModelIndexList selection = ui->gamsParameterTreeView->selectionModel()->selectedRows();
+        const QModelIndexList selection = ui->gamsParameterTreeView->selectionModel()->selectedRows();
         if (selection.size()>0)
             addParameterFromDefinition(selection.at(0));
     });
@@ -1208,12 +1208,12 @@ QList<int> ParameterEditor::getRecurrentParameter(const QModelIndex &index)
     if (!mExtendedEditor->isVisible())
         return optionList;
 
-    QString optionId = ui->gamsParameterTableView->model()->data( index.sibling(index.row(), GamsParameterTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole).toString();
+    const QString optionId = ui->gamsParameterTableView->model()->data( index.sibling(index.row(), GamsParameterTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole).toString();
     QModelIndexList indices = ui->gamsParameterTableView->model()->match(ui->gamsParameterTableView->model()->index(0, GamsParameterTableModel::COLUMN_ENTRY_NUMBER),
                                                                       Qt::DisplayRole,
                                                                       optionId, -1);
 
-    for(QModelIndex idx : std::as_const(indices)) {
+    for(const QModelIndex idx : std::as_const(indices)) {
         if (idx.row() == index.row())
             continue;
         else
@@ -1224,10 +1224,10 @@ QList<int> ParameterEditor::getRecurrentParameter(const QModelIndex &index)
 
 QString ParameterEditor::getParameterTableEntry(int row)
 {
-    QModelIndex keyIndex = ui->gamsParameterTableView->model()->index(row, GamsParameterTableModel::COLUMN_OPTION_KEY);
-    QVariant optionKey = ui->gamsParameterTableView->model()->data(keyIndex, Qt::DisplayRole);
-    QModelIndex valueIndex = ui->gamsParameterTableView->model()->index(row, GamsParameterTableModel::COLUMN_OPTION_VALUE);
-    QVariant optionValue = ui->gamsParameterTableView->model()->data(valueIndex, Qt::DisplayRole);
+    const QModelIndex keyIndex = ui->gamsParameterTableView->model()->index(row, GamsParameterTableModel::COLUMN_OPTION_KEY);
+    const QVariant optionKey = ui->gamsParameterTableView->model()->data(keyIndex, Qt::DisplayRole);
+    const QModelIndex valueIndex = ui->gamsParameterTableView->model()->index(row, GamsParameterTableModel::COLUMN_OPTION_VALUE);
+    const QVariant optionValue = ui->gamsParameterTableView->model()->data(valueIndex, Qt::DisplayRole);
     return QString("%1%2%3").arg(optionKey.toString(),
                                  mOptionTokenizer->getOption()->getDefaultSeparator(),
                                  optionValue.toString());
@@ -1256,14 +1256,14 @@ bool ParameterEditor::isAParameterTableFocused(QWidget *focusWidget) const
 QString ParameterEditor::getSelectedParameterName(QWidget *widget) const
 {
     if (widget == ui->gamsParameterTableView) {
-        QModelIndexList selection = ui->gamsParameterTableView->selectionModel()->selectedIndexes();
+        const QModelIndexList selection = ui->gamsParameterTableView->selectionModel()->selectedIndexes();
         if (selection.count() > 0) {
-            QModelIndex index = selection.at(0);
-            QVariant headerData = ui->gamsParameterTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
+            const QModelIndex index = selection.at(0);
+            const QVariant headerData = ui->gamsParameterTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
             if (Qt::CheckState(headerData.toUInt())==Qt::PartiallyChecked) {
                 return "";
             }
-            QVariant data = ui->gamsParameterTableView->model()->data( index.sibling(index.row(),0) );
+            const QVariant data = ui->gamsParameterTableView->model()->data( index.sibling(index.row(),0) );
             if (mOptionTokenizer->getOption()->isValid(data.toString()))
                return data.toString();
             else if (mOptionTokenizer->getOption()->isASynonym(data.toString()))
@@ -1272,10 +1272,10 @@ QString ParameterEditor::getSelectedParameterName(QWidget *widget) const
                return "";
         }
     } else if (widget == ui->gamsParameterTreeView) {
-        QModelIndexList selection = ui->gamsParameterTreeView->selectionModel()->selectedRows();
+        const QModelIndexList selection = ui->gamsParameterTreeView->selectionModel()->selectedRows();
         if (selection.count() > 0) {
-            QModelIndex index = selection.at(0);
-            QModelIndex  parentIndex =  ui->gamsParameterTreeView->model()->parent(index);
+            const QModelIndex index = selection.at(0);
+            const QModelIndex  parentIndex =  ui->gamsParameterTreeView->model()->parent(index);
             if (parentIndex.row() >= 0) {
                 return ui->gamsParameterTreeView->model()->data( parentIndex.sibling(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ).toString();
             } else {
@@ -1304,6 +1304,6 @@ void ParameterEditor::focus()
         ui->gamsParameterCommandLine->setFocus(Qt::ShortcutFocusReason);
 }
 
-}
-}
-}
+} // namespace option
+} // namespace studio
+} // namespace gams

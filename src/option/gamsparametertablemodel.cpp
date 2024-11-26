@@ -33,10 +33,8 @@ namespace option {
 GamsParameterTableModel::GamsParameterTableModel(const QString &normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject* parent):
     QAbstractTableModel(parent), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption()), mTokenizerUsed(true)
 {
+    Q_UNUSED(normalizedCommandLineStr)
     mHeader << "Key"  << "Value" << "Debug Entry";
-
-    if (!normalizedCommandLineStr.simplified().isEmpty())
-        on_ParameterTableModelChanged(normalizedCommandLineStr);
 }
 
 GamsParameterTableModel::GamsParameterTableModel(const QList<OptionItem> &itemList, OptionTokenizer *tokenizer, QObject *parent):
@@ -126,8 +124,8 @@ int GamsParameterTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
 {
-    int row = index.row();
-    int col = index.column();
+    const int row = index.row();
+    const int col = index.column();
 
     if (mOptionItem.isEmpty())
         return QVariant();
@@ -145,7 +143,7 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
         }
     }
     case Qt::TextAlignmentRole: {
-        return int(Qt::AlignLeft | Qt::AlignVCenter);
+        return QVariant(static_cast<int>(Qt::AlignLeft | Qt::AlignVCenter));
     }
 //    case Qt::DecorationRole
     case Qt::ToolTipRole: {
@@ -333,14 +331,14 @@ bool GamsParameterTableModel::removeRows(int row, int count, const QModelIndex &
 
 bool GamsParameterTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
 {
-    if (mOptionItem.size() == 0 || count < 1 || destinationChild < 0 ||  destinationChild > mOptionItem.size())
+    if (mOptionItem.isEmpty() || count < 1 || destinationChild < 0 ||  destinationChild > mOptionItem.size())
          return false;
 
     Q_UNUSED(sourceParent)
     Q_UNUSED(destinationParent)
     beginMoveRows(QModelIndex(), sourceRow, sourceRow  + count - 1, QModelIndex(), destinationChild);
     mOptionItem.insert(destinationChild, mOptionItem.at(sourceRow));
-    int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
+    const int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
     mOptionItem.removeAt(removeIndex);
     endMoveRows();
     emit optionModelChanged(mOptionItem);
@@ -367,8 +365,8 @@ QMimeData *GamsParameterTableModel::mimeData(const QModelIndexList &indexes) con
                 continue;
             }
 
-            QModelIndex valueIndex = index.sibling(index.row(), 1);
-            QString text = QString("%1=%2").arg(data(index, Qt::DisplayRole).toString(), data(valueIndex, Qt::DisplayRole).toString());
+            const QModelIndex valueIndex = index.sibling(index.row(), 1);
+            const QString text = QString("%1=%2").arg(data(index, Qt::DisplayRole).toString(), data(valueIndex, Qt::DisplayRole).toString());
             stream << text;
         }
     }
@@ -421,27 +419,27 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
         QList<OptionItem> itemList;
         QList<int> overrideIdRowList;
         for (const QString &text : std::as_const(newItems)) {
-            QStringList textList = text.split("=");
-            int optionid = mOption->getOptionDefinition(textList.at(0)).number;
+            const QStringList textList = text.split("=");
+            const int optionid = mOption->getOptionDefinition(textList.at(0)).number;
             itemList.append(OptionItem(optionid, textList.at( COLUMN_OPTION_KEY ), textList.at( COLUMN_OPTION_VALUE )));
             QModelIndexList indices = match(index(GamsParameterTableModel::COLUMN_OPTION_KEY, GamsParameterTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole,
                                             QVariant(optionid), Qt::MatchRecursive);
 //          if (settings && settings->overridExistingOption()) {
-              for(QModelIndex idx : std::as_const(indices)) { overrideIdRowList.append(idx.row()); }
+            for(const QModelIndex idx : std::as_const(indices)) { overrideIdRowList.append(idx.row()); }
 //          }
          }
          std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
 
          bool replaceExistingEntry = false;
-         bool singleEntryExisted = (overrideIdRowList.size()==1);
-         bool multipleEntryExisted = (overrideIdRowList.size()>1);
+         const bool singleEntryExisted = (overrideIdRowList.size()==1);
+         const bool multipleEntryExisted = (overrideIdRowList.size()>1);
          if (singleEntryExisted) {
-             QString param = data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString();
-             QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
+             const QString param = data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString();
+             const QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
                  .arg(getParameterTableEntry(overrideIdRowList.at(0)),
                  "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
                  "The value of all other entries except the last entry will be ignored.");
-             int answer = MsgBox::question("Parameter Entry exists", "Parameter '" + param + "' already exists.",
+             const int answer = MsgBox::question("Parameter Entry exists", "Parameter '" + param + "' already exists.",
                                            "How do you want to proceed?", detailText,
                                            nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
              switch(answer) {
@@ -456,15 +454,15 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
                 return false;
              }
          } else if (multipleEntryExisted) {
-             QString param = data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString();
+             const QString param = data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString();
              QString entryDetailedText = QString("Entries:\n");
              int i = 0;
-             for (int id : overrideIdRowList)
+             for (const int id : overrideIdRowList)
                  entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getParameterTableEntry(id)));
-             QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
+             const QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
                  "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by the GAMS.",
                  "The value of all other entries except the last entry will be ignored.");
-             int answer = MsgBox::question("Multiple Parameter Entries exist",
+             const int answer = MsgBox::question("Multiple Parameter Entries exist",
                                            "Multiple entries of Parameter '" + param + "' already exist.",
                                            "How do you want to proceed?", detailText, nullptr,
                                            "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
@@ -472,7 +470,7 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
              case 0: { // delete and replace
                  int prev = -1;
                  for(int i=overrideIdRowList.count()-1; i>=0; i--) {
-                     int current = overrideIdRowList[i];
+                     const int current = overrideIdRowList[i];
                      if (i==0)
                          continue;
                      if (current != prev) {
@@ -499,7 +497,7 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
              if (!replaceExistingEntry)
                  insertRows(beginRow, 1, QModelIndex());
 
-             QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
+             const QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
              setData(idx, item.key, Qt::EditRole);
              setData( index(beginRow, COLUMN_OPTION_VALUE), item.value, Qt::EditRole);
              setData( index(beginRow, COLUMN_ENTRY_NUMBER), item.optionId, Qt::EditRole);
@@ -522,10 +520,10 @@ QList<OptionItem> GamsParameterTableModel::getCurrentListOfOptionItems()
 
 QString GamsParameterTableModel::getParameterTableEntry(int row)
 {
-    QModelIndex keyIndex = index(row, COLUMN_OPTION_KEY);
-    QVariant optionKey = data(keyIndex, Qt::DisplayRole);
-    QModelIndex valueIndex = index(row, COLUMN_OPTION_VALUE);
-    QVariant optionValue = data(valueIndex, Qt::DisplayRole);
+    const QModelIndex keyIndex = index(row, COLUMN_OPTION_KEY);
+    const QVariant optionKey = data(keyIndex, Qt::DisplayRole);
+    const QModelIndex valueIndex = index(row, COLUMN_OPTION_VALUE);
+    const QVariant optionValue = data(valueIndex, Qt::DisplayRole);
     return QString("%1%2%3").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(), optionValue.toString());
 }
 
@@ -534,7 +532,7 @@ void GamsParameterTableModel::toggleActiveOptionItem(int index)
     if (mOptionItem.isEmpty() || index >= mOptionItem.size())
         return;
 
-    bool checked = (headerData(index, Qt::Vertical, Qt::CheckStateRole).toUInt() != Qt::Checked) ? true : false;
+    const bool checked = (headerData(index, Qt::Vertical, Qt::CheckStateRole).toUInt() != Qt::Checked) ? true : false;
     setHeaderData( index, Qt::Vertical,
                           Qt::CheckState(headerData(index, Qt::Vertical, Qt::CheckStateRole).toInt()),
                           Qt::CheckStateRole );
@@ -573,7 +571,7 @@ void GamsParameterTableModel::on_ParameterTableModelChanged(const QString &text)
 
 void GamsParameterTableModel::setRowCount(int rows)
 {
-   int rc = mOptionItem.size();
+   const int rc = mOptionItem.size();
    if (rows < 0 ||  rc == rows)
       return;
 

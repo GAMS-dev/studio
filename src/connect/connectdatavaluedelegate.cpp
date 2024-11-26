@@ -42,14 +42,14 @@ QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOpt
     QLineEdit* lineEdit = new QLineEdit(parent);
     QCompleter* completer = new QCompleter(lineEdit);
 
-    const QModelIndex allowedval_index = index.sibling( index.row(), (int)DataItemColumn::AllowedValue );
+    const QModelIndex allowedval_index = index.sibling( index.row(), static_cast<int>(DataItemColumn::AllowedValue) );
     const QStringList allowedval_list = allowedval_index.data().toString().split(",");
     mIsCompleter= false;
     if (!allowedval_index.data().toString().isEmpty() && allowedval_list.size() > 0) {
         completer->setModel( new QStringListModel(allowedval_list) );
         mIsCompleter = true;
     } else {
-        const QModelIndex type_index = index.sibling( index.row(), (int)DataItemColumn::SchemaType );
+        const QModelIndex type_index = index.sibling( index.row(), static_cast<int>(DataItemColumn::SchemaType) );
         const QStringList type_list = type_index.data().toString().split(",");
         if (type_list.contains("boolean", Qt::CaseInsensitive)) {
             const QStringList boolean_list({ "true", "false"});

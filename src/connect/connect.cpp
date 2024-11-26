@@ -152,7 +152,7 @@ bool Connect::validate(const QString &schemaname, ConnectData &data)
     const QStringList schemaKeylist = getSchema(schemaname)->getFirstLevelKeyList();
     YAML::Node error;
     for (YAML::const_iterator it = data.getRootNode().begin(); it != data.getRootNode().end(); ++it) {
-        QString key = QString::fromStdString( it->first.as<std::string>() );
+        const QString key = QString::fromStdString( it->first.as<std::string>() );
         if (!schemaKeylist.contains(key)) {
             if(getSchema(schemaname)->isRequired(key)) {
                YAML::Node errorNode = YAML::Node(YAML::NodeType::Sequence);
@@ -415,6 +415,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                 try {
                                     dataValue = schemaValue["default"].as<int>();
                                 } catch (const YAML::BadConversion& e) {
+                                    Q_UNUSED(e)
                                     dataValue = schemaValue["default"].as<std::string>();
                                 }
                             } else {
@@ -425,6 +426,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                 try {
                                     dataValue = schemaValue["default"].as<bool>();
                                 } catch (const YAML::BadConversion& e) {
+                                    Q_UNUSED(e)
                                     dataValue = schemaValue["default"].as<std::string>();
                                 }
                             } else {
@@ -436,6 +438,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                 try {
                                     std::string defaultvalue = schemaValue["default"].as<std::string>();
                                 } catch (const YAML::BadConversion& e) {
+                                    Q_UNUSED(e)
                                     // TODO
                                 }
                             }
@@ -443,6 +446,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                 try {
                                     nullable = schemaValue["nullable"].as<bool>();
                                 } catch (const YAML::BadConversion& e) {
+                                    Q_UNUSED(e)
                                     nullable = false;
                                 }
                             }
@@ -464,6 +468,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                try {
                                    nullable = schemaValue["nullable"].as<bool>();
                                } catch (const YAML::BadConversion& e) {
+                                   Q_UNUSED(e)
                                    nullable = false;
                                }
                            }
@@ -568,6 +573,7 @@ bool Connect::mapTypeSequenceValue(const YAML::Node& typenode, const YAML::Node 
                     try {
                         nullable = schemaValue["nullable"].as<bool>();
                     } catch (const YAML::BadConversion& e) {
+                        Q_UNUSED(e)
                         nullable = false;
                     }
                 }
@@ -590,6 +596,7 @@ bool Connect::mapTypeSequenceValue(const YAML::Node& typenode, const YAML::Node 
                     try {
                         nullable = schemaValue["nullable"].as<bool>();
                     } catch (const YAML::BadConversion& e) {
+                        Q_UNUSED(e)
                         nullable = false;
                     }
                 }

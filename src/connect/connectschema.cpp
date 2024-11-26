@@ -183,7 +183,6 @@ void ConnectSchema::loadFromFile(const QString &inputFileName)
         EXCEPT() << "Error Loading from file : " << inputFileName;
     for (YAML::const_iterator it = mRootNode.begin(); it != mRootNode.end(); ++it) {
         QString key( QString::fromStdString( it->first.as<std::string>() ) );
-//        YAML::Node node = it->second;
         createSchemaHelper(key, it->second, 1);
     }
 }
@@ -371,18 +370,18 @@ QStringList ConnectSchema::getTypeAsStringList(const QString &key) const
     QStringList strlist;
     if (contains(key)) {
         for (const SchemaType t : std::as_const(mSchemaHelper[key]->types)) {
-            const int tt = (int)t;
+            const int tt = static_cast<int>(t);
             if ( tt==(int)SchemaType::Integer)
                 strlist << "integer";
-            else if ( tt==(int)SchemaType::Float)
+            else if ( tt==static_cast<int>(SchemaType::Float))
                     strlist << "float";
-            else if (tt==(int)SchemaType::Boolean)
+            else if (tt==static_cast<int>(SchemaType::Boolean))
                      strlist << "boolean";
-            else if (tt==(int)SchemaType::String)
+            else if (tt==static_cast<int>(SchemaType::String))
                      strlist << "string";
-            else if (tt==(int)SchemaType::List)
+            else if (tt==static_cast<int>(SchemaType::List))
                      strlist << "list";
-            else if (tt==(int)SchemaType::Dict)
+            else if (tt==static_cast<int>(SchemaType::Dict))
                      strlist << "dict";
         }
     }
@@ -394,14 +393,14 @@ QStringList ConnectSchema::getAllowedValueAsStringList(const QString &key) const
     QStringList strlist;
     if (contains(key)) {
         for(int i=0; i<mSchemaHelper[key]->allowedValues.size(); ++i) {
-            const int t = (int)mSchemaHelper[key]->allowedValues.at(i).type;
-            if ( t==(int)SchemaValueType::Integer)
+            const int t = static_cast<int>(mSchemaHelper[key]->allowedValues.at(i).type);
+            if ( t==static_cast<int>(SchemaValueType::Integer))
                 strlist << QString::number(mSchemaHelper[key]->allowedValues.at(i).value.intval);
-            else if ( t==(int)SchemaValueType::Float)
+            else if ( t==static_cast<int>(SchemaValueType::Float))
                     strlist << QString::number(mSchemaHelper[key]->allowedValues.at(i).value.doubleval);
-            else if (t==(int)SchemaValueType::String)
+            else if (t==static_cast<int>(SchemaValueType::String))
                      strlist << QString::fromStdString(mSchemaHelper[key]->allowedValues.at(i).value.stringval);
-            else if (t==(int)SchemaValueType::Boolean)
+            else if (t==static_cast<int>(SchemaValueType::Boolean))
                      strlist << (mSchemaHelper[key]->allowedValues.at(i).value.boolval?"true":"false");
         }
     }
@@ -429,7 +428,6 @@ bool ConnectSchema::isNullDefaultAllowed(const QString &key) const
 {
     if (contains(key)) {
         if (mSchemaHelper[key]) {
-            QStringList keylist = key.split(":");
             QString lastkey = key.split(":").last();
             if (lastkey.endsWith("]")) {
                  if (mSchemaHelper[key.left(key.lastIndexOf("["))]->nullable) {

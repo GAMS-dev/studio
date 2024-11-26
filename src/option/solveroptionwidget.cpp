@@ -76,7 +76,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     mOptionTokenizer->provideLogger(logEdit);
     ui->solverOptionTabWidget->addTab( logEdit, "Messages" );
 
-    QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation, mEncoding);
+    const QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation, mEncoding);
     mOptionTableModel = new SolverOptionTableModel(optionItem, mOptionTokenizer,  this);
     ui->solverOptionTableView->setModel( mOptionTableModel );
     updateTableColumnSpan();
@@ -101,7 +101,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
 
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->solverOptionTableView);
     headerView->setSectionResizeMode(QHeaderView::Interactive);
-    QFontMetrics fm(QFont("times", 16));
+    const QFontMetrics fm(QFont("times", 16));
     headerView->setMinimumSectionSize(fm.horizontalAdvance("Comment"));
 
     ui->solverOptionTableView->setHorizontalHeader(headerView);
@@ -109,7 +109,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->solverOptionTableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
 
-    ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(static_cast<int>(fontMetrics().height()*TABLE_ROW_HEIGHT));
     if (ui->solverOptionTableView->model()->rowCount()<=0) {
         ui->solverOptionTableView->horizontalHeader()->setDefaultSectionSize( ui->solverOptionTableView->sizeHint().width()/(ui->solverOptionTableView->model()->columnCount()-1) );
     } else {
@@ -190,8 +190,8 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
         ui->solverOptionSearch->setReadOnly(true);
         ui->compactViewCheckBox->setEnabled(false);
 
-        QString msg1 = QString("Unable to open %1 Properly").arg(mLocation);
-        QString msg2 = QString("'%1' is not a valid solver name").arg(mSolverName);
+        const QString msg1 = QString("Unable to open %1 Properly").arg(mLocation);
+        const QString msg2 = QString("'%1' is not a valid solver name").arg(mSolverName);
         mOptionTokenizer->logger()->append(QString("%1. %2").arg(msg1, msg2), LogMsgType::Error);
         mOptionTokenizer->logger()->append(QString("An operation on the file contents might not be saved. Try 'Save As' or 'Open As Text' instead."), LogMsgType::Warning);
 
@@ -255,11 +255,11 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
-    bool thereIsARowSelection = isThereARowSelection();
-    bool viewIsCompact = isViewCompact();
+    const bool thereIsARowSelection = isThereARowSelection();
+    const bool viewIsCompact = isViewCompact();
     bool thereIsAnOptionSelection = false;
     for (const QModelIndex &s : std::as_const(selection)) {
-        QVariant data = ui->solverOptionTableView->model()->headerData(s.row(), Qt::Vertical,  Qt::CheckStateRole);
+        const QVariant data = ui->solverOptionTableView->model()->headerData(s.row(), Qt::Vertical,  Qt::CheckStateRole);
         if (Qt::CheckState(data.toUInt())!=Qt::PartiallyChecked) {
             thereIsAnOptionSelection = true;
             break;
@@ -327,9 +327,9 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
     bool hasSelectionBeenAdded = (selection.size()>0);
     // assume single selection
     for (const QModelIndex &idx : std::as_const(selection)) {
-        QModelIndex parentIdx = ui->solverOptionTreeView->model()->parent(idx);
-        QVariant data = (parentIdx.row() < 0) ?  ui->solverOptionTreeView->model()->data(idx, Qt::CheckStateRole)
-                                              : ui->solverOptionTreeView->model()->data(parentIdx, Qt::CheckStateRole);
+        const QModelIndex parentIdx = ui->solverOptionTreeView->model()->parent(idx);
+        const QVariant data = (parentIdx.row() < 0) ?  ui->solverOptionTreeView->model()->data(idx, Qt::CheckStateRole)
+                                                    : ui->solverOptionTreeView->model()->data(parentIdx, Qt::CheckStateRole);
         hasSelectionBeenAdded = (Qt::CheckState(data.toInt()) == Qt::Checked);
     }
 
@@ -364,19 +364,19 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 {
     setModified(true);
 
-    QModelIndex parentIndex =  ui->solverOptionTreeView->model()->parent(index);
-    QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) :
-                                                          ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-    QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) :
-                                                        ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
-    QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex :
-                                                             ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
+    const QModelIndex parentIndex =  ui->solverOptionTreeView->model()->parent(index);
+    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                              : ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
+    const QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
+                                                            : ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
+    const QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex
+                                                                 : ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
 
     disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
 
     bool replaceExistingEntry = false;
-    QString optionNameData = ui->solverOptionTreeView->model()->data(optionNameIndex).toString();
-    QModelIndex optionIdIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) :
+    const QString optionNameData = ui->solverOptionTreeView->model()->data(optionNameIndex).toString();
+    const QModelIndex optionIdIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) :
                                                         ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
     QVariant optionIdData = ui->solverOptionTreeView->model()->data(optionIdIndex);
 
@@ -389,21 +389,21 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
         ui->solverOptionTableView->clearSelection();
         QItemSelection selection;
         for(const QModelIndex &idx: std::as_const(indices)) {
-            QModelIndex leftIndex  = ui->solverOptionTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_OPTION_KEY);
-            QModelIndex rightIndex = ui->solverOptionTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
-            QItemSelection rowSelection(leftIndex, rightIndex);
+            const QModelIndex leftIndex  = ui->solverOptionTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_OPTION_KEY);
+            const QModelIndex rightIndex = ui->solverOptionTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
+            const QItemSelection rowSelection(leftIndex, rightIndex);
             selection.merge(rowSelection, QItemSelectionModel::Select);
         }
         ui->solverOptionTableView->selectionModel()->select(selection, QItemSelectionModel::Select);
 
-        bool singleEntryExisted = (indices.size()==1);
-        bool multipleEntryExisted = (indices.size()>1);
+        const bool singleEntryExisted = (indices.size()==1);
+        const bool multipleEntryExisted = (indices.size()>1);
         if (singleEntryExisted ) {
-            QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
+            const QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
                 .arg(getOptionTableEntry(indices.at(0).row()),
                 "When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
                 "The value of all other entries except the last entry will be ignored.");
-            int answer = MsgBox::question("Option Entry exists", "Option '" + optionNameData + "' already exists.",
+            const int answer = MsgBox::question("Option Entry exists", "Option '" + optionNameData + "' already exists.",
                                           "How do you want to proceed?", detailText,
                                           nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
             switch(answer) {
@@ -429,10 +429,10 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
             int i = 0;
             for (const QModelIndex &idx : std::as_const(indices))
                 entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getOptionTableEntry(idx.row())));
-            QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
+            const QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
                 "When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
                 "The value of all other entries except the last entry will be ignored.");
-            int answer = MsgBox::question("Multiple Option Entries exist",
+            const int answer = MsgBox::question("Multiple Option Entries exist",
                                           "Multiple entries of Option '" + optionNameData + "' already exist.",
                                           "How do you want to proceed?", detailText, nullptr,
                                           "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
@@ -462,13 +462,13 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     }
     ui->solverOptionTableView->selectionModel()->clearSelection();
 //    QString synonymData = ui->solverOptionTreeView->model()->data(synonymIndex).toString();
-    QString selectedValueData = ui->solverOptionTreeView->model()->data(selectedValueIndex).toString();
+    const QString selectedValueData = ui->solverOptionTreeView->model()->data(selectedValueIndex).toString();
     mOptionTokenizer->getOption()->setModified(optionNameData, true);
     ui->solverOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
     if (settings && settings->toBool(skSoAddCommentAbove)) { // insert comment description row
-        int indexRow = index.row();
-        int parentIndexRow = parentIndex.row();
+        const int indexRow = index.row();
+        const int parentIndexRow = parentIndex.row();
         QModelIndex descriptionIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(indexRow, OptionDefinitionModel::COLUMN_DESCIPTION):
                                                                ui->solverOptionTreeView->model()->index(parentIndexRow, OptionDefinitionModel::COLUMN_DESCIPTION);
         QString descriptionData = ui->solverOptionTreeView->model()->data(descriptionIndex).toString();
@@ -513,32 +513,32 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     if (rowToBeAdded == ui->solverOptionTableView->model()->rowCount()) {
         ui->solverOptionTableView->model()->insertRows(rowToBeAdded, 1, QModelIndex());
     }
-    QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_OPTION_KEY);
-    QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_OPTION_VALUE);
-    QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, mOptionTableModel->getColumnEntryNumber());
+    const QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_OPTION_KEY);
+    const QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+    const QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, mOptionTableModel->getColumnEntryNumber());
     ui->solverOptionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
     ui->solverOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
     if (settings && settings->toBool(skSoAddEOLComment)) {
-        QModelIndex commentIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION)
-                                                         : ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
+        const QModelIndex commentIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION)
+                                                               : ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
         QString commentData = ui->solverOptionTreeView->model()->data(commentIndex).toString();
         QModelIndex insertEOLCommentIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_EOL_COMMENT);
         ui->solverOptionTableView->model()->setData( insertEOLCommentIndex, commentData, Qt::EditRole);
     }
-    int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
+    const int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
     ui->solverOptionTableView->model()->setHeaderData( rowToBeAdded, Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
     ui->solverOptionTableView->selectRow(rowToBeAdded);
     selectAnOption();
 
-    QString text = mOptionTableModel->getOptionTableEntry(insertNumberIndex.row());
+    const QString text = mOptionTableModel->getOptionTableEntry(insertNumberIndex.row());
     if (replaceExistingEntry)
         mOptionTokenizer->logger()->append(QString("Option entry '%1' has been replaced").arg(text), LogMsgType::Info);
     else
         mOptionTokenizer->logger()->append(QString("Option entry '%1' has been added").arg(text), LogMsgType::Info);
 
-    int lastColumn = ui->solverOptionTableView->model()->columnCount()-1;
-    int lastRow = rowToBeAdded;
+    const int lastColumn = ui->solverOptionTableView->model()->columnCount()-1;
+    const int lastRow = rowToBeAdded;
     int firstRow = lastRow;
     if (settings && settings->toBool(skSoAddCommentAbove)) {
         firstRow--;
@@ -621,9 +621,9 @@ void SolverOptionWidget::on_selectRow(int logicalIndex)
         return;
 
     QItemSelectionModel *selectionModel = ui->solverOptionTableView->selectionModel();
-    QModelIndex topLeft = ui->solverOptionTableView->model()->index(logicalIndex, SolverOptionTableModel::COLUMN_OPTION_KEY, QModelIndex());
-    QModelIndex  bottomRight = ui->solverOptionTableView->model()->index(logicalIndex, mOptionTableModel->getColumnEntryNumber(), QModelIndex());
-    QItemSelection selection( topLeft, bottomRight);
+    const QModelIndex topLeft = ui->solverOptionTableView->model()->index(logicalIndex, SolverOptionTableModel::COLUMN_OPTION_KEY, QModelIndex());
+    const QModelIndex  bottomRight = ui->solverOptionTableView->model()->index(logicalIndex, mOptionTableModel->getColumnEntryNumber(), QModelIndex());
+    const QItemSelection selection( topLeft, bottomRight);
     selectionModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
 }
 
@@ -649,7 +649,7 @@ void SolverOptionWidget::on_toggleRowHeader(int logicalIndex)
 
 void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
 {
-    bool isViewCompact = (Qt::CheckState(checkState) == Qt::Checked);
+    const bool isViewCompact = (Qt::CheckState(checkState) == Qt::Checked);
     refreshOptionTableModel(isViewCompact);
     if (isViewCompact) {
         mOptionTokenizer->logger()->append(QString("activated Compact View, comments are hidden and actions related to comments are either not visible or forbidden"), LogMsgType::Info);
@@ -713,18 +713,18 @@ void SolverOptionWidget::showOptionDefinition(bool selectRow)
 
     QModelIndexList selectIndices;
     for (int i=0; i<selection.count(); i++) {
-         QModelIndex index = selection.at(i);
+         const QModelIndex index = selection.at(i);
          if (Qt::CheckState(ui->solverOptionTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toUInt())==Qt::PartiallyChecked)
                 continue;
 
-         QString value = ui->solverOptionTableView->model()->data( index.sibling(index.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE), Qt::DisplayRole).toString();
-         QVariant optionId = ui->solverOptionTableView->model()->data( index.sibling(index.row(), mOptionTableModel->getColumnEntryNumber()), Qt::DisplayRole);
+         const QString value = ui->solverOptionTableView->model()->data( index.sibling(index.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE), Qt::DisplayRole).toString();
+         const QVariant optionId = ui->solverOptionTableView->model()->data( index.sibling(index.row(), mOptionTableModel->getColumnEntryNumber()), Qt::DisplayRole);
          QModelIndexList indices = ui->solverOptionTreeView->model()->match(ui->solverOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                                                                Qt::DisplayRole,
                                                                                optionId, 1, Qt::MatchExactly|Qt::MatchRecursive);
          for(const QModelIndex &idx : std::as_const(indices)) {
-             QModelIndex  parentIndex =  ui->solverOptionTreeView->model()->parent(idx);
-             QModelIndex optionIdx = ui->solverOptionTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
+             const QModelIndex  parentIndex =  ui->solverOptionTreeView->model()->parent(idx);
+             const QModelIndex optionIdx = ui->solverOptionTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
 
              if (parentIndex.row() < 0) {
                 if (ui->solverOptionTreeView->model()->hasChildren(optionIdx) && !ui->solverOptionTreeView->isExpanded(optionIdx))
@@ -732,8 +732,8 @@ void SolverOptionWidget::showOptionDefinition(bool selectRow)
             }
             bool found = false;
             for(int r=0; r <ui->solverOptionTreeView->model()->rowCount(optionIdx); ++r) {
-                QModelIndex i = ui->solverOptionTreeView->model()->index(r, OptionDefinitionModel::COLUMN_OPTION_NAME, optionIdx);
-                QString enumValue = ui->solverOptionTreeView->model()->data(i, Qt::DisplayRole).toString();
+                const QModelIndex i = ui->solverOptionTreeView->model()->index(r, OptionDefinitionModel::COLUMN_OPTION_NAME, optionIdx);
+                const QString enumValue = ui->solverOptionTreeView->model()->data(i, Qt::DisplayRole).toString();
                 if (QString::compare(value, enumValue, Qt::CaseInsensitive) == 0) {
                     selectIndices << i;
                     found = true;
@@ -747,7 +747,7 @@ void SolverOptionWidget::showOptionDefinition(bool selectRow)
     ui->solverOptionTreeView->selectionModel()->clearSelection();
     for(const QModelIndex &idx : std::as_const(selectIndices)) {
         QItemSelection selection = ui->solverOptionTreeView->selectionModel()->selection();
-        QModelIndex  parentIdx =  ui->solverOptionTreeView->model()->parent(idx);
+        const QModelIndex  parentIdx =  ui->solverOptionTreeView->model()->parent(idx);
         if (parentIdx.row() < 0) {
             selection.select(ui->solverOptionTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME),
                              ui->solverOptionTreeView->model()->index(idx.row(), ui->solverOptionTreeView->model()->columnCount()-1));
@@ -757,9 +757,9 @@ void SolverOptionWidget::showOptionDefinition(bool selectRow)
         }
         ui->solverOptionTreeView->selectionModel()->select(selection, QItemSelectionModel::Select);
     }
-    if (selectIndices.size() > 0) {
-        QModelIndex parentIndex = ui->solverOptionTreeView->model()->parent(selectIndices.first());
-        QModelIndex scrollToIndex = (parentIndex.row() < 0  ? ui->solverOptionTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
+    if (!selectIndices.isEmpty()) {
+        const QModelIndex parentIndex = ui->solverOptionTreeView->model()->parent(selectIndices.first());
+        const QModelIndex scrollToIndex = (parentIndex.row() < 0  ? ui->solverOptionTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
                                                             : ui->solverOptionTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex));
         ui->solverOptionTreeView->scrollTo(scrollToIndex, QAbstractItemView::EnsureVisible);
         if (parentIndex.row() >= 0) {
@@ -780,7 +780,7 @@ void SolverOptionWidget::showOptionRecurrence()
     if (!isInFocus(focusWidget()))
         return;
 
-    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+    const QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
     if (indexSelection.size() <= 0) {
         showOptionDefinition();
         return;
@@ -797,7 +797,7 @@ void SolverOptionWidget::showOptionRecurrence()
         return;
     }
 
-    for(int row : std::as_const(rowList)) {
+    for(const int row : std::as_const(rowList)) {
         QItemSelection rowSelection = ui->solverOptionTableView->selectionModel()->selection();
         rowSelection.select(ui->solverOptionTableView->model()->index(row, 0),
                             ui->solverOptionTableView->model()->index(row, GamsParameterTableModel::COLUMN_ENTRY_NUMBER));
@@ -812,12 +812,12 @@ void SolverOptionWidget::copyDefinitionToClipboard(int column)
     if (ui->solverOptionTreeView->selectionModel()->selectedRows().count() <= 0)
         return;
 
-    QModelIndex index = ui->solverOptionTreeView->selectionModel()->selectedRows().at(0);
+    const QModelIndex index = ui->solverOptionTreeView->selectionModel()->selectedRows().at(0);
     if (!index.isValid())
         return;
 
     QString text = "";
-    QModelIndex parentIndex = ui->solverOptionTreeView->model()->parent(index);
+    const QModelIndex parentIndex = ui->solverOptionTreeView->model()->parent(index);
     if (column == -1) { // copy all
         QStringList strList;
         if (parentIndex.isValid()) {
@@ -830,14 +830,14 @@ void SolverOptionWidget::copyDefinitionToClipboard(int column)
            for (int j=0; j<ui->solverOptionTreeView->model()->columnCount(); j++) {
                if (j==SolverOptionDefinitionModel::COLUMN_ENTRY_NUMBER)
                   continue;
-               QModelIndex columnindex = ui->solverOptionTreeView->model()->index(index.row(), j);
+               const QModelIndex columnindex = ui->solverOptionTreeView->model()->index(index.row(), j);
                strList << ui->solverOptionTreeView->model()->data(columnindex, Qt::DisplayRole).toString();
            }
            text = strList.join(", ");
         }
     } else {
         if (parentIndex.isValid()) {
-            QModelIndex idx = ui->solverOptionTreeView->model()->index(index.row(), column, parentIndex);
+            const QModelIndex idx = ui->solverOptionTreeView->model()->index(index.row(), column, parentIndex);
             text = ui->solverOptionTreeView->model()->data( idx, Qt::DisplayRole ).toString();
         } else {
             text = ui->solverOptionTreeView->model()->data( ui->solverOptionTreeView->model()->index(index.row(), column), Qt::DisplayRole ).toString();
@@ -852,12 +852,12 @@ void SolverOptionWidget::findAndSelectionOptionFromDefinition()
     if (ui->solverOptionTableView->model()->rowCount() <= 0)
         return;
 
-    QModelIndex index = ui->solverOptionTreeView->selectionModel()->currentIndex();
-    QModelIndex parentIndex =  ui->solverOptionTreeView->model()->parent(index);
+    const QModelIndex index = ui->solverOptionTreeView->selectionModel()->currentIndex();
+    const QModelIndex parentIndex =  ui->solverOptionTreeView->model()->parent(index);
 
-    QModelIndex idx = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
-                                            : ui->solverOptionTreeView->model()->index( parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
-    QVariant data = ui->solverOptionTreeView->model()->data( idx, Qt::DisplayRole );
+    const QModelIndex idx = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
+                                                  : ui->solverOptionTreeView->model()->index( parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
+    const QVariant data = ui->solverOptionTreeView->model()->data( idx, Qt::DisplayRole );
     QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                        Qt::DisplayRole,
                                                                        data.toString(), -1, Qt::MatchExactly|Qt::MatchRecursive);
@@ -865,20 +865,20 @@ void SolverOptionWidget::findAndSelectionOptionFromDefinition()
     ui->solverOptionTableView->clearFocus();
     QItemSelection selection;
     for(const QModelIndex &i :std::as_const(indices)) {
-        QModelIndex valueIndex = ui->solverOptionTableView->model()->index(i.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE);
-        QString value =  ui->solverOptionTableView->model()->data( valueIndex, Qt::DisplayRole).toString();
+        const QModelIndex valueIndex = ui->solverOptionTableView->model()->index(i.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE);
+        const QString value =  ui->solverOptionTableView->model()->data( valueIndex, Qt::DisplayRole).toString();
         bool selected = false;
         if (parentIndex.row() < 0) {
             selected = true;
         } else {
-            QModelIndex enumIndex = ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
-            QString enumValue = ui->solverOptionTreeView->model()->data( enumIndex, Qt::DisplayRole).toString();
+            const QModelIndex enumIndex = ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
+            const QString enumValue = ui->solverOptionTreeView->model()->data( enumIndex, Qt::DisplayRole).toString();
             if (QString::compare(value, enumValue, Qt::CaseInsensitive)==0)
                 selected = true;
         }
         if (selected) {
-            QModelIndex leftIndex  = ui->solverOptionTableView->model()->index(i.row(), 0);
-            QModelIndex rightIndex = ui->solverOptionTableView->model()->index(i.row(), ui->solverOptionTableView->model()->columnCount() -1);
+            const QModelIndex leftIndex  = ui->solverOptionTableView->model()->index(i.row(), 0);
+            const QModelIndex rightIndex = ui->solverOptionTableView->model()->index(i.row(), ui->solverOptionTableView->model()->columnCount() -1);
 
             QItemSelection rowSelection(leftIndex, rightIndex);
             selection.merge(rowSelection, QItemSelectionModel::Select);
@@ -900,7 +900,7 @@ void SolverOptionWidget::toggleCommentOption()
         return;
 
     bool modified = false;
-    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+    const QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     for(int i=0; i<selection.count(); ++i) {
         on_toggleRowHeader( selection.at(i).row() );
         modified = true;
@@ -1000,9 +1000,9 @@ void SolverOptionWidget::insertOption()
         std::sort(rows.begin(), rows.end());
         rowToBeInserted = rows.at(0);
         ui->solverOptionTableView->model()->insertRows(rowToBeInserted, 1, QModelIndex());
-        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
-        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
-        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, mOptionTableModel->getColumnEntryNumber());
+        const QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
+        const QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+        const QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, mOptionTableModel->getColumnEntryNumber());
 
         ui->solverOptionTableView->model()->setHeaderData(rowToBeInserted, Qt::Vertical,
                                                           Qt::CheckState(Qt::Checked),
@@ -1011,7 +1011,7 @@ void SolverOptionWidget::insertOption()
         ui->solverOptionTableView->model()->setData( insertKeyIndex, OptionTokenizer::keyGeneratedStr, Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertValueIndex, OptionTokenizer::valueGeneratedStr, Qt::EditRole);
         if (mOptionTableModel->getColumnEntryNumber() > SolverOptionTableModel::COLUMN_EOL_COMMENT) {
-            QModelIndex eolCommentIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_EOL_COMMENT);
+            const QModelIndex eolCommentIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_EOL_COMMENT);
             ui->solverOptionTableView->model()->setData( eolCommentIndex, OptionTokenizer::commentGeneratedStr, Qt::EditRole);
         }
         ui->solverOptionTableView->scrollTo(insertKeyIndex, QAbstractItemView::EnsureVisible);
@@ -1019,9 +1019,9 @@ void SolverOptionWidget::insertOption()
     } else {
         ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
         rowToBeInserted = mOptionTableModel->rowCount()-1;
-        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
-        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
-        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, mOptionTableModel->getColumnEntryNumber());
+        const QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
+        const QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+        const QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, mOptionTableModel->getColumnEntryNumber());
 
         ui->solverOptionTableView->model()->setHeaderData(ui->solverOptionTableView->model()->rowCount()-1, Qt::Vertical,
                                                           Qt::CheckState(Qt::Checked),
@@ -1074,9 +1074,9 @@ void SolverOptionWidget::insertComment()
         std::sort(rows.begin(), rows.end());
         rowToBeInserted = rows.at(0);
         ui->solverOptionTableView->model()->insertRows(rowToBeInserted, 1, QModelIndex());
-        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
-        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
-        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, mOptionTableModel->getColumnEntryNumber());
+        const QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
+        const QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+        const QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, mOptionTableModel->getColumnEntryNumber());
 
         ui->solverOptionTableView->model()->setHeaderData(rowToBeInserted, Qt::Vertical,
                                                           Qt::CheckState(Qt::PartiallyChecked),
@@ -1087,9 +1087,9 @@ void SolverOptionWidget::insertComment()
     } else {
         ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
         rowToBeInserted = ui->solverOptionTableView->model()->rowCount()-1;
-        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
-        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
-        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, mOptionTableModel->getColumnEntryNumber());
+        const QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
+        const QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+        const QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, mOptionTableModel->getColumnEntryNumber());
         ui->solverOptionTableView->model()->setHeaderData(rowToBeInserted, Qt::Vertical,
                                                           Qt::CheckState(Qt::PartiallyChecked),
                                                           Qt::CheckStateRole );
@@ -1097,7 +1097,7 @@ void SolverOptionWidget::insertComment()
         ui->solverOptionTableView->model()->setData( insertKeyIndex, OptionTokenizer::commentGeneratedStr, Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
         if (mOptionTableModel->getColumnEntryNumber() > SolverOptionTableModel::COLUMN_EOL_COMMENT) {
-            QModelIndex eolCommentIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_EOL_COMMENT);
+            const QModelIndex eolCommentIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_EOL_COMMENT);
             ui->solverOptionTableView->model()->setData( eolCommentIndex, "", Qt::EditRole);
         }
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
@@ -1127,9 +1127,9 @@ void SolverOptionWidget::deleteCommentsBeforeOption(int row)
 
     int prev = -1;
     for(int i=rows.count()-1; i>=0; i--) {
-        int current = rows[i];
+        const int current = rows[i];
         if (current != prev) {
-            QString text = mOptionTableModel->getOptionTableEntry(current);
+            const QString text = mOptionTableModel->getOptionTableEntry(current);
             ui->solverOptionTableView->model()->removeRows( current, 1 );
             mOptionTokenizer->logger()->append(QString("Option entry '%1' has been deleted").arg(text), LogMsgType::Info);
             prev = current;
@@ -1153,7 +1153,7 @@ void SolverOptionWidget::deleteOption()
         return;
 
     if (isThereARowSelection() && isEverySelectionARow()) {
-        QItemSelection selection( ui->solverOptionTableView->selectionModel()->selection() );
+        const QItemSelection selection( ui->solverOptionTableView->selectionModel()->selection() );
 
         QList<int> rows;
         const auto indexes = ui->solverOptionTableView->selectionModel()->selectedRows();
@@ -1182,7 +1182,7 @@ void SolverOptionWidget::deleteOption()
         for(int i=rows.count()-1; i>=0; i--) {
             int current = rows[i];
             if (current != prev) {
-                QString text = mOptionTableModel->getOptionTableEntry(current);
+                const QString text = mOptionTableModel->getOptionTableEntry(current);
                 ui->solverOptionTableView->model()->removeRows( current, 1 );
                 mOptionTokenizer->logger()->append(QString("Option entry '%1' has been deleted").arg(text), LogMsgType::Info);
                 prev = current;
@@ -1204,14 +1204,14 @@ void SolverOptionWidget::moveOptionUp()
     if  (isViewCompact() || !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
-    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+    const QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     QModelIndexList idxSelection = QModelIndexList(selection);
     std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() < b.row(); });
     if  (idxSelection.first().row() <= 0)
         return;
 
     for(int i=0; i<idxSelection.size(); i++) {
-        QModelIndex idx = idxSelection.at(i);
+        const QModelIndex idx = idxSelection.at(i);
         ui->solverOptionTableView->model()->moveRows(QModelIndex(), idx.row(), 1,
                                                          QModelIndex(), idx.row()-1);
     }
@@ -1231,14 +1231,14 @@ void SolverOptionWidget::moveOptionDown()
     if  (isViewCompact() || !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
-    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+    const QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     QModelIndexList idxSelection = QModelIndexList(selection);
     std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() > b.row(); });
     if  (idxSelection.first().row() >= mOptionTableModel->rowCount()-1)
         return;
 
     for(int i=0; i<idxSelection.size(); i++) {
-        QModelIndex idx = idxSelection.at(i);
+        const QModelIndex idx = idxSelection.at(i);
         mOptionTableModel->moveRows(QModelIndex(), idx.row(), 1,
                                     QModelIndex(), idx.row()+2);
     }
@@ -1271,11 +1271,11 @@ QList<int> SolverOptionWidget::getRecurrentOption(const QModelIndex &index)
     if (!isInFocus(focusWidget()))
         return optionList;
 
-    QVariant data = ui->solverOptionTableView->model()->headerData(index.row(), Qt::Vertical,  Qt::CheckStateRole);
+    const QVariant data = ui->solverOptionTableView->model()->headerData(index.row(), Qt::Vertical,  Qt::CheckStateRole);
     if (Qt::CheckState(data.toUInt())==Qt::PartiallyChecked)
         return optionList;
 
-    QString optionId = ui->solverOptionTableView->model()->data( index.sibling(index.row(), mOptionTableModel->getColumnEntryNumber()), Qt::DisplayRole).toString();
+    const QString optionId = ui->solverOptionTableView->model()->data( index.sibling(index.row(), mOptionTableModel->getColumnEntryNumber()), Qt::DisplayRole).toString();
     QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                         Qt::DisplayRole,
                                                                         optionId, -1);
@@ -1290,10 +1290,10 @@ QList<int> SolverOptionWidget::getRecurrentOption(const QModelIndex &index)
 
 QString SolverOptionWidget::getOptionTableEntry(int row)
 {
-    QModelIndex keyIndex = ui->solverOptionTableView->model()->index(row, GamsParameterTableModel::COLUMN_OPTION_KEY);
-    QVariant optionKey = ui->solverOptionTableView->model()->data(keyIndex, Qt::DisplayRole);
-    QModelIndex valueIndex = ui->solverOptionTableView->model()->index(row, GamsParameterTableModel::COLUMN_OPTION_VALUE);
-    QVariant optionValue = ui->solverOptionTableView->model()->data(valueIndex, Qt::DisplayRole);
+    const QModelIndex keyIndex = ui->solverOptionTableView->model()->index(row, GamsParameterTableModel::COLUMN_OPTION_KEY);
+    const QVariant optionKey = ui->solverOptionTableView->model()->data(keyIndex, Qt::DisplayRole);
+    const QModelIndex valueIndex = ui->solverOptionTableView->model()->index(row, GamsParameterTableModel::COLUMN_OPTION_VALUE);
+    const QVariant optionValue = ui->solverOptionTableView->model()->data(valueIndex, Qt::DisplayRole);
     return QString("%1%2%3").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(), optionValue.toString());
 }
 
@@ -1373,8 +1373,8 @@ void SolverOptionWidget::addActions()
     ui->solverOptionTreeView->addAction(anotehrSelectAll);
 
     QAction* addThisOptionAction = mContextMenu.addAction(Theme::icon(":/%1/plus"), "Add this option", [this]() {
-        QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
-        if (selection.size()>0) {
+        const QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
+        if (!selection.isEmpty()) {
             ui->solverOptionTableView->clearSelection();
             ui->solverOptionTreeView->clearSelection();
             addOptionFromDefinition(selection.at(0));
@@ -1463,7 +1463,7 @@ bool SolverOptionWidget::isThereARow() const
 
 bool SolverOptionWidget::isThereARowSelection() const
 {
-    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+    const QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     return (selection.count() > 0);
 }
 
@@ -1493,8 +1493,8 @@ bool SolverOptionWidget::isViewCompact() const
 
 bool SolverOptionWidget::isEverySelectionARow() const
 {
-    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
-    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+    const QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+    const QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
 
     return ((selection.count() > 0) && (indexSelection.count() % ui->solverOptionTableView->model()->columnCount() == 0));
 }
@@ -1515,7 +1515,7 @@ void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
     updateTableColumnSpan();
     ui->solverOptionTableView->selectRow(index.row());
 
-    QString optionName = ui->solverOptionTableView->model()->data(index, Qt::DisplayRole).toString();
+    const QString optionName = ui->solverOptionTableView->model()->data(index, Qt::DisplayRole).toString();
     QModelIndexList definitionItems = ui->solverOptionTreeView->model()->match(ui->solverOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
                                                                      Qt::DisplayRole,
                                                                      optionName, 1);
@@ -1545,7 +1545,7 @@ void SolverOptionWidget::setModified(bool modified)
 bool SolverOptionWidget::saveAs(const QString &location)
 {
     setModified(false);
-    bool success = mOptionTokenizer->writeOptionFile(mOptionTableModel->getCurrentListOfOptionItems(), location, mEncoding);
+    const bool success = mOptionTokenizer->writeOptionFile(mOptionTableModel->getCurrentListOfOptionItems(), location, mEncoding);
     if (mLocation != location) {
         bool warning = false;
         if (FileType::from(FileKind::Opt) == FileType::from(QFileInfo(location).fileName()) &&
@@ -1579,14 +1579,14 @@ bool SolverOptionWidget::isInFocus(QWidget *focusWidget) const
 QString SolverOptionWidget::getSelectedOptionName(QWidget *widget) const
 {
     if (widget == ui->solverOptionTableView) {
-        QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+        const QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
         if (selection.count() > 0) {
-            QModelIndex index = selection.at(0);
-            QVariant headerData = ui->solverOptionTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
+            const QModelIndex index = selection.at(0);
+            const QVariant headerData = ui->solverOptionTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
             if (Qt::CheckState(headerData.toUInt())==Qt::PartiallyChecked) {
                 return "";
             }
-            QVariant data = ui->solverOptionTableView->model()->data( index.sibling(index.row(),0) );
+            const QVariant data = ui->solverOptionTableView->model()->data( index.sibling(index.row(),0) );
             if (mOptionTokenizer->getOption()->isValid(data.toString()))
                return data.toString();
             else if (mOptionTokenizer->getOption()->isASynonym(data.toString()))
@@ -1595,10 +1595,10 @@ QString SolverOptionWidget::getSelectedOptionName(QWidget *widget) const
                return "";
         }
     } else if (widget == ui->solverOptionTreeView) {
-        QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
+        const QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
         if (selection.count() > 0) {
-            QModelIndex index = selection.at(0);
-            QModelIndex  parentIndex =  ui->solverOptionTreeView->model()->parent(index);
+            const QModelIndex index = selection.at(0);
+            const QModelIndex  parentIndex =  ui->solverOptionTreeView->model()->parent(index);
             if (parentIndex.row() >= 0) {
                 return ui->solverOptionTreeView->model()->data( parentIndex.sibling(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ).toString();
             } else {
@@ -1610,6 +1610,6 @@ QString SolverOptionWidget::getSelectedOptionName(QWidget *widget) const
 }
 
 
-}
-}
-}
+} // namespace option
+} // namespace studio
+} // namespace gams

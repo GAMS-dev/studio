@@ -61,7 +61,7 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
         else
             return mCheckState[index];
     case Qt::ToolTipRole: {
-        QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
+        const QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
         if (mOptionItem.at(index)->disabled) {
             if (mOptionItem.at(index)->key.startsWith(lineComment))
                 return QString("%1 %2").arg(mOptionItem.at(index)->key, mOptionItem.at(index)->value);
@@ -131,8 +131,8 @@ int SolverOptionTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
 {
-    int row = index.row();
-    int col = index.column();
+    const int row = index.row();
+    const int col = index.column();
 
     if (mOptionItem.isEmpty())
         return QVariant();
@@ -280,10 +280,10 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
     QVector<int> roles;
     if (role == Qt::EditRole)   {
         roles = { Qt::EditRole };
-        QString dataValue = value.toString();
+        const QString dataValue = value.toString();
         if (index.column()==COLUMN_OPTION_KEY) {
             if (mOptionItem[index.row()]->disabled) {
-                QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
+                const QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
                 if (!dataValue.startsWith(lineComment))
                     mOptionItem[index.row()]->key = QString("%1 %2").arg(lineComment, dataValue);
                 else
@@ -346,7 +346,7 @@ bool SolverOptionTableModel::insertRows(int row, int count, const QModelIndex &p
 bool SolverOptionTableModel::removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
     Q_UNUSED(parent)
-    if (count < 1 || row < 0 || row > mOptionItem.size() || mOptionItem.size() ==0)
+    if (count < 1 || row < 0 || row > mOptionItem.size() || mOptionItem.isEmpty())
          return false;
 
     beginRemoveRows(QModelIndex(), row, row + count - 1);
@@ -437,12 +437,12 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         QList<SolverOptionItem *> itemList;
         QList<int> overrideIdRowList;
         for (const QString &text : std::as_const(newItems)) {
-            QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
+            const QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
             if (text.startsWith(lineComment)) {
                 itemList.append(new SolverOptionItem(-1, text, "", "", true));
             } else {
-                QStringList textList = text.split("=");
-                int optionid = mOption->getOptionDefinition(textList.at(0)).number;
+                const QStringList textList = text.split("=");
+                const int optionid = mOption->getOptionDefinition(textList.at(0)).number;
                 itemList.append(new SolverOptionItem(optionid,
                                                      textList.at( COLUMN_OPTION_KEY ),
                                                      textList.at( COLUMN_OPTION_VALUE ),
@@ -458,11 +458,11 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
 
         bool replaceExistingEntry = false;
-        bool singleEntryExisted = (overrideIdRowList.size()==1);
-        bool multipleEntryExisted = (overrideIdRowList.size()>1);
+        const bool singleEntryExisted = (overrideIdRowList.size()==1);
+        const bool multipleEntryExisted = (overrideIdRowList.size()>1);
         if (singleEntryExisted) {
-            QString option = data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString();
-            QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
+            const QString option = data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString();
+            const QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
                 .arg(getOptionTableEntry(overrideIdRowList.at(0)),
                 "When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
                 "The value of all other entries except the last entry will be ignored.");
@@ -485,12 +485,12 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
             QString option = data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString();
             QString entryDetailedText = QString("Entries:\n");
             int i = 0;
-            for (int id : overrideIdRowList)
+            for (const int id : overrideIdRowList)
                 entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getOptionTableEntry(id)));
-            QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
+            const QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
                 "When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
                 "The value of all other entries except the last entry will be ignored.");
-            int answer = MsgBox::question("Multiple Option Entries exist",
+            const int answer = MsgBox::question("Multiple Option Entries exist",
                                           "Multiple entries of Option '" + option + "' already exist.",
                                           "How do you want to proceed?", detailText, nullptr,
                                           "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
@@ -498,11 +498,11 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
             case 0: { // delete and replace
                 int prev = -1;
                 for(int i=overrideIdRowList.count()-1; i>=0; i--) {
-                    int current = overrideIdRowList[i];
+                    const int current = overrideIdRowList[i];
                     if (i==0)
                         continue;
                     if (current != prev) {
-                        QString text = getOptionTableEntry(current);
+                        const QString text = getOptionTableEntry(current);
                         removeRows( current, 1 );
                         mOptionTokenizer->logger()->append(QString("Option entry '%1' has been deleted").arg(text), LogMsgType::Info);
                         prev = current;
@@ -565,16 +565,16 @@ QList<SolverOptionItem *> SolverOptionTableModel::getCurrentListOfOptionItems() 
 
 QString SolverOptionTableModel::getOptionTableEntry(int row)
 {
-    QModelIndex keyIndex = index(row, COLUMN_OPTION_KEY);
-    QVariant optionKey = data(keyIndex, Qt::DisplayRole);
+    const QModelIndex keyIndex = index(row, COLUMN_OPTION_KEY);
+    const QVariant optionKey = data(keyIndex, Qt::DisplayRole);
     if (Qt::CheckState(headerData(row, Qt::Vertical, Qt::CheckStateRole).toInt())==Qt::PartiallyChecked) {
         return QString("%1 %2").arg(mOptionTokenizer->getOption()->isEOLCharDefined() ? QString(mOptionTokenizer->getOption()->getEOLChars().at(0)) :"#",
                                     optionKey.toString());
     } else {
-        QModelIndex valueIndex = index(row, COLUMN_OPTION_VALUE);
-        QVariant optionValue = data(valueIndex, Qt::DisplayRole);
-        QModelIndex commentIndex = index(row, COLUMN_EOL_COMMENT);
-        QVariant optionComment = data(commentIndex, Qt::DisplayRole);
+        const QModelIndex valueIndex = index(row, COLUMN_OPTION_VALUE);
+        const QVariant optionValue = data(valueIndex, Qt::DisplayRole);
+        const QModelIndex commentIndex = index(row, COLUMN_EOL_COMMENT);
+        const QVariant optionComment = data(commentIndex, Qt::DisplayRole);
         if (mOptionTokenizer->getOption()->isEOLCharDefined() && !optionComment.toString().isEmpty()) {
             return QString("%1%2%3  %4 %5").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(),
                                                 optionValue.toString(), QString(mOptionTokenizer->getOption()->getEOLChars().at(0)),
@@ -651,8 +651,8 @@ void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLef
                           Qt::CheckState(Qt::PartiallyChecked),
                           Qt::CheckStateRole );
           } else {
-              QString key = data( index(idx.row(), SolverOptionTableModel::COLUMN_OPTION_KEY), Qt::DisplayRole).toString();
-              QString value = data( index(idx.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE), Qt::DisplayRole).toString();
+              const QString key = data( index(idx.row(), SolverOptionTableModel::COLUMN_OPTION_KEY), Qt::DisplayRole).toString();
+              const QString value = data( index(idx.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE), Qt::DisplayRole).toString();
               QString text = "";
               if (mOption->isEOLCharDefined()) {
                   text = data( index(idx.row(), SolverOptionTableModel::COLUMN_EOL_COMMENT), Qt::DisplayRole).toString();
@@ -780,7 +780,7 @@ void SolverOptionTableModel::updateRecurrentStatus()
 
 void SolverOptionTableModel::setRowCount(int rows)
 {
-    int rc = mOptionItem.size();
+    const int rc = mOptionItem.size();
     if (rows < 0 ||  rc == rows)
        return;
 

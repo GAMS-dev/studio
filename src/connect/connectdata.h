@@ -33,7 +33,7 @@ public:
     ConnectData();
     ConnectData(const YAML::Node& node);
     ConnectData(const QString& inputFileName);
-    ~ConnectData();
+    ~ConnectData() override;
 
     void unload(const QString& outputFileName);
 protected:

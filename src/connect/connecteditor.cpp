@@ -106,26 +106,26 @@ bool ConnectEditor::init(bool quiet)
 
     ui->dataTreeView->setModel( mDataModel );
     ConnectDataValueDelegate* valuedelegate = new ConnectDataValueDelegate(ui->dataTreeView);
-    ui->dataTreeView->setItemDelegateForColumn((int)DataItemColumn::Value, valuedelegate );
+    ui->dataTreeView->setItemDelegateForColumn(static_cast<int>(DataItemColumn::Value), valuedelegate );
 
     ConnectDataKeyDelegate* keydelegate = new ConnectDataKeyDelegate(mConnect, ui->dataTreeView);
-    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Key, keydelegate);
+    ui->dataTreeView->setItemDelegateForColumn( static_cast<int>(DataItemColumn::Key), keydelegate);
     ConnectDataActionDelegate* actiondelegate = new ConnectDataActionDelegate( ui->dataTreeView);
-    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Delete, actiondelegate);
-    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveDown, actiondelegate);
-    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveUp, actiondelegate);
+    ui->dataTreeView->setItemDelegateForColumn( static_cast<int>(DataItemColumn::Delete), actiondelegate);
+    ui->dataTreeView->setItemDelegateForColumn( static_cast<int>(DataItemColumn::MoveDown), actiondelegate);
+    ui->dataTreeView->setItemDelegateForColumn( static_cast<int>(DataItemColumn::MoveUp), actiondelegate);
 
     ui->dataTreeView->header()->hide();     // hide header
     new TreeCellResizer(ui->dataTreeView);  // resize tree cell instead of header
-    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Key, QHeaderView::Interactive);
-    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Value, QHeaderView::Stretch);
-    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Delete, QHeaderView::ResizeToContents);
-    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MoveDown, QHeaderView::ResizeToContents);
-    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MoveUp, QHeaderView::ResizeToContents);
+    ui->dataTreeView->header()->setSectionResizeMode(static_cast<int>(DataItemColumn::Key), QHeaderView::Interactive);
+    ui->dataTreeView->header()->setSectionResizeMode(static_cast<int>(DataItemColumn::Value), QHeaderView::Stretch);
+    ui->dataTreeView->header()->setSectionResizeMode(static_cast<int>(DataItemColumn::Delete), QHeaderView::ResizeToContents);
+    ui->dataTreeView->header()->setSectionResizeMode(static_cast<int>(DataItemColumn::MoveDown), QHeaderView::ResizeToContents);
+    ui->dataTreeView->header()->setSectionResizeMode(static_cast<int>(DataItemColumn::MoveUp), QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setMinimumSectionSize(16);
-    ui->dataTreeView->header()->resizeSection((int)DataItemColumn::Delete,   16 /*width*/);
-    ui->dataTreeView->header()->resizeSection((int)DataItemColumn::MoveDown, 16 /*width*/);
-    ui->dataTreeView->header()->resizeSection((int)DataItemColumn::MoveUp,   16 /*width*/);
+    ui->dataTreeView->header()->resizeSection(static_cast<int>(DataItemColumn::Delete),   16 /*width*/);
+    ui->dataTreeView->header()->resizeSection(static_cast<int>(DataItemColumn::MoveDown), 16 /*width*/);
+    ui->dataTreeView->header()->resizeSection(static_cast<int>(DataItemColumn::MoveUp),   16 /*width*/);
     ui->dataTreeView->header()->setStretchLastSection(false);
     ui->dataTreeView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::SelectedClicked
@@ -142,15 +142,15 @@ bool ConnectEditor::init(bool quiet)
     ui->dataTreeView->expandAll();
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaType, true);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::ElementID, true);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaKey, true);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Undefined, true);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::InvalidValue, true);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::ExcludedKeys, true);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::DefaultValue, true);
+    ui->dataTreeView->setColumnHidden( static_cast<int>(DataItemColumn::CheckState), true);
+    ui->dataTreeView->setColumnHidden( static_cast<int>(DataItemColumn::SchemaType), true);
+    ui->dataTreeView->setColumnHidden( static_cast<int>(DataItemColumn::AllowedValue), true);
+    ui->dataTreeView->setColumnHidden( static_cast<int>(DataItemColumn::ElementID), true);
+    ui->dataTreeView->setColumnHidden( static_cast<int>(DataItemColumn::SchemaKey), true);
+    ui->dataTreeView->setColumnHidden( static_cast<int>(DataItemColumn::Undefined), true);
+    ui->dataTreeView->setColumnHidden( static_cast<int>(DataItemColumn::InvalidValue), true);
+    ui->dataTreeView->setColumnHidden( static_cast<int>(DataItemColumn::ExcludedKeys), true);
+    ui->dataTreeView->setColumnHidden( static_cast<int>(DataItemColumn::DefaultValue), true);
     ui->dataTreeView->setRootIndex( mDataModel->index(0,0, QModelIndex()) );    // hide root
     headerRegister(ui->dataTreeView->header());
 
@@ -164,16 +164,16 @@ bool ConnectEditor::init(bool quiet)
     ui->helpTreeView->setDragEnabled(true);
     ui->helpTreeView->setDragDropMode(QAbstractItemView::DragOnly);
     ui->helpTreeView->expandAll();
-    ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Field);
-    ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Required);
-    ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Type);
-    ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Default);
-    ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::AllowedValue);
-    ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::min);
-    ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::Nullable, true );
-    ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::SchemaKey, true );
-    ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::DragEnabled, true );
-    ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::min, true );
+    ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::Field));
+    ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::Required));
+    ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::Type));
+    ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::Default));
+    ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::AllowedValue));
+    ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::min));
+    ui->helpTreeView->setColumnHidden( static_cast<int>(SchemaItemColumn::Nullable), true );
+    ui->helpTreeView->setColumnHidden( static_cast<int>(SchemaItemColumn::SchemaKey), true );
+    ui->helpTreeView->setColumnHidden( static_cast<int>(SchemaItemColumn::DragEnabled), true );
+    ui->helpTreeView->setColumnHidden( static_cast<int>(SchemaItemColumn::min), true );
     headerRegister(ui->helpTreeView->header());
 
     ui->onlyRequiredAttribute->setCheckState(Qt::Unchecked);
@@ -183,10 +183,10 @@ bool ConnectEditor::init(bool quiet)
     connect(keydelegate, &ConnectDataKeyDelegate::requestAppendItem, this, &ConnectEditor::appendItemRequested, Qt::UniqueConnection);
     connect(keydelegate, &ConnectDataKeyDelegate::requestInsertSchemaItem, this, &ConnectEditor::appendSchemaItemRequested, Qt::UniqueConnection);
     connect(keydelegate, &ConnectDataKeyDelegate::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
-    connect(keydelegate, &ConnectDataKeyDelegate::modificationChanged, this, [this]() { ui->dataTreeView->resizeColumnToContents((int)DataItemColumn::Key); });
+    connect(keydelegate, &ConnectDataKeyDelegate::modificationChanged, this, [this]() { ui->dataTreeView->resizeColumnToContents(static_cast<int>(DataItemColumn::Key)); });
 
     connect(valuedelegate, &ConnectDataValueDelegate::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
-    connect(valuedelegate, &ConnectDataValueDelegate::modificationChanged, this, [this]() { ui->dataTreeView->resizeColumnToContents((int)DataItemColumn::Value); });
+    connect(valuedelegate, &ConnectDataValueDelegate::modificationChanged, this, [this]() { ui->dataTreeView->resizeColumnToContents(static_cast<int>(DataItemColumn::Value)); });
     connect(actiondelegate, &ConnectDataActionDelegate::requestDeleteItem, this, &ConnectEditor::deleteDataItemRequested, Qt::UniqueConnection);
     connect(actiondelegate, &ConnectDataActionDelegate::requestMoveUpItem, this, &ConnectEditor::moveUpDatatItemRequested, Qt::UniqueConnection);
     connect(actiondelegate, &ConnectDataActionDelegate::requestMoveDownItem, this, &ConnectEditor::moveDownDatatItemRequested, Qt::UniqueConnection);
@@ -224,20 +224,20 @@ bool ConnectEditor::init(bool quiet)
     connect(mDataModel, &ConnectDataModel::modelReset  , this, [this]() {
         ui->dataTreeView->expandRecursively(mDataModel->index(0,0));
         ui->dataTreeView->setRootIndex( mDataModel->index(0,0, QModelIndex()) );    // hide root
-        ui->dataTreeView->resizeColumnToContents((int)DataItemColumn::Key);
-        ui->dataTreeView->resizeColumnToContents((int)DataItemColumn::Value);
+        ui->dataTreeView->resizeColumnToContents(static_cast<int>(DataItemColumn::Key));
+        ui->dataTreeView->resizeColumnToContents(static_cast<int>(DataItemColumn::Value));
     });
 
     connect(defmodel, &SchemaDefinitionModel::modelReset, this, [this]() {
         ui->helpTreeView->expandAll();
-        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Field);
-        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Required);
-        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Type);
-        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Default);
-        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::AllowedValue);
-        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::min);
-        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::SchemaKey);
-        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::DragEnabled);
+        ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::Field));
+        ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::Required));
+        ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::Type));
+        ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::Default));
+        ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::AllowedValue));
+        ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::min));
+        ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::SchemaKey));
+        ui->helpTreeView->resizeColumnToContents(static_cast<int>(SchemaItemColumn::DragEnabled));
     });
 
     setModified(false);
@@ -354,12 +354,12 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
 {
     setModified(true);
 
-    const QModelIndex checkstate_idx = index.sibling(index.row(), (int)DataItemColumn::CheckState);
-    if ((int)DataCheckState::ListAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
+    const QModelIndex checkstate_idx = index.sibling(index.row(), static_cast<int>(DataItemColumn::CheckState));
+    if (static_cast<int>(DataCheckState::ListAppend)==checkstate_idx.data(Qt::DisplayRole).toInt()) {
         if (index.parent().isValid() &&
-            index.parent().siblingAtColumn((int)DataItemColumn::Undefined).data(Qt::DisplayRole).toBool())
+            index.parent().siblingAtColumn(static_cast<int>(DataItemColumn::Undefined)).data(Qt::DisplayRole).toBool())
             return;
-        const QModelIndex values_idx = index.sibling(index.row(), (int)DataItemColumn::SchemaKey);
+        const QModelIndex values_idx = index.sibling(index.row(), static_cast<int>(DataItemColumn::SchemaKey));
         QStringList schema = values_idx.data(Qt::DisplayRole).toString().split(":");
         if ( !schema.isEmpty() ) {
             const QString schemaname = schema.at(0);
@@ -369,22 +369,22 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
             ConnectData* schemadata = mConnect->createDataHolderFromSchema(schemaname, schema, (ui->onlyRequiredAttribute->checkState()==Qt::Checked), true);
             mDataModel->appendListElement(schemaname, schema, schemadata, index);
         }
-    } else if ((int)DataCheckState::MapAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
+    } else if (static_cast<int>(DataCheckState::MapAppend)==checkstate_idx.data(Qt::DisplayRole).toInt()) {
                mDataModel->appendMapElement(index);
     }
 }
 
 void ConnectEditor::appendSchemaItemRequested(const int schemaNumber, const QModelIndex &index)
 {
-    const QModelIndex checkstate_idx = index.sibling(index.row(), (int)DataItemColumn::CheckState);
-    if ((int)DataCheckState::SchemaAppend!=checkstate_idx.data(Qt::DisplayRole).toInt())
+    const QModelIndex checkstate_idx = index.sibling(index.row(), static_cast<int>(DataItemColumn::CheckState));
+    if (static_cast<int>(DataCheckState::SchemaAppend)!=checkstate_idx.data(Qt::DisplayRole).toInt())
         return;
 
     if (index.parent().isValid() &&
-        index.parent().siblingAtColumn((int)DataItemColumn::Undefined).data(Qt::DisplayRole).toBool())
+        index.parent().siblingAtColumn(static_cast<int>(DataItemColumn::Undefined)).data(Qt::DisplayRole).toBool())
         return;
 
-    const QModelIndex values_idx = index.parent().siblingAtColumn( (int)DataItemColumn::SchemaKey );
+    const QModelIndex values_idx = index.parent().siblingAtColumn( static_cast<int>(DataItemColumn::SchemaKey) );
     QStringList schema = values_idx.data().toString().split(":");
     QString schemaname = "";
     schema << "["+QString::number(schemaNumber)+"]";
