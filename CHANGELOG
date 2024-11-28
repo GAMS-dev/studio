@@ -1,3 +1,7 @@
+Version 1.19.4 *
+==================
+- Fixed that existing files were added to the project, although `Abort` was selected when getting a model from the mode library.
+
 Version 1.19.3
 ==================
 - added system log messages for check for update
