@@ -28,7 +28,7 @@ namespace studio {
 namespace option {
 
 EnvVarCfgCompleterDelegate::EnvVarCfgCompleterDelegate(QObject *parent) :
-    QStyledItemDelegate(parent)
+    QStyledItemDelegate(parent), mIsLastEditorClosed(true), mLastEditor(nullptr)
 {
     mCurrentEditedIndex = QModelIndex();
     connect( this, &EnvVarCfgCompleterDelegate::currentEditedIndexChanged, this, &EnvVarCfgCompleterDelegate::updateCurrentEditedIndex);

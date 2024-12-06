@@ -157,7 +157,7 @@ private:
 };
 
 
-}
-}
-}
+} // namespace option
+} // namespace studio
+} // namespace gams
 #endif // SOLVEROPTIONWIDGET_H

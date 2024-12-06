@@ -40,7 +40,7 @@ AddOptionHeaderView::~AddOptionHeaderView()
 bool AddOptionHeaderView::event(QEvent *event)
 {
     if (event->type() == QEvent::ToolTip) {
-        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        QHelpEvent *helpEvent = dynamic_cast<QHelpEvent *>(event);
         if (isAddOptionCoordinate(helpEvent->pos())) {
             QToolTip::showText(helpEvent->globalPos(), "Add/Append new option");
         } else {
@@ -60,8 +60,8 @@ void AddOptionHeaderView::mousePressEvent(QMouseEvent* event)
         tableView->selectionModel()->clearSelection();
         tableView->model()->insertRows(tableView->model()->rowCount(), 1, QModelIndex());
 
-        QModelIndex keyIndex = tableView->model()->index(tableView->model()->rowCount()-1, 0);
-        QModelIndex valueIndex = tableView->model()->index(tableView->model()->rowCount()-1, 1);
+        const QModelIndex keyIndex = tableView->model()->index(tableView->model()->rowCount()-1, 0);
+        const QModelIndex valueIndex = tableView->model()->index(tableView->model()->rowCount()-1, 1);
         tableView->model()->setData( keyIndex, OptionTokenizer::keyGeneratedStr, Qt::EditRole );
         tableView->model()->setData( valueIndex, OptionTokenizer::valueGeneratedStr, Qt::EditRole );
         if (tableView->model()->columnCount() > 3) {
@@ -82,7 +82,7 @@ void AddOptionHeaderView::mousePressEvent(QMouseEvent* event)
 
 bool AddOptionHeaderView::isAddOptionCoordinate(QPoint p)
 {
-    int index = logicalIndexAt(p);
+    const int index = logicalIndexAt(p);
     if (index != mLogicalIndex)
         return false;
 
@@ -96,13 +96,13 @@ void AddOptionHeaderView::paintSection(QPainter* painter, const QRect &rect, int
     QHeaderView::paintSection(painter, rect, logicalIndex);
     painter->restore();
     if (logicalIndex == 0) {
-         QIcon icon(Theme::icon(":/%1/plus"));
-         int iconWidth = static_cast<int>(rect.height()*ICON_SCALE_FACTOR);
-         int iconMargin = static_cast<int>((rect.height() - iconWidth)*ICON_MARGIN_FACTOR);
-         QPixmap pm = icon.pixmap(iconWidth, iconWidth);
+         const QIcon icon(Theme::icon(":/%1/plus"));
+         const int iconWidth = static_cast<int>(rect.height()*ICON_SCALE_FACTOR);
+         const int iconMargin = static_cast<int>((rect.height() - iconWidth)*ICON_MARGIN_FACTOR);
+         const QPixmap pm = icon.pixmap(iconWidth, iconWidth);
 
-         int posX = rect.topLeft().x();
-         int posY = rect.topLeft().y() + iconMargin;
+         const int posX = rect.topLeft().x();
+         const int posY = rect.topLeft().y() + iconMargin;
 
          painter->drawImage(posX, posY, pm.toImage());
 

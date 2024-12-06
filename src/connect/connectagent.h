@@ -31,8 +31,8 @@ class ConnectAgent
 {
 protected:
     virtual ~ConnectAgent() {}
-    virtual void loadFromFile(const QString& inputFileName);
-    virtual void loadFromString(const QString& input);
+    void loadFromFile(const QString& inputFileName);
+    void loadFromString(const QString& input);
 
     YAML::Node mRootNode;
 

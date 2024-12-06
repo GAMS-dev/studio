@@ -62,14 +62,14 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
             OptionDefinitionItem *childItem = static_cast<OptionDefinitionItem*>(index.internalPointer());
             OptionDefinitionItem *parentItem = childItem->parentItem();
 
-            QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
-            QModelIndex descriptionIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
+            const QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
+            const QModelIndex descriptionIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
             if (parentItem == rootItem) {
                 if (settings && settings->toBool(skSoAddCommentAbove)) {
                     stream << QString("%1 %2").arg(lineComment, data(descriptionIndex, Qt::DisplayRole).toString());
                 }
-                QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
-                QModelIndex optionIdIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
+                const QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
+                const QModelIndex optionIdIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
                 stream << QString("%1=%2=%3=%4").arg(data(index, Qt::DisplayRole).toString(),
                                                      data(defValueIndex, Qt::DisplayRole).toString(),
                                                      data(descriptionIndex, Qt::DisplayRole).toString(),
@@ -121,10 +121,10 @@ void SolverOptionDefinitionModel::modifyOptionDefinition(const QList<SolverOptio
             modifiedOption[optionItems.at(i)->optionId] = i;
     }
 
-    QList<int> ids = modifiedOption.keys();
+    const QList<int> ids = modifiedOption.keys();
     beginResetModel();
     for(int i=0; i<rowCount(); ++i)  {
-        QModelIndex node = index(i, OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
+        const QModelIndex node = index(i, OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
 
         OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(node.internalPointer());
         OptionDefinitionItem *parentItem = item->parentItem();

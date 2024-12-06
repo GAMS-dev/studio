@@ -37,7 +37,7 @@ void LineEditCompleteEvent::complete()
 QEvent::Type LineEditCompleteEvent::type()
 {
    if (LineEditCompleteEventType == QEvent::None) {
-       int generatedType = QEvent::registerEventType();
+       const int generatedType = QEvent::registerEventType();
        LineEditCompleteEventType = static_cast<QEvent::Type>(generatedType);
    }
    return LineEditCompleteEventType;

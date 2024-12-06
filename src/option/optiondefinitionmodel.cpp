@@ -49,7 +49,7 @@ OptionDefinitionItem *OptionDefinitionModel::getItem(const QModelIndex &index) c
 {
     if (index.isValid()) {
         OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
-        if (item)
+        if (item != nullptr)
             return item;
     }
     return rootItem;
@@ -67,7 +67,7 @@ void OptionDefinitionModel::insertItem(int position, OptionDefinitionItem *item,
 bool OptionDefinitionModel::removeItem(const QModelIndex &index)
 {
     OptionDefinitionItem* treeItem = getItem(index);
-    if (treeItem)
+    if (treeItem != nullptr)
         return removeRows(treeItem->row(), 1, parent(index));
     else
         return false;
@@ -150,7 +150,7 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
 
 Qt::ItemFlags OptionDefinitionModel::flags(const QModelIndex& index) const
 {
-    Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
+    const Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
     if (!index.isValid())
         return Qt::NoItemFlags;
     else
@@ -164,7 +164,7 @@ bool OptionDefinitionModel::setData(const QModelIndex &index, const QVariant &va
     case Qt::DisplayRole: {
         roles = { Qt::EditRole };
         OptionDefinitionItem *item = getItem(index);
-        bool result = item->setData(index.column(), value);
+        const bool result = item->setData(index.column(), value);
 
         if (result)
             emit dataChanged(index, index, roles);
@@ -198,7 +198,7 @@ QModelIndex OptionDefinitionModel::index(int row, int column, const QModelIndex&
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    OptionDefinitionItem *parentItem;
+    OptionDefinitionItem *parentItem = nullptr;
 
     if (!parent.isValid())
         parentItem = rootItem;
@@ -228,7 +228,7 @@ QModelIndex OptionDefinitionModel::parent(const QModelIndex& index) const
 
 int OptionDefinitionModel::rowCount(const QModelIndex& parent) const
 {
-    OptionDefinitionItem* parentItem;
+    OptionDefinitionItem* parentItem = nullptr;
     if (parent.column() > 0)
         return 0;
 
@@ -312,7 +312,7 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
                 if (!value.hidden)
                     valueList.append( value );
             }
-            if (valueList.size()>0) {
+            if (!valueList.isEmpty()) {
                 range.append("{");
                 int i = 0;
                 for(i =0; i<valueList.size()-1; i++) {
@@ -339,7 +339,7 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
                 if (!value.hidden)
                     valueList.append( value );
             }
-            if (valueList.size()>0) {
+            if (!valueList.isEmpty()) {
                 range.append("{");
                 int i = 0;
                 for(i =0; i<valueList.size()-1; i++) {
@@ -381,10 +381,10 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
 
         parents.last()->appendChild(item);
 
-        if (optdef.valueList.size() > 0) {
+        if (!optdef.valueList.isEmpty()) {
             parents << parents.last()->child(parents.last()->childCount()-1);
             for(int j=0; j<optdef.valueList.size(); ++j) {
-                OptionValue enumValue = optdef.valueList.at(j);
+                const OptionValue enumValue = optdef.valueList.at(j);
                 if (enumValue.hidden)
                     continue;
                 QList<QVariant> enumData;

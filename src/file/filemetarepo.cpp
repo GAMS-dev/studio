@@ -61,7 +61,7 @@ FileMeta *FileMetaRepo::fileMeta(QWidget* const &editor) const
     } else if (editor->property("WP").toString() == "WP") {
         return nullptr;
     } else {
-        DEB() << "No location information for requested editor";
+        DEB() << "No location information for requested editor, type " << editor->objectName();
         FileMeta *res = nullptr;
         DEB() << " - trying to find file meta";
         for (FileMeta *meta : fileMetas()) {

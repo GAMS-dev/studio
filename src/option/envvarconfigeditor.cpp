@@ -128,9 +128,9 @@ void EnvVarConfigEditor::on_selectRow(int logicalIndex)
         return;
 
     QItemSelectionModel *selectionModel = ui->EnvVarConfigTableView->selectionModel();
-    QModelIndex topLeft = ui->EnvVarConfigTableView->model()->index(logicalIndex, EnvVarTableModel::COLUMN_PARAM_KEY, QModelIndex());
-    QModelIndex  bottomRight = ui->EnvVarConfigTableView->model()->index(logicalIndex, EnvVarTableModel::COLUMN_PARAM_VALUE, QModelIndex());
-    QItemSelection selection( topLeft, bottomRight);
+    const QModelIndex topLeft = ui->EnvVarConfigTableView->model()->index(logicalIndex, EnvVarTableModel::COLUMN_PARAM_KEY, QModelIndex());
+    const QModelIndex  bottomRight = ui->EnvVarConfigTableView->model()->index(logicalIndex, EnvVarTableModel::COLUMN_PARAM_VALUE, QModelIndex());
+    const QItemSelection selection( topLeft, bottomRight);
     selectionModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
 
     updateActionsState();
@@ -139,7 +139,7 @@ void EnvVarConfigEditor::on_selectRow(int logicalIndex)
 void EnvVarConfigEditor::showContextMenu(const QPoint &pos)
 {
     QModelIndexList indexSelection = ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->EnvVarConfigTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
     updateActionsState();
@@ -235,7 +235,7 @@ void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)
     ui->EnvVarConfigTableView->setDefaultDropAction(Qt::CopyAction);
 
     ui->EnvVarConfigTableView->verticalHeader()->setMinimumSectionSize(1);
-    ui->EnvVarConfigTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    ui->EnvVarConfigTableView->verticalHeader()->setDefaultSectionSize(static_cast<int>(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->EnvVarConfigTableView->horizontalHeader()->setSectionResizeMode(EnvVarTableModel::COLUMN_PARAM_KEY, QHeaderView::Stretch);
     ui->EnvVarConfigTableView->horizontalHeader()->setSectionResizeMode(EnvVarTableModel::COLUMN_PARAM_VALUE, QHeaderView::Stretch);
     ui->EnvVarConfigTableView->horizontalHeader()->setStretchLastSection(true);
@@ -318,7 +318,7 @@ bool EnvVarConfigEditor::isEverySelectionARow() const
 void EnvVarConfigEditor::on_actionInsert_triggered()
 {
     QModelIndexList indexSelection = ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->EnvVarConfigTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
@@ -327,7 +327,7 @@ void EnvVarConfigEditor::on_actionInsert_triggered()
     if (isThereARowSelection()) {
         QList<int> rows;
         const auto indexes = ui->EnvVarConfigTableView->selectionModel()->selectedRows();
-        for(QModelIndex idx : indexes) {
+        for(const QModelIndex idx : indexes) {
             rows.append( idx.row() );
         }
         std::sort(rows.begin(), rows.end());
@@ -338,11 +338,11 @@ void EnvVarConfigEditor::on_actionInsert_triggered()
         rowToBeInserted = mEnvVarTableModel->rowCount()-1;
     }
 
-    QModelIndex insertKeyIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_PARAM_KEY);
-    QModelIndex insertValueIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_PARAM_VALUE);
-    QModelIndex minVersionIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_MIN_VERSION);
-    QModelIndex maxVersionIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_MIN_VERSION);
-    QModelIndex pathVarIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_PATH_VAR);
+    const QModelIndex insertKeyIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_PARAM_KEY);
+    const QModelIndex insertValueIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_PARAM_VALUE);
+    const QModelIndex minVersionIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_MIN_VERSION);
+    const QModelIndex maxVersionIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_MIN_VERSION);
+    const QModelIndex pathVarIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_PATH_VAR);
     ui->EnvVarConfigTableView->model()->setHeaderData(rowToBeInserted, Qt::Vertical,
                                                     Qt::CheckState(Qt::Unchecked),
                                                     Qt::CheckStateRole );
@@ -361,7 +361,7 @@ void EnvVarConfigEditor::on_actionInsert_triggered()
     ui->EnvVarConfigTableView->clearSelection();
     ui->EnvVarConfigTableView->selectRow(rowToBeInserted);
 
-    QModelIndex index = mEnvVarTableModel->index(rowToBeInserted, EnvVarTableModel::COLUMN_PARAM_KEY);
+    const QModelIndex index = mEnvVarTableModel->index(rowToBeInserted, EnvVarTableModel::COLUMN_PARAM_KEY);
     ui->EnvVarConfigTableView->edit( index );
     updateActionsState(index);
 }
@@ -369,14 +369,14 @@ void EnvVarConfigEditor::on_actionInsert_triggered()
 void EnvVarConfigEditor::on_actionDelete_triggered()
 {
     QModelIndexList indexSelection = ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->EnvVarConfigTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
     if  (!isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
     if (isThereARowSelection() && isEverySelectionARow()) {
-        QItemSelection selection( ui->EnvVarConfigTableView->selectionModel()->selection() );
+        const QItemSelection selection( ui->EnvVarConfigTableView->selectionModel()->selection() );
 
         QList<int> rows;
         const auto indexes = ui->EnvVarConfigTableView->selectionModel()->selectedRows();
@@ -387,7 +387,7 @@ void EnvVarConfigEditor::on_actionDelete_triggered()
         std::sort(rows.begin(), rows.end());
         int prev = -1;
         for(int i=rows.count()-1; i>=0; i--) {
-            int current = rows[i];
+            const int current = rows[i];
             if (current != prev) {
                 ui->EnvVarConfigTableView->model()->removeRows( current, 1 );
                 prev = current;
@@ -399,21 +399,21 @@ void EnvVarConfigEditor::on_actionDelete_triggered()
 void EnvVarConfigEditor::on_actionMoveUp_triggered()
 {
     QModelIndexList indexSelection =ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
        ui->EnvVarConfigTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
     if  ( !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
-    QModelIndexList selection =ui->EnvVarConfigTableView->selectionModel()->selectedRows();
+    const QModelIndexList selection =ui->EnvVarConfigTableView->selectionModel()->selectedRows();
     QModelIndexList idxSelection = QModelIndexList(selection);
     std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() < b.row(); });
     if  (idxSelection.first().row() <= 0)
         return;
 
     for(int i=0; i<idxSelection.size(); i++) {
-        QModelIndex idx = idxSelection.at(i);
+        const QModelIndex idx = idxSelection.at(i);
         mEnvVarTableModel->moveRows(QModelIndex(), idx.row(), 1,
                                                          QModelIndex(), idx.row()-1);
     }
@@ -424,21 +424,21 @@ void EnvVarConfigEditor::on_actionMoveUp_triggered()
 void EnvVarConfigEditor::on_actionMoveDown_triggered()
 {
     QModelIndexList indexSelection =ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
        ui->EnvVarConfigTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
     if  ( !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
-    QModelIndexList selection =ui->EnvVarConfigTableView->selectionModel()->selectedRows();
+    const QModelIndexList selection =ui->EnvVarConfigTableView->selectionModel()->selectedRows();
     QModelIndexList idxSelection = QModelIndexList(selection);
     std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() < b.row(); });
     if  (idxSelection.first().row() >= mEnvVarTableModel->rowCount()-1)
         return;
 
     for(int i=0; i<idxSelection.size(); i++) {
-        QModelIndex idx = idxSelection.at(i);
+        const QModelIndex idx = idxSelection.at(i);
         mEnvVarTableModel->moveRows(QModelIndex(), idx.row(), 1,
                                     QModelIndex(), idx.row()+2);
     }
@@ -450,7 +450,7 @@ void EnvVarConfigEditor::on_actionSelect_Current_Row_triggered()
 {
    QList<int> rowList;
    const auto indexes = ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
-   for(QModelIndex idx : indexes) {
+   for(const QModelIndex idx : indexes) {
        if (!rowList.contains(idx.row())) {
            on_selectRow(idx.row());
            rowList << idx.row();

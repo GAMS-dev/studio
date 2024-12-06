@@ -324,9 +324,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->dockHelpView->installEventFilter(this);
     installEventFilter(this);
 
-    connect(qApp, &QApplication::focusChanged, this, [this](QWidget *old, QWidget *now) {
-        if (old != now)
-            updateRecentEdit(old, now);
+    connect(qApp, &QApplication::focusChanged, this, [this](QWidget */*old*/, QWidget *now) {
+        if (mRecent.editor() != now)
+            updateRecentEdit(mRecent.editor(), now);
     } );
 
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
@@ -1216,7 +1216,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
                 fm->renameToBackup();
                 // and continue;
                 break;
-            case QMessageBox::Abort:
+            default:
                 return;
             }
         } else {
@@ -1785,7 +1785,7 @@ void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const Q
             file.open(QFile::WriteOnly); // create empty file
             file.close();
             break;
-        case QMessageBox::Abort:
+        default:
             return;
         }
     } else if (!suffix.isEmpty()) {

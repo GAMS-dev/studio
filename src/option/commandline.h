@@ -47,7 +47,7 @@ public slots:
     void validateChangedParameter(const QString &text);
 
 protected:
-    virtual void keyPressEvent(QKeyEvent *e) override;
+    void keyPressEvent(QKeyEvent *e) override;
 
 private:
     QString mParameterString;

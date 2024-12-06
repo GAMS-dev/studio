@@ -50,20 +50,20 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
 {
     QStyledItemDelegate::initStyleOption(option, index);
     option->text = index.data(Qt::DisplayRole).toString();
-    if (index.column()!=(int)DataItemColumn::Key)
+    if (index.column()!=static_cast<int>(DataItemColumn::Key))
         return;
 
-    QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
-    if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::SchemaName) {
+    QModelIndex checkstate_index = index.sibling(index.row(), static_cast<int>(DataItemColumn::CheckState) );
+    if (checkstate_index.data( Qt::DisplayRole ).toInt()==static_cast<int>(DataCheckState::SchemaName)) {
         option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
         option->decorationPosition = QStyleOptionViewItem::Right;
         mSchemaHelpPosition[index.data(Qt::DisplayRole).toString()] =
                     QRect(option->rect.bottomRight().x()-mIconWidth, option->rect.bottomRight().y()-mIconHeight, mIconWidth , mIconHeight);
-    } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ListAppend ||
-               checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::MapAppend) {
+    } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==static_cast<int>(DataCheckState::ListAppend) ||
+               checkstate_index.data( Qt::DisplayRole ).toInt()==static_cast<int>(DataCheckState::MapAppend )    ) {
                option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
                mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
-    } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::SchemaAppend) {
+    } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==static_cast<int>(DataCheckState::SchemaAppend)) {
         option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
         mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
     }
@@ -72,18 +72,18 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
 QWidget *ConnectDataKeyDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     Q_UNUSED(option)
-    QModelIndex checkstate_index = index.sibling( index.row(), (int)DataItemColumn::CheckState );
+    const QModelIndex checkstate_index = index.sibling( index.row(), static_cast<int>(DataItemColumn::CheckState) );
 
-    if (checkstate_index.data().toInt()==(int)DataCheckState::SchemaAppend) {
+    if (checkstate_index.data().toInt()==static_cast<int>(DataCheckState::SchemaAppend)) {
         QComboBox* editor = new QComboBox(parent);
-        QModelIndex schemastr_index = index.parent().siblingAtColumn( (int)DataItemColumn::SchemaKey );
+        const QModelIndex schemastr_index = index.parent().siblingAtColumn( static_cast<int>(DataItemColumn::SchemaKey) );
         QStringList schemastr_list  = schemastr_index.data().toString().split(":");
         if (schemastr_list.last().compare("-")==0)
             schemastr_list.removeLast();
         ConnectSchema* schema = mConnect->getSchema(schemastr_list.first());
         if (schema) {
-            QString keystr = index.parent().siblingAtColumn( (int)DataItemColumn::Key ).data().toString();
-            int number = schema->getNumberOfOneOfSchemaDefined(schemastr_list.last());
+            const QString keystr = index.parent().siblingAtColumn( static_cast<int>(DataItemColumn::Key) ).data().toString();
+            const int number = schema->getNumberOfOneOfSchemaDefined(schemastr_list.last());
             connect(editor,  QOverload<int>::of(&QComboBox::activated),
                     this, &ConnectDataKeyDelegate::commitAndCloseEditor);
             for(int i=0; i<number; ++i)
@@ -95,15 +95,15 @@ QWidget *ConnectDataKeyDelegate::createEditor(QWidget *parent, const QStyleOptio
             mIsLastEditorClosed = true;
         }
         return editor;
-    } else if (checkstate_index.data().toInt()==(int)DataCheckState::ElementKey) {
+    } else if (checkstate_index.data().toInt()==static_cast<int>(DataCheckState::ElementKey)) {
                QLineEdit* lineEdit = new QLineEdit(parent);
                QCompleter* completer = new QCompleter(lineEdit);
-               QModelIndex allowedval_index = index.sibling( index.row(), (int)DataItemColumn::AllowedValue );
+               QModelIndex allowedval_index = index.sibling( index.row(), static_cast<int>(DataItemColumn::AllowedValue) );
                QStringList allowedval_list = allowedval_index.data().toString().split(",");
                if (!allowedval_index.data().toString().isEmpty() && allowedval_list.size() > 0) {
                    completer->setModel( new QStringListModel(allowedval_list) );
                } else {
-                   QModelIndex type_index = index.sibling( index.row(), (int)DataItemColumn::SchemaType );
+                   QModelIndex type_index = index.sibling( index.row(), static_cast<int>(DataItemColumn::SchemaType) );
                    QStringList type_list = type_index.data().toString().split(",");
                    if (type_list.contains("boolean", Qt::CaseInsensitive)) {
                        QStringList boolean_list({ "true", "false"});
@@ -121,7 +121,7 @@ QWidget *ConnectDataKeyDelegate::createEditor(QWidget *parent, const QStyleOptio
                mIsLastEditorClosed = false;
 
                return lineEdit;
-    } else if (checkstate_index.data().toInt()==(int)DataCheckState::ElementMap) {
+    } else if (checkstate_index.data().toInt()==static_cast<int>(DataCheckState::ElementMap)) {
         QLineEdit* lineEdit = new QLineEdit(parent);
         lineEdit->adjustSize();
 
@@ -149,8 +149,8 @@ void ConnectDataKeyDelegate::setEditorData(QWidget *editor, const QModelIndex &i
 {
     QComboBox* cb = qobject_cast<QComboBox*>(editor);
     if (cb) {
-        QString value = index.data(Qt::EditRole).toString();
-        int idx = cb->findText(value);
+        const QString value = index.data(Qt::EditRole).toString();
+        const int idx = cb->findText(value);
         if (idx >= 0)
             cb->setCurrentIndex(idx);
         cb->showPopup();
@@ -158,7 +158,7 @@ void ConnectDataKeyDelegate::setEditorData(QWidget *editor, const QModelIndex &i
     }
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
-        QVariant data = index.model()->data( index );
+        const QVariant data = index.model()->data( index );
         lineEdit->setText( data.toString() ) ;
         return;
     }
@@ -201,9 +201,9 @@ void ConnectDataKeyDelegate::commitAndCloseEditor()
 bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {
     if (event->type()==QEvent::MouseButtonRelease) {
-        QModelIndex checkstate_index = index.sibling(index.row(), (int)DataItemColumn::CheckState);
-        if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ElementKey ||
-            checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ElementMap     ) {
+        const QModelIndex checkstate_index = index.sibling(index.row(), static_cast<int>(DataItemColumn::CheckState));
+        if (checkstate_index.data(Qt::DisplayRole).toInt()==static_cast<int>(DataCheckState::ElementKey) ||
+            checkstate_index.data(Qt::DisplayRole).toInt()==static_cast<int>(DataCheckState::ElementMap)     ) {
              return true;
         }
         const QMouseEvent* const mouseevent = static_cast<const QMouseEvent*>( event );
@@ -221,10 +221,10 @@ bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *mode
             QMap<QModelIndex, QRect>::const_iterator it;
             for (it= mSchemaAppendPosition.cbegin();  it != mSchemaAppendPosition.cend(); ++it) {
                 if (it.key()== index && it.value().contains(p)) {
-                    if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::SchemaAppend) {
-                        QString data = model->data(index).toString();
+                    if (checkstate_index.data(Qt::DisplayRole).toInt()==static_cast<int>(DataCheckState::SchemaAppend)) {
+                        const QString data = model->data(index).toString();
                         bool *ok = nullptr;
-                        int i = data.left(data.indexOf("]")).mid(data.indexOf("[")+1).toInt(ok);
+                        const int i = data.left(data.indexOf("]")).mid(data.indexOf("[")+1).toInt(ok);
                         emit requestInsertSchemaItem( ok ? 0 : i, index);
                     } else {
                         emit requestAppendItem(index);

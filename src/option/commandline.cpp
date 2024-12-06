@@ -27,7 +27,7 @@ namespace studio {
 namespace option {
 
 CommandLine::CommandLine(QWidget* parent) :
-    QComboBox(parent)
+    QComboBox(parent), mParameterString(""), mCurrentIndex(-1)
 {
     setDisabled(true);
     setEditable(true);
@@ -38,8 +38,6 @@ CommandLine::CommandLine(QWidget* parent) :
     FilterLineEdit *ed = new FilterLineEdit(this);
     setLineEdit(ed);
     ed->hideOptions(FilterLineEdit::FilterLineEditFlags(FilterLineEdit::foExact | FilterLineEdit::foRegEx));
-    mParameterString = "";
-    mCurrentIndex = -1;
 }
 
 CommandLine::~CommandLine()

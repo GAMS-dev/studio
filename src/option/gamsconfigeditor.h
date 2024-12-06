@@ -94,6 +94,8 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
 
 private:
+    void zoomInF(qreal range);
+
     Ui::GamsConfigEditor *ui;
 
     FileId mFileId;
@@ -106,14 +108,10 @@ private:
     GamsUserConfig* mGuc;
     ParamConfigEditor* mParamConfigEditor;
     EnvVarConfigEditor* mEnvVarConfigEditor;
-
-private:
-    void zoomInF(qreal range);
-
 };
 
 
-}
-}
-}
+} // namepsace option
+} // namespace studio
+} // namespace gams
 #endif // GAMSCONFIGEDITOR_H

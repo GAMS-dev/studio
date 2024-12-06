@@ -64,7 +64,7 @@ bool TreeCellResizer::eventFilter(QObject *object, QEvent *event)
           if (index_resizable(mouse_event->pos(), Qt::Horizontal).isValid()) {
                m_drag_in_progress = true;
                m_drag_orientation = Qt::Horizontal;
-               m_drag_previous_pos = (int)mouse_event->position().x();
+               m_drag_previous_pos = static_cast<int>(mouse_event->position().x());
                m_drag_section = index_resizable(mouse_event->pos(), Qt::Horizontal).column();
                return true;
           }

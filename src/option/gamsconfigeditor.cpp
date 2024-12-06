@@ -37,21 +37,22 @@ GamsConfigEditor::GamsConfigEditor(const QString &fileName, const QString &optio
     mFileId(id),
     mLocation(optionFilePath),
     mFileName(fileName),
-    mModified(false)
+    mModified(false),
+    mFileHasChangedExtern(false),
+    mGuc(new GamsUserConfig(mLocation))
 {
     ui->setupUi(this);
 
-    mGuc = new GamsUserConfig(mLocation);
     mParamConfigEditor = new ParamConfigEditor(mGuc->readCommandLineParameters(), this);
-    ui->GamsCfgTabWidget->addTab( mParamConfigEditor, ConfigEditorName.at(int(ConfigEditorType::commandLineParameter)) );
+    ui->GamsCfgTabWidget->addTab( mParamConfigEditor, ConfigEditorName.at(static_cast<int>(ConfigEditorType::commandLineParameter)) );
 
     mEnvVarConfigEditor = new EnvVarConfigEditor(mGuc->readEnvironmentVariables(), this);
-    ui->GamsCfgTabWidget->addTab( mEnvVarConfigEditor, ConfigEditorName.at(int(ConfigEditorType::environmentVariable)) );
+    ui->GamsCfgTabWidget->addTab( mEnvVarConfigEditor, ConfigEditorName.at(static_cast<int>(ConfigEditorType::environmentVariable)) );
 
     connect(mParamConfigEditor, &ParamConfigEditor::modificationChanged, this, &GamsConfigEditor::setModified, Qt::UniqueConnection);
     connect(mEnvVarConfigEditor, &EnvVarConfigEditor::modificationChanged, this, &GamsConfigEditor::setModified, Qt::UniqueConnection);
 
-    ui->GamsCfgTabWidget->setCurrentIndex(int(ConfigEditorType::commandLineParameter));
+    ui->GamsCfgTabWidget->setCurrentIndex(static_cast<int>(ConfigEditorType::commandLineParameter));
 
     setFocusProxy(ui->GamsCfgTabWidget);
     QList<QHeaderView*> headers;
@@ -79,7 +80,7 @@ bool GamsConfigEditor::isModified() const
 
 bool GamsConfigEditor::selectSearchField() const
 {
-    if (ui->GamsCfgTabWidget->currentIndex() == int(ConfigEditorType::commandLineParameter)) {
+    if (ui->GamsCfgTabWidget->currentIndex() == static_cast<int>(ConfigEditorType::commandLineParameter)) {
         mParamConfigEditor->selectSearchField();
         return true;
     }
@@ -91,10 +92,10 @@ void GamsConfigEditor::setModified(bool modified)
     mModified = modified;
     emit modificationChanged( mModified );
 
-    ui->GamsCfgTabWidget->setTabText(int(ConfigEditorType::commandLineParameter),
-                                     ConfigEditorName.at(int(ConfigEditorType::commandLineParameter)) + (mParamConfigEditor->isModified() ? "*" : ""));
-    ui->GamsCfgTabWidget->setTabText(int(ConfigEditorType::environmentVariable),
-                                     ConfigEditorName.at(int(ConfigEditorType::environmentVariable)) + (mEnvVarConfigEditor->isModified() ? "*" : ""));
+    ui->GamsCfgTabWidget->setTabText(static_cast<int>(ConfigEditorType::commandLineParameter),
+                                     ConfigEditorName.at(static_cast<int>(ConfigEditorType::commandLineParameter)) + (mParamConfigEditor->isModified() ? "*" : ""));
+    ui->GamsCfgTabWidget->setTabText(static_cast<int>(ConfigEditorType::environmentVariable),
+                                     ConfigEditorName.at(static_cast<int>(ConfigEditorType::environmentVariable)) + (mEnvVarConfigEditor->isModified() ? "*" : ""));
 }
 
 void GamsConfigEditor::on_reloadGamsUserConfigFile()
@@ -131,7 +132,7 @@ void GamsConfigEditor::on_reloadGamsUserConfigFile()
 
 QString GamsConfigEditor::getSelectedParameterName(QWidget *widget) const
 {
-    if (ui->GamsCfgTabWidget->currentIndex() == int(ConfigEditorType::commandLineParameter)) {
+    if (ui->GamsCfgTabWidget->currentIndex() == static_cast<int>(ConfigEditorType::commandLineParameter)) {
         return mParamConfigEditor->getSelectedParameterName(widget);
     }
     return "";
@@ -154,17 +155,17 @@ bool GamsConfigEditor::saveConfigFile(const QString &location)
 
 void GamsConfigEditor::selectAll()
 {
-    if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter))
+    if (ui->GamsCfgTabWidget->currentIndex()==static_cast<int>(ConfigEditorType::commandLineParameter))
         mParamConfigEditor->selectAll();
-    else if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::environmentVariable))
+    else if (ui->GamsCfgTabWidget->currentIndex()==static_cast<int>(ConfigEditorType::environmentVariable))
              mEnvVarConfigEditor->selectAll();
 }
 
 void GamsConfigEditor::deSelectAll()
 {
-    if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter))
+    if (ui->GamsCfgTabWidget->currentIndex()==static_cast<int>(ConfigEditorType::commandLineParameter))
         mParamConfigEditor->deSelect();
-    else if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::environmentVariable))
+    else if (ui->GamsCfgTabWidget->currentIndex()==static_cast<int>(ConfigEditorType::environmentVariable))
         mEnvVarConfigEditor->deSelect();
 }
 
@@ -172,43 +173,43 @@ void GamsConfigEditor::keyPressEvent(QKeyEvent *event)
 {
     if (event->modifiers() & Qt::ControlModifier) {
         if ( (event->key() == Hotkey::OpenHelp) &&
-             (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) ) {
+             (ui->GamsCfgTabWidget->currentIndex()==static_cast<int>(ConfigEditorType::commandLineParameter)) ) {
                mParamConfigEditor->on_actionShow_Option_Definition_triggered();
                event->accept(); return;
         } else if (event->key() == Qt::Key_R) {
-                  if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) {
+                  if (ui->GamsCfgTabWidget->currentIndex()==static_cast<int>(ConfigEditorType::commandLineParameter)) {
                      mParamConfigEditor->on_actionResize_Columns_To_Contents_triggered();
                      event->accept(); return;
-                  } else if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::environmentVariable)) {
+                  } else if (ui->GamsCfgTabWidget->currentIndex()==static_cast<int>(ConfigEditorType::environmentVariable)) {
                              mEnvVarConfigEditor->on_actionResize_Columns_To_Contents_triggered();
                              event->accept(); return;
                   }
         } else if (event->key() == Qt::Key_B) {
-            if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) {
+            if (ui->GamsCfgTabWidget->currentIndex()==static_cast<int>(ConfigEditorType::commandLineParameter)) {
                mParamConfigEditor->on_actionSelect_Current_Row_triggered();
                event->accept(); return;
-            } else if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::environmentVariable)) {
+            } else if (ui->GamsCfgTabWidget->currentIndex()==static_cast<int>(ConfigEditorType::environmentVariable)) {
                        mEnvVarConfigEditor->on_actionSelect_Current_Row_triggered();
                        event->accept(); return;
             }
         }
     } else if (event->modifiers() & Qt::ShiftModifier) {
               if ( (event->key() == Hotkey::OpenHelp) &&
-                   (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) ) {
+                   (ui->GamsCfgTabWidget->currentIndex()==static_cast<int>(ConfigEditorType::commandLineParameter)) ) {
                     mParamConfigEditor->on_actionShowRecurrence_triggered();
                     event->accept(); return;
               }
     }
 
     if (event->key() == Qt::Key_Return) {
-        if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) {
+        if (ui->GamsCfgTabWidget->currentIndex()==static_cast<int>(ConfigEditorType::commandLineParameter)) {
             mParamConfigEditor->on_actionAdd_This_Parameter_triggered();
             event->accept(); return;
         }
     }
 
     if (event->key() == Qt::Key_Delete) {
-        if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) {
+        if (ui->GamsCfgTabWidget->currentIndex()==static_cast<int>(ConfigEditorType::commandLineParameter)) {
             mParamConfigEditor->on_actionRemove_This_Parameter_triggered();
             event->accept(); return;
         }
@@ -250,6 +251,6 @@ bool GamsConfigEditor::saveAs(const QString &location)
     return true;
 }
 
-}
-}
-}
+} // namepsace option
+} // namespace studio
+} // namespace gams

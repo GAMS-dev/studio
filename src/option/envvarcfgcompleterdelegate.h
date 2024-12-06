@@ -42,7 +42,7 @@ public:
     QModelIndex currentEditedIndex() const;
 
 protected:
-    virtual bool eventFilter(QObject * editor, QEvent * event) override;
+    bool eventFilter(QObject * editor, QEvent * event) override;
 
 signals:
     void currentEditedIndexChanged(const QModelIndex &index) const;

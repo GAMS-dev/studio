@@ -64,7 +64,7 @@ union Value  {
     Value(bool val) : boolval(val)  { }
     Value(int val)  : intval(val)   { }
     Value(double val) : doubleval(val) { }
-    Value(const char* val) : stringval(val != NULL ? strdup(val) : NULL)  { }
+    Value(const char* val) : stringval(val != nullptr ? strdup(val) : nullptr)  { }
     Value(const std::string& val) : stringval(strdup(val.c_str()))       { }
 
     Value& operator=(bool val)  {
@@ -80,7 +80,7 @@ union Value  {
        return *this;
     }
     Value& operator=(const char* val) {
-       stringval = val != NULL ? strdup(val) : NULL;
+       stringval = val != nullptr ? strdup(val) : nullptr;
         return *this;
     }
     Value& operator=(const std::string& val) {
@@ -98,7 +98,7 @@ union Value  {
     bool operator==(const char* val) const {
         if( stringval == val )
            return true;
-        if( stringval == NULL || val == NULL )
+        if( stringval == nullptr || val == nullptr )
            return false;
         return strcmp(stringval, val) == 0;
     }
@@ -124,20 +124,20 @@ struct ValueWrapper {
     ValueWrapper(const ValueWrapper& vw) : type(vw.type), value(vw.value) {
         if (vw.type==SchemaValueType::String) {
             value = vw.value.stringval;
-            assert(value.stringval != vw.value.stringval || vw.value.stringval == NULL);
+            assert(value.stringval != vw.value.stringval || vw.value.stringval == nullptr);
         }
     }
     ValueWrapper& operator=(const ValueWrapper& vw)
     {
         if (type==SchemaValueType::String) {
             free(value.stringval);
-            value.stringval = NULL;
+            value.stringval = nullptr;
         }
         type = vw.type;
         value = vw.value;
         if (vw.type==SchemaValueType::String) {
             value = vw.value.stringval;
-            assert(value.stringval != vw.value.stringval || vw.value.stringval == NULL);
+            assert(value.stringval != vw.value.stringval || vw.value.stringval == nullptr);
         }
         return *this;
     }
@@ -145,7 +145,7 @@ struct ValueWrapper {
     ~ValueWrapper() {
         if (type==SchemaValueType::String) {
             free(value.stringval);
-            value.stringval = NULL;
+            value.stringval = nullptr;
         }
     }
 };
@@ -198,7 +198,7 @@ public:
         bool                       empty_=true
     );
 
-    bool hasType(SchemaType tt) {
+    bool hasType(const SchemaType tt) {
        for (const SchemaType t : std::as_const(types)) {
           if (t==tt) return true;
        }
@@ -259,7 +259,7 @@ public:
     bool isExcludesDefined(const QString& key) const;
     QStringList getExcludedKeys(const QString& key) const;
 
-    static inline SchemaType getTypeFromValue(QString& value) {
+    static inline SchemaType getTypeFromValue(const QString& value) {
         if (value.compare("integer") == 0) {
             return SchemaType::Integer;
         } else if (value.compare("string") == 0) {
@@ -278,7 +278,7 @@ public:
         return SchemaType::Undefined;
     }
 
-    static inline const char* typeToString(SchemaType t) {
+    static inline const char* typeToString(const SchemaType t) {
         const std::map<SchemaType, const char*> typeStrings {
             { SchemaType::Integer, "integer" },
             { SchemaType::String,  "string" },

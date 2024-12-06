@@ -47,15 +47,15 @@ void ConnectDataActionDelegate::initStyleOption(QStyleOptionViewItem *option, co
     QStyledItemDelegate::initStyleOption(option, index);
     option->text = "";
 
-    QIcon icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
+    const QIcon icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
     if (!icon.isNull()) {
         option->icon = icon;
         if ( index.data( Qt::DisplayRole ).toBool() ) {
-            if (index.column()==(int)DataItemColumn::Delete)
+            if (index.column()==static_cast<int>(DataItemColumn::Delete))
                 mDeleteActionPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
-            else if (index.column()==(int)DataItemColumn::MoveDown)
+            else if (index.column()==static_cast<int>(DataItemColumn::MoveDown))
                     mMoveDownActionPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
-            else if (index.column()==(int)DataItemColumn::MoveUp)
+            else if (index.column()==static_cast<int>(DataItemColumn::MoveUp))
                     mMoveUpActionPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
         }
     }
@@ -68,7 +68,7 @@ bool ConnectDataActionDelegate::editorEvent(QEvent *event, QAbstractItemModel *m
         const QPoint p = mouseevent->pos();  // ->globalPos()
         if (index.data( Qt::DisplayRole ).toBool() ) {
             bool found = false;
-            if (index.column()==(int)DataItemColumn::Delete) {
+            if (index.column()==static_cast<int>(DataItemColumn::Delete)) {
                 for (QMap<QModelIndex, QRect>::const_iterator it= mDeleteActionPosition.constBegin();  it != mDeleteActionPosition.constEnd(); ++it) {
                     QRect rect = mDeleteActionPosition[it.key()];
                     if (rect.contains(p)) {
@@ -78,7 +78,7 @@ bool ConnectDataActionDelegate::editorEvent(QEvent *event, QAbstractItemModel *m
                         break;
                     }
                 }
-            } else if (index.column()==(int)DataItemColumn::MoveDown) {
+            } else if (index.column()==static_cast<int>(DataItemColumn::MoveDown)) {
                       for (QMap<QModelIndex, QRect>::const_iterator it= mMoveDownActionPosition.constBegin();  it != mMoveDownActionPosition.constEnd(); ++it) {
                           QRect rect = mMoveDownActionPosition[it.key()];
                           if (it.key() == index && rect.contains(p)) {
@@ -88,7 +88,7 @@ bool ConnectDataActionDelegate::editorEvent(QEvent *event, QAbstractItemModel *m
                               break;
                           }
                       }
-            }   else if (index.column()==(int)DataItemColumn::MoveUp) {
+            }   else if (index.column()==static_cast<int>(DataItemColumn::MoveUp)) {
                          for (QMap<QModelIndex, QRect>::const_iterator it= mMoveUpActionPosition.constBegin();  it != mMoveUpActionPosition.constEnd(); ++it) {
                              QRect rect = mMoveUpActionPosition[it.key()];
                              if (it.key() == index && rect.contains(p)) {

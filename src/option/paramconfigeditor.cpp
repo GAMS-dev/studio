@@ -104,7 +104,7 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
 
     ui->paramCfgTableView->setColumnHidden(ConfigParamTableModel::COLUMN_ENTRY_NUMBER, true);
     ui->paramCfgTableView->verticalHeader()->setMinimumSectionSize(1);
-    ui->paramCfgTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    ui->paramCfgTableView->verticalHeader()->setDefaultSectionSize(static_cast<int>(fontMetrics().height()*TABLE_ROW_HEIGHT));
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->paramCfgTableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
 
@@ -244,12 +244,12 @@ QString ParamConfigEditor::getSelectedParameterName(QWidget *widget) const
     if (widget == ui->paramCfgTableView) {
         QModelIndexList selection = ui->paramCfgTableView->selectionModel()->selectedIndexes();
         if (selection.count() > 0) {
-            QModelIndex index = selection.at(0);
-            QVariant headerData = ui->paramCfgTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
+            const QModelIndex index = selection.at(0);
+            const QVariant headerData = ui->paramCfgTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
             if (Qt::CheckState(headerData.toUInt())==Qt::PartiallyChecked) {
                 return "";
             }
-            QVariant data = ui->paramCfgTableView->model()->data( index.sibling(index.row(),0) );
+            const QVariant data = ui->paramCfgTableView->model()->data( index.sibling(index.row(),0) );
             if (mOptionTokenizer->getOption()->isValid(data.toString()))
                return data.toString();
             else if (mOptionTokenizer->getOption()->isASynonym(data.toString()))
@@ -258,10 +258,10 @@ QString ParamConfigEditor::getSelectedParameterName(QWidget *widget) const
                return "";
         }
     } else if (widget == ui->paramCfgDefTreeView) {
-        QModelIndexList selection = ui->paramCfgDefTreeView->selectionModel()->selectedRows();
+        const QModelIndexList selection = ui->paramCfgDefTreeView->selectionModel()->selectedRows();
         if (selection.count() > 0) {
-            QModelIndex index = selection.at(0);
-            QModelIndex  parentIndex =  ui->paramCfgDefTreeView->model()->parent(index);
+            const QModelIndex index = selection.at(0);
+            const QModelIndex  parentIndex =  ui->paramCfgDefTreeView->model()->parent(index);
             if (parentIndex.row() >= 0) {
                 return ui->paramCfgDefTreeView->model()->data( parentIndex.sibling(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ).toString();
             } else {
@@ -446,38 +446,38 @@ void ParamConfigEditor::findAndSelectionParameterFromDefinition()
     if (ui->paramCfgTableView->model()->rowCount() <= 0)
         return;
 
-    QModelIndex index = ui->paramCfgDefTreeView->selectionModel()->currentIndex();
+    const QModelIndex index = ui->paramCfgDefTreeView->selectionModel()->currentIndex();
 
     updateDefinitionActionsState(index);
 
-    QModelIndex parentIndex =  ui->paramCfgDefTreeView->model()->parent(index);
+    const QModelIndex parentIndex =  ui->paramCfgDefTreeView->model()->parent(index);
 
-    QModelIndex idx = (parentIndex.row()<0) ? ui->paramCfgDefTreeView->model()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
+    const QModelIndex idx = (parentIndex.row()<0) ? ui->paramCfgDefTreeView->model()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
                                             : ui->paramCfgDefTreeView->model()->index( parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
-    QVariant data = ui->paramCfgDefTreeView->model()->data( idx, Qt::DisplayRole );
+    const QVariant data = ui->paramCfgDefTreeView->model()->data( idx, Qt::DisplayRole );
     QModelIndexList indices = ui->paramCfgTableView->model()->match(ui->paramCfgTableView->model()->index(0, ConfigParamTableModel::COLUMN_ENTRY_NUMBER),
                                                                        Qt::DisplayRole,
                                                                        data, -1, Qt::MatchExactly|Qt::MatchRecursive);
     ui->paramCfgTableView->clearSelection();
     ui->paramCfgTableView->clearFocus();
     QItemSelection selection;
-    for(QModelIndex i :std::as_const(indices)) {
-        QModelIndex valueIndex = ui->paramCfgTableView->model()->index(i.row(), ConfigParamTableModel::COLUMN_PARAM_VALUE);
-        QString value =  ui->paramCfgTableView->model()->data( valueIndex, Qt::DisplayRole).toString();
+    for(const QModelIndex i :std::as_const(indices)) {
+        const QModelIndex valueIndex = ui->paramCfgTableView->model()->index(i.row(), ConfigParamTableModel::COLUMN_PARAM_VALUE);
+        const QString value =  ui->paramCfgTableView->model()->data( valueIndex, Qt::DisplayRole).toString();
         bool selected = false;
         if (parentIndex.row() < 0) {
             selected = true;
         } else {
-            QModelIndex enumIndex = ui->paramCfgDefTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
-            QString enumValue = ui->paramCfgDefTreeView->model()->data( enumIndex, Qt::DisplayRole).toString();
+            const QModelIndex enumIndex = ui->paramCfgDefTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
+            const QString enumValue = ui->paramCfgDefTreeView->model()->data( enumIndex, Qt::DisplayRole).toString();
             if (QString::compare(value, enumValue, Qt::CaseInsensitive)==0)
                 selected = true;
         }
         if (selected) {
-           QModelIndex leftIndex  = ui->paramCfgTableView->model()->index(i.row(), 0);
-           QModelIndex rightIndex = ui->paramCfgTableView->model()->index(i.row(), ui->paramCfgTableView->model()->columnCount() -1);
+           const QModelIndex leftIndex  = ui->paramCfgTableView->model()->index(i.row(), 0);
+           const QModelIndex rightIndex = ui->paramCfgTableView->model()->index(i.row(), ui->paramCfgTableView->model()->columnCount() -1);
 
-           QItemSelection rowSelection(leftIndex, rightIndex);
+           const QItemSelection rowSelection(leftIndex, rightIndex);
            selection.merge(rowSelection, QItemSelectionModel::Select);
         }
         ui->actionAdd_This_Parameter->setEnabled(!selected);
@@ -507,14 +507,14 @@ void ParamConfigEditor::selectAnOption()
 void ParamConfigEditor::deleteOption()
 {
     QModelIndexList indexSelection = ui->paramCfgTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->paramCfgTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
     if  (!isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
     if (isThereARowSelection() && isEverySelectionARow()) {
-        QItemSelection selection( ui->paramCfgTableView->selectionModel()->selection() );
+        const QItemSelection selection( ui->paramCfgTableView->selectionModel()->selection() );
 
         QList<int> rows;
         const auto indexes = ui->paramCfgTableView->selectionModel()->selectedRows();
@@ -525,9 +525,9 @@ void ParamConfigEditor::deleteOption()
         std::sort(rows.begin(), rows.end());
         int prev = -1;
         for(int i=rows.count()-1; i>=0; i--) {
-            int current = rows[i];
+            const int current = rows[i];
             if (current != prev) {
-                QString text = mParameterTableModel->getParameterTableEntry(current);
+                const QString text = mParameterTableModel->getParameterTableEntry(current);
                 ui->paramCfgTableView->model()->removeRows( current, 1 );
                 mOptionTokenizer->logger()->append(QString("Option entry '%1' has been deleted").arg(text), LogMsgType::Info);
                 prev = current;
@@ -576,21 +576,21 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
 {
     emit modificationChanged(true);
 
-    QModelIndex parentIndex =  ui->paramCfgDefTreeView->model()->parent(index);
-    QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->paramCfgDefTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) :
-                                                          ui->paramCfgDefTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-    QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->paramCfgDefTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) :
-                                                        ui->paramCfgDefTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
-    QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex :
-                                                             ui->paramCfgDefTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
+    const QModelIndex parentIndex =  ui->paramCfgDefTreeView->model()->parent(index);
+    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->paramCfgDefTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                              : ui->paramCfgDefTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
+    const QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->paramCfgDefTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
+                                                            : ui->paramCfgDefTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
+    const QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex
+                                                                 : ui->paramCfgDefTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
 
     disconnect( mParameterTableModel, &QAbstractTableModel::dataChanged,  mParameterTableModel, &ConfigParamTableModel::on_updateConfigParamItem);
 
     bool replaceExistingEntry = false;
-    QString optionNameData = ui->paramCfgDefTreeView->model()->data(optionNameIndex).toString();
-    QModelIndex optionIdIndex = (parentIndex.row()<0) ? ui->paramCfgDefTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) :
-                                                        ui->paramCfgDefTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
-    QVariant optionIdData = ui->paramCfgDefTreeView->model()->data(optionIdIndex);
+    const QString optionNameData = ui->paramCfgDefTreeView->model()->data(optionNameIndex).toString();
+    const QModelIndex optionIdIndex = (parentIndex.row()<0) ? ui->paramCfgDefTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER)
+                                                            : ui->paramCfgDefTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
+    const QVariant optionIdData = ui->paramCfgDefTreeView->model()->data(optionIdIndex);
 
     int rowToBeAdded = ui->paramCfgTableView->model()->rowCount();
 //    StudioSettings* settings = SettingsLocator::settings();
@@ -600,22 +600,22 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
                                                                             optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
         ui->paramCfgTableView->clearSelection();
         QItemSelection selection;
-        for(QModelIndex &idx: indices) {
-            QModelIndex leftIndex  = ui->paramCfgTableView->model()->index(idx.row(), ConfigParamTableModel::COLUMN_PARAM_KEY);
-            QModelIndex rightIndex = ui->paramCfgTableView->model()->index(idx.row(), ConfigParamTableModel::COLUMN_ENTRY_NUMBER);
-            QItemSelection rowSelection(leftIndex, rightIndex);
+        for(const QModelIndex &idx: indices) {
+            const QModelIndex leftIndex  = ui->paramCfgTableView->model()->index(idx.row(), ConfigParamTableModel::COLUMN_PARAM_KEY);
+            const QModelIndex rightIndex = ui->paramCfgTableView->model()->index(idx.row(), ConfigParamTableModel::COLUMN_ENTRY_NUMBER);
+            const QItemSelection rowSelection(leftIndex, rightIndex);
             selection.merge(rowSelection, QItemSelectionModel::Select);
         }
         ui->paramCfgTableView->selectionModel()->select(selection, QItemSelectionModel::Select);
 
-        bool singleEntryExisted = (indices.size()==1);
-        bool multipleEntryExisted = (indices.size()>1);
+        const bool singleEntryExisted = (indices.size()==1);
+        const bool multipleEntryExisted = (indices.size()>1);
         if (singleEntryExisted ) {
-            QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
+            const QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
                 .arg(getParameterTableEntry(indices.at(0).row()),
                 "When a GAMS config file contains multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
                 "The value of all other entries except the last entry will be ignored.");
-            int answer = MsgBox::question("Parameter Entry exists", "Parameter '" + optionNameData + "' already exists.",
+            const int answer = MsgBox::question("Parameter Entry exists", "Parameter '" + optionNameData + "' already exists.",
                                           "How do you want to proceed?", detailText,
                                           nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
             switch(answer) {
@@ -634,9 +634,9 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
         } else if (multipleEntryExisted) {
             QString entryDetailedText = QString("Entries:\n");
             int i = 0;
-            for (QModelIndex &idx : indices)
+            for (const QModelIndex &idx : indices)
                 entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getParameterTableEntry(idx.row())));
-            QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
+            const QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
                 "When a GAMS config file contains multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
                 "The value of all other entries except the last entry will be ignored.");
             int answer = MsgBox::question("Multiple Parameter Entries exist",
@@ -670,7 +670,7 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
 
     ui->paramCfgTableView->selectionModel()->clearSelection();
 //    QString synonymData = ui->ParamCfgDefTreeView->model()->data(synonymIndex).toString();
-    QString selectedValueData = ui->paramCfgDefTreeView->model()->data(selectedValueIndex).toString();
+    const QString selectedValueData = ui->paramCfgDefTreeView->model()->data(selectedValueIndex).toString();
     mOptionTokenizer->getOption()->setModified(optionNameData, true);
     ui->paramCfgDefTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
@@ -678,10 +678,10 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
     if (rowToBeAdded == ui->paramCfgTableView->model()->rowCount()) {
         ui->paramCfgTableView->model()->insertRows(rowToBeAdded, 1, QModelIndex());
     }
-    QModelIndex insertKeyIndex = ui->paramCfgTableView->model()->index(rowToBeAdded, ConfigParamTableModel::COLUMN_PARAM_KEY);
-    QModelIndex insertValueIndex = ui->paramCfgTableView->model()->index(rowToBeAdded, ConfigParamTableModel::COLUMN_PARAM_VALUE);
-    QModelIndex minVersionIndex = ui->paramCfgTableView->model()->index(rowToBeAdded, ConfigParamTableModel::COLUMN_MIN_VERSION);
-    QModelIndex maxVersionIndex = ui->paramCfgTableView->model()->index(rowToBeAdded, ConfigParamTableModel::COLUMN_MIN_VERSION);
+    const QModelIndex insertKeyIndex = ui->paramCfgTableView->model()->index(rowToBeAdded, ConfigParamTableModel::COLUMN_PARAM_KEY);
+    const QModelIndex insertValueIndex = ui->paramCfgTableView->model()->index(rowToBeAdded, ConfigParamTableModel::COLUMN_PARAM_VALUE);
+    const QModelIndex minVersionIndex = ui->paramCfgTableView->model()->index(rowToBeAdded, ConfigParamTableModel::COLUMN_MIN_VERSION);
+    const QModelIndex maxVersionIndex = ui->paramCfgTableView->model()->index(rowToBeAdded, ConfigParamTableModel::COLUMN_MIN_VERSION);
     ui->paramCfgTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
     ui->paramCfgTableView->model()->setData( insertValueIndex, (selectedValueData.simplified().isEmpty()
                                                                    ? OptionTokenizer::valueGeneratedStr
@@ -691,7 +691,7 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
     ui->paramCfgTableView->model()->setData( maxVersionIndex, "", Qt::EditRole);
 
     QModelIndex insertNumberIndex = ui->paramCfgTableView->model()->index(rowToBeAdded, ConfigParamTableModel::COLUMN_ENTRY_NUMBER);
-    int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
+    const int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     ui->paramCfgTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
     if (selectedValueData.isEmpty())
         ui->paramCfgTableView->model()->setHeaderData( rowToBeAdded, Qt::Vertical, Qt::CheckState(Qt::Checked), Qt::CheckStateRole );
@@ -700,14 +700,14 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
     ui->paramCfgTableView->selectRow(rowToBeAdded);
     selectAnOption();
 
-    QString text =  mParameterTableModel->getParameterTableEntry(insertNumberIndex.row());
+    const QString text =  mParameterTableModel->getParameterTableEntry(insertNumberIndex.row());
     if (replaceExistingEntry)
         mOptionTokenizer->logger()->append(QString("Parameter entry '%1' has been replaced").arg(text), LogMsgType::Info);
     else
         mOptionTokenizer->logger()->append(QString("Parameter entry '%1' has been added").arg(text), LogMsgType::Info);
 
-    int lastColumn = ui->paramCfgTableView->model()->columnCount()-1;
-    int lastRow = rowToBeAdded;
+    const int lastColumn = ui->paramCfgTableView->model()->columnCount()-1;
+    const int lastRow = rowToBeAdded;
     int firstRow = lastRow;
     if (firstRow<0)
         firstRow = 0;
@@ -734,7 +734,7 @@ void ParamConfigEditor::showOptionDefinition(bool selectRow)
     if (ui->paramCfgTableView->model()->rowCount() <= 0)
         return;
 
-    QModelIndexList indexSelection = ui->paramCfgTableView->selectionModel()->selectedIndexes();
+    const QModelIndexList indexSelection = ui->paramCfgTableView->selectionModel()->selectedIndexes();
     if (indexSelection.count() <= 0)
         return;
 
@@ -754,18 +754,18 @@ void ParamConfigEditor::showOptionDefinition(bool selectRow)
 
     QModelIndexList selectIndices;
     for (int i=0; i<selection.count(); i++) {
-         QModelIndex index = selection.at(i);
+         const QModelIndex index = selection.at(i);
          if (Qt::CheckState(ui->paramCfgTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toUInt())==Qt::PartiallyChecked)
                 continue;
 
-         QString value = ui->paramCfgTableView->model()->data( index.sibling(index.row(), ConfigParamTableModel::COLUMN_PARAM_VALUE), Qt::DisplayRole).toString();
-         QVariant optionId = ui->paramCfgTableView->model()->data( index.sibling(index.row(), ConfigParamTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole);
+         const QString value = ui->paramCfgTableView->model()->data( index.sibling(index.row(), ConfigParamTableModel::COLUMN_PARAM_VALUE), Qt::DisplayRole).toString();
+         const QVariant optionId = ui->paramCfgTableView->model()->data( index.sibling(index.row(), ConfigParamTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole);
          QModelIndexList indices = ui->paramCfgDefTreeView->model()->match(ui->paramCfgDefTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                                                                Qt::DisplayRole,
                                                                                optionId, 1, Qt::MatchExactly|Qt::MatchRecursive);
-         for(QModelIndex idx : std::as_const(indices)) {
-             QModelIndex  parentIndex =  ui->paramCfgDefTreeView->model()->parent(idx);
-             QModelIndex optionIdx = ui->paramCfgDefTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
+         for(const QModelIndex idx : std::as_const(indices)) {
+             const QModelIndex  parentIndex =  ui->paramCfgDefTreeView->model()->parent(idx);
+             const QModelIndex optionIdx = ui->paramCfgDefTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
 
              if (parentIndex.row() < 0) {
                 if (ui->paramCfgDefTreeView->model()->hasChildren(optionIdx) && !ui->paramCfgDefTreeView->isExpanded(optionIdx))
@@ -773,7 +773,7 @@ void ParamConfigEditor::showOptionDefinition(bool selectRow)
             }
             bool found = false;
             for(int r=0; r <ui->paramCfgDefTreeView->model()->rowCount(optionIdx); ++r) {
-                QModelIndex i = ui->paramCfgDefTreeView->model()->index(r, OptionDefinitionModel::COLUMN_OPTION_NAME, optionIdx);
+                const QModelIndex i = ui->paramCfgDefTreeView->model()->index(r, OptionDefinitionModel::COLUMN_OPTION_NAME, optionIdx);
                 QString enumValue = ui->paramCfgDefTreeView->model()->data(i, Qt::DisplayRole).toString();
                 if (QString::compare(value, enumValue, Qt::CaseInsensitive) == 0) {
                     selectIndices << i;
@@ -786,9 +786,9 @@ void ParamConfigEditor::showOptionDefinition(bool selectRow)
         }
     }
     ui->paramCfgDefTreeView->selectionModel()->clearSelection();
-    for(QModelIndex idx : std::as_const(selectIndices)) {
+    for(const QModelIndex idx : std::as_const(selectIndices)) {
         QItemSelection selection = ui->paramCfgDefTreeView->selectionModel()->selection();
-        QModelIndex  parentIdx =  ui->paramCfgDefTreeView->model()->parent(idx);
+        const QModelIndex  parentIdx =  ui->paramCfgDefTreeView->model()->parent(idx);
         if (parentIdx.row() < 0) {
             selection.select(ui->paramCfgDefTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME),
                              ui->paramCfgDefTreeView->model()->index(idx.row(), ui->paramCfgDefTreeView->model()->columnCount()-1));
@@ -799,8 +799,8 @@ void ParamConfigEditor::showOptionDefinition(bool selectRow)
         ui->paramCfgDefTreeView->selectionModel()->select(selection, QItemSelectionModel::Select);
     }
     if (selectIndices.size() > 0) {
-        QModelIndex parentIndex = ui->paramCfgDefTreeView->model()->parent(selectIndices.first());
-        QModelIndex scrollToIndex = (parentIndex.row() < 0  ? ui->paramCfgDefTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
+        const QModelIndex parentIndex = ui->paramCfgDefTreeView->model()->parent(selectIndices.first());
+        const QModelIndex scrollToIndex = (parentIndex.row() < 0  ? ui->paramCfgDefTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
                                                             : ui->paramCfgDefTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex));
         ui->paramCfgDefTreeView->scrollTo(scrollToIndex, QAbstractItemView::EnsureVisible);
         if (parentIndex.row() >= 0) {
@@ -822,12 +822,12 @@ void ParamConfigEditor::copyDefinitionToClipboard(int column)
     if (ui->paramCfgDefTreeView->selectionModel()->selectedRows().count() <= 0)
         return;
 
-    QModelIndex index = ui->paramCfgDefTreeView->selectionModel()->selectedRows().at(0);
+    const QModelIndex index = ui->paramCfgDefTreeView->selectionModel()->selectedRows().at(0);
     if (!index.isValid())
         return;
 
     QString text = "";
-    QModelIndex parentIndex = ui->paramCfgDefTreeView->model()->parent(index);
+    const QModelIndex parentIndex = ui->paramCfgDefTreeView->model()->parent(index);
     if (column == -1) { // copy all
         QStringList strList;
         if (parentIndex.isValid()) {
@@ -840,7 +840,7 @@ void ParamConfigEditor::copyDefinitionToClipboard(int column)
            for (int j=0; j<ui->paramCfgDefTreeView->model()->columnCount(); j++) {
                if (j==ConfigOptionDefinitionModel::COLUMN_ENTRY_NUMBER)
                   continue;
-               QModelIndex columnindex = ui->paramCfgDefTreeView->model()->index(index.row(), j);
+               const QModelIndex columnindex = ui->paramCfgDefTreeView->model()->index(index.row(), j);
                strList << ui->paramCfgDefTreeView->model()->data(columnindex, Qt::DisplayRole).toString();
            }
            text = strList.join(", ");
@@ -873,7 +873,7 @@ void ParamConfigEditor::on_dataItemChanged(const QModelIndex &topLeft, const QMo
     }
 
     ui->paramCfgDefTreeView->clearSelection();
-    for(QModelIndex item : std::as_const(toDefinitionItems)) {
+    for(const QModelIndex item : std::as_const(toDefinitionItems)) {
         ui->paramCfgDefTreeView->selectionModel()->select(
                     QItemSelection (
                         ui->paramCfgDefTreeView->model ()->index (item.row() , 0),
@@ -891,12 +891,12 @@ void ParamConfigEditor::on_newTableRowDropped(const QModelIndex &index)
     disconnect(ui->paramCfgDefTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ParamConfigEditor::findAndSelectionParameterFromDefinition);
     ui->paramCfgTableView->selectRow(index.row());
 
-    QString optionName = ui->paramCfgTableView->model()->data(index, Qt::DisplayRole).toString();
+    const QString optionName = ui->paramCfgTableView->model()->data(index, Qt::DisplayRole).toString();
     QModelIndexList definitionItems = ui->paramCfgDefTreeView->model()->match(ui->paramCfgDefTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
                                                                      Qt::DisplayRole,
                                                                      optionName, 1);
     mOptionTokenizer->getOption()->setModified(optionName, true);
-    for(QModelIndex item : std::as_const(definitionItems)) {
+    for(const QModelIndex item : std::as_const(definitionItems)) {
         ui->paramCfgDefTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
     }
 
@@ -921,11 +921,11 @@ QList<int> ParamConfigEditor::getRecurrentOption(const QModelIndex &index)
     if (Qt::CheckState(data.toUInt())==Qt::PartiallyChecked)
         return optionList;
 
-    QString optionId = ui->paramCfgTableView->model()->data( index.sibling(index.row(), ConfigParamTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole).toString();
+    const QString optionId = ui->paramCfgTableView->model()->data( index.sibling(index.row(), ConfigParamTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole).toString();
     QModelIndexList indices = ui->paramCfgTableView->model()->match(ui->paramCfgTableView->model()->index(0, ConfigParamTableModel::COLUMN_ENTRY_NUMBER),
                                                                         Qt::DisplayRole,
                                                                         optionId, -1);
-    for(QModelIndex idx : std::as_const(indices)) {
+    for(const QModelIndex idx : std::as_const(indices)) {
         if (idx.row() == index.row())
             continue;
         else
@@ -936,14 +936,14 @@ QList<int> ParamConfigEditor::getRecurrentOption(const QModelIndex &index)
 
 QString ParamConfigEditor::getParameterTableEntry(int row)
 {
-    QModelIndex keyIndex = ui->paramCfgTableView->model()->index(row, ConfigParamTableModel::COLUMN_PARAM_KEY);
-    QVariant optionKey = ui->paramCfgTableView->model()->data(keyIndex, Qt::DisplayRole);
-    QModelIndex valueIndex = ui->paramCfgTableView->model()->index(row, ConfigParamTableModel::COLUMN_PARAM_VALUE);
-    QVariant optionValue = ui->paramCfgTableView->model()->data(valueIndex, Qt::DisplayRole);
-    QModelIndex minVersionIndex = ui->paramCfgTableView->model()->index(row, ConfigParamTableModel::COLUMN_PARAM_VALUE);
-    QVariant minVersionValue = ui->paramCfgTableView->model()->data(minVersionIndex, Qt::DisplayRole);
-    QModelIndex maxVersionIndex = ui->paramCfgTableView->model()->index(row, ConfigParamTableModel::COLUMN_PARAM_VALUE);
-    QVariant maxVersionValue = ui->paramCfgTableView->model()->data(maxVersionIndex, Qt::DisplayRole);
+    const QModelIndex keyIndex = ui->paramCfgTableView->model()->index(row, ConfigParamTableModel::COLUMN_PARAM_KEY);
+    const QVariant optionKey = ui->paramCfgTableView->model()->data(keyIndex, Qt::DisplayRole);
+    const QModelIndex valueIndex = ui->paramCfgTableView->model()->index(row, ConfigParamTableModel::COLUMN_PARAM_VALUE);
+    const QVariant optionValue = ui->paramCfgTableView->model()->data(valueIndex, Qt::DisplayRole);
+    const QModelIndex minVersionIndex = ui->paramCfgTableView->model()->index(row, ConfigParamTableModel::COLUMN_PARAM_VALUE);
+    const QVariant minVersionValue = ui->paramCfgTableView->model()->data(minVersionIndex, Qt::DisplayRole);
+    const QModelIndex maxVersionIndex = ui->paramCfgTableView->model()->index(row, ConfigParamTableModel::COLUMN_PARAM_VALUE);
+    const QVariant maxVersionValue = ui->paramCfgTableView->model()->data(maxVersionIndex, Qt::DisplayRole);
     return QString("%1%2%3 %4 %5").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(),
                                        optionValue.toString(), minVersionValue.toString(), maxVersionValue.toString());
 }
@@ -1013,8 +1013,8 @@ bool ParamConfigEditor::isThereARowSelection() const
 
 bool ParamConfigEditor::isEverySelectionARow() const
 {
-    QModelIndexList selection = ui->paramCfgTableView->selectionModel()->selectedRows();
-    QModelIndexList indexSelection = ui->paramCfgTableView->selectionModel()->selectedIndexes();
+    const QModelIndexList selection = ui->paramCfgTableView->selectionModel()->selectedRows();
+    const QModelIndexList indexSelection = ui->paramCfgTableView->selectionModel()->selectedIndexes();
     return ((selection.count() > 0) && (indexSelection.count() % ui->paramCfgTableView->model()->columnCount() == 0));
 
 }
@@ -1025,7 +1025,7 @@ void ParamConfigEditor::on_actionInsert_triggered()
         return;
 
     QModelIndexList indexSelection = ui->paramCfgTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->paramCfgTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
@@ -1034,7 +1034,7 @@ void ParamConfigEditor::on_actionInsert_triggered()
     if (isThereARowSelection()) {
         QList<int> rows;
         const auto indexes = ui->paramCfgTableView->selectionModel()->selectedRows();
-        for(QModelIndex idx : indexes) {
+        for(const QModelIndex idx : indexes) {
             rows.append( idx.row() );
         }
         std::sort(rows.begin(), rows.end());
@@ -1044,11 +1044,11 @@ void ParamConfigEditor::on_actionInsert_triggered()
         ui->paramCfgTableView->model()->insertRows(ui->paramCfgTableView->model()->rowCount(), 1, QModelIndex());
         rowToBeInserted = mParameterTableModel->rowCount()-1;
     }
-    QModelIndex insertKeyIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_PARAM_KEY);
-    QModelIndex insertValueIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_PARAM_VALUE);
-    QModelIndex insertNumberIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_ENTRY_NUMBER);
-    QModelIndex minVersionIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_MIN_VERSION);
-    QModelIndex maxVersionIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_MIN_VERSION);
+    const QModelIndex insertKeyIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_PARAM_KEY);
+    const QModelIndex insertValueIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_PARAM_VALUE);
+    const QModelIndex insertNumberIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_ENTRY_NUMBER);
+    const QModelIndex minVersionIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_MIN_VERSION);
+    const QModelIndex maxVersionIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_MIN_VERSION);
 
     ui->paramCfgTableView->model()->setHeaderData(ui->paramCfgTableView->model()->rowCount()-1, Qt::Vertical,
                                                       Qt::CheckState(Qt::Checked),
@@ -1069,7 +1069,7 @@ void ParamConfigEditor::on_actionInsert_triggered()
     ui->paramCfgTableView->clearSelection();
     ui->paramCfgTableView->selectRow(rowToBeInserted);
 
-    QModelIndex index = mParameterTableModel->index(rowToBeInserted, ConfigParamTableModel::COLUMN_PARAM_KEY);
+    const QModelIndex index = mParameterTableModel->index(rowToBeInserted, ConfigParamTableModel::COLUMN_PARAM_KEY);
     ui->paramCfgTableView->edit( index );
     updateActionsState(index);
 }
@@ -1080,14 +1080,14 @@ void ParamConfigEditor::on_actionDelete_triggered()
         return;
 
     QModelIndexList indexSelection = ui->paramCfgTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->paramCfgTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
     if  (!isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
     if (isThereARowSelection() && isEverySelectionARow()) {
-        QItemSelection selection( ui->paramCfgTableView->selectionModel()->selection() );
+        const QItemSelection selection( ui->paramCfgTableView->selectionModel()->selection() );
 
         QList<int> rows;
         const auto indexes = ui->paramCfgTableView->selectionModel()->selectedRows();
@@ -1100,7 +1100,7 @@ void ParamConfigEditor::on_actionDelete_triggered()
         for(int i=rows.count()-1; i>=0; i--) {
             int current = rows[i];
             if (current != prev) {
-                QString text = mParameterTableModel->getParameterTableEntry(current);
+                const QString text = mParameterTableModel->getParameterTableEntry(current);
                 ui->paramCfgTableView->model()->removeRows( current, 1 );
                 mOptionTokenizer->logger()->append(QString("Parameter entry '%1' has been deleted").arg(text), LogMsgType::Info);
                 prev = current;
@@ -1115,21 +1115,21 @@ void ParamConfigEditor::on_actionMoveUp_triggered()
     if (!ui->actionMoveUp->isEnabled())
         return;
     QModelIndexList indexSelection = ui->paramCfgTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->paramCfgTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
     if  ( !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
-    QModelIndexList selection = ui->paramCfgTableView->selectionModel()->selectedRows();
+    const QModelIndexList selection = ui->paramCfgTableView->selectionModel()->selectedRows();
     QModelIndexList idxSelection = QModelIndexList(selection);
     std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() < b.row(); });
     if  (idxSelection.first().row() <= 0)
         return;
 
     for(int i=0; i<idxSelection.size(); i++) {
-        QModelIndex idx = idxSelection.at(i);
+        const QModelIndex idx = idxSelection.at(i);
         mParameterTableModel->moveRows(QModelIndex(), idx.row(), 1,
                                                          QModelIndex(), idx.row()-1);
     }
@@ -1143,21 +1143,21 @@ void ParamConfigEditor::on_actionMoveDown_triggered()
     if (!ui->actionMoveDown->isEnabled())
         return;
     QModelIndexList indexSelection = ui->paramCfgTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : std::as_const(indexSelection)) {
+    for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->paramCfgTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
     if  ( !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
-    QModelIndexList selection = ui->paramCfgTableView->selectionModel()->selectedRows();
+    const QModelIndexList selection = ui->paramCfgTableView->selectionModel()->selectedRows();
     QModelIndexList idxSelection = QModelIndexList(selection);
     std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() < b.row(); });
     if  (idxSelection.first().row() >= mParameterTableModel->rowCount()-1)
         return;
 
     for(int i=0; i<idxSelection.size(); i++) {
-        QModelIndex idx = idxSelection.at(i);
+        const QModelIndex idx = idxSelection.at(i);
         mParameterTableModel->moveRows(QModelIndex(), idx.row(), 1,
                                     QModelIndex(), idx.row()+2);
     }
@@ -1192,7 +1192,7 @@ void ParamConfigEditor::on_actionShowRecurrence_triggered()
     if (!ui->actionShowRecurrence->isEnabled())
         return;
 
-    QModelIndexList indexSelection = ui->paramCfgTableView->selectionModel()->selectedIndexes();
+    const QModelIndexList indexSelection = ui->paramCfgTableView->selectionModel()->selectedIndexes();
     if (indexSelection.size() <= 0) {
         showOptionDefinition();
         return;
@@ -1209,7 +1209,7 @@ void ParamConfigEditor::on_actionShowRecurrence_triggered()
         return;
     }
 
-    for(int row : std::as_const(rowList)) {
+    for(const int row : std::as_const(rowList)) {
         QItemSelection rowSelection = ui->paramCfgTableView->selectionModel()->selection();
         rowSelection.select(ui->paramCfgTableView->model()->index(row, 0),
                             ui->paramCfgTableView->model()->index(row, ConfigParamTableModel::COLUMN_ENTRY_NUMBER));
@@ -1253,10 +1253,10 @@ void ParamConfigEditor::on_actionAdd_This_Parameter_triggered()
     if (!ui->actionAdd_This_Parameter->isEnabled())
         return;
 
-    QModelIndexList selection = ui->paramCfgDefTreeView->selectionModel()->selectedIndexes(); // Rows();
+    const QModelIndexList selection = ui->paramCfgDefTreeView->selectionModel()->selectedIndexes(); // Rows();
     if (selection.size()>0) {
         addParameterFromDefinition(selection.at(0));
-        QModelIndex index = ui->paramCfgDefTreeView->selectionModel()->currentIndex();
+        const QModelIndex index = ui->paramCfgDefTreeView->selectionModel()->currentIndex();
         updateDefinitionActionsState(index);
     }
 }
@@ -1270,7 +1270,6 @@ void ParamConfigEditor::on_actionRemove_This_Parameter_triggered()
     deleteOption();
 }
 
-
-}
-}
-}
+} // namespace option
+} // namespace studio
+} // namespace gams

@@ -36,14 +36,14 @@ public:
 
     bool validateData(const QString& inputFileName, bool checkSchema=false);
 
-    ConnectData* loadDataFromFile(const QString& fileName);
+    static ConnectData* loadDataFromFile(const QString& fileName);
 
     ConnectData* createDataHolder(const QStringList& schemaNameList, bool onlyRequiredAttribute=false);
     ConnectData* createDataHolderFromSchema(const QString& schemaname, const QStringList& schema, bool onlyRequiredAttribute=false, bool ignoreNull=false);
     ConnectData* createDataHolderFromSchema(const QStringList& schemastrlist, bool onlyRequiredAttribute=false, bool ignoreNull=false);
 
     ConnectSchema* getSchema(const QString& schemaName);
-    const QStringList getSchemaNames() const;
+    QStringList getSchemaNames() const;
 
     bool isSchemaAvaiablel() const;
 

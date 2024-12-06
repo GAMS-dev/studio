@@ -61,8 +61,8 @@ QMimeData *GamsOptionDefinitionModel::mimeData(const QModelIndexList &indexes) c
             OptionDefinitionItem *parentItem = childItem->parentItem();
 
             if (parentItem == rootItem) {
-                QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
-                QModelIndex optionIdIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
+                const QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
+                const QModelIndex optionIdIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
                 text = QString("%1=%2=%3").arg(data(index, Qt::DisplayRole).toString(),
                                                data(defValueIndex, Qt::DisplayRole).toString(),
                                                data(optionIdIndex, Qt::DisplayRole).toString());
@@ -85,8 +85,8 @@ void GamsOptionDefinitionModel::modifyOptionDefinitionItem(const OptionItem &opt
                                              Qt::DisplayRole,
                                              QString::number(optionItem.optionId) , 1);
     beginResetModel();
-    for(QModelIndex idx : std::as_const(indices)) {
-        QModelIndex node = index(idx.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
+    for(const QModelIndex idx : std::as_const(indices)) {
+        const QModelIndex node = index(idx.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
 
         OptionDefinitionItem* nodeItem = static_cast<OptionDefinitionItem*>(node.internalPointer());
         OptionDefinitionItem *parentItem = nodeItem->parentItem();
@@ -106,10 +106,10 @@ void GamsOptionDefinitionModel::modifyOptionDefinition(const QList<OptionItem> &
         if (optionItems.at(i).optionId != -1)
             modifiedOption[optionItems.at(i).optionId] = i;
     }
-    QList<int> ids = modifiedOption.keys();
+    const QList<int> ids = modifiedOption.keys();
     beginResetModel();
     for(int i=0; i<rowCount(); ++i)  {
-        QModelIndex node = index(i, OptionDefinitionModel::COLUMN_OPTION_NAME);
+        const QModelIndex node = index(i, OptionDefinitionModel::COLUMN_OPTION_NAME);
 
         OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(node.internalPointer());
         OptionDefinitionItem *parentItem = item->parentItem();

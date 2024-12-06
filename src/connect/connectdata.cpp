@@ -39,16 +39,6 @@ ConnectData::~ConnectData()
 
 }
 
-void ConnectData::loadFromFile(const QString &inputFileName)
-{
-    ConnectAgent::loadFromFile(inputFileName);
-}
-
-void ConnectData::loadFromString(const QString &input)
-{
-    ConnectAgent::loadFromString(input);
-}
-
 void ConnectData::unload(const QString &outputFileName)
 {
     YAML::Emitter emitter;
@@ -75,7 +65,7 @@ void ConnectData::format(YAML::Emitter& emitter, const YAML::Node& node) {
                }
                emitter << YAML::EndSeq;
     } else if (node.Type()==YAML::NodeType::Scalar) {
-              QString str = QString::fromStdString(node.as<std::string>());
+              const QString str = QString::fromStdString(node.as<std::string>());
               if (str.contains("\n"))
                  emitter << YAML::Literal;
               emitter << node.as<std::string>();
@@ -84,6 +74,6 @@ void ConnectData::format(YAML::Emitter& emitter, const YAML::Node& node) {
     }
 }
 
-}// namespace connect
+} // namespace connect
 } // namespace studio
 } // namespace gams
