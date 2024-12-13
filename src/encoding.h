@@ -17,52 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ENCODINGSDIALOG_H
-#define ENCODINGSDIALOG_H
 
-#include <QDialog>
+#ifndef ENCODING_H
+#define ENCODING_H
 
-namespace Ui {
-class SelectEncodings;
-}
+#include <QString>
 
 namespace gams {
 namespace studio {
 
-class SelectEncodings : public QDialog
+class Encoding
 {
-    Q_OBJECT
-
 public:
-    explicit SelectEncodings(const QStringList &selectedEncodings, const QString &defaultEncoding, QWidget *parent = nullptr);
-    ~SelectEncodings() override;
-    QList<int> selectedMibs();
-    QStringList selectedEncodings();
-    int defaultCodec();
-    QString defaultEncoding();
+    Encoding();
 
-private slots:
-
-    void on_pbCancel_clicked();
-    void on_pbSave_clicked();
-    void on_pbReset_clicked();
-
-protected:
-    void showEvent(QShowEvent *e) override;
-
+    static QStringDecoder createDecoder(const QString &encodingName);
+    static QStringEncoder createEncoder(const QString &encodingName);
+    static QString name(int mib);
+    static int nameToOldMib(QString encName);
+    static QString toUtf16(QByteArray data, QByteArray encoding = QByteArray());
+    static QString defaultEncoding(int fallbackMib = -1);
+    static void setDefaultEncoding(const QString &encoding);
 private:
-    void centerCurrent();
-
-private:
-    Ui::SelectEncodings *ui;
-    QList<int> mSelectedMibs;
-    int mDefaultMib;
-    QStringList mSelectedEncodings;
-    QString mDefaultEncoding;
+    static QString mDefaultEncoding;
 };
 
+} // namespace studio
+} // namespace gams
 
-}
-}
-
-#endif // ENCODINGSDIALOG_H
+#endif // ENCODING_H

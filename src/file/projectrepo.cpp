@@ -19,6 +19,7 @@
  */
 #include <QDir>
 #include <QApplication>
+#include <QStringConverter>
 
 #include "projectrepo.h"
 #include "exception.h"
@@ -30,6 +31,7 @@
 #include "projecttreeview.h"
 #include "viewhelper.h"
 #include "settings.h"
+#include "encoding.h"
 #include "editors/sysloglocator.h"
 #include "file/textfilesaver.h"
 
@@ -397,8 +399,12 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
             FileType *ft = &FileType::from(suf);
             if (QFileInfo::exists(file)) {
                 PExFileNode * node = findOrCreateFileNode(file, project, ft, name);
-                node->file()->setCodecMib(child.contains("codecMib") ? child.value("codecMib").toInt()
-                                                                     : Settings::settings()->toInt(skDefaultCodecMib));
+                QString encoding = child.contains("encoding") ?
+                                       child.value("encoding").toString()
+                                       : child.contains("codecMib") ?
+                                           Encoding::name(child.value("codecMib").toInt())
+                                           : Settings::settings()->toString(skDefaultEncoding);
+                node->file()->setEncoding(encoding);
                 QStringList optList;
                 if (child.contains("options"))
                     optList = child.value("options").toStringList();
@@ -487,8 +493,11 @@ void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList&
         nodeObject.insert("file", relativePaths ? dir.relativeFilePath(file->location()) : file->location());
         nodeObject.insert("name", file->name());
         nodeObject.insert("type", file->file()->kindAsStr());
-        int mib = file->file()->codecMib();
-        nodeObject.insert("codecMib", mib);
+        nodeObject.insert("encoding", file->file()->encoding());
+
+        // TODO(JM) Keep for two GAMS releases (until GAMS 52)
+        nodeObject.insert("codecMib", Encoding::nameToOldMib(file->file()->encoding()));
+
         QStringList options = project->runFileParameterHistory(file->file()->id());
         if (options.size() == 1 && options.at(0).isEmpty())
             options.clear();

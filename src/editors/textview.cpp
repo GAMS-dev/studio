@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "textview.h"
-// #include "filemapper.h"
 #include "fastfilemapper.h"
 #include "memorymapper.h"
 #include "logger.h"
@@ -30,6 +29,7 @@
 #include "editors/navigationhistory.h"
 #include "search/searchhelpers.h"
 #include "search/searchworker.h"
+#include "encoding.h"
 
 #include <QScrollBar>
 #include <QTextBlock>
@@ -49,8 +49,6 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     if (kind == FileText) {
         mMapper = new FastFileMapper();
     }
-    int mib = Settings::settings()->toInt(skDefaultCodecMib);
-    QTextCodec *codec = QTextCodec::codecForMib(mib);
 
     if (kind == MemoryText) {
         MemoryMapper* mm = new MemoryMapper();
@@ -64,7 +62,7 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
         connect(mm, &MemoryMapper::updateView, this, &TextView::updateView);
         mMapper = mm;
     }
-    mMapper->setCodec(codec);
+    mMapper->setEncoding(Encoding::defaultEncoding(Settings::settings()->toInt(skDefaultCodecMib)));
 
     mEdit = new TextViewEdit(*mMapper, this);
     mEdit->setFrameShape(QFrame::NoFrame);
@@ -120,10 +118,10 @@ int TextView::lineCount() const
     return mMapper->lineCount();
 }
 
-bool TextView::loadFile(const QString &fileName, QTextCodec *codec, bool initAnchor)
+bool TextView::loadFile(const QString &fileName, QString encoding, bool initAnchor)
 {
     if (mTextKind != FileText) return false;
-    mMapper->setCodec(codec);
+    mMapper->setEncoding(encoding);
 
     if (!static_cast<FastFileMapper*>(mMapper)->openFile(fileName, initAnchor)) return false;
     recalcVisibleLines();

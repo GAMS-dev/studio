@@ -729,7 +729,7 @@ const QString FastFileMapper::LinesCache::loadCache(int lineNr, int count) const
         if (atEnd)
             bArray.resize(bSize);
     }
-    mData = mMapper->codec() ? mMapper->codec()->toUnicode(bArray) : QString(bArray);
+    mData = mMapper->decode(bArray);
     mLineChar.clear();
     mLineChar.reserve(count + 1);
     mLineChar.append(0);

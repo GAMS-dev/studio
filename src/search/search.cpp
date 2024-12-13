@@ -33,6 +33,8 @@
 #include "viewhelper.h"
 #include "file/textfilesaver.h"
 
+#include "encoding.h"
+
 namespace gams {
 namespace studio {
 namespace search {
@@ -460,7 +462,7 @@ bool Search::hasResultsForFile(const QString &filePath)
 int Search::replaceUnopened(FileMeta* fm, const SearchParameters &parameters)
 {
     QFile file(fm->location());
-    QTextCodec *codec = fm->codec();
+    QStringDecoder decoder = Encoding::createDecoder(fm->encoding());
     int hits = 0;
 
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -479,7 +481,7 @@ int Search::replaceUnopened(FileMeta* fm, const SearchParameters &parameters)
                 arry.chop(1);
         }
 
-        QString line = codec ? codec->toUnicode(arry) : QString(arry);
+        QString line = decoder.decode(arry);
 
         if (parameters.regex.captureCount() > 0) {
             QRegularExpressionMatchIterator matchIter = parameters.regex.globalMatch(line);
@@ -512,7 +514,8 @@ int Search::replaceUnopened(FileMeta* fm, const SearchParameters &parameters)
         TextFileSaver outFile;
         if (!outFile.open(fm->location()))
             return 0;
-        outFile.write(codec ? codec->fromUnicode(content) : content.toUtf8());
+        QStringEncoder encoder = Encoding::createEncoder(fm->encoding());
+        outFile.write(encoder.encode(content));
         outFile.close();
     }
     return hits;

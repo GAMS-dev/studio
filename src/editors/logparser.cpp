@@ -18,36 +18,41 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "logparser.h"
+#include "encoding.h"
 //#include "file.h"
+
 #include <QDir>
+#include <QStringConverter>
 #include "logger.h"
 
 namespace gams {
 namespace studio {
 
-LogParser::LogParser(QTextCodec *codec)
-    : mCodec(codec)
-{}
-
-QTextCodec *LogParser::codec() const
+LogParser::LogParser(QString encoding)
 {
-    return mCodec;
+    setEncoding(encoding);
 }
 
-void LogParser::setCodec(QTextCodec *codec)
+void LogParser::setEncoding(const QString &encoding)
 {
-    mCodec = codec;
+    mDecoder = Encoding::createDecoder(encoding);
+}
+
+QString LogParser::encoding()
+{
+    return mDecoder.name();
 }
 
 QString LogParser::parseLine(const QByteArray &data, QString &line, bool &hasError, MarksBlockState &mbState)
 {
-    QTextCodec::ConverterState convState;
-    if (mCodec) {
-        line = mCodec->toUnicode(data.constData(), data.size(), &convState);
-    }
-    if (!mCodec || convState.invalidChars > 0) {
-        QTextCodec* locCodec = QTextCodec::codecForLocale();
-        line = locCodec->toUnicode(data.constData(), data.size(), &convState);
+    if (mDecoder.isValid()) {
+        line = mDecoder.decode(data);
+        if (mDecoder.hasError()) {
+            QStringDecoder localDec(QStringDecoder::System);
+            line = localDec.decode(data);
+            if (localDec.hasError())
+                line = data;
+        }
     }
     return extractLinks(line, hasError, mbState);
 }

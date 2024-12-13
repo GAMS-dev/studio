@@ -71,7 +71,7 @@ void TestFileMapper::cleanupTestCase()
 void TestFileMapper::init()
 {
     mMapper = new FastFileMapper();
-    mMapper->setCodec(QTextCodec::codecForName("utf-8"));
+    mMapper->setEncoding("UTF-8");
     mMapper->setOverscanLines(10);
     QVERIFY2(mMapper->openFile(mCurrentPath.absoluteFilePath(testFileName), true),
              "TextMapper: Error on opening test file.");

@@ -23,7 +23,7 @@
 #include <QAbstractTableModel>
 #include <QString>
 #include <QTableView>
-#include <QStringDecoder>
+#include <QStringConverter>
 
 #include "gdxcc.h"
 #include "numerics/doubleformatter.h"

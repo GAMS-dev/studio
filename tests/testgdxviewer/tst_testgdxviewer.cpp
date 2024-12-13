@@ -71,7 +71,7 @@ void TestGdxViewer::test_createGdxViewer()
 
     // create GdxViewer instance
     QString tmp = QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir(true)).absoluteFilePath("trnsport.gdx"));
-    GdxViewer *gdxViewer = new GdxViewer(tmp, CommonPaths::systemDir(), QTextCodec::codecForName("utf-8"));
+    GdxViewer *gdxViewer = new GdxViewer(tmp, CommonPaths::systemDir(), "utf-8");
     delete gdxViewer;
     gdxViewer = nullptr;
 }
@@ -82,7 +82,7 @@ void TestGdxViewer::test_export()
 
     // create GdxViewer instance
     QString tmp = QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir(true)).absoluteFilePath("trnsport.gdx"));
-    GdxViewer *gdxViewer = new GdxViewer(tmp, CommonPaths::systemDir(), QTextCodec::codecForName("utf-8"));
+    GdxViewer *gdxViewer = new GdxViewer(tmp, CommonPaths::systemDir(), "utf-8");
 
     ExportModel *exportModel = new ExportModel(gdxViewer->gdxSymbolTable(), this);
     exportModel->selectAll();

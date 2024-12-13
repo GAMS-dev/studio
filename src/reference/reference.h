@@ -217,6 +217,7 @@ private:
     QMap<FileReferenceId, FileReferenceItem*> mFileUsedReference;
     QMap<SymbolId, SymbolReferenceItem*> mReference;
 
+    QStringDecoder *mDecoder = nullptr;
     static QRegularExpression mRexSplit;
 };
 

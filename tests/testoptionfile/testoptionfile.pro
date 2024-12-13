@@ -10,6 +10,7 @@ HEADERS += \
     $$SRCPATH/logger.h \
     $$SRCPATH/theme.h \
     $$SRCPATH/svgengine.h \
+    $$SRCPATH/encoding.h \
     $$SRCPATH/option/option.h \
     $$SRCPATH/option/optiontokenizer.h
 
@@ -18,6 +19,7 @@ SOURCES += \
     $$SRCPATH/logger.cpp \
     $$SRCPATH/theme.cpp \
     $$SRCPATH/svgengine.cpp \
+    $$SRCPATH/encoding.cpp \
     $$SRCPATH/option/option.cpp \
     $$SRCPATH/option/optiontokenizer.cpp \
     $$SRCPATH/editors/sysloglocator.cpp \

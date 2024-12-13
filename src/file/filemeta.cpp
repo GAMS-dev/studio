@@ -34,6 +34,9 @@
 #include "editors/navigationhistorylocator.h"
 #include "textfilesaver.h"
 
+#include "encoding.h"
+#include <QStringConverter>
+
 #include <QTabWidget>
 #include <QFileInfo>
 #include <QFile>
@@ -50,9 +53,7 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, const FileId &id, const QString &loca
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
     if (mData.type->kind() == FileKind::TxtRO && mData.size < 1024*1024)
         setKind(FileKind::TxtRO);
-
-    mCodec = QTextCodec::codecForMib(Settings::settings()->toInt(skDefaultCodecMib));
-    if (!mCodec) mCodec = QTextCodec::codecForLocale();
+    mEncoding = Encoding::defaultEncoding(Settings::settings()->toInt(skDefaultCodecMib));
     setLocation(location);
     mTempAutoReloadTimer.setSingleShot(true); // only for measurement
     mReloadTimer.setSingleShot(true);
@@ -425,7 +426,7 @@ void FileMeta::zoomRequest(qreal delta)
 
 void FileMeta::reload()
 {
-    load(mCodec->mibEnum(), false);
+    load(mEncoding, false);
 }
 
 void FileMeta::updateView()
@@ -727,12 +728,11 @@ bool FileMeta::hasEditor(QWidget * const &edit) const
     return mEditors.contains(edit);
 }
 
-void FileMeta::load(int codecMib, bool init)
+void FileMeta::load(QString encoding, bool init)
 {
-    if (codecMib == -1) {
-        codecMib = Settings::settings()->toInt(skDefaultCodecMib);
-    }
-    mCodec = QTextCodec::codecForMib(codecMib);
+    if (encoding.isEmpty())
+        encoding = Encoding::defaultEncoding();
+    mEncoding = encoding;
     mData = Data(location(), mData.type);
 
     if (kind() == FileKind::Gsp) {
@@ -743,7 +743,7 @@ void FileMeta::load(int codecMib, bool init)
         for (QWidget *wid: std::as_const(mEditors)) {
             if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
                 gdxViewer->setHasChanged(init);
-                gdxViewer->reload(mCodec);
+                gdxViewer->reload(encoding);
             }
         }
         return;
@@ -751,7 +751,7 @@ void FileMeta::load(int codecMib, bool init)
     if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         for (QWidget *wid: std::as_const(mEditors)) {
             if (TextView *tView = ViewHelper::toTextView(wid)) {
-                tView->loadFile(location(), mCodec, init);
+                tView->loadFile(location(), encoding, init);
             }
             if (kind() == FileKind::Lst) {
                 lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid);
@@ -763,7 +763,7 @@ void FileMeta::load(int codecMib, bool init)
     if (kind() == FileKind::Ref) {
         for (QWidget *wid: std::as_const(mEditors)) {
             reference::ReferenceViewer *refViewer = ViewHelper::toReferenceViewer(wid);
-            if (refViewer) refViewer->reloadFile(mCodec->name());
+            if (refViewer) refViewer->reloadFile(encoding);
         }
         return;
     }
@@ -772,7 +772,7 @@ void FileMeta::load(int codecMib, bool init)
         for (QWidget *wid : std::as_const(mEditors)) {
             if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid)) {
                 done = true;
-                so->on_reloadSolverOptionFile(mCodec->name());
+                so->on_reloadSolverOptionFile(encoding);
             }
         }
         if (done) return;
@@ -822,13 +822,21 @@ void FileMeta::load(int codecMib, bool init)
             EXCEPT() << "Error opening file " << location();
 
         const QByteArray data(file.readAll());
-        QString invalidCodecs;
-        QTextCodec::ConverterState state;
-        QTextCodec *codec = QTextCodec::codecForMib(codecMib);
-        if (codec) {
-            QString text = codec->toUnicode(data.constData(), data.size(), &state);
-            if (state.invalidChars != 0) {
-                invalidCodecs += (invalidCodecs.isEmpty() ? "" : ", ") + codec->name();
+        QStringDecoder decoder = Encoding::createDecoder(encoding);
+        if (!decoder.isValid()) {
+            if (auto encode = decoder.encodingForData(data))
+                decoder = QStringDecoder(*encode);
+        }
+
+        if (decoder.isValid()) {
+            QString msg;
+            QString text = decoder.decode(data);
+            if (decoder.hasError()) {
+                msg = "Errors when decoding with '" + encoding + "'";
+                if (auto encode = decoder.encodingForData(data))
+                    msg += " Decoding with '" + QString(QStringConverter::nameForEncoding(*encode)) + "' might work";
+                    //decoder = QStringDecoder(*encode);
+
             }
             QVector<QPoint> edPos = getEditPositions();
             mLoading = true;
@@ -837,13 +845,9 @@ void FileMeta::load(int codecMib, bool init)
             if (mHighlighter) mHighlighter->resume();
             setEditPositions(edPos);
             mLoading = false;
-            mCodec = codec;
-            if (!invalidCodecs.isEmpty()) {
-                DEB() << "Errors when decoding with " + invalidCodecs + ". Finally used encoding: " + codec->name();
-            }
+            if (!msg.isEmpty()) DEB() << msg;
         } else {
-            SysLogLocator::systemLog()->append("System doesn't contain codec for MIB "
-                                                   + QString::number(codecMib), LogMsgType::Info);
+            SysLogLocator::systemLog()->append("Invalid encoding " + encoding, LogMsgType::Info);
         }
         file.close();
         setModified(false);
@@ -874,13 +878,8 @@ bool FileMeta::save(const QString &newLocation, bool transferLocation)
         TextFileSaver saver;
         if (!saver.open(location))
             EXCEPT() << "Can't save " << location;
-        std::optional<QStringConverter::Encoding> enc = QStringConverter::encodingForName((mCodec ? mCodec->name() : QString("UTF-8")).toLatin1());
-        if (enc.has_value()) {
-            QStringEncoder encode = QStringEncoder(enc.value());
-            saver.write(encode(document()->toPlainText()));
-        } else {
-            saver.write((mCodec ? mCodec->fromUnicode(document()->toPlainText()) : document()->toPlainText().toUtf8()).data());
-        }
+        QStringEncoder enc = QStringEncoder(mEncoding.toLatin1());
+        saver.write(enc(document()->toPlainText()));
         res = saver.close();
     } else if (kind() == FileKind::Gsp) {
         project::ProjectEdit* PEd = ViewHelper::toProjectEdit(mEditors.first());
@@ -994,7 +993,7 @@ bool FileMeta::refreshMetaData()
 
 void FileMeta::jumpTo(const NodeId &groupId, bool focus, int line, int column, int length)
 {
-    mFileRepo->openFile(this, groupId, focus, codecMib());
+    mFileRepo->openFile(this, groupId, focus, encoding());
     if (!mEditors.size()) return;
 
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditors.first());
@@ -1192,47 +1191,9 @@ QTextDocument *FileMeta::document() const
     return mDocument;
 }
 
-int FileMeta::codecMib() const
+void FileMeta::setEncoding(const QString &encoding)
 {
-    return mCodec ? mCodec->mibEnum() : Settings::settings()->toInt(skDefaultCodecMib);
-}
-
-void FileMeta::setCodecMib(int mib)
-{
-    QTextCodec *codec = QTextCodec::codecForMib(mib);
-    if (!codec) {
-        DEB() << "TextCodec not found for MIB " << mib;
-        return;
-    }
-    if (!isReadOnly() && codec != mCodec) {
-        setModified(true);
-    }
-    setCodec(codec);
-}
-
-QTextCodec *FileMeta::codec() const
-{
-    return mCodec;
-}
-
-void FileMeta::setCodec(QTextCodec *codec)
-{
-    if (!codec) {
-        if (!mCodec) {
-            mCodec = QTextCodec::codecForMib(Settings::settings()->toInt(skDefaultCodecMib));
-            DEB() << "Encoding parameter invalid, initialized to " << mCodec->name();
-        } else {
-            DEB() << "Encoding parameter invalid, left unchanged at " << mCodec->name();
-        }
-    } else {
-        mCodec = codec;
-    }
-    for (QWidget *wid: std::as_const(mEditors)) {
-        if (TextView *tv = ViewHelper::toTextView(wid)) {
-            if (tv->logParser())
-                tv->logParser()->setCodec(mCodec);
-        }
-    }
+    mEncoding = encoding;
 }
 
 bool FileMeta::exists(bool ckeckNow) const
@@ -1246,13 +1207,12 @@ bool FileMeta::isOpen() const
     return !mEditors.isEmpty();
 }
 
-QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QFont &font, int codecMib, bool forcedAsTextEdit)
+QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QFont &font, QString encoding, bool forcedAsTextEdit)
 {
     QWidget* res = nullptr;
-    if (codecMib == -1) codecMib = FileMeta::codecMib();
+    if (encoding.isEmpty()) encoding = FileMeta::encoding();
+    if (encoding.isEmpty()) encoding = Encoding::defaultEncoding();
 
-    if (codecMib == -1) codecMib = Settings::settings()->toInt(skDefaultCodecMib);
-    mCodec = QTextCodec::codecForMib(codecMib);
     if (kind() == FileKind::Gsp) {
         project::ProjectData *sharedData = nullptr;
         project::ProjectEdit *otherProp = nullptr;
@@ -1266,7 +1226,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
         project->setProjectEditFileMeta(this);
         res = ViewHelper::initEditorType(prop);
     } else if (kind() == FileKind::Gdx) {
-        gdxviewer::GdxViewer *gdx = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, parent);
+        gdxviewer::GdxViewer *gdx = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mEncoding, parent);
         res = ViewHelper::initEditorType(gdx);
         QVariantMap states = Settings::settings()->toMap(skGdxStates);
         if (states.contains(location())) {
@@ -1274,11 +1234,11 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
             gdx->readState(map);
         }
     } else if (kind() == FileKind::Ref && !forcedAsTextEdit) {
-        reference::ReferenceViewer *rv = new reference::ReferenceViewer(location(), mCodec->name(), parent);
+        reference::ReferenceViewer *rv = new reference::ReferenceViewer(location(), mEncoding, parent);
         res = ViewHelper::initEditorType( rv );
         connect(rv, &reference::ReferenceViewer::processState, project, &PExProjectNode::processState);
     } else if (kind() == FileKind::Log) {
-        LogParser *parser = new LogParser(mCodec);
+        LogParser *parser = new LogParser(mEncoding);
         connect(parser, &LogParser::hasFile, project, &PExProjectNode::hasFile);
         connect(parser, &LogParser::setErrorText, project, &PExProjectNode::setErrorText);
         TextView* tView = ViewHelper::initEditorType(new TextView(TextView::MemoryText, parent), EditorType::log);
@@ -1296,7 +1256,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
         TextView* tView = ViewHelper::initEditorType(new TextView(TextView::FileText, parent), type);
         tView->setDebugMode(mFileRepo->debugMode());
         res = tView;
-        tView->loadFile(location(), mCodec, true);
+        tView->loadFile(location(), mEncoding, true);
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), parent));
     } else if (kind() == FileKind::Guc && !forcedAsTextEdit) {
@@ -1312,11 +1272,11 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
                                                        : "optgams.def";
         if (!defFileName.isEmpty() && QFileInfo(CommonPaths::systemDir(),defFileName).exists()) {
             res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName, kind(),
-                                                                             id(), mCodec->name(), parent));
+                                                                             id(), mEncoding, parent));
         } else if ( QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists() &&
                     QString::compare(fileInfo.baseName().toLower(),"gams", Qt::CaseInsensitive)!=0 ) {
             res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), QString("opt%1.def").arg(fileInfo.baseName().toLower()), kind(),
-                                                                             id(), mCodec->name(), parent));
+                                                                             id(), mEncoding, parent));
         } else {
             SysLogLocator::systemLog()->append(QString("Cannot find  solver option definition file for %1. Open %1 in text editor.").arg(fileInfo.fileName()), LogMsgType::Error);
             forcedAsTextEdit = true;
@@ -1378,7 +1338,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
     return res;
 }
 
-int FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib, NewTabStrategy tabStrategy)
+int FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, NewTabStrategy tabStrategy)
 {
     int atIndex = tabWidget->count();
     switch (tabStrategy) {
@@ -1391,7 +1351,7 @@ int FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib, NewTa
     updateTabName(tabWidget, i);
     if (mEditors.size() == 1 && kind() != FileKind::Log && kind() != FileKind::Gsp && ViewHelper::toAbstractEdit(edit)) {
         try {
-            load(codecMib);
+            load(mEncoding);
         } catch (Exception &e) {
             if (mEditors.size() > 0) {
                 tabWidget->removeTab(tabWidget->currentIndex()+1);

@@ -49,6 +49,7 @@ SOURCES += \
     $$SRCPATH/process/connectprocess.cpp \
     $$SRCPATH/settings.cpp \
     $$SRCPATH/svgengine.cpp \
+    $$SRCPATH/encoding.cpp \
     $$SRCPATH/theme.cpp
 
 
@@ -97,4 +98,5 @@ HEADERS += \
     $$SRCPATH/process/connectprocess.h \
     $$SRCPATH/settings.h \
     $$SRCPATH/svgengine.h \
+    $$SRCPATH/encoding.h \
     $$SRCPATH/theme.h

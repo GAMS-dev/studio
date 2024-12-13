@@ -66,8 +66,6 @@ public:
     QString location() const;
     QString tooltip() override;
     virtual NodeId projectId() const;
-//    QTextCodec *codec() const;
-//    void enhanceMarksFromLst();
 
 protected:
     friend class PExLogNode;

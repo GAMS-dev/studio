@@ -113,7 +113,7 @@ public:
 
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
-    void updateMenuToCodec(int mib);
+    void updateMenuToEncoding(const QString &currentEncoding);
     void openFiles(const QStringList &files, OpenGroupOption opt = ogNone);
     void switchToLogTab(FileMeta* fm);
     void jumpToLine(int line);
@@ -123,12 +123,11 @@ public:
     bool projectViewVisibility();
     bool optionEditorVisibility();
     bool helpViewVisibility();
-    QStringList encodingNames();
-    QString encodingMIBsString();
-    QList<int> encodingMIBs();
-    void setEncodingMIBs(const QString &mibList, int active = -1);
-    void setEncodingMIBs(const QList<int> &mibs, int active = -1);
-    void setActiveMIB(int active = -1);
+
+    void setEncodings(const QStringList &encodingsList, const QString &active = QString());
+    QStringList encodings();
+    void setActiveEncoding(const QString &encoding);
+
     const HistoryData &history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
@@ -187,7 +186,7 @@ public slots:
                                             gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFolder(const QString &path, gams::studio::PExProjectNode* project = nullptr);
     void openFile(gams::studio::FileMeta *fileMeta, bool focus = true,
-                  gams::studio::PExProjectNode *project = nullptr, int codecMib = -1,
+                  gams::studio::PExProjectNode *project = nullptr, QString encoding = QString(),
                   bool forcedTextEditor = false, gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void receiveAction(const QString &action);
     void receiveModLibLoad(const QString &gmsFile, bool forceOverwrite = false);
@@ -226,7 +225,7 @@ private slots:
     void initDelayedElements();
     void openDelayedFiles();
     void openFileNode(gams::studio::PExAbstractNode *node, bool focus = true,
-                      int codecMib = -1, bool forcedAsTextEditor = false,
+                      const QString &encoding = QString(), bool forcedAsTextEditor = false,
                       gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void focusProject(PExProjectNode *project);
     void codecChanged(QAction *action);

@@ -27,7 +27,7 @@
 #include <QStyle>
 #include <QLayout>
 #include <QStyleOption>
-#include <QStringDecoder>
+#include <QStringConverter>
 
 namespace gams {
 namespace studio {

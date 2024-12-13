@@ -27,14 +27,12 @@
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QPoint>
-#include <QtCore5Compat/QTextCodec>
 
 #include "abstracttextmapper.h"
 #include "search/result.h"
 
 namespace gams {
 namespace studio {
-
 
 class FileMeta;
 ///
@@ -211,11 +209,6 @@ private:
     int mChunkSize = 1024*1024;
     int mMaxLineWidth = 1024;
     bool mDebugMode = false;
-
-    QTextCodec *mCodec = nullptr;
-    QStringConverter::Encoding mEncoding = QStringConverter::Utf8;
-    mutable QStringEncoder encode;
-    mutable QStringDecoder decode;
 };
 
 } // namespace studio

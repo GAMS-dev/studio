@@ -680,7 +680,7 @@ void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
     PExFileNode* fileNode = main->projectRepo()->findFileNode(this);
     PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
 
-    emit main->projectRepo()->openFile(fileMeta, true, project, -1, true);
+    emit main->projectRepo()->openFile(fileMeta, true, project, "", true);
 }
 
 void SolverOptionWidget::copyAction()

@@ -22,7 +22,6 @@
 
 #include <QVector>
 #include <QItemSelection>
-#include <QtCore5Compat/QTextCodec>
 
 #include "abstractview.h"
 #include "gdxcc.h"
@@ -50,7 +49,7 @@ class GdxViewer : public AbstractView
     Q_OBJECT
 
 public:
-    GdxViewer(const QString &gdxFile, const QString &systemDirectory, QTextCodec* codec, QWidget *parent = nullptr);
+    GdxViewer(const QString &gdxFile, const QString &systemDirectory, const QString &encoding, QWidget *parent = nullptr);
     ~GdxViewer() override;
     void updateSelectedSymbol(const QItemSelection &selected, const QItemSelection& deselected);
     GdxSymbol* selectedSymbol();
@@ -73,7 +72,7 @@ public:
 
 public slots:
     void invalidate();
-    int reload(QTextCodec* codec, bool quiet=false, bool triggerReload=true);
+    int reload(const QString &encoding, bool quiet=false, bool triggerReload=true);
 
 private slots:
     void hideUniverseSymbol();
@@ -113,7 +112,7 @@ private:
 
     QVector<GdxSymbolView*> mSymbolViews;
 
-    QTextCodec *mCodec;
+    QStringDecoder mDecoder;
 
     GdxViewerState* mState = nullptr;
     bool mPendingInvalidate = false;

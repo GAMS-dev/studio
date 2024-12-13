@@ -23,14 +23,14 @@
 #include <QObject>
 #include <QVector>
 #include <QSet>
-//#include <QStringConverter>
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QPoint>
-#include <QtCore5Compat/QTextCodec>
 #include <QMutex>
 
 #include "search/result.h"
+
+class QStringDecoder;
 
 namespace gams {
 namespace studio {
@@ -80,8 +80,8 @@ public:
     virtual void startRun() = 0;
     virtual void endRun() = 0;
 
-    QTextCodec *codec() const;
-    void setCodec(QTextCodec *codec);
+    QString encoding();
+    void setEncoding(const QString &encoding);
     bool isEmpty() const;
     virtual qint64 size() const;
     virtual QByteArray delimiter() const;
@@ -142,6 +142,8 @@ protected:
     int maxLineWidth() const;
     virtual bool updateMaxTop() { return true; }
     virtual void setDelimiter(const QByteArray &delim) const;
+    QByteArray decode(const QByteArray &data) const;
+    QByteArray encode(const QString &data) const;
 
 private:
     mutable QByteArray mDelimiter;
@@ -154,9 +156,8 @@ private:
     int mMaxLineWidth = 1024*512;
     bool mDebugMode = false;
 
-    QTextCodec *mCodec = nullptr;
-    QStringConverter::Encoding mEncoding = QStringConverter::Utf8;
-    mutable QStringDecoder decode;
+    mutable QStringDecoder mDecoder;
+    mutable QStringEncoder mEncoder;
 };
 
 } // namespace studio

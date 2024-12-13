@@ -299,7 +299,9 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
 
     // general system settings
     safelyAdd(res, skDefaultCodecMib, scSys, {"defaultCodecMib"}, 106);
-    safelyAdd(res, skEncodingMib, scSys, {"encodingMIBs"}, QString("106,0,4,17,2025"));
+    safelyAdd(res, skDefaultEncoding, scSys, {"defaultEncoding"}, "UTF-8");
+    safelyAdd(res, skEncodingMibs, scSys, {"encodingMIBs"}, QString("106,0,4,17,2025"));
+    safelyAdd(res, skEncodings, scSys, {"encodings"}, "");
     safelyAdd(res, skProjects, scSys, {"projects"}, QJsonArray());
     safelyAdd(res, skCurrentFocusProject, scSys, {"currentFocusProject"}, -1);
     safelyAdd(res, skOptionsPerMainFile, scSys, {"optionsPerMainFile"}, true);

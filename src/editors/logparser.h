@@ -20,9 +20,12 @@
 #ifndef LOGPARSER_H
 #define LOGPARSER_H
 
+#include <QObject>
 #include <QString>
-#include <QtCore5Compat/QTextCodec>
-#include "syntax/textmarkrepo.h"
+
+// #include "syntax/textmarkrepo.h"
+
+class QStringDecoder;
 
 namespace gams {
 namespace studio {
@@ -56,9 +59,9 @@ public:
     };
 
 public:
-    LogParser(QTextCodec *codec);
-    QTextCodec *codec() const;
-    void setCodec(QTextCodec *codec);
+    LogParser(QString encoding);
+    void setEncoding(const QString &encoding);
+    QString encoding();
     QString parseLine(const QByteArray &data, QString &line, bool &hasError, MarksBlockState &mbState);
     void quickParse(const QByteArray &data, int start, int end, QString &line, int &linkStart, int &lstLine);
 
@@ -71,7 +74,7 @@ private:
     QString extractLinks(const QString &line, bool &hasError, MarksBlockState &mbState);
 
     QString mDirectory;
-    QTextCodec *mCodec;
+    QStringDecoder mDecoder;
 //    mutable QStringEncoder encode;
 //    QStringConverter::Encoding mEncoding;
 };

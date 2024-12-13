@@ -21,36 +21,26 @@
 #include <QClipboard>
 #include <QtMath>
 #include <QMutexLocker>
+#include <QStringConverter>
 
 #include "abstracttextmapper.h"
+#include "encoding.h"
 
 namespace gams {
 namespace studio {
 
-AbstractTextMapper::AbstractTextMapper(QObject *parent): QObject(parent)
-{
-    mCodec = nullptr;
-}
+AbstractTextMapper::AbstractTextMapper(QObject *parent)
+    : QObject(parent), mDecoder(Encoding::createDecoder(""))
+{}
 
 AbstractTextMapper::~AbstractTextMapper()
 {}
 
-QTextCodec *AbstractTextMapper::codec() const
+void AbstractTextMapper::setEncoding(const QString &encoding)
 {
-    return mCodec;
+    mDecoder = Encoding::createDecoder(encoding.toLatin1());
+    mEncoder = QStringEncoder(encoding.toLatin1());
 }
-
-void AbstractTextMapper::setCodec(QTextCodec *codec)
-{
-    mCodec = codec;
-}
-
-//void AbstractTextMapper::setEncoding(QStringConverter::Encoding encoding)
-//{
-//    mEncoding = encoding;
-//    encode = QStringEncoder(encoding); // QStringEncoder::Flag::Default
-//    decode = QStringDecoder(encoding); // QStringEncoder::Flag::Default
-//}
 
 bool AbstractTextMapper::isEmpty() const
 {
@@ -127,6 +117,16 @@ void AbstractTextMapper::setDelimiter(const QByteArray &delim) const
 {
     QMutexLocker locker(&mMutex);
     mDelimiter = delim;
+}
+
+QByteArray AbstractTextMapper::decode(const QByteArray &data) const
+{
+    return mDecoder.decode(data).data;
+}
+
+QByteArray AbstractTextMapper::encode(const QString &data) const
+{
+    return mEncoder.encode(data);
 }
 
 void AbstractTextMapper::setDebugMode(bool debug)

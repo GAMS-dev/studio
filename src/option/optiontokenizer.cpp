@@ -20,7 +20,6 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QTextStream>
-#include <QtCore5Compat/QTextCodec>
 #include <QRegularExpression>
 
 #include "optiontokenizer.h"
@@ -31,6 +30,7 @@
 #include "commonpaths.h"
 #include "editors/defaultsystemlogger.h"
 #include "editors/sysloglocator.h"
+#include "encoding.h"
 
 namespace gams {
 namespace studio {
@@ -1271,9 +1271,7 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
 
     QFile inputFile(absoluteFilePath);
     if (inputFile.open(QFile::ReadOnly)) {
-        QTextCodec *codec = QTextCodec::codecForName(encodingName.toLatin1());
-        if (!codec) codec = QTextCodec::codecForName("UTF-8");
-
+        QStringDecoder decoder = Encoding::createDecoder(encodingName);
         QList<int> idList;
         while (!inputFile.atEnd()) {
             SolverOptionItem* item = new SolverOptionItem();
@@ -1287,9 +1285,9 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
             }
 
             if (mOption->available())
-                getOptionItemFromStr(item, true, codec ? codec->toUnicode(arry) : QString(arry));
+                getOptionItemFromStr(item, true, decoder.decode(arry));
             else
-                item->key = codec ? codec->toUnicode(arry) : QString(arry);
+                item->key = decoder.decode(arry);
             items.append( item );
             idList << item->optionId;
         }
@@ -1311,10 +1309,9 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
         return false;
     }
 
-//    qDebug() << "writeout :" << items.size() << " using codec :" << codec->name();
-    QTextCodec *codec = QTextCodec::codecForName(encodingName.toUtf8());
+    QStringEncoder encoder = Encoding::createEncoder(encodingName);
     for(SolverOptionItem* item: items) {
-        outputFile.write((codec ? codec->fromUnicode(formatOption(item)) : formatOption(item).toUtf8()));
+        outputFile.write(encoder.encode(formatOption(item)));
         outputFile.write("\n");
         switch (item->error) {
         case OptionErrorType::Invalid_Key:

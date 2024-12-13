@@ -10,6 +10,7 @@ HEADERS += \
     testgamsoption.h \
     $$SRCPATH/theme.h \
     $$SRCPATH/SvgEngine.h \
+    $$SRCPATH/encoding.h \
     $$SRCPATH/option/optiontokenizer.h \
     $$SRCPATH/option/option.h
 
@@ -17,6 +18,7 @@ SOURCES += \
     testgamsoption.cpp \
     $$SRCPATH/theme.cpp \
     $$SRCPATH/SvgEngine.cpp \
+    $$SRCPATH/encoding.cpp \
     $$SRCPATH/option/optiontokenizer.cpp \
     $$SRCPATH/option/option.cpp \
     $$SRCPATH/commonpaths.cpp \

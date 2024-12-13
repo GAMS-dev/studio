@@ -23,51 +23,48 @@
 
 #include <QCheckBox>
 #include <QRadioButton>
-#include <QtCore5Compat/QTextCodec>
 
 namespace gams {
 namespace studio {
 
-SelectEncodings::SelectEncodings(const QList<int> &selectedMibs, int defaultMib, QWidget *parent) :
+SelectEncodings::SelectEncodings(const QStringList &selectedEncodings, const QString &defaultEncoding, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SelectEncodings)
 {
     ui->setupUi(this);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
-    mSelectedMibs = selectedMibs;
-    mDefaultMib = defaultMib;
+    mSelectedEncodings = selectedEncodings;
+    mDefaultEncoding = defaultEncoding;
 
-    QList<int> mibs = QTextCodec::availableMibs();
-    std::sort(mibs.begin(), mibs.end());
+    QStringList encList = QStringConverter::availableCodecs();
+    std::sort(encList.begin(), encList.end());
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tableWidget->horizontalHeader()->setStyle(HeaderViewProxy::instance());
-    ui->tableWidget->setRowCount(mibs.count());
+    ui->tableWidget->setRowCount(encList.count());
     ui->tableWidget->setWordWrap(false);
 
     int row = 0;
     QFont boldFont = font();
     boldFont.setBold(true);
-    for (int mib: std::as_const(mibs)) {
+    for (const QString &enc: std::as_const(encList)) {
         QRadioButton *rad = new QRadioButton("");
         rad->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
-        rad->setChecked(mib == defaultMib);
+        rad->setChecked(enc == defaultEncoding);
         ui->tableWidget->setCellWidget(row, 0, rad);
 
         QCheckBox *box = new QCheckBox("");
         box->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
-        if (selectedMibs.contains(mib) || mib == 0) box->setChecked(true);
-        if (mib == 0) box->setEnabled(false);
+        if (selectedEncodings.contains(enc) || enc.compare("System") == 0) box->setChecked(true);
+        if (enc == "System") box->setEnabled(false);
         ui->tableWidget->setCellWidget(row, 1, box);
 
-        ui->tableWidget->setItem(row, 2, new QTableWidgetItem(mib));
+        ui->tableWidget->setItem(row, 2, new QTableWidgetItem(enc));
         ui->tableWidget->item(row, 2)->setTextAlignment(Qt::AlignRight);
-        ui->tableWidget->item(row, 2)->setData(Qt::EditRole, mib);
+        ui->tableWidget->item(row, 2)->setData(Qt::EditRole, enc);
 
-        QTextCodec *codec = QTextCodec::codecForMib(mib);
-        ui->tableWidget->setItem(row, 3, new QTableWidgetItem(" "+QString(codec->name())+" "));
+        ui->tableWidget->setItem(row, 3, new QTableWidgetItem(" " + enc + " "));
         ui->tableWidget->item(row, 3)->setFont(boldFont);
 
-        ui->tableWidget->setItem(row, 4, new QTableWidgetItem(" "+QString(codec->aliases().join(", "))+" "));
         ui->tableWidget->setVerticalHeaderItem(row, new QTableWidgetItem());
         ui->tableWidget->setRowHeight(row, int(ui->tableWidget->fontMetrics().height()*1.4));
         row++;
@@ -96,6 +93,22 @@ QList<int> SelectEncodings::selectedMibs()
     return res;
 }
 
+QStringList SelectEncodings::selectedEncodings()
+{
+    QStringList res;
+    for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
+        QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 1));
+        QRadioButton *rb = static_cast<QRadioButton*>(ui->tableWidget->cellWidget(row, 0));
+        if (box->isChecked() || rb->isChecked()) res << ui->tableWidget->item(row, 2)->text();
+    }
+    // TODO(JM) check if necessary
+    // ensure to have UTF-8 on top and System at the 2nd place
+    // if (res.contains(0)) res.move(res.indexOf(0), 0);
+    // if (res.contains(106)) res.move(res.indexOf(106), 0);
+
+    return res;
+}
+
 int SelectEncodings::defaultCodec()
 {
     for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
@@ -103,6 +116,11 @@ int SelectEncodings::defaultCodec()
         if (box->isChecked()) return ui->tableWidget->item(row, 2)->data(Qt::EditRole).toInt();
     }
     return 104;
+}
+
+QString SelectEncodings::defaultEncoding()
+{
+    return mDefaultEncoding;
 }
 
 

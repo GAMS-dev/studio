@@ -21,7 +21,6 @@
 #define GAMSCONFIGEDITOR_H
 
 #include <QWidget>
-#include <QtCore5Compat/QTextCodec>
 
 #include "abstractview.h"
 #include "common.h"

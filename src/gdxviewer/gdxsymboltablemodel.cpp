@@ -20,6 +20,7 @@
 #include "gdxsymboltablemodel.h"
 #include "gdxsymbol.h"
 #include "exception.h"
+#include "encoding.h"
 
 #include <QMutex>
 #include <limits>
@@ -28,8 +29,8 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxSymbolTableModel::GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, QTextCodec* codec, QObject *parent)
-    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mCodec(codec)
+GdxSymbolTableModel::GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, const QString &encoding, QObject *parent)
+    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mDecoder(Encoding::createDecoder(encoding))
 {
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
     loadUel2Label();
@@ -182,7 +183,7 @@ QString GdxSymbolTableModel::getElementText(int textNr)
         int node;
 
         gdxGetElemText(mGdx, textNr, text, &node);
-        return mCodec->toUnicode(text);
+        return mDecoder.decode(text);
     }
 }
 
@@ -192,7 +193,7 @@ void GdxSymbolTableModel::loadUel2Label()
     int map;
     for (int i=0; i<=mUelCount; i++) {
         gdxUMUelGet(mGdx, i, label, &map);
-        QString l = mCodec->toUnicode(label);
+        QString l = mDecoder.decode(label);
         mUel2Label.append(l);
     }
 }
@@ -205,7 +206,7 @@ void GdxSymbolTableModel::loadStringPool()
     char text[GMS_SSSIZE];
 
     while (gdxGetElemText(mGdx, strNr, text, &node)) {
-        mStrPool.append(mCodec->toUnicode(text));
+        mStrPool.append(mDecoder.decode(text));
         strNr++;
     }
 }
@@ -215,9 +216,9 @@ void GdxSymbolTableModel::reportIoError(int errNr, const QString &message)
     EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
 }
 
-QTextCodec *GdxSymbolTableModel::codec() const
+QStringDecoder &GdxSymbolTableModel::decoder()
 {
-    return mCodec;
+    return mDecoder;
 }
 
 std::vector<int> GdxSymbolTableModel::labelCompIdx()
@@ -235,7 +236,7 @@ QString GdxSymbolTableModel::uel2Label(int uel)
         char label[GMS_UEL_IDENT_SIZE];
         int map;
         gdxUMUelGet(mGdx, uel, label, &map);
-        return mCodec->toUnicode(label);
+        return mDecoder.decode(label);
     }
     return this->mUel2Label.at(uel);
 }

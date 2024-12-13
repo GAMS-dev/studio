@@ -68,7 +68,7 @@ R"({
     if (f2.open(QFile::WriteOnly)) {
         f2.write(
 R"({
-    "encodingMIBs": "106,0,4,17,2025",
+    "encodings": "UTF-8,System,ISO-8859-1,Shift_JIS,GB2312",
     "help": {
         "bookmarks": [
         ],

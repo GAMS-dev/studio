@@ -18,8 +18,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "reference.h"
+#include "encoding.h"
 
-#include <QtCore5Compat/QTextCodec>
+#include <QStringConverter>
 
 namespace gams {
 namespace studio {
@@ -198,9 +199,8 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
         mLastErrorLine=lineread;
         return file.size();
     }
-    QTextCodec *codec = QTextCodec::codecForName(encodingName.toLatin1());
-    if (!codec) codec = QTextCodec::codecForName("UTF-8");
 
+    QStringDecoder decoder = Encoding::createDecoder(encodingName);
     if (file.size() == mLastReadFileSize) {
         mLastErrorLine=lineread;
         return file.size();
@@ -217,7 +217,7 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
                arry.chop(1);
         }
 
-        QString line = codec ? codec->toUnicode(arry) : QString(arry);
+        QString line = decoder.decode(arry);
         lineread++;
         recordList = line.split(mRexSplit, Qt::SkipEmptyParts);
         if (recordList.size() <= 0) {
@@ -275,7 +275,7 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
                 arry.chop(1);
         }
 
-        QStringList recordList = (codec ? codec->toUnicode(arry) : QString(arry)).split(mRexSplit, Qt::SkipEmptyParts);
+        QStringList recordList = QString(decoder.decode(arry)).split(mRexSplit, Qt::SkipEmptyParts);
 
         if (recordList.size() <= 0 || recordList.size() < 6) { // unexpected size of elements
             addSymbolReferenceItem();
@@ -322,7 +322,7 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
                 arry.chop(1);
         }
 
-        QStringList recordList = (codec ? codec->toUnicode(arry) : QString(arry)).split(mRexSplit, Qt::SkipEmptyParts);
+        QStringList recordList = QString(decoder.decode(arry)).split(mRexSplit, Qt::SkipEmptyParts);
         if (recordList.isEmpty()) {
             addSymbolReferenceItem();
             mLastErrorLine=lineread;
@@ -356,7 +356,7 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
                     arry.chop(1);
             }
 
-            QStringList recordList = (codec ? codec->toUnicode(arry) : QString(arry)).split(mRexSplit, Qt::SkipEmptyParts);
+            QStringList recordList = QString(decoder.decode(arry)).split(mRexSplit, Qt::SkipEmptyParts);
             if (recordList.size() < 6)
                 break;
             id = recordList.first().toInt();

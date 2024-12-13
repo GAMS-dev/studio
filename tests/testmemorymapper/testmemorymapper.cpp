@@ -33,7 +33,7 @@ const QString testFileName("testtextmapper.tmp");
 void TestMemoryMapper::init()
 {
     mMapper = new MemoryMapper();
-    mMapper->setCodec(QTextCodec::codecForName("utf-8"));
+    mMapper->setEncoding("UTF-8");
     mMapper->setMappingSizes(10, 128, 16);
     mMapper->startRun();
 }

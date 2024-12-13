@@ -57,7 +57,9 @@ enum SettingsKey {
 
     // general system settings
     skDefaultCodecMib,
-    skEncodingMib,
+    skDefaultEncoding,
+    skEncodingMibs,
+    skEncodings,
     skProjects,
     skCurrentFocusProject,
     skOptionsPerMainFile,

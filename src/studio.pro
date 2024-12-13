@@ -101,6 +101,7 @@ SOURCES += \
     editors/systemlogedit.cpp \
     editors/textview.cpp \
     editors/textviewedit.cpp \
+    encoding.cpp \
     encodingsdialog.cpp \
     engine/authmanager.cpp \
     engine/efieditor.cpp \
@@ -326,6 +327,7 @@ HEADERS += \
     editors/systemlogedit.h \
     editors/textview.h \
     editors/textviewedit.h \
+    encoding.h \
     encodingsdialog.h \
     engine/authmanager.h \
     engine/efieditor.h \

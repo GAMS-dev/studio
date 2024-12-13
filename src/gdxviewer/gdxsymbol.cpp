@@ -375,9 +375,9 @@ void GdxSymbol::loadMetaData()
     char symName[GMS_UEL_IDENT_SIZE];
     char explText[GMS_SSSIZE];
     gdxSymbolInfo(mGdx, mNr, symName, &mDim, &mType);
-    mName = mGdxSymbolTable->codec()->toUnicode(symName);
+    mName = mGdxSymbolTable->decoder().decode(symName);
     gdxSymbolInfoX (mGdx, mNr, &mRecordCount, &mSubType, explText);
-    mExplText =  mGdxSymbolTable->codec()->toUnicode(explText);
+    mExplText =  mGdxSymbolTable->decoder().decode(explText);
     if(mType == GMS_DT_EQU)
         mSubType = gmsFixEquType(mSubType);
     if(mType == GMS_DT_VAR)
@@ -401,7 +401,7 @@ void GdxSymbol::loadDomains()
         GDXSTRINDEXPTRS_INIT(domXXX,domX);
         gdxSymbolGetDomainX(mGdx, mNr, domX);
         for(int i=0; i<mDim; i++)
-            mDomains.append(mGdxSymbolTable->codec()->toUnicode(domX[i]));
+            mDomains.append(mGdxSymbolTable->decoder().decode(domX[i]));
     }
 }
 

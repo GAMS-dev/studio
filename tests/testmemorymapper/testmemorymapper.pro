@@ -13,6 +13,7 @@ HEADERS += \
     $$SRCPATH/file/dynamicfile.h \
     $$SRCPATH/svgengine.h \
     $$SRCPATH/theme.h \
+    $$SRCPATH/encoding.h \
     testmemorymapper.h
 
 SOURCES += \
@@ -25,4 +26,5 @@ SOURCES += \
     $$SRCPATH/logger.cpp \
     $$SRCPATH/svgengine.cpp \
     $$SRCPATH/theme.cpp \
+    $$SRCPATH/encoding.cpp \
     testmemorymapper.cpp

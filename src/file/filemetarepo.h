@@ -73,7 +73,7 @@ signals:
     void saveProjects();
 
 public slots:
-    void openFile(gams::studio::FileMeta* fm, const gams::studio::NodeId &groupId, bool focus = true, int codecMib = -1);
+    void openFile(gams::studio::FileMeta* fm, const gams::studio::NodeId &groupId, bool focus = true, const QString &encoding = QString());
     void removeFile(gams::studio::FileMeta* fileMeta);
     void toggleBookmark(const gams::studio::FileId &fileId, int lineNr, int posInLine);
     void jumpToNextBookmark(bool back, const gams::studio::FileId &refFileId, int refLineNr);

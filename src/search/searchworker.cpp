@@ -65,9 +65,6 @@ void SearchWorker::findInFiles()
         QFile file(sf.path);
         if (file.open(QFile::ReadOnly)) {
 
-            QTextCodec *codec = nullptr;
-            if (sf.fileMeta) sf.fileMeta->codec();
-
             while (!file.atEnd() && !cacheFull) { // read file
 
                 lineCounter++;
@@ -75,15 +72,14 @@ void SearchWorker::findInFiles()
 
                 QByteArray arry = file.readLine();
                 // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+                // TODO(JM) encode from utf-8 to file encoding
                 if (arry.endsWith('\n')) {
                     if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
                         arry.chop(2);
                     else
                         arry.chop(1);
                 }
-
-                QString line = codec ? codec->toUnicode(arry) : QString(arry);
-
+                QString line = arry;
                 QRegularExpressionMatch match;
                 QRegularExpressionMatchIterator i = mRegex.globalMatch(line);
                 while (i.hasNext() && !cacheFull) {
