@@ -75,6 +75,8 @@ signals:
 
     void newErrorMessage(const QString&);
 
+    void newInfoMessage(const QString&);
+
 private slots:
     void requestStudioInfo();
     void distribDownloadFinished(QNetworkReply* reply);

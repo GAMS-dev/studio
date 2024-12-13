@@ -5,6 +5,7 @@ Version 1.20.0 *
 Version 1.19.4 *
 ==================
 - Fixed that existing files were added to the project, although `Abort` was selected when getting a model from the mode library.
+- Fixed system log info text for check for update, which has been marked as error
 
 Version 1.19.3
 ==================

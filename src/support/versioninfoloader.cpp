@@ -136,7 +136,9 @@ void VersionInfoLoader::distribDownloadFinished(QNetworkReply *reply)
         QString errorMessage;
         mDistribVersions.clear();
         if (reply->error() == QNetworkReply::NoError) {
-            writeDataToLog("No error. Processing GAMS distrib YAML...");
+            QString info("Processing GAMS distrib YAML...");
+            writeDataToLog(info.toLatin1());
+            emit newInfoMessage(info);
             auto data = reply->readAll();
             writeDataToLog(data);
             YAML::Node root;
@@ -188,11 +190,11 @@ void VersionInfoLoader::distribDownloadFinished(QNetworkReply *reply)
 void VersionInfoLoader::studioDownloadFinished(QNetworkReply *reply)
 {
     if (reply->error() == QNetworkReply::NoError) {
-        QString error = "No error. Processing GAMS Studio txt...\n";
-        writeDataToLog(error.toLatin1());
+        QString info = "Processing GAMS Studio txt: ";
+        writeDataToLog(info.toLatin1());
         auto data = reply->readLine();
         writeDataToLog(data);
-        emit newErrorMessage(error + data);
+        emit newInfoMessage(info + data);
         auto match = mStudioRegEx.match(data);
         if (match.hasMatch()) {
             mRemoteStudioVersion = match.captured(1).toInt();
