@@ -57,6 +57,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
             this, [this]{ ui->updateBrowser->setText(mC4U->versionInformation()); });
     connect(mC4U.get(), &support::CheckForUpdate::newErrorMessage,
             mMain, &MainWindow::appendSystemLogError);
+    connect(mC4U.get(), &support::CheckForUpdate::newInfoMessage,
+            mMain, &MainWindow::appendSystemLogInfo);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->tabWidget->setCurrentIndex(0);
     ui->tb_userLibSelect->setIcon(Theme::icon(":/%1/folder-open-bw"));
