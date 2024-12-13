@@ -65,7 +65,7 @@ build-wei:
   tags: [windows]
   needs: [fetch-ci-scripts]
   variables:
-     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
+     cmd_vcvars: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
     entrypoint: [""]
@@ -97,7 +97,7 @@ build-wei-debug:
   tags: [windows]
   needs: [fetch-ci-scripts]
   variables:
-     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
+     cmd_vcvars: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
   script:

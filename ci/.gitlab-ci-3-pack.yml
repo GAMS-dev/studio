@@ -176,7 +176,7 @@ pack-wei:
   needs: [fetch-ci-scripts,build-wei]
   variables:
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
-    cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
+    cmd_vcvars: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat
   script:
     - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
     - $env:VCINSTALLDIR = "$vcinsdir"
@@ -184,8 +184,8 @@ pack-wei:
     # setup and fill studio directory
     - mkdir studio
     - cp build/src/bin/* studio
-    - cp "/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Redist/MSVC/14.29.30133/x64/Microsoft.VC142.CRT/*" "studio"
-    - cp "/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Redist/MSVC/14.29.30133/vc_redist.x64.exe" "studio"
+    - cp "/Program Files/Microsoft Visual Studio/2022/Community/VC/Redist/MSVC/14.38.33135/x64/Microsoft.VC143.CRT/*" "studio"
+    - cp "/Program Files/Microsoft Visual Studio/2022/Community/VC/Redist/MSVC/14.38.33135/vc_redist.x64.exe" "studio"
     - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libcrypto-3-x64.dll" "studio"
     - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libssl-3-x64.dll" "studio"
     - cd studio
@@ -227,7 +227,7 @@ pack-wei-debug:
   needs: [fetch-ci-scripts,build-wei-debug]
   variables:
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
-    cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
+    cmd_vcvars: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat
   script:
     - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
     - $env:VCINSTALLDIR = "$vcinsdir"
@@ -235,8 +235,8 @@ pack-wei-debug:
     # setup and fill studio directory
     - mkdir studio
     - cp build-debug/src/bin/* studio
-    - cp "/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Redist/MSVC/14.29.30133/x64/Microsoft.VC142.CRT/*" "studio"
-    - cp "/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Redist/MSVC/14.29.30133/vc_redist.x64.exe" "studio"
+    - cp "/Program Files/Microsoft Visual Studio/2022/Community/VC/Redist/MSVC/14.38.33135/x64/Microsoft.VC143.CRT/*" "studio"
+    - cp "/Program Files/Microsoft Visual Studio/2022/Community/VC/Redist/MSVC/14.38.33135/vc_redist.x64.exe" "studio"
     - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libcrypto-3-x64.*" "studio"
     - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libssl-3-x64.*" "studio"
     - cd studio

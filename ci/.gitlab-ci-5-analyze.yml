@@ -2,7 +2,7 @@ codechecker-leg:
   stage: analyze
   tags: [linux]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/analyzer:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/analyzer-qt6.8:latest
     entrypoint: [""]   # prevent startup.sh
   needs: [fetch-ci-scripts]
   allow_failure: false
