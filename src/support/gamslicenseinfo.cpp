@@ -182,16 +182,12 @@ QStringList GamsLicenseInfo::gamsDataLocations()
 
 #ifdef _WIN32
     auto dir = QDir::toNativeSeparators(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first());
-    SysLogLocator::systemLog()->append("########", LogMsgType::Info);
-    SysLogLocator::systemLog()->append("****" + dir, LogMsgType::Info);
     auto currentPath = QDir::toNativeSeparators(QDir::currentPath());
     for (int i=0; i<nOffset && i<numdirs; i++) {
         QString path(buffer+offset[i]);
         path = QDir::toNativeSeparators(path);
         if (path.contains(mRegExHome))
             continue; // skip path with special characters
-        SysLogLocator::systemLog()->append("####" + path, LogMsgType::Info);
-        SysLogLocator::systemLog()->append(path.toLocal8Bit().toHex(' '), LogMsgType::Info);
         if (path == currentPath) {
             continue;
         } else if (path.startsWith(currentPath)) {

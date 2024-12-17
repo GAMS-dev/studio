@@ -145,10 +145,8 @@ void GamsLicensingDialog::writeLicenseFile(GamsLicenseInfo &licenseInfo, QString
                                            QWidget *parent, bool clipboard)
 {
     auto liceFile = licenseInfo.gamsConfigLicenseLocation();
-    SysLogLocator::systemLog()->append("++++ YAML -> " + liceFile, LogMsgType::Info);
     if (liceFile.isEmpty()) {
         liceFile = licenseInfo.gamsDataLocations().constFirst() + "/" + CommonPaths::licenseFile();
-        SysLogLocator::systemLog()->append("++++ DATA -> " + liceFile, LogMsgType::Info);
     }
     QFile licenseFile(liceFile);
     if (licenseFile.exists()) {
