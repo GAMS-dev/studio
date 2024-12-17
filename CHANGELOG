@@ -1,5 +1,6 @@
 Version 1.19.4 *
 ==================
+- Added fallback for data locations with special characters (non Latin-1 characters), i.e. select a license location outside the user directory
 - Fixed that existing files were added to the project, although `Abort` was selected when getting a model from the mode library.
 - Fixed system log info text for check for update, which has been marked as error
 
