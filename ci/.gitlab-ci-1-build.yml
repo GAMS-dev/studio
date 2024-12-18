@@ -4,6 +4,10 @@ build-deg:
   needs: [fetch-ci-scripts]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-deg]
@@ -24,6 +28,10 @@ build-dac:
   needs: [fetch-ci-scripts]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-dac]
@@ -41,12 +49,16 @@ build-dac:
 build-leg:
   stage: build
   tags: [linux]
+  needs: [fetch-ci-scripts]
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
-  needs: [fetch-ci-scripts]
   variables:
     DOLLAR_GAMS: $$$$GAMS_DISTRIB
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-leg]
@@ -69,6 +81,10 @@ build-wei:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
     entrypoint: [""]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
   script:
     - $env:Path = "C:\Miniconda\Library\bin;C:\Miniconda\DLLs;" + $env:Path
     - !reference [.get-gams-wei]
@@ -90,16 +106,14 @@ build-wei:
 
 build-wei-debug:
   stage: build
-  rules:
-    - if: $PF_WEI_DEBUG == "0"
-      when: never
-    - when: on_success
   tags: [windows]
   needs: [fetch-ci-scripts]
   variables:
      cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
+  rules:
+    - if: $PF_WEI_DEBUG == "1"
   script:
     - $env:Path = "C:\Miniconda\Library\bin;C:\Miniconda\DLLs;" + $env:Path
     - !reference [.get-gams-wei]

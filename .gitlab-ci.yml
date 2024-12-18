@@ -24,7 +24,7 @@ variables:
       description: "URL to the GAMS container registry"
   PF_WEI_DEBUG:
       value: 0
-      description: "A value != 0 builds the Windows debug version only"
+      description: "A value == 1 builds the Windows debug version; otherwise all the target plaforms are build as a release verison"
   PF_CUSTOM_BRANCH:
       value: 0
       description: "Name of custom branch, or X.Y.Z for published distribution, or 0 if version is specified in text file with lines GAMS_DISTRIB_MAJOR=X, GAMS_DISTRIB_MINOR=Y, GAMS_DISTRIB_GOLD=Z"

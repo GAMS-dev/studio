@@ -3,7 +3,11 @@ pack-deg:
   tags: [macos]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
-  needs: [fetch-ci-scripts,build-deg]
+  needs: [build-deg]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
@@ -70,7 +74,11 @@ pack-dac:
   tags: [macos-arm64]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
-  needs: [fetch-ci-scripts,build-dac]
+  needs: [build-dac]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
@@ -138,7 +146,11 @@ pack-leg:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
-  needs: [fetch-ci-scripts,build-leg]
+  needs: [build-leg]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
   script:
   # create folder structure
   - mkdir -p appdir/usr/bin
@@ -173,10 +185,14 @@ pack-wei:
   tags: [windows]
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
-  needs: [fetch-ci-scripts,build-wei]
+  needs: [build-wei]
   variables:
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
   script:
     - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
     - $env:VCINSTALLDIR = "$vcinsdir"
@@ -217,17 +233,15 @@ pack-wei:
 
 pack-wei-debug:
   stage: pack
-  rules:
-    - if: $PF_WEI_DEBUG == "0"
-      when: never
-    - when: always
   tags: [windows]
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
-  needs: [fetch-ci-scripts,build-wei-debug]
+  needs: [build-wei-debug]
   variables:
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
+  rules:
+    - if: $PF_WEI_DEBUG == "1"
   script:
     - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
     - $env:VCINSTALLDIR = "$vcinsdir"
@@ -259,9 +273,7 @@ pack-wei-debug:
       }
     # zip studio directory... for MR artifact exposure
     - cd ..
-    - tree /F
-    - Get-ChildItem -Path studio | Measure-Object -Property Length -Sum
-    - Compress-Archive -Path studio -DestinationPath GAMS_Studio-wei-debug-x86_64.zip
+    - C:\7zip\7z.exe a -tzip "GAMS_Studio-wei-debug-x86_64.zip" studio
   artifacts:
     name: "GAMS_Studio-wei-debug-x86_64"
     paths: ['GAMS_Studio-wei-debug-x86_64.zip']

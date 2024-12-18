@@ -1,13 +1,19 @@
 codechecker-leg:
   stage: analyze
   tags: [linux]
+  needs: [fetch-ci-scripts]
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/analyzer:latest
     entrypoint: [""]   # prevent startup.sh
-  needs: [fetch-ci-scripts]
   allow_failure: false
   variables:
     DOLLAR_GAMS: $$$$GAMS_DISTRIB
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
+      when: always
+    - when: never
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-leg]
@@ -26,10 +32,17 @@ codechecker-leg:
 license-update-leg:
   stage: analyze
   tags: [linux]
+  needs: []
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/deployer:latest
     entrypoint: [""]   # prevent startup.sh
   allow_failure: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
+      when: always
+    - when: never
   script:
     - chmod +x ci/license-update.sh
     - ./ci/license-update.sh
