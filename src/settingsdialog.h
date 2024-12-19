@@ -68,6 +68,7 @@ signals:
     void reactivateEngineDialog();
     void persistToken();
     void rehighlight();
+    void evalGspFileCount();
     void updateExtraSelections();
     void cleanupWorkspace(const QStringList&);
 
@@ -141,6 +142,7 @@ private:
     MainWindow *mMain;
     bool isModified = false;
     bool mNeedRehighlight = false;
+    bool mEvalGspFileCount = false;
     bool mInitializing = true;
     QList<ThemeWidget*> mColorWidgets;
     int mFixedThemeCount = 0;

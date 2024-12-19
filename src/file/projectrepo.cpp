@@ -664,20 +664,22 @@ MultiCopyCheck ProjectRepo::getCopyPaths(PExProjectNode *project, const QString 
 
 void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, bool fullCopy)
 {
-    if (filePath.compare(project->fileName(), FileType::fsCaseSense()) == 0) return;
     QString oldFile = project->fileName();
     project->setFileName(filePath);
-    bool isSmall = project->type() == PExProjectNode::tSmall;
+    bool removeOld = filePath.compare(project->fileName(), FileType::fsCaseSense()) != 0;
+    bool keepSmall = project->type() == PExProjectNode::tSmall && !removeOld;
     project->setHasGspFile(true);
     project->setNeedSave();
     QVariantMap proData = getProjectMap(project, true);
     save(project, proData);
     if (fullCopy) {
-        if (isSmall) project->setHasGspFile(false);
+        if (keepSmall) project->setHasGspFile(false);
         project->setFileName(oldFile);
     } else {
-        QFile file(oldFile);
-        file.remove();
+        if (removeOld) {
+            QFile file(oldFile);
+            file.remove();
+        }
         sortChildNodes(project->parentNode());
         emit changed();
     }
@@ -1186,6 +1188,13 @@ void ProjectRepo::editorActivated(QWidget* edit, bool select)
         mTreeView->setCurrentIndex(mi);
         if (select) mTreeView->selectionModel()->select(mi, QItemSelectionModel::ClearAndSelect);
     }
+}
+
+void ProjectRepo::editProjectName(PExProjectNode *project)
+{
+    QModelIndex mi = mTreeModel->index(project);
+    if (!mi.isValid()) return;
+    mTreeView->edit(mi);
 }
 
 void ProjectRepo::nodeChanged(const NodeId &nodeId)

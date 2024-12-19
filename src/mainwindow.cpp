@@ -487,7 +487,8 @@ void MainWindow::updateAllowedMenus()
     bool isSmallProject = project && project->type() == PExProjectNode::tSmall;
     bool projectCanMove = project && project->type() <= PExProjectNode::tCommon
             && ProjectContextMenu::allowChange(nodes);
-    ui->actionMove_Project->setEnabled(projectCanMove && !isSmallProject);
+    ui->actionMove_Project->setEnabled(projectCanMove);
+    ui->actionMove_Project->setText(isSmallProject ? "&Save Project File..." : "&Move Project File...");
     ui->actionCopy_Project->setEnabled(projectCanMove);
     ui->actionCopy_Project->setText(isSmallProject ? "&Export Project..." :"&Copy Project...");
     ui->actionCopy_Project->setToolTip(isSmallProject ? "Export Project" :"Copy Project");
@@ -3306,6 +3307,7 @@ void MainWindow::moveProjectDialog(PExProjectNode *project, bool fullCopy)
             SysLogLocator::systemLog()->append("Project file " + QString(fullCopy ? "copied" : "renamed") + " to " + fileName,
                                                LogMsgType::Info);
         }
+
     });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
@@ -6831,7 +6833,12 @@ void MainWindow::on_actionMove_Line_Down_triggered()
 
 void MainWindow::on_actionNew_Project_triggered()
 {
-    newFileDialogPrepare(QVector<PExProjectNode*>(), "", "", FileKind::Gsp);
+    PExProjectNode *project = mProjectRepo.createProject("newProject", Settings::settings()->toString(skDefaultWorkspace), "", onExist_AddNr);
+    if (!project) {
+        appendSystemLogWarning("Couldn't create new project");
+        return;
+    }
+    mProjectRepo.editProjectName(project);
 }
 
 void MainWindow::on_actionOpen_Project_triggered()

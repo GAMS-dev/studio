@@ -149,7 +149,7 @@ public:
     const QString &fileName() const;
     void setNameExt(const QString &newNameExt) override;
     Type type() const;
-    void setHasGspFile(bool hasGspFile = false);
+    void setHasGspFile(bool hasGspFile);
     bool wantsGspFile();
 
     QString tempGdx() const;

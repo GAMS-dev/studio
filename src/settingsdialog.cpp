@@ -127,8 +127,10 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->rb_openInCurrentProject, &QRadioButton::toggled, this, &SettingsDialog::setModified);
     connect(ui->cb_optionsStore, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->cbGspNeedsMainFile, &QCheckBox::toggled, this, &SettingsDialog::setModified);
-    connect(ui->sbGspByFileCount, &QSpinBox::valueChanged, this, &SettingsDialog::setModified);
-
+    connect(ui->sbGspByFileCount, &QSpinBox::valueChanged, this, [this]() {
+        mEvalGspFileCount = true;
+        setModified();
+    });
     connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::appearanceIndexChanged);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
@@ -495,6 +497,10 @@ void SettingsDialog::saveSettings()
     if (mNeedRehighlight) {
         emit rehighlight();
         mNeedRehighlight = false;
+    }
+    if (mEvalGspFileCount) {
+        emit evalGspFileCount();
+        mEvalGspFileCount = false;
     }
 }
 

@@ -566,7 +566,6 @@ private:
     QTimer mFileTimer;
     QSharedPointer<FileEventHandler> mFileEventHandler;
     TabBarStyle *mTabStyle = nullptr;
-    QString mExportProjectFilePath;
     QVariantMap mAsyncCallOptions;
 
     bool mDebugMode = false;

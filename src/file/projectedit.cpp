@@ -254,6 +254,7 @@ void ProjectEdit::on_bGspSwitch_clicked()
         mSharedData->project()->setNeedSave(true);
     }
     emit modificationChanged(true);
+    emit saveProjects();
 }
 
 void ProjectEdit::on_bWorkDir_clicked()
@@ -289,8 +290,9 @@ void ProjectEdit::updateData(gams::studio::project::ProjectData::Field field)
 void ProjectEdit::updateComboboxEntries()
 {
     bool hasGsp = mSharedData->fieldData(ProjectData::hasGsp) != "0";
+    ui->bGspSwitch->setEnabled(hasGsp || mSharedData->project()->childCount());
     ui->bGspSwitch->setIcon(Theme::icon(QString(":/%1/") + (hasGsp ? "delete-all" : "new")));
-    ui->bGspSwitch->setToolTip(hasGsp ? "Delete the project file (project data is stored in the Studio settings"
+    ui->bGspSwitch->setToolTip(hasGsp ? "Delete the project file (project data is stored in the Studio settings)"
                                       : "Create a project file (.gsp) for this project");
     // update combobox of main-file and pf-file
     QStringList mainFiles = files(FileKind::Gms);
