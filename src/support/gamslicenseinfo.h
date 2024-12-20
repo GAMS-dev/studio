@@ -114,6 +114,7 @@ private:
     palHandle_t mPAL;
     bool mLicenseAvailable = false;
     QRegularExpression mRegEx;
+    QRegularExpression mRegExHome;
 };
 
 }

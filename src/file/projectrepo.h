@@ -135,6 +135,7 @@ public:
     const QList<PExProjectNode *> projects() const;
     const QVector<AbstractProcess*> listProcesses();
     void editorActivated(QWidget *edit, bool select);
+    void editProjectName(PExProjectNode *project);
 
     PExLogNode *logNode(PExAbstractNode *node);
     void saveNodeAs(PExFileNode* node, const QString &target);

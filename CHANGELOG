@@ -2,11 +2,14 @@ Version 1.20.0 *
 ==================
 - Upgraded to Qt 6.8.1
 
-Version 1.19.4 *
+Version 1.19.4
 ==================
-- Fixed that existing files were added to the project, although `Abort` was selected when getting a model from the mode library.
-- Fixed system log info text for check for update, which has been marked as error
-- Improved character encoding support via ICU library, e.g. reload file with UTF-8 or GB2312
+- Added fallback for data locations with special characters (non Latin-1 characters). Select a license location outside the user directory as a fallback.
+- Fixed adding existing files to the project, although `Abort` was selected when getting a model from the model library.
+- Fixed system log information text for check for update, which has been marked as an error.
+- Fixed create a gsp file when exporting an internal project.
+- Improved behavior when a new project is created. It counts as an internal project and no gsp-file is created.
+- Improved Project view context menu. Disable the delete operation for the GAMS-System project and files.
 
 Version 1.19.3
 ==================

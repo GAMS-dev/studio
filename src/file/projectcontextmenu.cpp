@@ -178,13 +178,18 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     bool canMoveProject = project && !protectNodes && project->childCount() && project->type() <= PExProjectNode::tCommon;
     bool isSmallProject = project && project->type() == PExProjectNode::tSmall;
     bool isGamsSys = false;
+    bool isGamsSysFile = false;
     bool isProjectEfi = false;
     for (PExAbstractNode *node: std::as_const(mNodes)) {
-        if (PExProjectNode *project = node->toProject())
-            if (project->type() > PExProjectNode::tCommon)
+        if (PExProjectNode *project = node->assignedProject())
+            if (project->type() > PExProjectNode::tCommon) {
                 isGamsSys = true;
-        if (node->assignedProject() != project)
+                if (project->type() > PExProjectNode::tSearch)
+                    isGamsSysFile = true;
+            }
+        if (node->toProject() != project) {
             canMoveProject = false;
+        }
     }
     if (isProject && single) {
         QString efi = getEfiName(project);
@@ -294,11 +299,12 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     mActions[actOpenEfi]->setEnabled(isProjectEfi);
 
     mActions[actProjectMove]->setVisible(!isFreeSpace);
-    mActions[actProjectMove]->setEnabled(canMoveProject && !isSmallProject);
+    mActions[actProjectMove]->setText(isSmallProject ? "&Save Project File..." : "&Move Project File...");
+    mActions[actProjectMove]->setEnabled(canMoveProject);
 
     mActions[actProjectCopy]->setVisible(!isFreeSpace);
     mActions[actProjectCopy]->setEnabled(canMoveProject);
-    mActions[actProjectCopy]->setText(isSmallProject ? "&Export Project..." :"&Copy Project...");
+    mActions[actProjectCopy]->setText(isSmallProject ? "&Export Project..." : "&Copy Project...");
 
     mActions[actFocusProject]->setVisible(!isGamsSys && !focussedProject && !isFreeSpace);
     mActions[actUnfocusProject]->setVisible(focussedProject);
@@ -313,13 +319,13 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     mActions[actCloseProject]->setVisible(isProject);
     mActions[actCloseProject]->setEnabled(!protectNodes);
     mActions[actCloseDelProject]->setVisible(isProject);
-    mActions[actCloseDelProject]->setEnabled(!protectNodes);
+    mActions[actCloseDelProject]->setEnabled(!protectNodes && !isSmallProject && !isGamsSys);
     mActions[actCloseGroup]->setVisible(isGroup);
     mActions[actCloseGroup]->setEnabled(!protectNodes);
     mActions[actCloseFile]->setVisible(fileNode);
     mActions[actCloseFile]->setEnabled(!protectNodes);
     mActions[actCloseDelFile]->setVisible(fileNode);
-    mActions[actCloseDelFile]->setEnabled(!protectNodes);
+    mActions[actCloseDelFile]->setEnabled(!protectNodes && !isGamsSysFile);
 
     mActions[actCloseProject]->setText(mTxtCloseProject + (single ? "" : "s"));
     mActions[actCloseDelProject]->setText(mTxtCloseDelProject + (single ? "" : "s"));

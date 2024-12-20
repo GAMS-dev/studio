@@ -272,6 +272,8 @@ Qt::ItemFlags ProjectTreeModel::flags(const QModelIndex &index) const
     PExProjectNode *project = node->toProject();
     if (project) {
         flags.setFlag(Qt::ItemIsDropEnabled);
+        if (project->type() < PExProjectNode::tCommon)
+            flags.setFlag(Qt::ItemIsEditable);
     } else flags.setFlag(Qt::ItemIsDragEnabled);
     return flags;
 }

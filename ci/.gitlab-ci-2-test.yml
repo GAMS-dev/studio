@@ -1,9 +1,13 @@
 test-deg:
   stage: test
   tags: [macos]
-  needs: [fetch-ci-scripts,build-deg]
+  needs: [fetch-ci-scripts, build-deg]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-deg]
@@ -29,9 +33,13 @@ test-deg:
 test-dac:
   stage: test
   tags: [macos-arm64]
-  needs: [fetch-ci-scripts,build-dac]
+  needs: [fetch-ci-scripts, build-dac]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-dac]
@@ -60,7 +68,11 @@ test-leg:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
-  needs: [fetch-ci-scripts,build-leg]
+  needs: [fetch-ci-scripts, build-leg]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-leg]
@@ -89,7 +101,11 @@ test-wei:
   allow_failure: true
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
-  needs: [fetch-ci-scripts,build-wei]
+  needs: [fetch-ci-scripts, build-wei]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $PF_WEI_DEBUG == "0"
   script:
     - $env:Path = "C:\Miniconda\Library\bin;C:\Miniconda\DLLs;" + $env:Path
     - !reference [.get-gams-wei]

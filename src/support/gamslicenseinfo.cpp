@@ -30,6 +30,7 @@
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QRegularExpression>
+#include <QStandardPaths>
 #include <yaml-cpp/yaml.h>
 
 namespace gams {
@@ -38,6 +39,7 @@ namespace support {
 
 GamsLicenseInfo::GamsLicenseInfo()
     : mRegEx(R"(\s|\\.)")
+    , mRegExHome(R"(C:\\Users\\\?+)")
 {
     auto logger = SysLogLocator::systemLog();
     char msg[GMS_SSSIZE];
@@ -179,9 +181,13 @@ QStringList GamsLicenseInfo::gamsDataLocations()
         return dataPaths;
 
 #ifdef _WIN32
+    auto dir = QDir::toNativeSeparators(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first());
     auto currentPath = QDir::toNativeSeparators(QDir::currentPath());
     for (int i=0; i<nOffset && i<numdirs; i++) {
         QString path(buffer+offset[i]);
+        path = QDir::toNativeSeparators(path);
+        if (path.contains(mRegExHome))
+            continue; // skip path with special characters
         if (path == currentPath) {
             continue;
         } else if (path.startsWith(currentPath)) {
@@ -189,7 +195,7 @@ QStringList GamsLicenseInfo::gamsDataLocations()
             dataPaths << QDir::toNativeSeparators(path);
             continue;
         }
-        dataPaths << QString::fromLatin1(buffer+offset[i]);
+        dataPaths << path;
     }
 #else
     for (int i=0; i<nOffset && i<numdirs; i++) {
