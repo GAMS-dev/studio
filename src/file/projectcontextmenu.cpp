@@ -310,7 +310,7 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     mActions[actUnfocusProject]->setVisible(focussedProject);
 
     mActions[actSep1]->setVisible(isProject);
-    mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && canMoveProject && single);
+    mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && !isGamsSys && single);
 //    mActions[actSetMain]->setEnabled(single);
 
     mActions[actAddNewFile]->setVisible((isProject || isGroup) && !isGamsSys);
