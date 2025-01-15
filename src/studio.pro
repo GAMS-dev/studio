@@ -556,6 +556,7 @@ FORMS += \
     welcomepage.ui
 
 RESOURCES += \
+    ../fonts/fonts.qrc \
     ../icons/icons.qrc
 
 DISTFILES += \

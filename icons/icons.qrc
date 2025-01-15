@@ -58,7 +58,7 @@
         <file alias="trex-on">trex-on.svg</file>
         <file alias="tpart">tpart.svg</file>
         <file alias="twhole">twhole.svg</file>
-</qresource>
+    </qresource>
     <qresource prefix="/solid">
         <file alias="backward">solid/arrow-left.svg</file>
         <file alias="book">solid/book.svg</file>

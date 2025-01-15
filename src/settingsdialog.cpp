@@ -47,6 +47,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 {
     ui->setupUi(this);
     setCheckForUpdateState();
+    // ui->fontComboBox->addItems(QFontDatabase::families());
     auto app = qobject_cast<Application*>(qApp);
     if (app && app->skipCheckForUpdate()) {
         mC4U.reset(new support::CheckForUpdate(!app->skipCheckForUpdate(), this));

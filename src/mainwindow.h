@@ -470,6 +470,7 @@ private:
     void zoomWidget(QWidget * widget, int range);
     void initWelcomePage();
     void initIcons();
+    void initFonts();
     void initEnvironment();
     void initNavigator();
     void adjustFonts();

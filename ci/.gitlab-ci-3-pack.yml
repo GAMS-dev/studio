@@ -23,6 +23,8 @@ pack-deg:
     - macdeployqt "GAMS Studio.app" -always-overwrite
     - sed -i -e "s/x.y.z/$VERSION/g" "GAMS Studio.app/Contents/Info.plist"
     - cp ${WORKSPACE}/CHANGELOG "GAMS Studio.app/Contents/Resources/Changelog"
+    - mkdir -p "GAMS Studio.app/Contents/SharedSupport/doc/fonts/"
+    - cp ../../../fonts/*-License.txt "GAMS Studio.app/Contents/SharedSupport/doc/fonts/"
     - codesign --sign ${GAMS_CODESIGN_IDENTITY} --options runtime --force --deep --timestamp --entitlements ${WORKSPACE}/platform/macos/studio.entitlements.plist "GAMS Studio.app"
     - USE_QWEBENGINE=$(grep "QWEBENGINE=" ${WORKSPACE}/gamsdependency.pri | cut -f2 -d"=")
     - |+
@@ -94,6 +96,8 @@ pack-dac:
     - macdeployqt "GAMS Studio.app" -always-overwrite
     - sed -i -e "s/x.y.z/$VERSION/g" "GAMS Studio.app/Contents/Info.plist"
     - cp ${WORKSPACE}/CHANGELOG "GAMS Studio.app/Contents/Resources/Changelog"
+    - mkdir -p "GAMS Studio.app/Contents/SharedSupport/doc/fonts/"
+    - cp ../../../fonts/*-License.txt "GAMS Studio.app/Contents/SharedSupport/doc/fonts/"
     - codesign --sign ${GAMS_CODESIGN_IDENTITY} --options runtime --force --deep --timestamp --entitlements ${WORKSPACE}/platform/macos/studio.entitlements.plist "GAMS Studio.app"
     - USE_QWEBENGINE=$(grep "QWEBENGINE=" ${WORKSPACE}/gamsdependency.pri | cut -f2 -d"=")
     - |+
@@ -156,11 +160,14 @@ pack-leg:
   - mkdir -p appdir/usr/bin
   - mkdir -p appdir/usr/share/pixmaps
   - mkdir -p appdir/usr/resources
+  - mkdir -p appdir/usr/share/doc/fonts
   # copy required files
   - cp build/src/bin/studio appdir/usr/bin/
   - cp platform/linux/gamsstudio.desktop appdir/usr/share/studio.desktop
   - cp -r icons/* appdir/usr/share/pixmaps
   - cp CHANGELOG appdir/usr/resources/Changelog
+  # copy font licenses
+  - cp fonts/*-License.txt appdir/usr/share/doc/fonts
   # get version information
   - |+
     STUDIO_MAJOR=$(grep "^STUDIO_MAJOR_VERSION=" version | cut -f2 -d"=")
@@ -205,6 +212,8 @@ pack-wei:
     - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libcrypto-3-x64.dll" "studio"
     - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libssl-3-x64.dll" "studio"
     - cd studio
+    - mkdir -p support/doc/fonts
+    - cp ../fonts/*-License.txt support/doc/fonts
     - windeployqt --release --compiler-runtime --force studio.exe
     - cp ../CHANGELOG "resources/Changelog"
     # sign and verify studio
@@ -254,6 +263,8 @@ pack-wei-debug:
     - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libcrypto-3-x64.*" "studio"
     - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libssl-3-x64.*" "studio"
     - cd studio
+    - mkdir -p support/doc/fonts
+    - cp ../fonts/*-License.txt support/doc/fonts
     - windeployqt --debug --compiler-runtime --pdb --force studio.exe
     - cp ../CHANGELOG "resources/Changelog"
     # sign and verify studio

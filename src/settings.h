@@ -98,6 +98,7 @@ enum SettingsKey {
 
     // editor settings page
     skEdAppearance,
+    skEdInitFont,
     skEdFontFamily,
     skEdFontSize,
     skEdShowLineNr,

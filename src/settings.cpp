@@ -41,7 +41,7 @@ namespace studio {
 
 // Increase mVersion only on MAJOR changes (change/remove existing field or add to array-element)
 const QHash<Settings::Scope, int> Settings::mVersion = {{Settings::scSysX, 1},
-                                                        {Settings::scUserX ,2}};
+                                                        {Settings::scUserX, 2}};
 Settings *Settings::mInstance = nullptr;
 bool Settings::mUseRelocatedTestDir = false;
 const QString CThemePrefix("usertheme_");
@@ -80,7 +80,7 @@ QString findFixedFont()
 
     QStringList list = QFontDatabase::families();
     for (int i = 0; i < list.size(); ++i) {
-            if (QFontDatabase::isPrivateFamily(list.at(i)))
+        if (QFontDatabase::isPrivateFamily(list.at(i)))
             continue;
         if (QFontDatabase::isFixedPitch(list.at(i))) {
             return list.at(i);
@@ -344,8 +344,9 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
 
     // editor settings page
     safelyAdd(res, skEdAppearance, scUser, {"editor","appearance"}, 0);
-    safelyAdd(res, skEdFontFamily, scUser, {"editor","fontFamily"}, findFixedFont());
-    safelyAdd(res, skEdFontSize, scUser, {"editor","fontSize"}, 10);
+    safelyAdd(res, skEdInitFont, scUser, {"editor","initFont"}, true);
+    safelyAdd(res, skEdFontFamily, scUser, {"editor","fontFamily"}, "");
+    safelyAdd(res, skEdFontSize, scUser, {"editor","fontSize"}, 8);
     safelyAdd(res, skEdShowLineNr, scUser, {"editor","showLineNr"}, true);
     safelyAdd(res, skEdTabSize, scUser, {"editor","TabSize"}, 4);
     safelyAdd(res, skEdHighlightBound, scUser, {"editor","HighlightBound"}, 1500);
@@ -902,7 +903,7 @@ void Settings::loadVersionData(ScopePair scopes)
 
                 break;
             }
-            case 2: { // On increasing version from 1 to 2 -> implement mData conversion HERE
+            case 2: { // On increasing version from 2 to 3 -> implement mData conversion HERE
 
                 break;
             }
@@ -919,7 +920,7 @@ void Settings::loadVersionData(ScopePair scopes)
                     DEB() << "Error on upgrading value to version " << (foundVersion+1) << " for " << keyText(skEdAppearance);
                 break;
             }
-            case 2: { // On increasing version from 1 to 2 -> implement mData conversion HERE
+            case 2: { // On increasing version from 2 to 3 -> implement mData conversion HERE
 
                 break;
             }
@@ -935,7 +936,7 @@ void Settings::loadVersionData(ScopePair scopes)
 
                 break;
             }
-            case 2: { // On increasing version from 1 to 2 -> implement mData conversion HERE
+            case 2: { // On increasing version from 2 to 3 -> implement mData conversion HERE
 
                 break;
             }

@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/fonts">
+        <file alias="JetBrainsMono">JetBrainsMono-Regular.ttf</file>
+        <file alias="JetBrainsMonoB">JetBrainsMono-Bold.ttf</file>
+        <file alias="JetBrainsMonoBI">JetBrainsMono-BoldItalic.ttf</file>
+        <file alias="JetBrainsMonoI">JetBrainsMono-Italic.ttf</file>
+        <file alias="FiraCode">FiraCode-Regular.ttf</file>
+        <file alias="FiraCodeB">FiraCode-Bold.ttf</file>
+        <file alias="SourceCodePro">SourceCodePro-Regular.ttf</file>
+        <file alias="SourceCodeProB">SourceCodePro-Bold.ttf</file>
+        <file alias="Cousine">Cousine-Regular.ttf</file>
+        <file alias="CousineB">Cousine-Bold.ttf</file>
+        <file alias="CousineBI">Cousine-BoldItalic.ttf</file>
+        <file alias="CousineI">Cousine-Italic.ttf</file>
+    </qresource>
+</RCC>

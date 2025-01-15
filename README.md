@@ -81,4 +81,8 @@ Before you request a review of your changes please make sure that you used the l
 | [dtoaLoc](extern/dtoaloc) | [License](extern/dtoaloc/README.md) | |
 | [engineapi](extern/engineapi/) | [MIT](extern/engineapi/README.md) | Owned by GAMS and can be used in other projects. |
 | [yaml-cpp](extern/yaml-cpp/) | [MIT](extern/yaml-cpp/LICENSE/) | The project can be found at https://github.com/jbeder/yaml-cpp |
+| [JetBrains Mono](https://www.jetbrains.com/de-de/lp/mono/) | [SIL Open Font License 1.1](https://github.com/JetBrains/JetBrainsMono/blob/master/OFL.txt) | Monospace font for editor from https://www.jetbrains.com/de-de/lp/mono/ |
+| [Source Code Pro](https://github.com/adobe-fonts/source-code-pro) | [SIL Open Font License 1.1](https://github.com/adobe-fonts/source-code-pro/blob/release/LICENSE.md) | Monospace font for editor from https://github.com/adobe-fonts/source-code-pro |
+| [Fira Code](https://github.com/tonsky/FiraCode) | [SIL Open Font License 1.1](https://github.com/tonsky/FiraCode/blob/master/LICENSE) | Monospace font for editor from https://github.com/tonsky/FiraCode |
+| [Cousine](https://font.download/font/cousine) | [apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0) | Monospace font for editor from https://font.download/font/cousine |
 

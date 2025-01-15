@@ -105,6 +105,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     initEnvironment();
+    initFonts();
 
     ui->setupUi(this);
     ui->updateWidget->hide();
@@ -726,6 +727,38 @@ void MainWindow::initIcons()
     ui->actionGoForward->setIcon(Theme::icon(":/%1/forward"));
     ui->actionGoBack->setIcon(Theme::icon(":/%1/backward"));
     ui->tbProjectSettings->setIcon(Theme::icon(":/%1/cog"));
+}
+
+void MainWindow::initFonts()
+{
+    QStringList fonts = {"JetBrainsMono", "JetBrainsMonoB", "JetBrainsMonoBI", "JetBrainsMonoI",
+                         "FiraCode", "FiraCodeB", "SourceCodePro", "SourceCodeProB",
+                         "Cousine", "CousineB", "CousineBI", "CousineI", };
+    Settings *settings = Settings::settings();
+    QFont sysFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    DEB() << "default system font: " << sysFont.family() << " size 10";
+    if (settings->toBool(skEdInitFont)) {
+        settings->setBool(skEdInitFont, false);
+        if (settings->toString(skEdFontFamily).compare(sysFont.family()) == 0) {
+            settings->setString(skEdFontFamily, "");
+        }
+    }
+
+    QString defaultFamily;
+    for (const QString &fName : fonts) {
+        int i = QFontDatabase::addApplicationFont(":/fonts/" + fName);
+        if (defaultFamily.isEmpty())
+            defaultFamily = QFontDatabase::applicationFontFamilies(i).at(0);
+        if (i < 0)
+            DEB() << "Could not load font " << fName;
+    }
+    QFont systemFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    if (settings->toString(skEdFontFamily).isEmpty()) {
+        settings->setString(skEdFontFamily, defaultFamily);
+        int size = settings->toInt(skEdFontSize) - 1;
+        settings->setInt(skEdFontSize, size);
+        DEB() << "Font updated to " << Settings::settings()->toString(skEdFontFamily) << " size " << size;
+    }
 }
 
 void MainWindow::initToolBar()
@@ -6442,6 +6475,7 @@ void MainWindow::deleteScratchDirs(const QString &path)
 
 QFont MainWindow::getEditorFont(FontGroup fGroup, QString fontFamily, qreal pointSize)
 {
+    bool fixIt = false;
     if (fGroup == FontGroup::fgTable) {
         if (fontFamily.isEmpty()) fontFamily = font().family();
         if (pointSize < 0.01) pointSize = mGroupFontSize.value(fGroup);
@@ -6450,8 +6484,10 @@ QFont MainWindow::getEditorFont(FontGroup fGroup, QString fontFamily, qreal poin
         if (fontFamily.isEmpty()) fontFamily = Settings::settings()->toString(skEdFontFamily);
         if (pointSize < 0.01) pointSize = mGroupFontSize.value(fGroup);
         if (pointSize < 0.01) pointSize = Settings::settings()->toInt(skEdFontSize);
+        fixIt = true;
     }
     QFont font(fontFamily);
+    if (fixIt) font.setFixedPitch(true);
 #ifdef _WIN64
     if (fGroup != FontGroup::fgTable)
         font.setHintingPreference(QFont::PreferVerticalHinting);
