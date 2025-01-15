@@ -230,7 +230,8 @@ void ModelDialog::loadUserLibs()
 {
     GlbParser glbParser;
     QDirIterator iter(mUserLibPath, QDirIterator::Subdirectories);
-    while (!iter.next().isEmpty()) {
+    while (iter.hasNext()) {
+        iter.next();
         if (QFileInfo(iter.filePath()).suffix() == "glb") {
             QList<LibraryItem> items;
             if (glbParser.parseFile(iter.filePath())) {
