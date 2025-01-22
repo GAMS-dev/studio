@@ -5112,6 +5112,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         // if there is already a log -> show it
         PExFileNode* fileNode = mProjectRepo.findFileNode(edit);
         changeToLog(fileNode, false, false);
+        updateTabIcon(nullptr, mCurrentMainTab);
         updateRecentEdit(mRecent.editor(), edit);
     }
     addToHistory(fileMeta->location());
