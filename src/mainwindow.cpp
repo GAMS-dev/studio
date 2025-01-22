@@ -1906,8 +1906,7 @@ void MainWindow::on_actionSave_As_triggered()
         if (fileMeta->kind() == FileKind::Opt) {
             filters << ViewHelper::dialogOptFileFilter(fi.baseName());
             filePath = QFileDialog::getSaveFileName(this, "Save file as...",
-                                                    filePath, filters.join(";;"),
-                                                    &filters.first(),
+                                                    filePath, filters.join(";;"), &filters.first(),
                                                     QFileDialog::DontConfirmOverwrite);
         } else {
             filters = ViewHelper::dialogFileFilterAll();
@@ -1917,31 +1916,33 @@ void MainWindow::on_actionSave_As_triggered()
 #endif
             QString selFilter = fi.suffix().isEmpty() ? filters.last() : filters.first();
             for (const QString &f: std::as_const(filters)) {
-                if (f.contains("*."+fi.suffix())) {
+                if (f.contains("*." + fi.suffix())) {
                     selFilter = f;
                     break;
                 }
             }
 
             filePath = QFileDialog::getSaveFileName(this, "Save file as...",
-                                                    filePath, filters.join(";;"),
-                                                    &selFilter,
+                                                    filePath, filters.join(";;"), &selFilter,
                                                     QFileDialog::DontConfirmOverwrite);
         }
         if (filePath.isEmpty()) return;
 
         if (filePath.compare(node->location(), FileType::fsCaseSense()) == 0) {
-            appendSystemLogWarning("The file '" +filePath + "' cannot be overwritten with itself.");
+            appendSystemLogWarning("The file '" + filePath + "' cannot be overwritten with itself.");
             return;
         }
 
 
         choice = 1;
-        if ( fileMeta->kind() == FileKind::Opt  &&
-             QString::compare(fi.baseName(), QFileInfo(filePath).completeBaseName(), Qt::CaseInsensitive)!=0 )
+        QString text = "The option file name '%1' is different than source option file name '%2'. "
+                       "Saved file '%3' may not be displayed properly.";
+        if (fileMeta->kind() == FileKind::Opt  &&
+            QString::compare(fi.baseName(), QFileInfo(filePath).completeBaseName(), Qt::CaseInsensitive) != 0)
             choice = MsgBox::question("Different solver name"
-                                      , QString("The option file name '%1' is different than source option file name '%2'. Saved file '%3' may not be displayed properly.")
-                                               .arg(QFileInfo(filePath).completeBaseName(), QFileInfo(fileMeta->location()).completeBaseName(), QFileInfo(filePath).fileName())
+                                      , text.arg(QFileInfo(filePath).completeBaseName(),
+                                                 QFileInfo(fileMeta->location()).completeBaseName(),
+                                                 QFileInfo(filePath).fileName())
                                       , this, "Select other", "Continue", "Abort", 0, 2);
         if (choice == 0)
             continue;
@@ -1950,22 +1951,24 @@ void MainWindow::on_actionSave_As_triggered()
 
         choice = 1;
         if (FileType::from(fileMeta->kind()) != FileType::from(QFileInfo(filePath).fileName())) {
+            QString title;
             if (fileMeta->kind() == FileKind::Opt) {
-                choice = MsgBox::question("Invalid Option File Name or Suffix"
-                                          , QString("'%1' is not a valid solver option file name or suffix. File Saved as '%2' may not be displayed properly.")
-                                                   .arg(QFileInfo(filePath).suffix(), QFileInfo(filePath).fileName())
-                                          , this, "Select other", "Continue", "Abort", 0, 2);
+                title = "Invalid Option File Name or Suffix";
+                text = "'%1' is not a valid solver option file name or suffix. "
+                       "File saved as '%2' may not be displayed properly.";
+                text = text.arg(QFileInfo(filePath).suffix(), QFileInfo(filePath).fileName());
             } else if (fileMeta->kind() == FileKind::Guc) {
-                choice = MsgBox::question("Invalid GAMS Configuration File Name or Suffix"
-                                          , QString("'%1' is not a valid GAMS configuration file name or suffix. File saved as '%1' may not be displayed properly.")
-                                                   .arg(QFileInfo(filePath).fileName())
-                                          , this, "Select other", "Continue", "Abort", 0, 2);
+                title = "Invalid GAMS Configuration File Name or Suffix";
+                text = "'%1' is not a valid GAMS configuration file name or suffix. "
+                       "File saved as '%1' may not be displayed properly.";
+                text = text.arg(QFileInfo(filePath).fileName());
             } else {
-                choice = MsgBox::question("Different File Type"
-                                          , QString("Target '%1' is of different type than the type of source '%2'. File saved as '%1' may not be displayed properly.")
-                                                   .arg(QFileInfo(filePath).fileName(), QFileInfo(fileMeta->location()).fileName())
-                                          , this, "Select other", "Continue", "Abort", 0, 2);
+                title = "Different File Type";
+                text = "Target '%1' is of different type than the type of source '%2'. "
+                       "File saved as '%1' may not be displayed properly.";
+                text = text.arg(QFileInfo(filePath).fileName(), QFileInfo(fileMeta->location()).fileName());
             }
+            choice = MsgBox::question(title, text, this, "Select other", "Continue", "Abort", 0, 2);
         }
         if (choice == 0)
             continue;
@@ -1988,7 +1991,8 @@ void MainWindow::on_actionSave_As_triggered()
             FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
             choice = (destFM && destFM->isModified()) ? -1 : exists ? 0 : 1;
             if (choice < 0)
-                choice = MsgBox::question("Destination file modified", QString("Your unsaved changes on %1 will be lost.").arg(filePath)
+                choice = MsgBox::question("Destination file modified"
+                                          , QString("Your unsaved changes on %1 will be lost.").arg(filePath)
                                           , this, "Select other", "Continue", "Abort", 0, 2);
             else if (choice < 1)
                 choice = MsgBox::question("File exists", filePath+" already exists."

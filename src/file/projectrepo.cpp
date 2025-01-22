@@ -928,6 +928,7 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
         } else {
             addToProject(project, node);
         }
+        project->setNeedSave();
 
         // macOS didn't focus on the new node
         mTreeModel->setCurrent(mTreeModel->index(node));
