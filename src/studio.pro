@@ -124,6 +124,7 @@ SOURCES += \
     file/pexlognode.cpp \
     file/projectcontextmenu.cpp \
     file/projectedit.cpp \
+    file/projectproxymodel.cpp \
     file/projectrepo.cpp \
     file/projecttreemodel.cpp \
     file/projecttreeview.cpp \
@@ -351,6 +352,7 @@ HEADERS += \
     file/pexlognode.h \
     file/projectcontextmenu.h \
     file/projectedit.h \
+    file/projectproxymodel.h \
     file/projectrepo.h \
     file/projecttreemodel.h \
     file/projecttreeview.h \

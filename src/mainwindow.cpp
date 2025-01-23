@@ -177,8 +177,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Project View Setup
     int iconSize = fontMetrics().lineSpacing() + 1;
-    ui->projectView->setModel(mProjectRepo.treeModel());
-    ui->projectView->setRootIndex(mProjectRepo.treeModel()->rootModelIndex());
+    ui->projectView->setModel(mProjectRepo.proxyModel());
+    ui->projectView->setRootIndex(mProjectRepo.proxyModel()->rootModelIndex());
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize, iconSize));
@@ -260,8 +260,6 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(&mProjectRepo, &ProjectRepo::openInPinView, this, &MainWindow::openInPinView);
     connect(&mProjectRepo, &ProjectRepo::switchToTab, this, &MainWindow::switchToMainTab);
-    connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
-    connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(&mProjectRepo, &ProjectRepo::getParameterValue, this, &MainWindow::getParameterValue);
     connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, [this](const FileId &fileId){ closeFileEditors(fileId);});
@@ -642,7 +640,7 @@ QVector<PExAbstractNode *> MainWindow::selectedNodes(QModelIndex index)
     QVector<PExAbstractNode*> nodes;
     QModelIndexList list = ui->projectView->selectionModel()->selectedIndexes();
     if (index.isValid() && !list.contains(index)) return nodes;
-    const auto ids = mProjectRepo.treeModel()->selectedIds();
+    const auto ids = mProjectRepo.proxyModel()->selectedIds();
     for (const NodeId &id: ids)
         nodes << mProjectRepo.node(id);
     if (index.isValid() && nodes.isEmpty()) {
@@ -1405,16 +1403,6 @@ void MainWindow::logTabContextMenuRequested(const QPoint& pos)
     int tabIndex = ui->logTabs->tabBar()->tabAt(pos);
     mLogTabContextMenu.setTabIndex(tabIndex);
     mLogTabContextMenu.exec(ui->logTabs->tabBar()->mapToGlobal(pos));
-}
-
-void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
-{
-    ui->projectView->setExpanded(mi, expanded);
-}
-
-void MainWindow::isProjectNodeExpanded(const QModelIndex &mi, bool &expanded) const
-{
-    expanded = ui->projectView->isExpanded(mi);
 }
 
 void MainWindow::closeHelpView()
@@ -3675,7 +3663,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
                 }
                 if (idx >= 0) {
                     openPinView(idx, pinV ? Qt::Vertical : Qt::Horizontal);
-                    ui->projectView->selectionModel()->select(mProjectRepo.treeModel()->index(node), QItemSelectionModel::ClearAndSelect);
+                    ui->projectView->selectionModel()->select(mProjectRepo.proxyModel()->asIndex(node), QItemSelectionModel::ClearAndSelect);
                     mPinView->widget()->setFocus();
                 }
             }
@@ -5225,10 +5213,14 @@ void MainWindow::focusProject(PExProjectNode *project)
         if (visible) ++visCount;
     }
     if (visCount) {
-        for (int i = 1; i < visibleList.count(); ++i) {
-            if (visibleList.at(i)) {
-                ui->mainTabs->setCurrentIndex(i);
-                break;
+        if (ui->mainTabs->currentIndex() < 0 || ui->mainTabs->currentIndex() >= visibleList.count()
+                || !visibleList.at(ui->mainTabs->currentIndex())) {
+            // if current index won't be visible, select first visible
+            for (int i = 1; i < visibleList.count(); ++i) {
+                if (visibleList.at(i)) {
+                    ui->mainTabs->setCurrentIndex(i);
+                    break;
+                }
             }
         }
     } else if (ui->mainTabs->count()) {
@@ -5250,9 +5242,10 @@ void MainWindow::focusProject(PExProjectNode *project)
     if (log && log->file()->editors().count())
         edit = log->file()->editors().first();
     ui->logTabs->setTabVisible(ui->logTabs->indexOf(edit), true);
-    ui->logTabs->setCurrentWidget(edit);
+    if (ui->logTabs->currentWidget() != mSyslog && ui->logTabs->currentWidget() != mResultsView)
+        ui->logTabs->setCurrentWidget(edit);
     for (int i = 0; i < ui->logTabs->count(); ++i) {
-        if (ui->logTabs->widget(i) != edit && ui->logTabs->widget(i) != mSyslog)
+        if (ui->logTabs->widget(i) != edit && ui->logTabs->widget(i) != mSyslog && ui->logTabs->widget(i) != mResultsView)
             ui->logTabs->setTabVisible(i, false);
     }
 

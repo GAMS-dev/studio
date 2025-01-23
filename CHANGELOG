@@ -5,6 +5,7 @@ Version 1.20.0 *
   - This can be switched back to the default font in Settings (F7) in the "Editor & Log" tab.
 - Fixed that project changes after using 'Save as...' were not always persistent.
 - Fixed main-file indicator when switching to the same file that exists in a different project.
+- Fixed that the system projects were not shown when a project is in focus mode.
 - Fixed that Studio stuck after opening the Model Dialog after upgrading to Qt 6.8.1.
 - Upgraded to Qt 6.8.1
 

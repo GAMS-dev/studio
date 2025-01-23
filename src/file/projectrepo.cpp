@@ -45,6 +45,8 @@ ProjectRepo::ProjectRepo(QObject* parent)
     : QObject(parent), mNextId(0), mTreeModel(new ProjectTreeModel(this, new PExRootNode(this)))
 {
     addToIndex(mTreeModel->rootNode());
+    mProxyModel = new ProjectProxyModel(this);
+    mProxyModel->setSourceModel(mTreeModel);
     mRunAnimateTimer.setInterval(250);
     runAnimateIcon(QIcon::Normal, 100);
     connect(&mRunAnimateTimer, &QTimer::timeout, this, &ProjectRepo::stepRunAnimation);
@@ -55,6 +57,7 @@ ProjectRepo::~ProjectRepo()
     mRunAnimateTimer.stop();
     mRunIcons.clear();
     FileType::clear();
+    delete mProxyModel;
     delete mTreeModel;
 }
 
@@ -110,9 +113,9 @@ PExAbstractNode *ProjectRepo::node(const NodeId &id) const
     return mNodes.value(id, nullptr);
 }
 
-PExAbstractNode*ProjectRepo::node(const QModelIndex& index) const
+PExAbstractNode *ProjectRepo::node(const QModelIndex& index) const
 {
-    return index.isValid() ? node(NodeId(int(index.internalId()))) : nullptr;
+    return mProxyModel->node(index);
 }
 
 PExGroupNode *ProjectRepo::asGroup(const NodeId &id) const
@@ -121,9 +124,10 @@ PExGroupNode *ProjectRepo::asGroup(const NodeId &id) const
     return (!res ? nullptr : res->toGroup());
 }
 
-PExGroupNode*ProjectRepo::asGroup(const QModelIndex& index) const
+PExGroupNode *ProjectRepo::asGroup(const QModelIndex& index) const
 {
-    return asGroup(NodeId(int(index.internalId())));
+    PExAbstractNode* node = mProxyModel->node(index);
+    return node ? node->toGroup() : nullptr;
 }
 
 PExProjectNode *ProjectRepo::asProject(const NodeId &id) const
@@ -134,7 +138,8 @@ PExProjectNode *ProjectRepo::asProject(const NodeId &id) const
 
 PExProjectNode *ProjectRepo::asProject(const QModelIndex &index) const
 {
-    return asProject(NodeId(int(index.internalId())));
+    PExAbstractNode* node = mProxyModel->node(index);
+    return node ? node->toProject() : nullptr;
 }
 
 PExFileNode *ProjectRepo::asFileNode(const NodeId &id) const
@@ -143,9 +148,10 @@ PExFileNode *ProjectRepo::asFileNode(const NodeId &id) const
     return (!res ? nullptr : res->toFile());
 }
 
-PExFileNode*ProjectRepo::asFileNode(const QModelIndex& index) const
+PExFileNode *ProjectRepo::asFileNode(const QModelIndex& index) const
 {
-    return asFileNode(NodeId(int(index.internalId())));
+    PExAbstractNode* node = mProxyModel->node(index);
+    return node ? node->toFile() : nullptr;
 }
 
 PExFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
@@ -221,9 +227,9 @@ PExProjectNode *ProjectRepo::gamsSystemProject()
     return res && res->type() == PExProjectNode::tGams ? res : nullptr;
 }
 
-ProjectTreeModel*ProjectRepo::treeModel() const
+ProjectProxyModel *ProjectRepo::proxyModel() const
 {
-    return mTreeModel;
+    return mProxyModel;
 }
 
 FileMetaRepo *ProjectRepo::fileRepo() const
@@ -369,7 +375,7 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
             if (!readProjectFiles(project, subChildren, projectPath))
                 res = false;
             bool expand = projectData.contains("expand") ? projectData.value("expand").toBool() : true;
-            emit setNodeExpanded(mTreeModel->index(project), expand);
+            mTreeView->setExpanded(mProxyModel->asIndex(project), expand);
             if (projectChangedMarker)
                 project->setNeedSave();
             if (projectData.contains("engineJobToken"))
@@ -477,7 +483,11 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
     projectObject.insert("options", project->getRunParametersHistory());
     if (!project->engineJobToken().isEmpty())
         projectObject.insert("engineJobToken", project->engineJobToken());
-    emit isNodeExpanded(mTreeModel->index(project), expand);
+    QModelIndex mi = mProxyModel->asIndex(project);
+    bool ok = true;
+    expand = isExpanded(project->id(), &ok);
+    if (!ok)
+        expand = mTreeView->isExpanded(mi);
     if (!expand) projectObject.insert("expand", false);
     QVariantList subArray;
     writeProjectFiles(project, subArray, relativePaths);
@@ -631,7 +641,7 @@ PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, co
     mTreeModel->insertChild(root->childCount(), root, project);
     connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
     emit changed();
-    mTreeView->setExpanded(mTreeModel->index(project), true);
+    mTreeView->setExpanded(mProxyModel->asIndex(project), true);
     sortChildNodes(root);
     return project;
 }
@@ -788,19 +798,55 @@ void ProjectRepo::sortChildNodes(PExGroupNode *group)
 
 void ProjectRepo::focusProject(PExProjectNode *project)
 {
-    if (project) {
-        QModelIndex index = mTreeModel->index(project);
-        mTreeView->setRootIndex(index);
-        mFocussedProject = project;
-    } else {
-        mTreeView->setRootIndex(mTreeModel->rootModelIndex());
-        mFocussedProject = nullptr;
-    }
+    storeExpansionState(mProxyModel->rootModelIndex());
+    mProxyModel->focusProject(project);
+    restoreExpansionState(mProxyModel->rootModelIndex());
 }
 
 PExProjectNode *ProjectRepo::focussedProject() const
 {
-    return mFocussedProject;
+    return mProxyModel->focussedProject();
+}
+
+void ProjectRepo::storeExpansionState(QModelIndex parent)
+{
+    for (int row = 0; row < mProxyModel->rowCount(parent); ++row) {
+        QModelIndex mi = mProxyModel->index(row, 0, parent);
+        if (mProxyModel->hasChildren(mi)) {
+            NodeId id = mProxyModel->nodeId(mi);
+            if (id.isValid()) {
+                mIsExpanded.insert(id, mTreeView->isExpanded(mi));
+                storeExpansionState(mi);
+            }
+        }
+    }
+}
+
+void ProjectRepo::restoreExpansionState(QModelIndex parent)
+{
+    for (int row = 0; row < mProxyModel->rowCount(parent); ++row) {
+        QModelIndex mi = mProxyModel->index(row, 0, parent);
+        if (mProxyModel->hasChildren(mi)) {
+            NodeId id = mProxyModel->nodeId(mi);
+            if (id.isValid() && mIsExpanded.contains(id)) {
+                if (mIsExpanded.value(id))
+                    mTreeView->expand(mi);
+                else
+                    mTreeView->collapse(mi);
+                restoreExpansionState(mi);
+            }
+        }
+    }
+}
+
+bool ProjectRepo::isExpanded(NodeId id, bool *ok) const
+{
+    if (id.isValid() && mIsExpanded.contains(id)) {
+        if (ok) *ok = true;
+        return mIsExpanded.value(id);
+    }
+    if (ok) *ok = false;
+    return false;
 }
 
 PExFileNode *ProjectRepo::findOrCreateFileNode(QString location, PExProjectNode *project, FileType *knownType,
@@ -840,7 +886,7 @@ PExFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, PExProjectNod
     }
     PExFileNode* file = findFile(fileMeta, project);
     if (!file) {
-        mTreeModel->deselectAll();
+        mProxyModel->deselectAll();
         if (fileMeta->kind() == FileKind::Log)
             return project->logNode();
         file = new PExFileNode(fileMeta);
@@ -931,7 +977,7 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
         project->setNeedSave();
 
         // macOS didn't focus on the new node
-        mTreeModel->setCurrent(mTreeModel->index(node));
+        mProxyModel->setCurrent(mProxyModel->asIndex(node));
     }
 }
 
@@ -1001,21 +1047,21 @@ const QVector<AbstractProcess *> ProjectRepo::listProcesses()
 
 void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    mTreeModel->selectionChanged(selected, deselected);
+    mProxyModel->selectionChanged(selected, deselected);
     QVector<QModelIndex> groups;
-    for (QModelIndex ind: mTreeModel->popAddProjects()) {
+    for (QModelIndex ind: mProxyModel->popAddProjects()) {
         if (!mTreeView->isExpanded(ind))
             groups << ind;
     }
     QItemSelectionModel *selModel = mTreeView->selectionModel();
-    for (QModelIndex ind: mTreeModel->popDeclined()) {
+    for (QModelIndex ind: mProxyModel->popDeclined()) {
         selModel->select(ind, QItemSelectionModel::Deselect);
     }
     for (QModelIndex group: std::as_const(groups)) {
         if (!mTreeView->isExpanded(group)) {
             mTreeView->setExpanded(group, true);
-            for (int row = 0; row < mTreeModel->rowCount(group); ++row) {
-                QModelIndex ind = mTreeModel->index(row, 0, group);
+            for (int row = 0; row < mProxyModel->rowCount(group); ++row) {
+                QModelIndex ind = mProxyModel->index(row, 0, group);
                 selModel->select(ind, QItemSelectionModel::Select);
             }
         }
@@ -1033,9 +1079,9 @@ void ProjectRepo::stepRunAnimation()
 {
     mRunAnimateIndex = ((mRunAnimateIndex+1) % mRunIconCount);
     for (PExProjectNode* project: std::as_const(mRunnigGroups)) {
-        QModelIndex ind = mTreeModel->index(project);
+        QModelIndex ind = mProxyModel->asIndex(project);
         if (ind.isValid())
-            emit mTreeModel->dataChanged(ind, ind);
+            emit mProxyModel->dataChanged(ind, ind);
     }
 }
 
@@ -1124,7 +1170,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         }
     }
     for (const NodeId &id: std::as_const(newIds)) {
-        QModelIndex mi = mTreeModel->index(id);
+        QModelIndex mi = mProxyModel->asIndex(id);
         newSelection << mi;
     }
     if (!filesNotFound.isEmpty()) {
@@ -1146,7 +1192,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         emit doFocusProject(nullptr);
         if (fileToShow)
             emit openFile(fileToShow->file(), true, fileToShow->assignedProject());
-    } else if (mFocussedProject && project && mFocussedProject != project && !projectCount)
+    } else if (mProxyModel->focussedProject() && project && mProxyModel->focussedProject() != project && !projectCount)
         emit doFocusProject(project);
 }
 
@@ -1192,9 +1238,9 @@ void ProjectRepo::editorActivated(QWidget* edit, bool select)
         node = findFileNode(edit);
     if (!node) return;
 
-    QModelIndex mi = mTreeModel->index(node);
+    QModelIndex mi = mProxyModel->asIndex(node);
     if (mi.isValid()) {
-        mTreeModel->setCurrent(mi);
+        mProxyModel->setCurrent(mi);
         mTreeView->setCurrentIndex(mi);
         if (select) mTreeView->selectionModel()->select(mi, QItemSelectionModel::ClearAndSelect);
     }
@@ -1202,7 +1248,7 @@ void ProjectRepo::editorActivated(QWidget* edit, bool select)
 
 void ProjectRepo::editProjectName(PExProjectNode *project)
 {
-    QModelIndex mi = mTreeModel->index(project);
+    QModelIndex mi = mProxyModel->asIndex(project);
     if (!mi.isValid()) return;
     mTreeView->edit(mi);
 }
@@ -1211,8 +1257,8 @@ void ProjectRepo::nodeChanged(const NodeId &nodeId)
 {
     PExAbstractNode* nd = node(nodeId);
     if (!nd) return;
-    QModelIndex ndIndex = mTreeModel->index(nd);
-    emit mTreeModel->dataChanged(ndIndex, ndIndex);
+    QModelIndex ndIndex = mProxyModel->asIndex(nd);
+    emit mProxyModel->dataChanged(ndIndex, ndIndex);
 }
 
 void ProjectRepo::closeNodeById(const NodeId &nodeId)
@@ -1257,13 +1303,13 @@ void ProjectRepo::gamsProcessStateChange(PExGroupNode *group)
 {
     PExProjectNode *project = group->toProject();
     if (!project) return;
-    QModelIndex ind = mTreeModel->index(project);
+    QModelIndex ind = mProxyModel->asIndex(project);
     if (project->process()->state() == QProcess::NotRunning) {
         mRunnigGroups.removeAll(project);
-        if (ind.isValid()) emit mTreeModel->dataChanged(ind, ind);
+        if (ind.isValid()) emit mProxyModel->dataChanged(ind, ind);
     } else if (!mRunnigGroups.contains(project)) {
         mRunnigGroups << project;
-        if (ind.isValid()) emit mTreeModel->dataChanged(ind, ind);
+        if (ind.isValid()) emit mProxyModel->dataChanged(ind, ind);
     }
     if (mRunnigGroups.isEmpty() && mRunAnimateTimer.isActive()) {
         mRunAnimateTimer.stop();

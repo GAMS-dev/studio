@@ -19,6 +19,7 @@
  */
 #include "projecttreeview.h"
 #include "projecttreemodel.h"
+#include "projectproxymodel.h"
 #include "filemeta.h"
 #include <QApplication>
 #include <QMimeData>
@@ -50,7 +51,7 @@ void ProjectTreeView::fixFocus(bool delay)
         mDelayUpdate = delay;
         return;
     }
-    QModelIndex mi = static_cast<ProjectTreeModel*>(model())->current();
+    QModelIndex mi = static_cast<ProjectProxyModel*>(model())->current();
     if (mi.isValid() && currentIndex() != mi)
         setCurrentIndex(mi);
 }
@@ -144,8 +145,6 @@ void ProjectTreeView::updateDrag(QDragMoveEvent *event)
         } else {
             stopAutoScroll();
         }
-        ProjectTreeModel* treeModel = static_cast<ProjectTreeModel*>(model());
-        QModelIndex ind = indexAt(event->position().toPoint());
         if (!event->modifiers().testFlag(Qt::ControlModifier) && !mHasRunBlocker && isIntern) {
             event->setDropAction(Qt::MoveAction);
         } else if (isIntern || FileMeta::hasExistingFile(event->mimeData()->urls())
@@ -156,7 +155,8 @@ void ProjectTreeView::updateDrag(QDragMoveEvent *event)
             return;
         }
         bool locked;
-        QModelIndex groupInd = treeModel->findProject(ind, &locked);
+        QModelIndex ind = indexAt(event->position().toPoint());
+        QModelIndex groupInd = static_cast<ProjectProxyModel*>(model())->findProject(ind, &locked);
         if (groupInd.isValid())
             selectionModel()->select(groupInd, QItemSelectionModel::ClearAndSelect);
         (locked) ? event->ignore() : event->accept();
@@ -191,7 +191,7 @@ void ProjectTreeView::selectAll()
 {
     QModelIndex currMi = currentIndex();
     if (!currMi.isValid())
-        static_cast<ProjectTreeModel*>(model())->current();
+        static_cast<ProjectProxyModel*>(model())->current();
     if (!model()->data(currMi, ProjectTreeModel::IsProjectRole).toBool())
         expandAll();
     QTreeView::selectAll();

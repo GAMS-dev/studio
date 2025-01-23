@@ -265,8 +265,6 @@ private slots:
     void projectContextMenuRequested(const QPoint &pos);
     void mainTabContextMenuRequested(const QPoint& pos);
     void logTabContextMenuRequested(const QPoint& pos);
-    void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
-    void isProjectNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void closeHelpView();
     void outputViewVisibiltyChanged(bool visibility);
     void projectViewVisibiltyChanged(bool visibility);

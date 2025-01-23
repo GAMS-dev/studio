@@ -50,14 +50,14 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &ind, int role = Qt::DisplayRole) const override;
 
-    QModelIndex index(const PExAbstractNode *entry) const;
+    QModelIndex asIndex(const PExAbstractNode *entry) const;
     QModelIndex rootModelIndex() const;
     PExRootNode *rootNode() const;
     bool removeRows(int row, int count, const QModelIndex &parent) override;
     void setDebugMode(bool debug);
     bool setData(const QModelIndex &index, const QVariant &value, int role) override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
-    QModelIndex current() {return index(mCurrent);}
+    QModelIndex current() {return asIndex(mCurrent);}
     QVector<NodeId> selectedIds() const;
     QMap<int, QVariant> itemData(const QModelIndex &index) const override;
 
@@ -69,12 +69,13 @@ signals:
 
 protected:
     friend class ProjectRepo;
-    friend class ProjectTreeView;
+    friend class ProjectProxyModel;
 
     bool insertChild(int row, PExGroupNode* parent, PExAbstractNode* child);
     bool removeChild(PExAbstractNode* child);
     NodeId nodeId(const QModelIndex &ind) const;
-    QModelIndex index(const NodeId &id) const;
+    PExAbstractNode* node(const QModelIndex& index) const;
+    QModelIndex asIndex(const NodeId &id) const;
 
     /// Tells if a model index is the current node
     /// \param ind
@@ -89,9 +90,8 @@ protected:
     bool isSelected(const QModelIndex& ind) const;
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void deselectAll();
-    const QVector<QModelIndex> popDeclined();
-    const QVector<QModelIndex> popAddProjects();
     void update(const QModelIndex& ind = QModelIndex());
+    ProjectRepo* projectRepo() { return mProjectRepo; }
 
 private:
     QVector<QModelIndex> gatherChildren(QModelIndex index);

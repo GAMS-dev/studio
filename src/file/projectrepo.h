@@ -23,6 +23,7 @@
 #include <QStringList>
 #include <QWidgetList>
 #include <QModelIndex>
+#include "projectproxymodel.h"
 #include "projecttreemodel.h"
 #include "pexlognode.h"
 #include "pexabstractnode.h"
@@ -111,7 +112,7 @@ public:
     PExAbstractNode* previous(PExAbstractNode* node);
     PExProjectNode* gamsSystemProject();
 
-    ProjectTreeModel* treeModel() const;
+    ProjectProxyModel* proxyModel() const;
     FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;
 
@@ -145,6 +146,9 @@ public:
     void sortChildNodes(PExGroupNode *group);
     void focusProject(PExProjectNode *project);
     PExProjectNode *focussedProject() const;
+    void storeExpansionState(QModelIndex parent);
+    void restoreExpansionState(QModelIndex parent);
+    bool isExpanded(NodeId id, bool *ok) const;
 
     void setDebugMode(bool debug);
     bool debugMode() const;
@@ -152,8 +156,6 @@ public:
 
 signals:
     void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
-    void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
-    void isNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void openProject(const QString &gspFile);
     void openFile(gams::studio::FileMeta* fileMeta, bool focus = true, gams::studio::PExProjectNode *project = nullptr,
                   QString encoding = QString(), bool forcedAsTextEditor = false, gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
@@ -209,16 +211,17 @@ private:
     FileId mNextId;
     ProjectTreeView* mTreeView = nullptr;
     ProjectTreeModel* mTreeModel = nullptr;
+    ProjectProxyModel* mProxyModel = nullptr;
     QHash<NodeId, PExAbstractNode*> mNodes;
     FileMetaRepo* mFileRepo = nullptr;
     TextMarkRepo* mTextMarkRepo = nullptr;
     QVector<PExProjectNode*> mRunnigGroups;
-    PExProjectNode *mFocussedProject = nullptr;
     QTimer mRunAnimateTimer;
     QHash<QPair<QIcon::Mode, int>, QVector<QIcon>> mRunIcons;
     int mRunIconCount = 1;
     int mRunAnimateIndex = 0;
     bool mDebugMode = false;
+    QHash<NodeId, bool> mIsExpanded;
 
     static const QString CIgnoreSuffix;
 
