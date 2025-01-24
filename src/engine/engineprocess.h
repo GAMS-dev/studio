@@ -112,7 +112,8 @@ signals:
     void reListNamespacesError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
-    void reUserInstances(const QList<QPair<QString, QList<double> > > instances, const QString &defaultLabel);
+    void reUserInstances(const QList<QPair<QString, QList<double> > > instances, bool isPool = true,
+                         const QString &defaultLabel = QString());
     void reUserInstancesError(const QString &errorText);
     void quotaHint(const QStringList &diskHint, const QStringList &volumeHint);
     void sslSelfSigned(int sslError);

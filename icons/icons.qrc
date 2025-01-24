@@ -81,6 +81,8 @@
         <file alias="home">solid/home.svg</file>
         <file alias="hide">solid/angle-double-up.svg</file>
         <file alias="insert">solid/insert.svg</file>
+        <file alias="inst-multi">solid/inst-multi.svg</file>
+        <file alias="inst-single">solid/inst-single.svg</file>
         <file alias="kill">solid/kill.svg</file>
         <file alias="link">solid/link.svg</file>
         <file alias="lock">solid/lock.svg</file>
