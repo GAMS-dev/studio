@@ -561,6 +561,10 @@ void EngineStartDialog::reListJobs(qint32 count)
         return;
     }
     showSubmit();
+    ui->cbInstance->clear();
+    ui->cbInstance->addItem("-no instances-");
+    ui->laWarn->setText("No user instances assigned");
+    ui->laWarn->setToolTip("Please contact your administrator");
     mProc->sendPostLoginRequests();
 }
 
@@ -676,31 +680,38 @@ void EngineStartDialog::reListProvider(const QList<QHash<QString, QVariant> > &a
     }
 }
 
-void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double> > > &instances, const QString &defaultLabel)
+void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double> > > &instances, bool isPool,
+                                        const QString &defaultLabel)
 {
     QVariantList datList = ui->cbInstance->currentData().toList();
     QString lastInst = datList.count() ? datList.first().toString() : "";
-    ui->cbInstance->clear();
     int cur = 0;
     int prev = -1;
+    int i = 0;
     for (const QPair<QString, QList<double> > &entry : instances) {
         if (entry.second.size() != 3) continue;
-        if (entry.first == defaultLabel) cur = ui->cbInstance->count();
+        if (entry.first == defaultLabel && !isPool) cur = ui->cbInstance->count();
         QString text("%1 (%2 vCPU, %3 GB RAM, %4x)");
         text = text.arg(entry.first).arg(entry.second[0]).arg(entry.second[1]).arg(entry.second[2]);
         QVariantList data;
         data << entry.first << entry.second[0] << entry.second[1] << entry.second[2];
         if (entry.first == lastInst) prev = ui->cbInstance->count();
-        ui->cbInstance->addItem(text, data);
+        if (isPool)
+            ui->cbInstance->insertItem(i++, Theme::icon(":/%1/inst-multi"), text, data);
+        else
+            ui->cbInstance->addItem(Theme::icon(":/%1/inst-single"), text, data);
     }
-    if (!ui->cbInstance->count()) {
-        ui->cbInstance->addItem("-no instances-");
-        ui->laWarn->setText("No user instances assigned");
-        ui->laWarn->setToolTip("Please contact your administrator");
+    if (ui->cbInstance->count() > 1) {
+        for (int i = 0; i < ui->cbInstance->count(); ++i) {
+            if (ui->cbInstance->itemIcon(i).isNull()) {
+                ui->cbInstance->removeItem(i);
+                break;
+            }
+        }
     }
     if (prev >= 0)
         ui->cbInstance->setCurrentIndex(prev);
-    else if (ui->cbInstance->count())
+    else if (ui->cbInstance->count() && !isPool)
         ui->cbInstance->setCurrentIndex(cur);
     updateSubmitStates();
 }

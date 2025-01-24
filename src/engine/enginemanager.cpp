@@ -42,6 +42,14 @@ bool EngineManager::mStartupDone = false;
 QSslConfiguration *EngineManager::mSslConfigurationIgnoreErrOn = nullptr;
 QSslConfiguration *EngineManager::mSslConfigurationIgnoreErrOff = nullptr;
 
+QPair<QString, QList<double>> extractInstanceData(const OAIModel_instance_info &instance) {
+    QList<double> list;
+    qreal memGb = qreal(instance.getMemoryRequest()) / 1000.;
+    list << instance.getCpuRequest() << memGb << instance.getMultiplier();
+    return QPair<QString, QList<double>>(instance.getLabel(), list);
+
+}
+
 EngineManager::EngineManager(QObject* parent)
     : QObject(parent), mAuthApi(new OAIAuthApi()), mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
       mNamespacesApi(new OAINamespacesApi()), mUsageApi(new OAIUsageApi()), mUsersApi(new OAIUsersApi()),
@@ -134,15 +142,26 @@ EngineManager::EngineManager(QObject* parent)
         OAIModel_instance_info iiDef = summary.getDefaultInstance();
         const QList<OAIModel_instance_info> infoList = summary.getInstancesAvailable();
         QList<QPair<QString, QList<double>>> instList;
-        for (const OAIModel_instance_info &ii : infoList) {
-            QList<double> list;
-            qreal memGb = qreal(ii.getMemoryRequest()) / 1000.;
-            list << ii.getCpuRequest() << memGb << ii.getMultiplier();
-            instList << QPair<QString, QList<double>>(ii.getLabel(), list);
-        }
-        emit reUserInstances(instList, iiDef.getLabel());
+        for (const OAIModel_instance_info &ii : infoList)
+            instList << extractInstanceData(ii);
+        emit reUserInstances(instList, false, iiDef.getLabel());
     });
     connect(mUsageApi, &OAIUsageApi::getUserInstancesSignalEFull, this,
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , const QString &text) {
+        emit reUserInstancesError(getJsonMessageIfFound(text));
+    });
+
+    connect(mUsageApi, &OAIUsageApi::getUserInstancePoolsSignal, this, [this](const OAIModel_userinstancepool_info &summary) {
+        QList<OAIModel_instance_pool_info> poolList = summary.getInstancePoolsAvailable();
+        QList<QPair<QString, QList<double>>> instList;
+        for (const OAIModel_instance_pool_info &part : poolList) {
+            QString la = part.getLabel();
+            OAIModel_instance_info inst = part.getInstance();
+            instList << extractInstanceData(inst);
+        }
+        emit reUserInstances(instList);
+    });
+    connect(mUsageApi, &OAIUsageApi::getUserInstancePoolsSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , const QString &text) {
         emit reUserInstancesError(getJsonMessageIfFound(text));
     });
@@ -427,6 +446,11 @@ void EngineManager::getVersion()
 void EngineManager::getUserInstances()
 {
     mUsageApi->getUserInstances(mUser);
+}
+
+void EngineManager::getUserInstancePools()
+{
+    mUsageApi->getUserInstancePools(mUser);
 }
 
 void EngineManager::getQuota()

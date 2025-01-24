@@ -532,6 +532,7 @@ void EngineProcess::sendPostLoginRequests()
     listNamespaces();
     if (mInKubernetes) {
         mManager->getUserInstances();
+        mManager->getUserInstancePools();
         mManager->getQuota();
     }
 }
