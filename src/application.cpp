@@ -27,6 +27,7 @@
 #include "editors/abstractsystemlogger.h"
 #include "logger.h"
 #include "networkmanager.h"
+#include "settingsdialog.h"
 #ifndef __APPLE__
 # include "colors/palettemanager.h"
 #endif
@@ -122,13 +123,18 @@ void Application::init()
         } else
             qDebug() << "Error: Couldn't register log file in missing path " << log.absolutePath();
     }
-    QStringList success, failed;
-    clearWorkspace(Settings::settings()->toBool(skCleanUpWorkspace),
-                   Settings::settings()->toString(skCleanUpWorkspaceFilter).split(",", Qt::SkipEmptyParts),
-                   success, failed);
 
     mMainWindow = QSharedPointer<MainWindow>(new MainWindow());
-    connect(mMainWindow.get(), &MainWindow::cleanupWorkspace, this, &Application::clearWorkspaceNow);
+    if (mMainWindow->settingsDialog()) {
+        auto list = mMainWindow->settingsDialog()->cleanupWorkspaces(true);
+        if (!list.isEmpty()) {
+            QString msg("Perform a clean-up of the following files?\n\n");
+            msg.append(list.join("\n"));
+            auto result = QMessageBox::question(mMainWindow.get(), "Clean Workspace on startup", msg);
+            if (result == QMessageBox::Yes)
+                mMainWindow->settingsDialog()->cleanupWorkspaces(false);
+        }
+    }
     mMainWindow->appendSystemLogInfo("Started: " + QCoreApplication::arguments().join(" "));
     mMainWindow->openFiles(mCmdParser.files());
     if (!mOpenPathOnInit.isEmpty()) {
@@ -137,7 +143,6 @@ void Application::init()
     }
     mDistribValidator.start();
     listen();
-    reportCleanupWsState(success, failed);
     DEB() << GAMS_PRODUCTNAME_STR << " " << applicationVersion() << " on " << QSysInfo::prettyProductName() << " "
           << QSysInfo::currentCpuArchitecture() << " build " << QSysInfo::kernelVersion();
     GamsProcess gp;
@@ -222,59 +227,6 @@ void Application::receiveFileArguments()
     mMainWindow->openFiles(QString(socket->readAll()).split("\n", Qt::SkipEmptyParts));
     socket->deleteLater();
     mMainWindow->setForegroundOSCheck();
-}
-
-void Application::clearWorkspaceNow(const QStringList &filters)
-{
-    QStringList success, failed;
-    clearWorkspace(true, filters, success, failed);
-    reportCleanupWsState(success, failed);
-}
-
-void Application::clearWorkspace(bool active, const QStringList &filters,
-                                 QStringList &rmSuccess, QStringList &rmFailed)
-{
-    if (!active || filters.isEmpty())
-        return;
-    QStringList patterns;
-    for (const auto& filter : filters) {
-        patterns << filter.trimmed();
-    }
-    auto ws = Settings::settings()->toString(skDefaultWorkspace);
-    if (ws.isEmpty())
-        return;
-    QDir dir(ws);
-    dir.setNameFilters(patterns);
-    dir.setFilter(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
-    auto entries = dir.entryInfoList();
-    for (auto entry : entries) {
-        if (entry.isDir()) {
-            auto str = entry.absoluteFilePath();
-            QDir subDir(str);
-            if (subDir.removeRecursively())
-                rmSuccess << str;
-            else
-                rmFailed << str;
-        } else {
-            auto str = entry.fileName();
-            if (dir.remove(entry.fileName()))
-                rmSuccess << str;
-            else
-                rmFailed << str;
-        }
-    }
-}
-
-void Application::reportCleanupWsState(const QStringList &rmSuccess, const QStringList &rmFailed)
-{
-    if (!rmSuccess.isEmpty()) {
-        QString message("Successfully deleted directories and files:\n" + rmSuccess.join("\n"));
-        SysLogLocator::systemLog()->append(message, LogMsgType::Info);
-    }
-    if (!rmFailed.isEmpty()) {
-        QString message("Failed to delete directories and files:\n" + rmFailed.join("\n"));
-        SysLogLocator::systemLog()->append(message, LogMsgType::Error);
-    }
 }
 
 void Application::error(const QString &message)

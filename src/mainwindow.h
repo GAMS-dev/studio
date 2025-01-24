@@ -170,6 +170,8 @@ public:
 
     void showGamsUpdateWidget(const QString &text);
 
+    QStringList projectWorkspaces() const;
+
 #ifdef QWEBENGINE
     help::HelpWidget *helpWidget() const;
 #endif
@@ -177,8 +179,7 @@ public:
     search::ResultsView *resultsView() const;
     void invalidateResultsView();
 
-signals:
-    void cleanupWorkspace(const QStringList&);
+    SettingsDialog* settingsDialog() const;
 
 public slots:
     gams::studio::PExFileNode* openFilePath(const QString &filePath, gams::studio::PExProjectNode* knownProject = nullptr,
@@ -388,7 +389,7 @@ private slots:
     void on_actionNextBookmark_triggered();
     void on_actionPreviousBookmark_triggered();
     void on_actionRemoveBookmarks_triggered();
-    void on_actionDeleteScratchDirs_triggered();
+    void on_actionCleanAllWs_triggered();
     void on_actionChangelog_triggered();
     void on_actionGoBack_triggered();
     void on_actionGoForward_triggered();
@@ -464,7 +465,11 @@ private slots:
 
     void on_tbProjectSettings_clicked();
 
+    void cleanGeneratedProjectFiles(gams::studio::NodeId projId, const QString &workspace);
+
 private:
+    void deleteLogFiles(const QString &pattern, const QString &workspace);
+    void deleteScratchDirectories(const QString &workspace);
     void zoomWidget(QWidget * widget, int range);
     void initWelcomePage();
     void initIcons();

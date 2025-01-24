@@ -358,7 +358,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEdHighlightCurrentLine, scUser, {"editor","highlightCurrentLine"}, false);
     safelyAdd(res, skEdAutoIndent, scUser, {"editor","autoIndent"}, true);
     safelyAdd(res, skEdWriteLog, scUser, {"editor","writeLog"}, true);
-    safelyAdd(res, skEdLogBackupCount, scUser, {"editor","logBackupCount"}, 3);
+    safelyAdd(res, skEdLogBackupCount, scUser, {"editor","logBackupCount"}, 0);
     safelyAdd(res, skEdAutoCloseBraces, scUser, {"editor","autoCloseBraces"}, true);
     safelyAdd(res, skEdEditableMaxSizeMB, scUser, {"editor","editableMaxSizeMB"}, 50);
     safelyAdd(res, skEdCompleterAutoOpen, scUser, {"editor","completerAutoShow"}, true);
@@ -393,7 +393,8 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skUserGamsTypes, scUser, {"misc","userFileTypes"}, QString());
     safelyAdd(res, skAutoReloadTypes, scUser, {"misc","autoReloadTypes"}, true);
     safelyAdd(res, skCleanUpWorkspace, scUser, {"misc","cleanUpWorkspace"}, false);
-    safelyAdd(res, skCleanUpWorkspaceFilter, scUser, {"misc","cleanUpWorkspaceFilter"}, QString());
+    safelyAdd(res, skCleanUpWorkspaceFilter, scUser, {"misc","cleanUpWorkspaceFilter"}, QVariantMap());
+    safelyAdd(res, skCleanUpWorkspaceDirectories, scUser, {"misc","cleanUpWorkspaceDirectories"}, QVariantMap());
 
     // solver option editor settings
     safelyAdd(res, skSoOverrideExisting, scUser, {"solverOption","overrideExisting"}, true);

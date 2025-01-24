@@ -28,7 +28,6 @@
 #include "support/solverconfiginfo.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
-#include "editors/systemlogedit.h"
 #include "editors/sysloglocator.h"
 #include "msgbox.h"
 
@@ -72,6 +71,8 @@ enum ContextAction {
     actProjectCopy,
     actFocusProject,
     actUnfocusProject,
+    actSep8,
+    actClean
 };
 
 ProjectContextMenu::ProjectContextMenu()
@@ -102,6 +103,13 @@ ProjectContextMenu::ProjectContextMenu()
     int addNewSolverOptActionBaseIndex = actAddNewOpt*1000;
 
     mActions.insert(actAddNewPf, addAction("Add &New GAMS Parameter File", this, &ProjectContextMenu::onAddNewPfFile));
+
+    mActions.insert(actSep8, addSeparator());
+    mActions.insert(actClean, addAction("Clean", this, [this]{
+                        if (mNodes.isEmpty())
+                            return;
+                        emit cleanProject(mNodes.first()->toGroup()->id(), mWorkspace);
+                    }));
 
     QDir sysdir(CommonPaths::systemDir());
     QStringList optFiles = sysdir.entryList(QStringList() << "opt*.def" , QDir::Files);
@@ -175,6 +183,8 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     bool isProject = mNodes.size() ? bool(mNodes.first()->toProject()) : false;
     bool isGroup = mNodes.size() ? bool(mNodes.first()->toGroup()) && !isProject : false;
     PExProjectNode *project = mNodes.size() ? mNodes.first()->assignedProject() : nullptr;
+    if (project)
+        mWorkspace = project->workDir();
     bool canMoveProject = project && !protectNodes && project->childCount() && project->type() <= PExProjectNode::tCommon;
     bool isSmallProject = project && project->type() == PExProjectNode::tSmall;
     bool isGamsSys = false;
@@ -339,6 +349,8 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     for (QAction* action : std::as_const(mSolverOptionActions))
         action->setVisible(isProject);
     mActions[actAddNewPf]->setVisible(isProject && !isGamsSys);
+    mActions[actSep8]->setVisible(isProject && !isGamsSys);
+    mActions[actClean]->setVisible(isProject && !isGamsSys);
 }
 
 void ProjectContextMenu::onCloseFile()

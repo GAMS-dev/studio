@@ -316,8 +316,8 @@ void NavigatorDialog::collectQuickActions(QSet<NavigatorContent> &content)
                                     std::bind(&MainWindow::on_actionSave_All_triggered, mMain)));
     content.insert(NavigatorContent("Close All",
                                     std::bind(&MainWindow::on_actionClose_All_triggered, mMain)));
-    content.insert(NavigatorContent("Clean scratch dirs",
-                                    std::bind(&MainWindow::on_actionDeleteScratchDirs_triggered, mMain)));
+    content.insert(NavigatorContent("Clean workspace dirs",
+                                    std::bind(&MainWindow::on_actionCleanAllWs_triggered, mMain)));
     content.insert(NavigatorContent("Edit Default GAMS Configuration",
                                     std::bind(&MainWindow::on_actionEditDefaultConfig_triggered, mMain)));
 

@@ -309,7 +309,7 @@
     <addaction name="actionStop"/>
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
-    <addaction name="actionDeleteScratchDirs"/>
+    <addaction name="actionCleanAllWs"/>
     <addaction name="separator"/>
     <addaction name="actionEditDefaultConfig"/>
    </widget>
@@ -1390,12 +1390,12 @@
     <string>What's New</string>
    </property>
   </action>
-  <action name="actionDeleteScratchDirs">
+  <action name="actionCleanAllWs">
    <property name="text">
-    <string>Delete Scratch Directories</string>
+    <string>Clean all Workspaces</string>
    </property>
    <property name="toolTip">
-    <string>Delete leftover scratch directories in current working directory</string>
+    <string>Clean-up workspaces according to the configuration. The behaviour can be specified via the Workspace settings tab.</string>
    </property>
   </action>
   <action name="actionFull_Screen">

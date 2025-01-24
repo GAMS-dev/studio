@@ -36,6 +36,8 @@ namespace support {
 class CheckForUpdate;
 }
 
+class CleanupFilterModel;
+class CleanupWorkspaceModel;
 class MainWindow;
 class Settings;
 class ThemeWidget;
@@ -53,6 +55,10 @@ public:
     bool preventThemeChanging();
     bool hasDelayedBaseThemeChange();
     int engineInitialExpire() const;
+    void updateCleanupFilterList(const QVariantMap &prevFilters);
+    void updateWorkspaceList(const QVariantMap &prevWorkspaces);
+
+    QStringList cleanupWorkspaces(bool dryRun);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -70,11 +76,12 @@ signals:
     void rehighlight();
     void evalGspFileCount();
     void updateExtraSelections();
-    void cleanupWorkspace(const QStringList&);
 
 public slots:
     void delayBaseThemeChange(bool valid);
     void focusUpdateTab();
+    void focusMiscTab();
+    void focusWorkspaceTab();
     void open() override;
 
 private slots:
@@ -154,6 +161,8 @@ private:
     bool mRestoreSqZeroes = false;
 
     QScopedPointer<support::CheckForUpdate> mC4U;
+    CleanupFilterModel* mCleanupFilterModel;
+    CleanupWorkspaceModel* mWorkspaceModel;
 };
 
 }

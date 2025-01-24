@@ -60,6 +60,7 @@ signals:
     void focusProject(gams::studio::PExProjectNode* project);
     void newProject();
     void openProject();
+    void cleanProject(gams::studio::NodeId, const QString&);
     void selectAll();
     void expandAll();
     void collapseAll();
@@ -106,6 +107,7 @@ private:
     QStringList mAvailableSolvers;
     QHash<int, QAction*> mSolverOptionActions;
     QWidget *mParent = nullptr;
+    QString mWorkspace;
 
     // Strings
     QString mTxtCloseGroup = "Close Files in This &Folder";

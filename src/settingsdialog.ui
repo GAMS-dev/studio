@@ -7,14 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>735</width>
-    <height>547</height>
+    <height>627</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_10">
-   <item row="1" column="0">
+   <item row="2" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Orientation::Horizontal</enum>
@@ -49,7 +49,7 @@
           <string>General Settings</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
-          <item row="5" column="0" colspan="2">
+          <item row="3" column="0" colspan="2">
            <widget class="QCheckBox" name="cb_autosave">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -62,7 +62,7 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="2" column="0">
            <widget class="QCheckBox" name="cb_restoretabs">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -75,14 +75,7 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Default GAMS Studio workspace:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
+          <item row="1" column="0">
            <widget class="QCheckBox" name="cb_skipwelcome">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -95,41 +88,6 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0" colspan="2">
-           <widget class="QWidget" name="widget_3" native="true">
-            <layout class="QHBoxLayout" name="horizontalLayout_7">
-             <property name="spacing">
-              <number>4</number>
-             </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QLineEdit" name="txt_workspace">
-               <property name="placeholderText">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_browse">
-               <property name="text">
-                <string>Browse</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
          </layout>
         </widget>
        </item>
@@ -138,7 +96,7 @@
          <property name="title">
           <string>User Settings and Logging</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,0,0,0,0">
+         <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,0">
           <item row="0" column="1">
            <widget class="QWidget" name="widget_6" native="true">
             <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -738,7 +696,7 @@
           <item row="3" column="2">
            <widget class="QSpinBox" name="sb_nrLogBackups">
             <property name="value">
-             <number>3</number>
+             <number>0</number>
             </property>
            </widget>
           </item>
@@ -782,7 +740,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tabGdxViewer">
       <attribute name="title">
        <string>GDX Viewer</string>
       </attribute>
@@ -1213,7 +1171,7 @@
        <item>
         <widget class="QToolBox" name="toolBox">
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <property name="tabSpacing">
           <number>4</number>
@@ -1223,8 +1181,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>693</width>
-            <height>338</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <attribute name="label">
@@ -1287,8 +1245,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>30</height>
+            <width>695</width>
+            <height>411</height>
            </rect>
           </property>
           <attribute name="label">
@@ -1518,31 +1476,6 @@
            </layout>
           </item>
           <item>
-           <widget class="QCheckBox" name="cleanupWsBox">
-            <property name="text">
-             <string>Clean-up workspace directory on start up</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
-            <item>
-             <widget class="QLineEdit" name="cleanupWsEdit">
-              <property name="placeholderText">
-               <string>File and directory filter (wildcard matching), e.g. *.lst, 225*</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="cleanupWsNowButton">
-              <property name="text">
-               <string>Clean-up now</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
            <widget class="QLabel" name="lbl_openModLib">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
@@ -1666,23 +1599,6 @@
           <string>Solver Option Editor Settings</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_9">
-          <item row="2" column="0">
-           <widget class="QCheckBox" name="addCommentAboveCheckBox">
-            <property name="text">
-             <string>Add option description as comment above</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="overrideExistingOptionCheckBox">
-            <property name="text">
-             <string>Override existing option, if there is any</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
           <item row="4" column="0">
            <widget class="QLabel" name="deletingOptionLabel">
             <property name="text">
@@ -1707,10 +1623,27 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="addCommentAboveCheckBox">
+            <property name="text">
+             <string>Add option description as comment above</string>
+            </property>
+           </widget>
+          </item>
           <item row="3" column="0">
            <widget class="QCheckBox" name="addEOLCommentCheckBox">
             <property name="text">
              <string>Add option description as end of line comment (when available)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="overrideExistingOptionCheckBox">
+            <property name="text">
+             <string>Override existing option, if there is any</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -1889,12 +1822,187 @@ p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
 li.unchecked::marker { content: &quot;\2610&quot;; }
 li.checked::marker { content: &quot;\2612&quot;; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Ubuntu'; font-size:11pt;&quot;&gt;Checking for updates...&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="openLinks">
           <bool>false</bool>
          </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabWorkspace">
+      <attribute name="title">
+       <string>Workspace</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_13">
+       <item>
+        <widget class="QGroupBox" name="wsGroupBox">
+         <property name="title">
+          <string>Default Workspace</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_13">
+          <item>
+           <widget class="QLineEdit" name="txt_workspace">
+            <property name="placeholderText">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_browse">
+            <property name="text">
+             <string>Browse</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="cleanWsGroupBox">
+         <property name="title">
+          <string>Clean-up Workspace</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_12">
+          <item>
+           <widget class="QTreeView" name="cleanTreeView">
+            <property name="editTriggers">
+             <set>QAbstractItemView::EditTrigger::AllEditTriggers</set>
+            </property>
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <spacer name="horizontalSpacer_13">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="cleanAddButton">
+              <property name="text">
+               <string>Add</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="cleanDelButton">
+              <property name="text">
+               <string>Delete</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="cleanFilterSelectAllButton">
+              <property name="text">
+               <string>Select All</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="cleanFilterDeselectAllButton">
+              <property name="text">
+               <string>Deselect All</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QTableView" name="cleanTableView">
+            <property name="editTriggers">
+             <set>QAbstractItemView::EditTrigger::AllEditTriggers</set>
+            </property>
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
+            <attribute name="horizontalHeaderHighlightSections">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="horizontalHeaderStretchLastSection">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_9">
+            <item>
+             <spacer name="horizontalSpacer_14">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="cleanWsSelectAllButton">
+              <property name="text">
+               <string>Select All</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="cleanWsDeselectAllButton">
+              <property name="text">
+               <string>Deselect All</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_14">
+            <item>
+             <widget class="QPushButton" name="cleanDryButton">
+              <property name="toolTip">
+               <string>Simulate the clean-up according to the configuration. Show the results via the system log.</string>
+              </property>
+              <property name="text">
+               <string>Dry Run</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="cleanNowButton">
+              <property name="toolTip">
+               <string>Delete files and directories covered by the configuration. Show the results via the system log.</string>
+              </property>
+              <property name="text">
+               <string>Cleanup now</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cleanWsBox">
+            <property name="text">
+             <string>Clean-up selected workspace directories on start-up</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>

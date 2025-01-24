@@ -96,6 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
       mFileMetaRepo(this),
       mProjectRepo(this),
       mTextMarkRepo(this),
+      mSettingsDialog(new SettingsDialog(this)),
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
       mLogTabContextMenu(this),
@@ -314,6 +315,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::openProject, this, [this]() {
         openFilesDialog(ogProjects);
     });
+    connect(&mProjectContextMenu, &ProjectContextMenu::cleanProject, this, &MainWindow::cleanGeneratedProjectFiles);
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockProcessLog, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -5008,7 +5010,6 @@ void MainWindow::ensureInScreen()
     if (appGeo.right() > screenGeo.right()) appGeo.moveLeft(screenGeo.right()-appGeo.width());
     if (appGeo.bottom() > screenGeo.bottom()) appGeo.moveTop(screenGeo.bottom()-appGeo.height());
     if (appGeo != geometry()) setGeometry(appGeo);
-
 }
 
 void MainWindow::on_tbProjectSettings_clicked()
@@ -5019,6 +5020,65 @@ void MainWindow::on_tbProjectSettings_clicked()
     if (!project) return;
     FileMeta *meta = mFileMetaRepo.findOrCreateFileMeta(project->fileName(), &FileType::from(FileKind::Gsp));
     openFile(meta, true, project);
+}
+
+void MainWindow::cleanGeneratedProjectFiles(NodeId projId, const QString &workspace)
+{
+    auto projNode = mProjectRepo.findProject(projId);
+    if (!projNode)
+        return;
+    auto name = workspace + "/" + projNode->name();
+    QList<PExFileNode*> fileNodes;
+    auto fileNode = mProjectRepo.findFile(name+".gdx", projNode);
+    if (fileNode)
+        fileNodes.append(fileNode);
+    fileNode = mProjectRepo.findFile(name+".lst", projNode);
+    if (fileNode)
+        fileNodes.append(fileNode);
+    fileNode = mProjectRepo.findFile(name+".lxi", projNode);
+    if (fileNode)
+        fileNodes.append(fileNode);
+    fileNode = mProjectRepo.findFile(name+".ref", projNode);
+    if (fileNode)
+        fileNodes.append(fileNode);
+    deleteLogFiles(projNode->name()+".log*", workspace);
+    deleteScratchDirectories(workspace);
+    if (!fileNodes.size())
+        return;
+    ui->projectView->fixFocus(true);
+    for (auto* node : fileNodes) {
+        QString fName = node->location();
+        emit mProjectContextMenu.closeFile(node);
+        QFile file(fName);
+        appendSystemLogInfo("Deleting file: " + fName);
+        if (!QFile::remove(fName))
+            appendSystemLogError("Failed deleting file: " + fName);
+    }
+    ui->projectView->fixFocus();
+}
+
+void MainWindow::deleteLogFiles(const QString &pattern, const QString &workspace)
+{
+    QDir rootDir(workspace);
+    auto files = rootDir.entryList({pattern}, QDir::Files | QDir::NoDotAndDotDot);
+    for (const auto& file : files) {
+        auto filePath = QDir::toNativeSeparators(workspace + "/" + file);
+        appendSystemLogInfo("Deleting log file: " + filePath);
+        rootDir.remove(file);
+    }
+}
+
+void MainWindow::deleteScratchDirectories(const QString &workspace)
+{
+    QDir rootDir(workspace);
+    auto dirs = rootDir.entryList({"225*"}, QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const auto& scratchDir : dirs) {
+        auto path = QDir::toNativeSeparators(workspace + "/" + scratchDir);
+        appendSystemLogInfo("Deleting scrtach directory: " + path);
+        QDir dir(workspace+"/"+scratchDir);
+        if (!dir.removeRecursively())
+            appendSystemLogError("Failed deleting scrtach directory: " + path);
+    }
 }
 
 void MainWindow::raiseEdit(QWidget *widget)
@@ -5522,11 +5582,11 @@ void MainWindow::on_actionSettings_triggered()
             if (mSettingsDialog->miroSettingsEnabled())
                 updateMiroEnabled();
         });
-        connect(mSettingsDialog, &SettingsDialog::cleanupWorkspace, this, &MainWindow::cleanupWorkspace);
     }
     mSettingsDialog->setMiroSettingsEnabled(!mMiroRunning);
+    mSettingsDialog->updateCleanupFilterList(Settings::settings()->toMap(skCleanUpWorkspaceFilter));
+    mSettingsDialog->updateWorkspaceList(Settings::settings()->toMap(skCleanUpWorkspaceDirectories));
     mSettingsDialog->open();
-
 }
 
 void MainWindow::on_actionSearch_triggered()
@@ -5696,6 +5756,11 @@ void MainWindow::switchToMainTab(FileMeta *fileMeta)
 void MainWindow::invalidateResultsView()
 {
     if (resultsView()) resultsView()->setOutdated();
+}
+
+SettingsDialog *MainWindow::settingsDialog() const
+{
+    return mSettingsDialog;
 }
 
 void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, const QString &fontFamily)
@@ -6436,23 +6501,10 @@ void MainWindow::on_actionRemoveBookmarks_triggered()
     mTextMarkRepo.removeBookmarks();
 }
 
-void MainWindow::on_actionDeleteScratchDirs_triggered()
+void MainWindow::on_actionCleanAllWs_triggered()
 {
-    FileMeta *fm = mRecent.fileMeta();
-    if (!fm) return;
-    PExProjectNode* node = mProjectRepo.findProject(fm->projectId());
-    QString path = node ? QDir::toNativeSeparators(node->workDir()) : currentPath();
-
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("Delete scratch directories");
-    msgBox.setText("This will delete all scratch directories in your current workspace.\n"
-                   "The current working directory is " + path);
-    msgBox.setInformativeText("Delete scratch directories now?");
-    msgBox.setIcon(QMessageBox::Warning);
-    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-
-    if (msgBox.exec() == QMessageBox::Yes)
-        deleteScratchDirs(path);
+    on_actionSettings_triggered();
+    mSettingsDialog->focusWorkspaceTab();
 }
 
 void MainWindow::deleteScratchDirs(const QString &path)
@@ -6922,6 +6974,15 @@ QDate MainWindow::nextUpdateCheck()
     if (interval == UpdateCheckInterval::Weekly)
         return QDate::currentDate().addDays(7);
     return QDate::currentDate().addMonths(1);
+}
+
+QStringList MainWindow::projectWorkspaces() const
+{
+    QStringList workspaces;
+    for (auto project : mProjectRepo.projects()) {
+        workspaces << project->workDir();
+    }
+    return workspaces;
 }
 
 }

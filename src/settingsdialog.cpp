@@ -23,6 +23,7 @@
 #include <QScrollArea>
 #include <QToolTip>
 #include <QLocale>
+#include "cleanupfiltermodel.h"
 #include "application.h"
 #include "mainwindow.h"
 #include "theme.h"
@@ -84,6 +85,29 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 #endif
 
     mSettings = Settings::settings();
+
+    QItemSelectionModel *treeModel = ui->cleanTreeView->selectionModel();
+    mCleanupFilterModel = new CleanupFilterModel;
+    ui->cleanTreeView->setModel(mCleanupFilterModel);
+    delete treeModel;
+    connect(ui->cleanAddButton, &QPushButton::clicked, this, [this]{
+        auto row = ui->cleanTreeView->model()->rowCount();
+        ui->cleanTreeView->model()->insertRow(row);
+    });
+    connect(ui->cleanDelButton, &QPushButton::clicked, this, [this]{
+        auto idx = ui->cleanTreeView->currentIndex();
+        if (idx.isValid())
+            ui->cleanTreeView->model()->removeRow(idx.row());
+    });
+    connect(ui->cleanFilterSelectAllButton, &QPushButton::clicked, this, [this]{ mCleanupFilterModel->setSelection(Qt::Checked); });
+    connect(ui->cleanFilterDeselectAllButton, &QPushButton::clicked, this, [this]{ mCleanupFilterModel->setSelection(Qt::Unchecked); });
+
+    QItemSelectionModel *tableModel = ui->cleanTableView->selectionModel();
+    mWorkspaceModel = new CleanupWorkspaceModel;
+    ui->cleanTableView->setModel(mWorkspaceModel);
+    delete tableModel;
+    connect(ui->cleanWsSelectAllButton, &QPushButton::clicked, this, [this]{ mWorkspaceModel->setSelection(Qt::Checked); });
+    connect(ui->cleanWsDeselectAllButton, &QPushButton::clicked, this, [this]{ mWorkspaceModel->setSelection(Qt::Unchecked); });
 
     connect(ui->sbPrecision, &QSpinBox::valueChanged, this, &SettingsDialog::setModified);
     connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, &SettingsDialog::setModified);
@@ -176,11 +200,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
-    connect(ui->cleanupWsBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->cleanupWsEdit, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
-    connect(ui->cleanupWsNowButton, &QPushButton::clicked, this, [this]{
-            cleanupWorkspace(ui->cleanupWsEdit->text().split(",", Qt::SkipEmptyParts));
-    });
+    connect(ui->cleanWsBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(mCleanupFilterModel, &CleanupFilterModel::dataChanged, this, &SettingsDialog::setModified);
+    connect(mWorkspaceModel, &CleanupWorkspaceModel::dataChanged, this, &SettingsDialog::setModified);
+    connect(ui->cleanDryButton, &QPushButton::clicked, this, [this]{ cleanupWorkspaces(true); });
+    connect(ui->cleanNowButton, &QPushButton::clicked, this, [this]{ cleanupWorkspaces(false); });
     connect(ui->cb_userLib, &QComboBox::editTextChanged, this, &SettingsDialog::setAndCheckUserLib);
     connect(ui->overrideExistingOptionCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addCommentAboveCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -304,8 +328,13 @@ void SettingsDialog::loadSettings()
     ui->cb_userLib->clear();
     ui->cb_userLib->addItems(mSettings->toString(skUserModelLibraryDir).split(',', Qt::SkipEmptyParts));
     ui->cb_userLib->setCurrentIndex(0);
-    ui->cleanupWsBox->setChecked(mSettings->toBool(skCleanUpWorkspace));
-    ui->cleanupWsEdit->setText(mSettings->toString(skCleanUpWorkspaceFilter));
+    ui->cleanWsBox->setChecked(mSettings->toBool(skCleanUpWorkspace));
+
+    // workspace page
+    QVariantMap filters = mSettings->toMap(skCleanUpWorkspaceFilter);
+    updateCleanupFilterList(filters);
+    QVariantMap workspaces = mSettings->toMap(skCleanUpWorkspaceDirectories);
+    updateWorkspaceList(workspaces);
 
     // solver option editor
     ui->overrideExistingOptionCheckBox->setChecked(mSettings->toBool(skSoOverrideExisting));
@@ -465,8 +494,20 @@ void SettingsDialog::saveSettings()
     mSettings->setString(skUserGamsTypes, suffs.join(","));
     ui->edAutoReloadTypes->setText(changeSeparators(ui->edAutoReloadTypes->text(), ", "));
     mSettings->setString(skAutoReloadTypes, changeSeparators(ui->edAutoReloadTypes->text(), ","));
-    mSettings->setBool(skCleanUpWorkspace, ui->cleanupWsBox->isChecked());
-    mSettings->setString(skCleanUpWorkspaceFilter, ui->cleanupWsEdit->text());
+    mSettings->setBool(skCleanUpWorkspace, ui->cleanWsBox->isChecked());
+
+    // workspace page
+    QVariantMap filters;
+    for (const auto& filter : mCleanupFilterModel->data()->items()) {
+        QList<QVariant> values { filter->checked() ? true : false, filter->description() };
+        filters[filter->filter()] = values;
+    }
+    mSettings->setMap(skCleanUpWorkspaceFilter, filters);
+    QVariantMap workspaces;
+    for (const auto& workspace : mWorkspaceModel->workspaces()) {
+        workspaces[workspace.Workspace] = QVariant::fromValue(workspace.CheckState ? true : false );
+    }
+    mSettings->setMap(skCleanUpWorkspaceDirectories, workspaces);
 
     // user model library
     prependUserLib();
@@ -627,11 +668,21 @@ int SettingsDialog::engineInitialExpire() const
 void SettingsDialog::focusUpdateTab()
 {
     setCheckForUpdateState();
-    ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
+    ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-2);
     auto app = qobject_cast<Application*>(qApp);
     if (app && !app->skipCheckForUpdate()) {
         mC4U->checkForUpdate(Settings::settings()->toInt(skAutoUpdateCheck) > 0);
     }
+}
+
+void SettingsDialog::focusMiscTab()
+{
+    ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-3);
+}
+
+void SettingsDialog::focusWorkspaceTab()
+{
+    ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {
@@ -960,6 +1011,46 @@ void SettingsDialog::prependUserLib()
     ui->cb_userLib->setCurrentIndex(0);
 }
 
+void SettingsDialog::updateCleanupFilterList(const QVariantMap &prevFilters)
+{
+    if (prevFilters.isEmpty())
+        return;
+    QList<CleanupFilterItem*> entries;
+    for (auto iter=prevFilters.cbegin(); iter!=prevFilters.cend(); ++iter) {
+        if (!iter.value().isValid())
+            continue;
+        auto list = iter.value().toList();
+        if (list.count() != 2)
+            continue;
+        auto state = list.first().toBool() ? Qt::Checked : Qt::Unchecked;
+        auto description = list.last().toString();
+        entries.append(new CleanupFilterItem(state, iter.key(), description));
+    }
+    mCleanupFilterModel->setData(entries);
+}
+
+void SettingsDialog::updateWorkspaceList(const QVariantMap &prevWorkspaces)
+{
+    QSet<QString> workspaces;
+    for (const auto& dir : mMain->projectWorkspaces()) {
+        workspaces.insert(dir);
+    }
+    auto prevWs = prevWorkspaces;
+    QList<CleanupWorkspaceItem> data;
+    for (auto workspace : workspaces) {
+        if (prevWs.contains(workspace)) {
+            auto val = prevWs.take(workspace);
+            data.append({workspace, val.toBool() ? Qt::Checked : Qt::Unchecked});
+        } else {
+            data.append({workspace, Qt::Unchecked});
+        }
+    }
+    for (auto iter=prevWs.cbegin(); iter!=prevWs.cend(); ++iter) {
+        data.append({iter.key(), iter.value().toBool() ? Qt::Checked : Qt::Unchecked});
+    }
+    mWorkspaceModel->setWorkspaces(data);
+}
+
 QString SettingsDialog::changeSeparators(const QString &commaSeparatedList, const QString &newSeparator)
 {
     return commaSeparatedList.split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts).join(newSeparator);
@@ -1123,6 +1214,45 @@ void SettingsDialog::checkForUpdates()
     mC4U->checkForUpdate(true);
 }
 
+QStringList SettingsDialog::cleanupWorkspaces(bool dryRun)
+{
+    QStringList filters = mCleanupFilterModel->activeFilters();
+    QStringList workspaces = mWorkspaceModel->activeWorkspaces();
+
+    QStringList files, dirs;
+    for (auto ws : workspaces) {
+        QDir dir(ws);
+        auto fList = dir.entryList(filters, QDir::Files | QDir::NoDotAndDotDot);
+        for (const auto& f : fList) {
+            files << QDir::toNativeSeparators(ws + "/" + f);
+        }
+        auto dList = dir.entryList(filters, QDir::Dirs | QDir::NoDotAndDotDot);
+        for (const auto& d : dList) {
+            dirs << QDir::toNativeSeparators(ws + "/" + d);
+        }
+    }
+
+    QString filesMsg = dryRun ? "Files that would be deleted with the current configuration (dry run):\n"
+                              : "Deleting files:\n";
+    QString dirMsg =   dryRun ? "Directories that would be deleted with the current configuration (dry run):\n"
+                              : "Deleting files:\n";
+    if (!files.isEmpty())
+        mMain->appendSystemLogInfo(filesMsg + files.join("\n"));
+    if (!dirs.isEmpty())
+        mMain->appendSystemLogInfo(dirMsg + dirs.join("\n"));
+    if (dryRun)
+        return files + dirs;
+    for (const auto& file : files) {
+        if (!QFile::remove(file))
+            mMain->appendSystemLogError("Failed deleting file: " + file);
+    }
+    for (const auto& dir : dirs) {
+        QDir d(dir);
+        if (!d.removeRecursively())
+            mMain->appendSystemLogError("Failed deleting scrtach directory: " + dir);
+    }
+    return files + dirs;
+}
 
 }
 }

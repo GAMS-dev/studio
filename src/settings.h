@@ -148,6 +148,7 @@ enum SettingsKey {
     skAutoReloadTypes,
     skCleanUpWorkspace,
     skCleanUpWorkspaceFilter,
+    skCleanUpWorkspaceDirectories,
 
     // solver option editor settings
     skSoOverrideExisting,
