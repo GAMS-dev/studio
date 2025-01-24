@@ -925,25 +925,17 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
     FileMeta* sourceFM = node->file();
     bool keepOld = fileNodes(sourceFM->id()).size() > 1;
 
-    // when overwriting a node, remove existing to prevent project explorer to contain two identical entries
+    // destination editors with the old (overwritten) content need to be closed
+    emit closeFileEditors(destFM->id());
+
+    // when overwriting a node in the same project, remove it to avoid containing two identical entries
     if (PExFileNode* destNode = findFile(target, node->assignedProject())) {
-        emit closeFileEditors(destFM->id());
-
-
         closeNode(destNode);
-        // This triggers a deleteLater of the FileMeta.
-        //The destructor then wrongly removes the entry for the edit-widget that is already for the new FileMeta!
-
-
-
         destFM = fileRepo()->findOrCreateFileMeta(target);
     }
-
-    // if keepOld: Copy to dest  AND  replace sourceFM by destFM in node
-    // else      : sourceFM->save(target)
+    QVector<PExFileNode*> destNodes = fileNodes(destFM->id());
 
     QString oldFile = node->location();
-
 
     // set location to new file and add it to the tree
     if (sourceFM->save(target, !keepOld)) {
@@ -952,7 +944,11 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
             node->replaceFile(destFM);
         } else {
             node->setName(sourceFM->name());
+            // source filemeta is kept for destination -> set all destination nodes to this
+            for (PExFileNode *dn : destNodes)
+                dn->replaceFile(sourceFM);
         }
+
 
         PExProjectNode *project = node->assignedProject();
         if (project->type() == PExProjectNode::tGams) {

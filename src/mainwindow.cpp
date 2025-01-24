@@ -1985,17 +1985,24 @@ void MainWindow::on_actionSave_As_triggered()
                                           , QString("Your unsaved changes on %1 will be lost.").arg(filePath)
                                           , this, "Select other", "Continue", "Abort", 0, 2);
             else if (choice < 1)
-                choice = MsgBox::question("File exists", filePath+" already exists."
+                choice = MsgBox::question("File exists", filePath + " already exists."
                                           , this, "Select other", "Overwrite", "Abort", 0, 2);
 
             if (choice == 1) {
                 FileKind oldKind = node->file()->kind();
 
-                if (PExFileNode* pfn = mProjectRepo.findFile(filePath, node->assignedProject())) {
-                    pfn->file()->setModified(false);
-                    closeFileEditors(pfn->file()->id());
-                    mProjectRepo.closeNode(pfn);
+                if (destFM) {
+                    // destination has already nodes in PE and user wants to overwrite them
+                    destFM->setModified(false);
+                    closeFileEditors(destFM->id());
+                    if (PExFileNode* pfn = mProjectRepo.findFile(filePath, node->assignedProject()))
+                        // destination node exists in source project
+                        mProjectRepo.closeNode(pfn);
+                    QVector<PExFileNode*> destNodes = mProjectRepo.fileNodes(destFM->id());
                 }
+
+
+
 
                 // when overwriting a node, remove existing to prevent project explorer to contain two identical entries
                 mProjectRepo.saveNodeAs(node, filePath);
@@ -5960,8 +5967,8 @@ void MainWindow::writeTabs(QVariantMap &tabData) const
         QWidget *wid = ui->mainTabs->widget(i);
         if (!wid || wid == mWp) continue;
         FileMeta *fm = mFileMetaRepo.fileMeta(wid);
-        if (fm->location().endsWith("Changelog", Qt::CaseInsensitive)) continue;
         if (!fm || fm->kind() == FileKind::Gsp) continue;
+        if (fm->location().endsWith("Changelog", Qt::CaseInsensitive)) continue;
         QVariantMap tabObject;
         tabObject.insert("location", fm->location());
         tabArray << tabObject;
