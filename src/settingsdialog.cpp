@@ -111,11 +111,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 
     connect(ui->sbPrecision, &QSpinBox::valueChanged, this, &SettingsDialog::setModified);
     connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbSqueezeDefaults, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbSqueezeDefaults, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
     connect(ui->sbPrecision, &QSpinBox::valueChanged, this, &SettingsDialog::updateNumericalPrecision);
     connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, &SettingsDialog::updateNumericalPrecision);
-    connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::stateChanged, this, &SettingsDialog::updateNumericalPrecision);
+    connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::checkStateChanged, this, &SettingsDialog::updateNumericalPrecision);
 
     gdxviewer::NumericalFormatController::initPrecisionSpinBox(ui->sbPrecision);
     gdxviewer::NumericalFormatController::initFormatComboBox(ui->cbFormat);
@@ -193,11 +193,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->rb_decSepStudio, &QRadioButton::toggled, this, &SettingsDialog::setModified);
     connect(ui->rb_decSepLocale, &QRadioButton::toggled, this, &SettingsDialog::setModified);
     connect(ui->rb_decSepCustom, &QRadioButton::toggled, this, &SettingsDialog::setModified);
-    connect(ui->cbLevel, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbMarginal, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbLower, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbUpper, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbScale, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbLevel, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbMarginal, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbLower, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbUpper, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbScale, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
 
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);

@@ -204,7 +204,7 @@ bool ConnectEditor::init(bool quiet)
     });
     connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked, Qt::UniqueConnection);
     connect(ui->openAsTextButton, &QPushButton::clicked, this, &ConnectEditor::openAsTextButton_clicked, Qt::UniqueConnection);
-    connect(ui->onlyRequiredAttribute, &QCheckBox::stateChanged, mDataModel, &ConnectDataModel::onlyRequriedAttributedChanged, Qt::UniqueConnection);
+    connect(ui->onlyRequiredAttribute, &QCheckBox::checkStateChanged, mDataModel, &ConnectDataModel::onlyRequriedAttributedChanged, Qt::UniqueConnection);
     connect(ui->expandAllIcon, &ClickableLabel::clicked, this, [=]() {  ui->dataTreeView->expandAll(); });
     connect(ui->expandAllLabel, &ClickableLabel::clicked, this, [=]() {  ui->dataTreeView->expandAll(); });
     connect(ui->collapseAllLabel, &ClickableLabel::clicked, this, [=]() {  ui->dataTreeView->collapseAll(); });

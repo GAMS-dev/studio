@@ -128,14 +128,14 @@ private slots:
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool inKubernetes);
     void reVersionError(const QString &errorText);
     void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
-    void reUserInstances(const QList<QPair<QString, QList<double> > > &instances, bool isPool = true,
+    void reUserInstances(const QList<QPair<QString, QList<double> > > &instances, bool isPool,
                          const QString &defaultLabel = QString());
     void reUserInstancesError(const QString &errorText);
     void quotaHint(const QStringList &diskHint, const QStringList &volumeHint);
-    void forceGdxStateChanged(int state);
+    void forceGdxStateChanged(Qt::CheckState state);
     void updateConnectStateAppearance();
     void selfSignedCertFound(int sslError);
-    void certAcceptChanged();
+    void certAcceptChanged(Qt::CheckState);
     void hideCert();
 
     void on_cbLoginMethod_currentIndexChanged(int index);
@@ -149,6 +149,9 @@ private:
     EngineProcess *mProc;
     QStringList mLocalGamsVersion;
     ServerConnectionState mConnectState = scsNone;
+    QList<QPair<QString, QList<double>>> mInstancePools;
+    QList<QPair<QString, QList<double>>> mInstances;
+    QString mRecentInstance;
     QString mRawUrl;
     QString mUrl;
     QString mValidUrl;

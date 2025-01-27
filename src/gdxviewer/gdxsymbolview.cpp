@@ -372,7 +372,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
 
     connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
     connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
-    connect(mSqZeroes, &QCheckBox::stateChanged, this, &GdxSymbolView::updateNumericalPrecision);
+    connect(mSqZeroes, &QCheckBox::checkStateChanged, this, &GdxSymbolView::updateNumericalPrecision);
 }
 
 void GdxSymbolView::copySelectionToClipboard(const QString &separator, bool copyLabels)
