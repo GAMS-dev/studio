@@ -1,6 +1,7 @@
 Version 1.20.0
 ==================
-- Added fonts JetBrains Mono, Source Code Pro, Fira Code, and Cousine.- Added a new `Workspace` tab to the settings, including the clean-up workspace configuration. Furthermore, the default settings value `Number of log backup files` has been changed from `3` to `0`.
+- Added fonts JetBrains Mono, Source Code Pro, Fira Code, and Cousine.
+- Added a new `Workspace` tab to the settings, including the clean-up workspace configuration. Furthermore, the default settings value `Number of log backup files` has been changed from `3` to `0`.
 - Added JetBrains Mono as default font for text editors. The font can be switched back to the default font in Settings (F7) in the "Editor & Log" tab.
 - Fixed that the current project changes after using 'Save as...'.
 - Fixed main-file indicator when switching to the same file used by another project.
