@@ -42,11 +42,11 @@ bool EngineManager::mStartupDone = false;
 QSslConfiguration *EngineManager::mSslConfigurationIgnoreErrOn = nullptr;
 QSslConfiguration *EngineManager::mSslConfigurationIgnoreErrOff = nullptr;
 
-QPair<QString, QList<double>> extractInstanceData(const OAIModel_instance_info &instance) {
+QPair<QString, QList<double>> extractInstanceData(const OAIModel_instance_info &instance, const QString replaceLabel = QString()) {
     QList<double> list;
     qreal memGb = qreal(instance.getMemoryRequest()) / 1000.;
     list << instance.getCpuRequest() << memGb << instance.getMultiplier();
-    return QPair<QString, QList<double>>(instance.getLabel(), list);
+    return QPair<QString, QList<double>>((replaceLabel.isEmpty() ? instance.getLabel() : replaceLabel), list);
 
 }
 
@@ -155,9 +155,8 @@ EngineManager::EngineManager(QObject* parent)
         QList<OAIModel_instance_pool_info> poolList = summary.getInstancePoolsAvailable();
         QList<QPair<QString, QList<double>>> instList;
         for (const OAIModel_instance_pool_info &part : poolList) {
-            QString la = part.getLabel();
             OAIModel_instance_info inst = part.getInstance();
-            instList << extractInstanceData(inst);
+            instList << extractInstanceData(inst, part.getLabel());
         }
         emit reUserInstances(instList);
     });
