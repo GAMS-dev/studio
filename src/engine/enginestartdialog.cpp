@@ -59,8 +59,8 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     connect(ui->edSsoName, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->edToken, &QPlainTextEdit::textChanged, this, [this]() { updateLoginStates(); });
     connect(ui->bLogout, &QPushButton::clicked, this, &EngineStartDialog::bLogoutClicked);
-    connect(ui->cbForceGdx, &QCheckBox::stateChanged, this, &EngineStartDialog::forceGdxStateChanged);
-    connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+    connect(ui->cbForceGdx, &QCheckBox::checkStateChanged, this, &EngineStartDialog::forceGdxStateChanged);
+    connect(ui->cbAcceptCert, &QCheckBox::checkStateChanged, this, &EngineStartDialog::certAcceptChanged);
 
     ui->stackedWidget->setCurrentIndex(0);
     ui->cbLoginMethod->setCurrentIndex(0);
@@ -154,7 +154,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reListProvider, this, &EngineStartDialog::reListProvider);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
-    connect(mProc, &EngineProcess::reUserInstances, this, &EngineStartDialog::reUserInstances);
+    connect(mProc, &EngineProcess::reUserInstances, this, &EngineStartDialog::reUserInstances, Qt::UniqueConnection);
     connect(mProc, &EngineProcess::reUserInstancesError, this, &EngineStartDialog::reUserInstancesError);
     connect(mProc, &EngineProcess::quotaHint, this, &EngineStartDialog::quotaHint);
     connect(mProc, &EngineProcess::sslSelfSigned, this, &EngineStartDialog::selfSignedCertFound);
@@ -203,7 +203,7 @@ void EngineStartDialog::initData(const QString &_url, const int authMethod, cons
     }
     mAuthExpireMinutes = authExpireMinutes;
     ui->cbNamespace->addItem(_nSpace.trimmed());
-    ui->cbInstance->addItem(_userInst.trimmed(), QVariantList() << _userInst.trimmed());
+    mRecentInstance = _userInst;
     ui->cbForceGdx->setChecked(_forceGdx);
 }
 
@@ -224,8 +224,7 @@ QString EngineStartDialog::nSpace() const
 
 QString EngineStartDialog::userInstance() const
 {
-    QVariantList datList = ui->cbInstance->currentData().toList();
-    return  datList.count() ? datList.first().toString() : "";
+    return mRecentInstance;
 }
 
 QString EngineStartDialog::user() const
@@ -310,9 +309,9 @@ void EngineStartDialog::updateUrlEdit()
 void EngineStartDialog::closeEvent(QCloseEvent *event)
 {
     if (mProc) mProc->abortRequests();
-    disconnect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+    disconnect(ui->cbAcceptCert, &QCheckBox::checkStateChanged, this, &EngineStartDialog::certAcceptChanged);
     ui->cbAcceptCert->setChecked(false);
-    connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+    connect(ui->cbAcceptCert, &QCheckBox::checkStateChanged, this, &EngineStartDialog::certAcceptChanged);
     QDialog::closeEvent(event);
 }
 
@@ -456,9 +455,9 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     bool start = mAlways || button == ui->bOk;
     if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
     if (!start) {
-        disconnect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+        disconnect(ui->cbAcceptCert, &QCheckBox::checkStateChanged, this, &EngineStartDialog::certAcceptChanged);
         ui->cbAcceptCert->setChecked(false);
-        connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+        connect(ui->cbAcceptCert, &QCheckBox::checkStateChanged, this, &EngineStartDialog::certAcceptChanged);
     }
     if (mProc->inKubernetes()) {
         QVariantList data = ui->cbInstance->currentData().toList();
@@ -509,7 +508,7 @@ void EngineStartDialog::setConnectionState(ServerConnectionState state)
     mConnectStateUpdater.start();
 }
 
-void EngineStartDialog::certAcceptChanged()
+void EngineStartDialog::certAcceptChanged(Qt::CheckState)
 {
     if (!mProc) return;
     mProc->abortRequests();
@@ -561,10 +560,6 @@ void EngineStartDialog::reListJobs(qint32 count)
         return;
     }
     showSubmit();
-    ui->cbInstance->clear();
-    ui->cbInstance->addItem("-no instances-");
-    ui->laWarn->setText("No user instances assigned");
-    ui->laWarn->setToolTip("Please contact your administrator");
     mProc->sendPostLoginRequests();
 }
 
@@ -683,36 +678,39 @@ void EngineStartDialog::reListProvider(const QList<QHash<QString, QVariant> > &a
 void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double> > > &instances, bool isPool,
                                         const QString &defaultLabel)
 {
-    QVariantList datList = ui->cbInstance->currentData().toList();
-    QString lastInst = datList.count() ? datList.first().toString() : "";
-    int cur = 0;
+    if (!defaultLabel.isEmpty() && mRecentInstance.isEmpty()) mRecentInstance = defaultLabel;
+    if (isPool) mInstancePools = instances;
+    else mInstances = instances;
+    QList<QPair<QString, QList<double>>> allInst = mInstancePools;
+    allInst << mInstances;
     int prev = -1;
+
+    ui->cbInstance->clear();
     int i = 0;
-    for (const QPair<QString, QList<double> > &entry : instances) {
-        if (entry.second.size() != 3) continue;
-        if (entry.first == defaultLabel && !isPool) cur = ui->cbInstance->count();
+    for (const QPair<QString, QList<double> > &entry : std::as_const(allInst)) {
+        if (entry.second.size() < 3) continue;
         QString text("%1 (%2 vCPU, %3 GB RAM, %4x)");
         text = text.arg(entry.first).arg(entry.second[0]).arg(entry.second[1]).arg(entry.second[2]);
         QVariantList data;
         data << entry.first << entry.second[0] << entry.second[1] << entry.second[2];
-        if (entry.first == lastInst) prev = ui->cbInstance->count();
-        if (isPool)
-            ui->cbInstance->insertItem(i++, Theme::icon(":/%1/inst-multi"), text, data);
-        else
-            ui->cbInstance->addItem(Theme::icon(":/%1/inst-single"), text, data);
+        QIcon icon = Theme::icon(i < mInstancePools.count() ? ":/%1/inst-multi" : ":/%1/inst-single");
+        if (entry.second.size() > 5)
+            text.append(QString("  %1/%2").arg(entry.second[4] - entry.second[5]).arg(entry.second[4]));
+        ui->cbInstance->addItem(icon, text, data);
+        if (entry.first.compare(mRecentInstance) == 0) prev = i;
     }
-    if (ui->cbInstance->count() > 1) {
-        for (int i = 0; i < ui->cbInstance->count(); ++i) {
-            if (ui->cbInstance->itemIcon(i).isNull()) {
-                ui->cbInstance->removeItem(i);
-                break;
-            }
-        }
+    if (!ui->cbInstance->count()) {
+        ui->cbInstance->addItem("-no instances-");
+        ui->laWarn->setText("No user instances assigned");
+        ui->laWarn->setToolTip("Please contact your administrator");
+    } else if (ui->laWarn->text().compare("No user instances assigned") == 0) {
+        ui->laWarn->setText("");
+        ui->laWarn->setToolTip("");
     }
     if (prev >= 0)
         ui->cbInstance->setCurrentIndex(prev);
-    else if (ui->cbInstance->count() && !isPool)
-        ui->cbInstance->setCurrentIndex(cur);
+    else if (ui->cbInstance->count())
+        ui->cbInstance->setCurrentIndex(0);
     updateSubmitStates();
 }
 
@@ -758,9 +756,9 @@ void EngineStartDialog::selfSignedCertFound(int sslError)
         ui->cbAcceptCert->setVisible(true);
 }
 
-void EngineStartDialog::forceGdxStateChanged(int state)
+void EngineStartDialog::forceGdxStateChanged(Qt::CheckState state)
 {
-    if (mProc) mProc->setForceGdx(state != 0);
+    if (mProc) mProc->setForceGdx(state != Qt::Unchecked);
 }
 
 void EngineStartDialog::updateConnectStateAppearance()
@@ -1010,8 +1008,10 @@ void EngineStartDialog::on_cbInstance_currentIndexChanged(int index)
     if (ui->cbInstance->itemData(index).canConvert(QMetaType(QMetaType::QVariantList))) {
         QVariantList list = ui->cbInstance->itemData(index).toList();
         bool ok = false;
-        if (list.size() > 3)
+        if (list.size() > 3) {
+            mRecentInstance = list.at(0).toString();
             parallel = list.at(3).toDouble(&ok);
+        }
         if (!ok) parallel = -1;
     }
 
