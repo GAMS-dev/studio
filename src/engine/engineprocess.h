@@ -82,6 +82,8 @@ public:
     void listJobs();
     void listNamespaces();
     void sendPostLoginRequests();
+    void getInstances();
+    void updateInstancePool(const QString &label, int count);
     void getQuota();
     void setSelectedInstance(const QString &selectedInstance);
     void getVersion();
@@ -103,6 +105,7 @@ signals:
     void authorized(const QString &token);
     void authorizeError(const QString &error);
     void reGetUsername(const QString &user);
+    void reGetInvitees(const QStringList &invitees);
     void procStateChanged(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(const QString &errorMessage);
@@ -112,9 +115,11 @@ signals:
     void reListNamespacesError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
-    void reUserInstances(const QList<QPair<QString, QList<double> > > instances, bool isPool = true,
+    void reUserInstances(const QList<QPair<QString, QList<double> > > instances, QMap<QString, QString> *poolOwners,
                          const QString &defaultLabel = QString());
     void reUserInstancesError(const QString &errorText);
+    void reUpdateInstancePool();
+    void reUpdateInstancePoolError(const QString &errorText);
     void quotaHint(const QStringList &diskHint, const QStringList &volumeHint);
     void sslSelfSigned(int sslError);
     void allPendingRequestsCompleted();

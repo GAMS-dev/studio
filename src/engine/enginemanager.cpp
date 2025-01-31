@@ -147,7 +147,7 @@ EngineManager::EngineManager(QObject* parent)
         QList<QPair<QString, QList<double>>> instList;
         for (const OAIModel_instance_info &ii : infoList)
             instList << extractInstanceData(ii);
-        emit reUserInstances(instList, false, iiDef.getLabel());
+        emit reUserInstances(instList, nullptr, iiDef.getLabel());
     });
     connect(mUsageApi, &OAIUsageApi::getUserInstancesSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , const QString &text) {
@@ -157,15 +157,25 @@ EngineManager::EngineManager(QObject* parent)
     connect(mUsageApi, &OAIUsageApi::getUserInstancePoolsSignal, this, [this](const OAIModel_userinstancepool_info &summary) {
         QList<OAIModel_instance_pool_info> poolList = summary.getInstancePoolsAvailable();
         QList<QPair<QString, QList<double>>> instList;
+        QMap<QString, QString> ownerList;
         for (const OAIModel_instance_pool_info &part : poolList) {
             OAIModel_instance_info inst = part.getInstance();
             instList << extractInstanceData(inst, &part);
+            ownerList.insert(part.getLabel(), part.getOwner().getUsername());
         }
-        emit reUserInstances(instList);
+        emit reUserInstances(instList, &ownerList);
     });
     connect(mUsageApi, &OAIUsageApi::getUserInstancePoolsSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , const QString &text) {
         emit reUserInstancesError(getJsonMessageIfFound(text));
+    });
+
+    connect(mUsageApi, &OAIUsageApi::updateInstancePoolSignal, this, [this](OAIMessage summary) {
+        emit reUpdateInstancePool();
+    });
+    connect(mUsageApi, &OAIUsageApi::updateInstancePoolSignalEFull, this,
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , const QString &text) {
+        emit reUpdateInstancePoolError(getJsonMessageIfFound(text));
     });
 
     connect(mUsageApi, &OAIUsageApi::getQuotaSignal, this, [this](const QList<OAIQuota> &summary) {
@@ -196,8 +206,12 @@ EngineManager::EngineManager(QObject* parent)
         if (summary.size() == 1) {
             mUser = summary.first().getUsername();
             emit reGetUsername(mUser);
-        } else
-            emit reGetUsernameError("Error while fetching username");
+        }
+        QStringList invitees;
+        for (const OAIUser &user : summary)
+            invitees << user.getUsername();
+        if (invitees.size() > 1 || (invitees.size() == 1 && invitees.first().compare(mUser) != 0) )
+            emit reGetInvitees(invitees);
     });
 
     connect(mUsersApi, &OAIUsersApi::listUsersSignalEFull, this,
@@ -433,6 +447,7 @@ void EngineManager::getUsername()
 {
     ::OpenAPI::OptionalParam<QString> dummy;
     mUsersApi->listUsers(dummy, false);
+    mUsersApi->listUsers(dummy, true); // lists user plus all invitees
 }
 
 void EngineManager::initUsername(const QString &user)
@@ -453,6 +468,11 @@ void EngineManager::getUserInstances()
 void EngineManager::getUserInstancePools()
 {
     mUsageApi->getUserInstancePools(mUser);
+}
+
+void EngineManager::updateInstancePool(const QString &label, int size)
+{
+    mUsageApi->updateInstancePool(label, size);
 }
 
 void EngineManager::getQuota()

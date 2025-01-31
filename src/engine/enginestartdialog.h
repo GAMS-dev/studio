@@ -111,6 +111,7 @@ protected:
     QString cleanUrl(const QString &url);
     void updateUrlEdit();
     bool openInBrowser(const QString &text);
+    void updatePoolControls(bool adaptCheckBox = false, bool adaptSize = false);
 
 private slots:
     void urlEdited(const QString &text);
@@ -119,6 +120,7 @@ private slots:
     void bLogoutClicked();
     void authorizeError(const QString &error);
     void reGetUsername(const QString &user);
+    void reGetInvitees(const QStringList &invitees);
     void reListProviderError(const QString &error);
     void showVerificationCode(const QString &userCode, const QString &verifyUri, const QString &verifyUriComplete);
     void reListJobs(qint32 count);
@@ -128,9 +130,11 @@ private slots:
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool inKubernetes);
     void reVersionError(const QString &errorText);
     void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
-    void reUserInstances(const QList<QPair<QString, QList<double> > > &instances, bool isPool,
+    void reUserInstances(const QList<QPair<QString, QList<double> > > &instances, QMap<QString, QString> *poolOwners,
                          const QString &defaultLabel = QString());
     void reUserInstancesError(const QString &errorText);
+    void reUpdateInstancePool();
+    void reUpdateInstancePoolError(const QString &errorText);
     void quotaHint(const QStringList &diskHint, const QStringList &volumeHint);
     void forceGdxStateChanged(Qt::CheckState state);
     void updateConnectStateAppearance();
@@ -143,15 +147,22 @@ private slots:
     void on_bShowLogin_clicked();
     void on_cbInstance_currentIndexChanged(int index);
     void on_edJobTag_editingFinished();
+    void on_pbInstSend_clicked();
+    void on_tbRefreshInstances_clicked();
+    void on_cbInstActivate_clicked();
 
 private:
     Ui::EngineStartDialog *ui;
     EngineProcess *mProc;
     QStringList mLocalGamsVersion;
     ServerConnectionState mConnectState = scsNone;
-    QList<QPair<QString, QList<double>>> mInstancePools;
     QList<QPair<QString, QList<double>>> mInstances;
-    QString mRecentInstance;
+    QList<QPair<QString, QList<double>>> mInstancePools;
+    QMap<QString, QString> mInstancePoolOwners;
+    QMap<QString, int> mInstancePoolSize;
+    int mLastInstancePoolSize = 2;
+    QString mLastValidInstance;
+    QString mSelectedInstance;
     QString mRawUrl;
     QString mUrl;
     QString mValidUrl;
@@ -166,6 +177,7 @@ private:
     bool mAuthorized = false;
     bool mAlways = false;
     bool mResume = false;
+    QStringList mInvitees;
     QTimer mConnectStateUpdater;
     QTimer mUrlChangedTimer;
     QString mEngineVersion;
