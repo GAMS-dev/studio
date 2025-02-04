@@ -329,7 +329,7 @@ void Server::parseLinesMap(const QString &breakData)
     mBreakLinesFile = file;
 }
 
-bool Server::getPair(const QString assignment, QList<int> &lines, QList<int> &coLNs)
+bool Server::getPair(const QString &assignment, QList<int> &lines, QList<int> &coLNs)
 {
     QStringList linePair = assignment.split("=");
     bool ok = (linePair.size() == 2 && !linePair.at(1).isEmpty());

@@ -36,7 +36,7 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     ui->iconEx->setVisible(false);
 }
 
-ThemeWidget::ThemeWidget(QList<Theme::ColorSlot> colors, QWidget *parent, bool iconExample) :
+ThemeWidget::ThemeWidget(const QList<Theme::ColorSlot> &colors, QWidget *parent, bool iconExample) :
     QWidget(parent),
     ui(new Ui::ThemeWidget)
 {

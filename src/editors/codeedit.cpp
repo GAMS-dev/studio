@@ -1936,7 +1936,7 @@ int CodeEdit::replaceAll(FileMeta *fm, const QRegularExpression &regex, const QS
             }
             // replace starting from tail to avoid interference
             for (int i = int(matches.size()) - 1; i >= 0; --i) {
-                QRegularExpressionMatch match = matches.at(i);
+                const QRegularExpressionMatch &match = matches.at(i);
                 cursor.setPosition(block.position() + int(match.capturedStart()));
                 cursor.setPosition(block.position() + int(match.capturedEnd()), QTextCursor::KeepAnchor);
                 cursor.insertText(replaceText);

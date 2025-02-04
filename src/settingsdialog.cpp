@@ -1037,7 +1037,7 @@ void SettingsDialog::updateWorkspaceList(const QVariantMap &prevWorkspaces)
     }
     auto prevWs = prevWorkspaces;
     QList<CleanupWorkspaceItem> data;
-    for (auto workspace : workspaces) {
+    for (const auto& workspace : workspaces) {
         if (prevWs.contains(workspace)) {
             auto val = prevWs.take(workspace);
             data.append({workspace, val.toBool() ? Qt::Checked : Qt::Unchecked});
@@ -1220,7 +1220,7 @@ QStringList SettingsDialog::cleanupWorkspaces(bool dryRun)
     QStringList workspaces = mWorkspaceModel->activeWorkspaces();
 
     QStringList files, dirs;
-    for (auto ws : workspaces) {
+    for (const auto& ws : workspaces) {
         QDir dir(ws);
         auto fList = dir.entryList(filters, QDir::Files | QDir::NoDotAndDotDot);
         for (const auto& f : fList) {

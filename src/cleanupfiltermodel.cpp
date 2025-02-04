@@ -404,7 +404,7 @@ void CleanupWorkspaceModel::setSelection(Qt::CheckState checkState)
 QStringList CleanupWorkspaceModel::activeWorkspaces() const
 {
     QStringList workspaces;
-    for (auto ws : mWorkspaces) {
+    for (const auto &ws : mWorkspaces) {
         if (ws.CheckState == Qt::Checked)
             workspaces << ws.Workspace;
     }

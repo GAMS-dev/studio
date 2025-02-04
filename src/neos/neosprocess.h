@@ -97,7 +97,7 @@ private:
     QStringList remoteParameters();
     void solverToCategories(QStringList &params);
     void cleanCategories(const QStringList &params, QStringList &catParams);
-    QStringList allCat4Solver(QString solver);
+    QStringList allCat4Solver(const QString &solver);
     QByteArray convertReferences(const QByteArray &data);
     void startUnpacking();
 

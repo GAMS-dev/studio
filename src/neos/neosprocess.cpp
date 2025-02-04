@@ -180,7 +180,7 @@ void NeosProcess::cleanCategories(const QStringList &params, QStringList &catPar
     }
 }
 
-QStringList NeosProcess::allCat4Solver(QString solver)
+QStringList NeosProcess::allCat4Solver(const QString &solver)
 {
     QStringList res;
     support::SolverConfigInfo solveInfo;

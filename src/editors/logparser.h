@@ -59,7 +59,7 @@ public:
     };
 
 public:
-    LogParser(QString encoding);
+    LogParser(const QString &encoding);
     void setEncoding(const QString &encoding);
     QString encoding();
     QString parseLine(const QByteArray &data, QString &line, bool &hasError, MarksBlockState &mbState);

@@ -190,7 +190,7 @@ MainWindow::MainWindow(QWidget *parent)
         updateAllowedMenus();
     });
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
-    connect(ui->projectView, &ProjectTreeView::getHasRunBlocker, this, [this](const QList<NodeId> ids, bool &runBlocked) {
+    connect(ui->projectView, &ProjectTreeView::getHasRunBlocker, this, [this](const QList<NodeId> &ids, bool &runBlocked) {
         QList<PExAbstractNode*> nodes;
         for (const NodeId &id : ids) {
             if (PExAbstractNode *node = mProjectRepo.node(id))
@@ -303,7 +303,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(&mProjectContextMenu, &ProjectContextMenu::openFile, this, &MainWindow::openFileNode);
     connect(&mProjectContextMenu, &ProjectContextMenu::reOpenFile, this,
-            [this](PExFileNode* node, bool focus, QString encoding, bool forcedAsTextEditor) {
+            [this](PExFileNode* node, bool focus, const QString &encoding, bool forcedAsTextEditor) {
         if (node && handleFileChanges(node->file(), true))
             openFileNode(node, focus, encoding, forcedAsTextEditor);
     });
@@ -560,7 +560,7 @@ void MainWindow::initWelcomePage()
             focusProject(project);
     });
 
-    connect(mWp, &WelcomePage::openFilePath, this, [this](QString filePath) {
+    connect(mWp, &WelcomePage::openFilePath, this, [this](const QString &filePath) {
         PExProjectNode *project = nullptr;
         if (filePath == CommonPaths::changelog()) {
             on_actionChangelog_triggered();
@@ -588,7 +588,7 @@ void MainWindow::initWelcomePage()
         if (project && mProjectRepo.focussedProject())
             focusProject(project);
     });
-    connect(mWp, &WelcomePage::removeFromHistory, this, [this](QString path) {
+    connect(mWp, &WelcomePage::removeFromHistory, this, [this](const QString &path) {
         removeFromHistory(path);
     });
     ui->mainTabs->insertTab(0, mWp, QString("Welcome"));
@@ -841,7 +841,7 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
         openFile(meta);
 
     // open the config files that exist
-    for (QString filePath : confFilesToOpen) {
+    for (const QString &filePath : confFilesToOpen) {
         PExFileNode *node = addNode("", filePath, project);
         openFileNode(node);
     }
