@@ -28,6 +28,7 @@
 #include "logger.h"
 #include "networkmanager.h"
 #include "settingsdialog.h"
+#include "msgbox.h"
 #ifndef __APPLE__
 # include "colors/palettemanager.h"
 #endif
@@ -128,10 +129,10 @@ void Application::init()
     if (mMainWindow->settingsDialog()) {
         auto list = mMainWindow->settingsDialog()->cleanupWorkspaces(true);
         if (!list.isEmpty()) {
-            QString msg("Perform a clean-up of the following files?\n\n");
-            msg.append(list.join("\n"));
-            auto result = QMessageBox::question(mMainWindow.get(), "Clean Workspace on startup", msg);
-            if (result == QMessageBox::Yes)
+            QString msg = QString("Remove %1 files?\n\nThe automatic cleanup would affect %1 files in the chosen directories according to the setting.").arg(list.size());
+            QString msgDetail(list.join("\n"));
+            int choice = MsgBox::question("Clean Workspace on startup", msg, "", msgDetail, mMainWindow.get(), "Ok", "Cancel");
+            if (choice == 0)
                 mMainWindow->settingsDialog()->cleanupWorkspaces(false);
         }
     }
