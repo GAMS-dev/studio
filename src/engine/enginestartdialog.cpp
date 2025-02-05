@@ -69,6 +69,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->cbAcceptCert->setVisible(false);
     ui->bOk->setText("Login");
     ui->cbInstance->setVisible(false);
+    ui->widPoolSize->setVisible(false);
     ui->laInstance->setVisible(false);
     ui->laAvailable->setVisible(false);
     ui->laAvailDisk->setVisible(false);
@@ -279,7 +280,7 @@ void EngineStartDialog::setEngineVersion(const QString &version)
 
 int EngineStartDialog::authMethod()
 {
-    return qBound(0, ui->cbLoginMethod->currentIndex(), ui->cbLoginMethod->count());
+    return qBound(0, ui->cbLoginMethod->currentIndex(), ui->cbLoginMethod->count()-1);
 }
 
 QString EngineStartDialog::jobTag()
@@ -362,6 +363,7 @@ void EngineStartDialog::showSubmit()
     ui->nUrl->setText(mProc->url().toString());
     ui->laInstance->setVisible(mProc->inKubernetes());
     ui->cbInstance->setVisible(mProc->inKubernetes());
+    ui->widPoolSize->setVisible(mProc->inKubernetes());
     ui->laAvailable->setVisible(mProc->inKubernetes());
     ui->laAvailDisk->setVisible(mProc->inKubernetes());
     ui->laAvailVolume->setVisible(mProc->inKubernetes());
@@ -472,7 +474,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     }
     if (mProc->inKubernetes()) {
         QVariantList data = ui->cbInstance->currentData().toList();
-        if (data.size() == 4)
+        if (data.size() >= 4)
             mProc->setSelectedInstance(data.first().toString());
     }
     mProc->setJobTag(ui->edJobTag->text().trimmed());
@@ -553,7 +555,7 @@ void EngineStartDialog::updateLoginStates()
 void EngineStartDialog::updateSubmitStates()
 {
     bool value = !ui->cbNamespace->currentText().isEmpty() && mAuthorized &&
-            (!mProc->inKubernetes() || (ui->cbInstance->count() && ui->cbInstance->currentData().toList().size() == 4));
+            (!mProc->inKubernetes() || (ui->cbInstance->count() && ui->cbInstance->currentData().toList().size() >= 4));
     if (value != ui->bOk->isEnabled()) {
         ui->bOk->setEnabled(value);
         ui->bAlways->setEnabled(value);
