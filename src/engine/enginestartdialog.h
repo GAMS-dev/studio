@@ -151,6 +151,8 @@ private slots:
     void on_tbRefreshInstances_clicked();
     void on_cbInstActivate_clicked();
 
+    void on_sbInstSize_valueChanged(int value);
+
 private:
     Ui::EngineStartDialog *ui;
     EngineProcess *mProc;
@@ -177,6 +179,7 @@ private:
     bool mAuthorized = false;
     bool mAlways = false;
     bool mResume = false;
+    int mInstanceListsLoaded = 0;
     QStringList mInvitees;
     QTimer mConnectStateUpdater;
     QTimer mUrlChangedTimer;

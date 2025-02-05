@@ -714,7 +714,9 @@ void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double>
                 text.append(QString(" (%1)").arg(entry.second[3]));
         }
         ui->cbInstance->addItem(icon, text, data);
-        if (entry.first.compare(mLastValidInstance) == 0) prev = i;
+        if (entry.first.compare(mLastValidInstance) == 0)
+            prev = i;
+        ++i;
     }
     if (!ui->cbInstance->count()) {
         ui->cbInstance->addItem("-no instances-");
@@ -729,6 +731,7 @@ void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double>
     else if (ui->cbInstance->count())
         ui->cbInstance->setCurrentIndex(0);
     updateSubmitStates();
+    ++mInstanceListsLoaded;
 }
 
 void EngineStartDialog::reUserInstancesError(const QString &errorText)
@@ -742,6 +745,7 @@ void EngineStartDialog::reUserInstancesError(const QString &errorText)
 void EngineStartDialog::reUpdateInstancePool()
 {
     updatePoolControls(true, true);
+    mInstanceListsLoaded = 0;
     mProc->getInstances();
 }
 
@@ -1073,6 +1077,7 @@ void EngineStartDialog::on_bShowLogin_clicked()
 void EngineStartDialog::on_cbInstance_currentIndexChanged(int index)
 {
     if (!mProc) return;
+    if (mInstanceListsLoaded < 2) return;
     double parallel = 0;
     if (ui->cbInstance->itemData(index).canConvert(QMetaType(QMetaType::QVariantList))) {
         QVariantList list = ui->cbInstance->itemData(index).toList();
@@ -1096,6 +1101,7 @@ void EngineStartDialog::on_edJobTag_editingFinished()
 
 void EngineStartDialog::on_tbRefreshInstances_clicked()
 {
+    mInstanceListsLoaded = 0;
     mProc->getInstances();
 }
 
@@ -1107,7 +1113,15 @@ void EngineStartDialog::on_pbInstSend_clicked()
 
 void EngineStartDialog::on_cbInstActivate_clicked()
 {
-    updatePoolControls(false, true);
+    updatePoolControls(false, (ui->sbInstSize->value() > 0) != ui->cbInstActivate->isChecked());
+}
+
+void EngineStartDialog::on_sbInstSize_valueChanged(int value)
+{
+    if (ui->cbInstActivate->isChecked() != (value > 0)) {
+        ui->cbInstActivate->setChecked(value > 0);
+        updatePoolControls();
+    }
 }
 
 
