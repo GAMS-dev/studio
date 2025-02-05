@@ -472,6 +472,7 @@ private:
     void deleteScratchDirectories(const QString &workspace);
     void zoomWidget(QWidget * widget, int range);
     void initWelcomePage();
+    void initSettingsDialog();
     void initIcons();
     void initFonts();
     void initEnvironment();
