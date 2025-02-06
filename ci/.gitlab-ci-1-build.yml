@@ -79,7 +79,7 @@ build-wei:
   variables:
      cmd_vcvars: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.8.2-icu:latest
     entrypoint: [""]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
