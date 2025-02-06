@@ -97,8 +97,8 @@ build-wei:
     - $data | out-file -encoding ascii gamsinclude.pri
     - mkdir build
     - cd build
-    - qmake.exe ..\gams-studio.pro "CONFIG+=release" QMAKE_VERBOSE=1
-    - nmake.exe /v
+    - $env:PATH="C:\Qt\Tools\icu\bin64;$env:PATH"; & { qmake.exe ..\gams-studio.pro "CONFIG+=release" }
+    - nmake.exe
   artifacts:
     name: studio-wei
     expire_in: 2 hours
