@@ -77,7 +77,7 @@ Before you request a review of your changes please make sure that you used the l
 
 | Dependency | License | Description |
 | ------ | ------ | ------ |
-| [Qt 6](https://www.qt.io/) | [LGPL](https://doc.qt.io/qt-6/lgpl.html) | [Qt Licensing](https://doc.qt.io/qt-6/licensing.html). The Qt 6 everywhere package (source) can be downloaded from [GAMS](https://d37drm4t2jghv5.cloudfront.net/qt/qt-everywhere-src-6.8.1.tar.xz) or directly from https://www.qt.io/download, where installers are provided as well. |
+| [Qt 6](https://www.qt.io/) | [LGPL](https://doc.qt.io/qt-6/lgpl.html) | [Qt Licensing](https://doc.qt.io/qt-6/licensing.html). The Qt 6 everywhere package (source) can be downloaded from [GAMS](https://d37drm4t2jghv5.cloudfront.net/qt/qt-everywhere-src-6.8.2.tar.xz) or directly from https://www.qt.io/download, where installers are provided as well. |
 | [dtoaLoc](extern/dtoaloc) | [License](extern/dtoaloc/README.md) | |
 | [engineapi](extern/engineapi/) | [MIT](extern/engineapi/README.md) | Owned by GAMS and can be used in other projects. |
 | [yaml-cpp](extern/yaml-cpp/) | [MIT](extern/yaml-cpp/LICENSE/) | The project can be found at https://github.com/jbeder/yaml-cpp |
