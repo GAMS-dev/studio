@@ -44,12 +44,12 @@ win32 {
     LIBS += -luser32
 
     # Detect sccache and use if there
-    SCCACHE = $$system(sccache --version >NUL 2>&1 && echo yes || echo no)
-    equals(SCCACHE, "yes") {
-        message("Using sccache for compilation")
-        QMAKE_CXX = sccache $$QMAKE_CXX
+#    SCCACHE = $$system(sccache --version >NUL 2>&1 && echo yes || echo no)
+#    equals(SCCACHE, "yes") {
+#        message("Using sccache for compilation")
+#        QMAKE_CXX = sccache $$QMAKE_CXX
 #       QMAKE_CC = sccache $$QMAKE_CC
-    }
+#    }
 }
 
 # The following define makes your compiler emit warnings if you use
