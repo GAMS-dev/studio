@@ -214,7 +214,7 @@ pack-wei:
     - cd studio
     - mkdir -p support/doc/fonts
     - cp ../fonts/*-License.txt support/doc/fonts
-    - windeployqt --release --compiler-runtime --force studio.exe
+    - windeployqt --verbose --release --compiler-runtime --force studio.exe
     - cp ../CHANGELOG "resources/Changelog"
     # sign and verify studio
     - |+
