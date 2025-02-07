@@ -126,7 +126,7 @@ void Application::init()
     }
 
     mMainWindow = QSharedPointer<MainWindow>(new MainWindow());
-    if (mMainWindow->settingsDialog()) {
+    if (Settings::settings()->toBool(skCleanUpWorkspace)) {
         auto list = mMainWindow->settingsDialog()->cleanupWorkspaces(true);
         if (!list.isEmpty()) {
             QString msg = QString("Remove %1 files?\n\nThe automatic cleanup would affect %1 files in the chosen directories according to the setting.").arg(list.size());
