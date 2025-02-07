@@ -42,6 +42,15 @@ unix {
 win32 {
     RC_FILE += ../platform/windows/studio.rc
     LIBS += -luser32
+
+    # Detect sccache
+    SCCACHE = $$system(sccache --version >NUL 2>&1 && echo yes || echo no)
+    # Use sccache if available
+    equals(SCCACHE, "yes") {
+        message("Using sccache for compilation")
+        QMAKE_CXX = sccache $$QMAKE_CXX
+        QMAKE_CC = sccache $$QMAKE_CC
+    }
 }
 
 # The following define makes your compiler emit warnings if you use

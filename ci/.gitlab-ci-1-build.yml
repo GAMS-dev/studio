@@ -98,7 +98,7 @@ build-wei:
     - mkdir build
     - cd build
     - $env:PATH="C:\Qt\Tools\icu\bin64;$env:PATH"; & { qmake.exe ..\gams-studio.pro "CONFIG+=release" }
-    - nmake.exe
+    - nmake.exe /J 0
   artifacts:
     name: studio-wei
     expire_in: 2 hours
