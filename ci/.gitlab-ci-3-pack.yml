@@ -191,7 +191,7 @@ pack-wei:
   stage: pack
   tags: [windows]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.8.2-icu:latest
   needs: [build-wei]
   variables:
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
