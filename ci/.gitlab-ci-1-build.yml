@@ -97,7 +97,7 @@ build-wei:
     - $data | out-file -encoding ascii gamsinclude.pri
     - mkdir build
     - cd build
-    - $env:PATH="C:\Qt\Tools\icu\bin64;$env:PATH"; & { qmake.exe ..\gams-studio.pro "CONFIG+=release" }
+    - $env:PATH="C:\Qt\Tools\icu\bin64;$env:PATH"; & { qmake.exe ..\gams-studio.pro "CONFIG+=release ninja" }
     - nmake.exe
   artifacts:
     name: studio-wei
