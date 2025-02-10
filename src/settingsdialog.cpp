@@ -122,6 +122,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 
     initColorPage();
     loadSettings();
+
     QString tip("<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;gms, inc&quot;)."
     "<br>These files can be executed, selected as main file,<br>and the syntax will be highlighted.<br><br>"
     "<i>The following extensions will be automatically removed:<br>%1</i></p>");
@@ -769,6 +770,10 @@ void SettingsDialog::delayBaseThemeChange(bool valid)
 
 void SettingsDialog::open()
 {
+    // workaround for initialization hickup
+    ui->fontComboBox->setCurrentFont(QFont(mSettings->toString(skEdFontFamily)));
+    setModifiedStatus(false);
+
     QDialog::open();
     mSettings->block(); // prevent changes from outside this dialog
 }
