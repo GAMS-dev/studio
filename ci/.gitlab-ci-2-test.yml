@@ -3,7 +3,7 @@ test-deg:
   tags: [macos]
   needs: [fetch-ci-scripts, build-deg]
   variables:
-    qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
+    qtpath: /opt/Qt/${QT_VERSION}/bin
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: never
