@@ -183,7 +183,6 @@ QString ExportDriver::generateProjections(bool applyFilters)
         GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
         QString name;
         QString newName;
-        bool asParameter = false;
         QString dom = generateDomains(sym);
         QString domNew = generateDomainsNew(sym);
         bool domOrderChanged = dom != domNew;

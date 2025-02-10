@@ -75,7 +75,7 @@ pack-dac:
   stage: pack
   tags: [macos-arm64]
   variables:
-    qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
+    qtpath: /opt/Qt/${QT_VERSION}/bin
   needs: [build-dac]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"

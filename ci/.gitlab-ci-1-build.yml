@@ -27,7 +27,7 @@ build-dac:
   tags: [macos-arm64]
   needs: [fetch-ci-scripts]
   variables:
-    qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
+    qtpath: /opt/Qt/${QT_VERSION}/bin
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: never

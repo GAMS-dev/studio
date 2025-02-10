@@ -258,6 +258,7 @@ QStringList ConnectSchema::getAllLeveledKeys(const QString &key, int level) cons
     for(const QString& k : mOrderedKeyList) {
         if ( level!=mSchemaHelper[key]->level)
             continue;
+        keyList << k;
     }
     return keyList;
 }

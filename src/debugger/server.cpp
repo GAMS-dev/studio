@@ -210,7 +210,7 @@ Server::ParseResult Server::handleReply(const QString &replyData)
         data = reList.first().split('|');
     }
 
-    bool ok = -2;
+    bool ok = false;
     switch (reply) {
     case invalidCall:
         logMessage("Debug-Server: GAMS refused to process this request: " + reList.join(", "));

@@ -607,12 +607,6 @@ void SymbolTableModel::filterRows()
             mFilterActive[mSortIdxMap[rec]] = isLocationFilteredActive(static_cast<int>(rec), mFilteredPattern);
         }
 
-        size_t filteredRecordSize = 0;
-        for(size_t rec=0; rec<size; rec++) {
-            if (mFilterActive[mSortIdxMap[rec]])
-               filteredRecordSize++;
-        }
-
         size_t filteredRec = 0;
         for(size_t i=0; i<size; i++) {
            if (mFilterActive[mSortIdxMap[i]]) {
@@ -632,12 +626,6 @@ void SymbolTableModel::filterRows()
         for(size_t rec=0; rec<size; rec++) {
             int idx = static_cast<int>(mSortIdxMap[rec]);
             mFilterActive[mSortIdxMap[rec]] = isFilteredActive(items.at(idx), mFilteredKeyColumn, mFilteredPattern);
-        }
-
-        size_t filteredRecordSize = 0;
-        for(size_t rec=0; rec<size; rec++) {
-            if (mFilterActive[mSortIdxMap[rec]])
-               filteredRecordSize++;
         }
 
         size_t filteredRec = 0;
