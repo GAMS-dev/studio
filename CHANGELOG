@@ -1,3 +1,9 @@
+Version 1.20.1  *
+==================
+- Fixed missing font update from changes in the Settings Dialog.
+- Dropped support for openSUSE Leap 15.6.
+- Added support for Fedora 41 and Ubuntu 24.04 LTS.
+
 Version 1.20.0
 ==================
 - Added fonts JetBrains Mono, Source Code Pro, Fira Code, and Cousine.
