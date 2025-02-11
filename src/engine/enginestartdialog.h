@@ -87,6 +87,7 @@ signals:
     void submit(bool start);
     void engineUrlValidated(const QString &validUrl);
     void jobTagChanged(const QString &jobTag);
+    void storeInstanceSelection();
 
 public slots:
     void authorizeChanged(const QString &authToken);
@@ -145,13 +146,12 @@ private slots:
     void on_cbLoginMethod_currentIndexChanged(int index);
     void on_bCopyCode_clicked();
     void on_bShowLogin_clicked();
-    void on_cbInstance_currentIndexChanged(int index);
     void on_edJobTag_editingFinished();
     void on_pbInstSend_clicked();
     void on_tbRefreshInstances_clicked();
     void on_cbInstActivate_clicked();
-
     void on_sbInstSize_valueChanged(int value);
+    void on_cbInstance_activated(int index);
 
 private:
     Ui::EngineStartDialog *ui;
@@ -164,7 +164,6 @@ private:
     QMap<QString, int> mInstancePoolSize;
     int mLastInstancePoolSize = 2;
     QString mLastValidInstance;
-    QString mSelectedInstance;
     QString mRawUrl;
     QString mUrl;
     QString mValidUrl;
