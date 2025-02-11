@@ -4770,6 +4770,11 @@ void MainWindow::initEngineStartDialog(bool resume)
                      Settings::settings()->toBool(SettingsKey::skEngineForceGdx));
     dialog->setJobTag(mEngineJobTag);
 
+    connect(dialog, &engine::EngineStartDialog::storeInstanceSelection, dialog, [dialog]() {
+        if (!dialog->userInstance().isEmpty())
+            Settings::settings()->setString(SettingsKey::skEngineUserInstance, dialog->userInstance());
+    });
+
     connect(dialog, &engine::EngineStartDialog::jobTagChanged, dialog, [this](const QString &jobTag) {
         mEngineJobTag = jobTag;
     });

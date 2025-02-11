@@ -699,41 +699,51 @@ void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double>
     QList<QPair<QString, QList<double>>> allInst = mInstancePools;
     allInst << mInstances;
     int prev = -1;
-
-    ui->cbInstance->clear();
-    int i = 0;
-    for (const QPair<QString, QList<double> > &entry : std::as_const(allInst)) {
-        if (entry.second.size() < 3) continue;
-        QString text("%1 (%2 vCPU, %3 GB RAM, %4x)");
-        text = text.arg(entry.first).arg(entry.second[0]).arg(entry.second[1]).arg(entry.second[2]);
-        QVariantList data;
-        data << entry.first << entry.second[0] << entry.second[1] << entry.second[2];
-        QIcon icon = Theme::icon(i < mInstancePools.count() ? ":/%1/inst-multi" : ":/%1/inst-single");
-        if (entry.second.size() > 5) {
-            data << entry.second[3] << entry.second[4] << entry.second[5];
-            text.append(QString("  %1/%2").arg(entry.second[4] - entry.second[5]).arg(entry.second[4]));
-            if (entry.second[3] != entry.second[4])
-                text.append(QString(" (%1)").arg(entry.second[3]));
+    if (ui->cbInstance->currentData().canConvert(QMetaType(QMetaType::QVariantList))) {
+        QVariantList list = ui->cbInstance->currentData().toList();
+        mLastValidInstance = list.at(0).toString();
+    }
+    if (mInstanceListsLoaded == 1) {
+        ui->cbInstance->clear();
+        int i = 0;
+        for (const QPair<QString, QList<double> > &entry : std::as_const(allInst)) {
+            if (entry.second.size() < 3) continue;
+            QString text("%1 (%2 vCPU, %3 GB RAM, %4x)");
+            text = text.arg(entry.first).arg(entry.second[0]).arg(entry.second[1]).arg(entry.second[2]);
+            QVariantList data;
+            data << entry.first << entry.second[0] << entry.second[1] << entry.second[2];
+            QIcon icon = Theme::icon(i < mInstancePools.count() ? ":/%1/inst-multi" : ":/%1/inst-single");
+            if (entry.second.size() > 5) {
+                data << entry.second[3] << entry.second[4] << entry.second[5];
+                text.append(QString("  %1/%2").arg(entry.second[4] - entry.second[5]).arg(entry.second[4]));
+                if (entry.second[3] != entry.second[4])
+                    text.append(QString(" (%1)").arg(entry.second[3]));
+            }
+            ui->cbInstance->addItem(icon, text, data);
+            if (entry.first.compare(mLastValidInstance) == 0)
+                prev = i;
+            ++i;
         }
-        ui->cbInstance->addItem(icon, text, data);
-        if (entry.first.compare(mLastValidInstance) == 0)
-            prev = i;
-        ++i;
+        if (!ui->cbInstance->count()) {
+            ui->cbInstance->addItem("-no instances-");
+            ui->laWarn->setText("No user instances assigned");
+            ui->laWarn->setToolTip("Please contact your administrator");
+        } else if (ui->laWarn->text().compare("No user instances assigned") == 0) {
+            ui->laWarn->setText("");
+            ui->laWarn->setToolTip("");
+        }
+        if (prev >= 0)
+            ui->cbInstance->setCurrentIndex(prev);
+        else if (ui->cbInstance->count())
+            ui->cbInstance->setCurrentIndex(0);
     }
-    if (!ui->cbInstance->count()) {
-        ui->cbInstance->addItem("-no instances-");
-        ui->laWarn->setText("No user instances assigned");
-        ui->laWarn->setToolTip("Please contact your administrator");
-    } else if (ui->laWarn->text().compare("No user instances assigned") == 0) {
-        ui->laWarn->setText("");
-        ui->laWarn->setToolTip("");
-    }
-    if (prev >= 0)
-        ui->cbInstance->setCurrentIndex(prev);
-    else if (ui->cbInstance->count())
-        ui->cbInstance->setCurrentIndex(0);
     updateSubmitStates();
-    ++mInstanceListsLoaded;
+
+    QTimer::singleShot(0, this, [this](){
+        // delay increase to skip currentIndex changes due to cbInstance items change
+        if (++mInstanceListsLoaded == 2)
+            updatePoolControls(true, true);
+    });
 }
 
 void EngineStartDialog::reUserInstancesError(const QString &errorText)
@@ -1017,8 +1027,8 @@ bool EngineStartDialog::openInBrowser(const QString &text)
 
 void EngineStartDialog::updatePoolControls(bool adaptCheckBox, bool adaptSize)
 {
-    bool isPool = mInstancePoolOwners.contains(mSelectedInstance);
-    bool canChange = isPool && mInvitees.contains(mInstancePoolOwners.value(mSelectedInstance));
+    bool isPool = mInstancePoolOwners.contains(mLastValidInstance);
+    bool canChange = isPool && mInvitees.contains(mInstancePoolOwners.value(mLastValidInstance));
     ui->cbInstActivate->setEnabled(canChange);
     ui->sbInstSize->setEnabled(canChange);
     QVariantList list;
@@ -1031,13 +1041,15 @@ void EngineStartDialog::updatePoolControls(bool adaptCheckBox, bool adaptSize)
             currentSize = list.at(5).toInt() + list.at(6).toInt(); // avail + in-use
         }
     }
+    if (mInstancePoolSize.contains(mLastValidInstance))
+        targetSize = mInstancePoolSize.value(mLastValidInstance);
     if (adaptCheckBox) {
         ui->cbInstActivate->setChecked(targetSize && canChange);
     }
     if (adaptSize) {
         int value = 0;
         if (ui->cbInstActivate->isChecked()) {
-            value = targetSize ? targetSize : mInstancePoolSize.value(mSelectedInstance, mLastInstancePoolSize);
+            value = targetSize ? targetSize : mInstancePoolSize.value(mLastValidInstance, mLastInstancePoolSize);
         }
         ui->sbInstSize->setValue(value);
     }
@@ -1051,7 +1063,7 @@ void EngineStartDialog::updatePoolControls(bool adaptCheckBox, bool adaptSize)
         } else
             ui->sbInstSize->setPalette(QPalette());
     }
-    ui->pbInstSend->setEnabled(canChange && targetSize == currentSize);
+    ui->pbInstSend->setEnabled(canChange && targetSize == currentSize && ui->sbInstSize->value() != currentSize);
 }
 
 void EngineStartDialog::on_bCopyCode_clicked()
@@ -1075,8 +1087,7 @@ void EngineStartDialog::on_bShowLogin_clicked()
     showLogin();
 }
 
-
-void EngineStartDialog::on_cbInstance_currentIndexChanged(int index)
+void EngineStartDialog::on_cbInstance_activated(int index)
 {
     if (!mProc) return;
     if (mInstanceListsLoaded < 2) return;
@@ -1085,16 +1096,17 @@ void EngineStartDialog::on_cbInstance_currentIndexChanged(int index)
         QVariantList list = ui->cbInstance->itemData(index).toList();
         bool ok = false;
         if (list.size() > 3) {
-            mLastValidInstance = list.at(0).toString();
-            mSelectedInstance = mLastValidInstance;
+            if (mLastValidInstance.compare(list.at(0).toString()) != 0) {
+                mLastValidInstance = list.at(0).toString();
+                emit storeInstanceSelection();
+            }
             parallel = list.at(3).toDouble(&ok);
-        } else mSelectedInstance = "";
+        }
         if (!ok) parallel = -1;
-    } else mSelectedInstance = "";
+    }
     updatePoolControls(true, true);
     mProc->updateQuota(parallel);
 }
-
 
 void EngineStartDialog::on_edJobTag_editingFinished()
 {
@@ -1104,12 +1116,14 @@ void EngineStartDialog::on_edJobTag_editingFinished()
 void EngineStartDialog::on_tbRefreshInstances_clicked()
 {
     mInstanceListsLoaded = 0;
+    mInstancePoolSize.clear();
     mProc->getInstances();
 }
 
 void EngineStartDialog::on_pbInstSend_clicked()
 {
     int val = ui->cbInstActivate->isChecked() ? ui->sbInstSize->value() : 0;
+    mInstancePoolSize.insert(mLastValidInstance, val);
     mProc->updateInstancePool(mLastValidInstance, val);
 }
 
@@ -1120,10 +1134,9 @@ void EngineStartDialog::on_cbInstActivate_clicked()
 
 void EngineStartDialog::on_sbInstSize_valueChanged(int value)
 {
-    if (ui->cbInstActivate->isChecked() != (value > 0)) {
+    if (ui->cbInstActivate->isChecked() != (value > 0))
         ui->cbInstActivate->setChecked(value > 0);
-        updatePoolControls();
-    }
+    updatePoolControls();
 }
 
 
