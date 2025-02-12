@@ -170,7 +170,7 @@ EngineManager::EngineManager(QObject* parent)
         emit reUserInstancesError(getJsonMessageIfFound(text));
     });
 
-    connect(mUsageApi, &OAIUsageApi::updateInstancePoolSignal, this, [this](OAIMessage summary) {
+    connect(mUsageApi, &OAIUsageApi::updateInstancePoolSignal, this, [this](OAIMessage /*summary*/) {
         emit reUpdateInstancePool();
     });
     connect(mUsageApi, &OAIUsageApi::updateInstancePoolSignalEFull, this,
