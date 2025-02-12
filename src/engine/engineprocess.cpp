@@ -54,6 +54,8 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reVersionError, this, &EngineProcess::reVersionError);
     connect(mManager, &EngineManager::reUserInstances, this, &EngineProcess::reUserInstances);
     connect(mManager, &EngineManager::reUserInstancesError, this, &EngineProcess::reUserInstancesError);
+    connect(mManager, &EngineManager::reUpdateInstancePool, this, &EngineProcess::reUpdateInstancePool);
+    connect(mManager, &EngineManager::reUpdateInstancePoolError, this, &EngineProcess::reUpdateInstancePoolError);
     connect(mManager, &EngineManager::reQuota, this, &EngineProcess::reQuota);
     connect(mManager, &EngineManager::reQuotaError, this, &EngineProcess::reQuotaError);
     connect(mManager, &EngineManager::sslErrors, this, &EngineProcess::sslErrors);
@@ -79,6 +81,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
         emit authorized(mAuthToken);
     });
     connect(mManager, &EngineManager::reGetUsernameError, this, &EngineProcess::authorizeError);
+    connect(mManager, &EngineManager::reGetInvitees, this, &EngineProcess::reGetInvitees);
 
     setIgnoreSslErrorsCurrentUrl(false);
     mPollTimer.setInterval(1000);
@@ -530,10 +533,21 @@ void EngineProcess::listNamespaces()
 void EngineProcess::sendPostLoginRequests()
 {
     listNamespaces();
+    getInstances();
+    getQuota();
+}
+
+void EngineProcess::getInstances()
+{
     if (mInKubernetes) {
         mManager->getUserInstances();
-        mManager->getQuota();
+        mManager->getUserInstancePools();
     }
+}
+
+void EngineProcess::updateInstancePool(const QString &label, int count)
+{
+    mManager->updateInstancePool(label, count);
 }
 
 void EngineProcess::getQuota()

@@ -103,7 +103,7 @@ QSize TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOptio
                 QSize newSize = size;
                 opt.text = platformGetText(opt.text, wid);
                 if (opt.text != tab->text) {
-                    QFont f = widget->font();
+                    const QFont &f = widget->font();
                     int diff = QFontMetrics(f).horizontalAdvance(opt.text) - tab->fontMetrics.horizontalAdvance(tab->text);
                     newSize.setWidth(newSize.width() + diff);
                     res = QProxyStyle::sizeFromContents(type, &opt, newSize, widget);

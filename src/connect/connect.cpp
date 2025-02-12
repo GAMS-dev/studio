@@ -635,7 +635,7 @@ YAML::Node Connect::getDefaultValueByType(Schema* schemaHelper)
     case SchemaType::String: {
         std::string str = "[value]";
         for(int i=0; i<allowedValues.size(); i++) {
-            const ValueWrapper vw = allowedValues.at(0);
+            const ValueWrapper &vw = allowedValues.at(0);
             if (vw.value.stringval && std::string(vw.value.stringval).compare("default")==0) {
                str = "default";
                break;

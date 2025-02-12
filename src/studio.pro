@@ -1,4 +1,4 @@
-QT += core widgets gui svg concurrent network printsupport core5compat
+QT += core widgets gui svg concurrent network printsupport
 
 TARGET = studio
 TEMPLATE = app

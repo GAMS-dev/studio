@@ -87,6 +87,7 @@ signals:
     void submit(bool start);
     void engineUrlValidated(const QString &validUrl);
     void jobTagChanged(const QString &jobTag);
+    void storeInstanceSelection();
 
 public slots:
     void authorizeChanged(const QString &authToken);
@@ -111,6 +112,7 @@ protected:
     QString cleanUrl(const QString &url);
     void updateUrlEdit();
     bool openInBrowser(const QString &text);
+    void updatePoolControls(bool adaptCheckBox = false, bool adaptSize = false);
 
 private slots:
     void urlEdited(const QString &text);
@@ -119,6 +121,7 @@ private slots:
     void bLogoutClicked();
     void authorizeError(const QString &error);
     void reGetUsername(const QString &user);
+    void reGetInvitees(const QStringList &invitees);
     void reListProviderError(const QString &error);
     void showVerificationCode(const QString &userCode, const QString &verifyUri, const QString &verifyUriComplete);
     void reListJobs(qint32 count);
@@ -128,26 +131,39 @@ private slots:
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool inKubernetes);
     void reVersionError(const QString &errorText);
     void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
-    void reUserInstances(const QList<QPair<QString, QList<double> > > &instances, const QString &defaultLabel);
+    void reUserInstances(const QList<QPair<QString, QList<double> > > &instances, QMap<QString, QString> *poolOwners,
+                         const QString &defaultLabel = QString());
     void reUserInstancesError(const QString &errorText);
+    void reUpdateInstancePool();
+    void reUpdateInstancePoolError(const QString &errorText);
     void quotaHint(const QStringList &diskHint, const QStringList &volumeHint);
-    void forceGdxStateChanged(int state);
+    void forceGdxStateChanged(Qt::CheckState state);
     void updateConnectStateAppearance();
     void selfSignedCertFound(int sslError);
-    void certAcceptChanged();
+    void certAcceptChanged(Qt::CheckState);
     void hideCert();
 
     void on_cbLoginMethod_currentIndexChanged(int index);
     void on_bCopyCode_clicked();
     void on_bShowLogin_clicked();
-    void on_cbInstance_currentIndexChanged(int index);
     void on_edJobTag_editingFinished();
+    void on_pbInstSend_clicked();
+    void on_tbRefreshInstances_clicked();
+    void on_cbInstActivate_clicked();
+    void on_sbInstSize_valueChanged(int value);
+    void on_cbInstance_activated(int index);
 
 private:
     Ui::EngineStartDialog *ui;
     EngineProcess *mProc;
     QStringList mLocalGamsVersion;
     ServerConnectionState mConnectState = scsNone;
+    QList<QPair<QString, QList<double>>> mInstances;
+    QList<QPair<QString, QList<double>>> mInstancePools;
+    QMap<QString, QString> mInstancePoolOwners;
+    QMap<QString, int> mInstancePoolSize;
+    int mLastInstancePoolSize = 2;
+    QString mLastValidInstance;
     QString mRawUrl;
     QString mUrl;
     QString mValidUrl;
@@ -162,6 +178,8 @@ private:
     bool mAuthorized = false;
     bool mAlways = false;
     bool mResume = false;
+    int mInstanceListsLoaded = 0;
+    QStringList mInvitees;
     QTimer mConnectStateUpdater;
     QTimer mUrlChangedTimer;
     QString mEngineVersion;

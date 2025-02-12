@@ -362,6 +362,7 @@ bool isBefore(PExAbstractNode*n1, PExAbstractNode*n2)
 
 void ProjectTreeModel::sortGamsProject(PExProjectNode *project, QList<PExAbstractNode *> &order)
 {
+    Q_UNUSED(project);
     if (order.size() < 2) return;
     QStringList paths;
     emit getConfigPaths(paths);
@@ -370,7 +371,7 @@ void ProjectTreeModel::sortGamsProject(PExProjectNode *project, QList<PExAbstrac
         return;
     }
     internConfigPaths.clear();
-    for (QString path : paths)
+    for (const QString &path : paths)
         internConfigPaths << path;
     std::sort(order.begin(), order.end(), isBefore);
 }

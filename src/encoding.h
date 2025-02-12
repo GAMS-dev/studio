@@ -34,8 +34,8 @@ public:
     static QStringDecoder createDecoder(const QString &encodingName);
     static QStringEncoder createEncoder(const QString &encodingName);
     static QString name(int mib);
-    static int nameToOldMib(QString encName);
-    static QString toUtf16(QByteArray data, QByteArray encoding = QByteArray());
+    static int nameToOldMib(const QString &encName);
+    static QString toUtf16(const QByteArray &data, const QByteArray &encoding = QByteArray());
     static QString defaultEncoding(int fallbackMib = -1);
     static void setDefaultEncoding(const QString &encoding);
 private:

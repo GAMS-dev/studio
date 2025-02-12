@@ -110,6 +110,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     ui->updateWidget->hide();
+    initSettingsDialog();
 
     // Timers
     mFileTimer.setSingleShot(true);
@@ -190,7 +191,7 @@ MainWindow::MainWindow(QWidget *parent)
         updateAllowedMenus();
     });
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
-    connect(ui->projectView, &ProjectTreeView::getHasRunBlocker, this, [this](const QList<NodeId> ids, bool &runBlocked) {
+    connect(ui->projectView, &ProjectTreeView::getHasRunBlocker, this, [this](const QList<NodeId> &ids, bool &runBlocked) {
         QList<PExAbstractNode*> nodes;
         for (const NodeId &id : ids) {
             if (PExAbstractNode *node = mProjectRepo.node(id))
@@ -303,7 +304,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(&mProjectContextMenu, &ProjectContextMenu::openFile, this, &MainWindow::openFileNode);
     connect(&mProjectContextMenu, &ProjectContextMenu::reOpenFile, this,
-            [this](PExFileNode* node, bool focus, QString encoding, bool forcedAsTextEditor) {
+            [this](PExFileNode* node, bool focus, const QString &encoding, bool forcedAsTextEditor) {
         if (node && handleFileChanges(node->file(), true))
             openFileNode(node, focus, encoding, forcedAsTextEditor);
     });
@@ -560,7 +561,7 @@ void MainWindow::initWelcomePage()
             focusProject(project);
     });
 
-    connect(mWp, &WelcomePage::openFilePath, this, [this](QString filePath) {
+    connect(mWp, &WelcomePage::openFilePath, this, [this](const QString &filePath) {
         PExProjectNode *project = nullptr;
         if (filePath == CommonPaths::changelog()) {
             on_actionChangelog_triggered();
@@ -588,7 +589,7 @@ void MainWindow::initWelcomePage()
         if (project && mProjectRepo.focussedProject())
             focusProject(project);
     });
-    connect(mWp, &WelcomePage::removeFromHistory, this, [this](QString path) {
+    connect(mWp, &WelcomePage::removeFromHistory, this, [this](const QString &path) {
         removeFromHistory(path);
     });
     ui->mainTabs->insertTab(0, mWp, QString("Welcome"));
@@ -597,6 +598,47 @@ void MainWindow::initWelcomePage()
     else {
         showWelcomePage();
     }
+}
+
+void MainWindow::initSettingsDialog()
+{
+    mSettingsDialog->setModal(true);
+    connect(mSettingsDialog, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
+    connect(mSettingsDialog, &SettingsDialog::rehighlight, this, &MainWindow::rehighlightOpenFiles);
+    connect(mSettingsDialog, &SettingsDialog::updateExtraSelections, this, [this]() {
+        if (FileMeta *meta = mFileMetaRepo.fileMeta(ui->mainTabs->currentWidget()))
+            meta->updateExtraSelections();
+        if (mPinView->isVisible()) {
+            if (FileMeta *meta = mFileMetaRepo.fileMeta(mPinView->widget()))
+                meta->updateExtraSelections();
+        }
+    });
+    connect(mSettingsDialog, &SettingsDialog::userGamsTypeChanged, this,[this]() {
+        QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserGamsTypes));
+        mFileMetaRepo.setUserGamsTypes(suffixes);
+    });
+    DEB() << "settings initialized";
+    connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFonts);
+    connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
+    connect(mSettingsDialog, &SettingsDialog::editorTabSizeChanged, this, &MainWindow::updateTabSize);
+    connect(mSettingsDialog, &SettingsDialog::reactivateEngineDialog, this, [this]() {
+        mEngineNoDialog = false;
+    });
+    connect(mSettingsDialog, &SettingsDialog::persistToken, this, [this]() {
+        Settings::settings()->setString(skEngineUserToken, mEngineAuthToken);
+    });
+    connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
+        updateAndSaveSettings();
+        if (mSettingsDialog->hasDelayedBaseThemeChange()) {
+            mSettingsDialog->delayBaseThemeChange(false);
+            ViewHelper::updateBaseTheme();
+        }
+        ui->actionOpenAlternative->setText(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
+        ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
+        mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
+        if (mSettingsDialog->miroSettingsEnabled())
+            updateMiroEnabled();
+    });
 }
 
 void MainWindow::initEnvironment()
@@ -736,7 +778,7 @@ void MainWindow::initFonts()
                          "Cousine", "CousineB", "CousineBI", "CousineI", };
     Settings *settings = Settings::settings();
     QFont sysFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    DEB() << "default system font: " << sysFont.family() << " size 10";
+    DEB() << "Default system font: " << sysFont.family() << " size 10";
     if (settings->toBool(skEdInitFont)) {
         settings->setBool(skEdInitFont, false);
         if (settings->toString(skEdFontFamily).compare(sysFont.family()) == 0) {
@@ -841,7 +883,7 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
         openFile(meta);
 
     // open the config files that exist
-    for (QString filePath : confFilesToOpen) {
+    for (const QString &filePath : confFilesToOpen) {
         PExFileNode *node = addNode("", filePath, project);
         openFileNode(node);
     }
@@ -4728,6 +4770,11 @@ void MainWindow::initEngineStartDialog(bool resume)
                      Settings::settings()->toBool(SettingsKey::skEngineForceGdx));
     dialog->setJobTag(mEngineJobTag);
 
+    connect(dialog, &engine::EngineStartDialog::storeInstanceSelection, dialog, [dialog]() {
+        if (!dialog->userInstance().isEmpty())
+            Settings::settings()->setString(SettingsKey::skEngineUserInstance, dialog->userInstance());
+    });
+
     connect(dialog, &engine::EngineStartDialog::jobTagChanged, dialog, [this](const QString &jobTag) {
         mEngineJobTag = jobTag;
     });
@@ -5551,45 +5598,6 @@ void MainWindow::on_referenceJumpTo(const reference::ReferenceItem &item)
 
 void MainWindow::on_actionSettings_triggered()
 {
-    if (!mSettingsDialog) {
-        mSettingsDialog = new SettingsDialog(this);
-        mSettingsDialog->setModal(true);
-        connect(mSettingsDialog, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
-        connect(mSettingsDialog, &SettingsDialog::rehighlight, this, &MainWindow::rehighlightOpenFiles);
-        connect(mSettingsDialog, &SettingsDialog::updateExtraSelections, this, [this]() {
-            if (FileMeta *meta = mFileMetaRepo.fileMeta(ui->mainTabs->currentWidget()))
-                meta->updateExtraSelections();
-            if (mPinView->isVisible()) {
-                if (FileMeta *meta = mFileMetaRepo.fileMeta(mPinView->widget()))
-                    meta->updateExtraSelections();
-            }
-        });
-        connect(mSettingsDialog, &SettingsDialog::userGamsTypeChanged, this,[this]() {
-            QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserGamsTypes));
-            mFileMetaRepo.setUserGamsTypes(suffixes);
-        });
-        connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFonts);
-        connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
-        connect(mSettingsDialog, &SettingsDialog::editorTabSizeChanged, this, &MainWindow::updateTabSize);
-        connect(mSettingsDialog, &SettingsDialog::reactivateEngineDialog, this, [this]() {
-            mEngineNoDialog = false;
-        });
-        connect(mSettingsDialog, &SettingsDialog::persistToken, this, [this]() {
-            Settings::settings()->setString(skEngineUserToken, mEngineAuthToken);
-        });
-        connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
-            updateAndSaveSettings();
-            if (mSettingsDialog->hasDelayedBaseThemeChange()) {
-                mSettingsDialog->delayBaseThemeChange(false);
-                ViewHelper::updateBaseTheme();
-            }
-            ui->actionOpenAlternative->setText(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
-            ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
-            mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
-            if (mSettingsDialog->miroSettingsEnabled())
-                updateMiroEnabled();
-        });
-    }
     mSettingsDialog->setMiroSettingsEnabled(!mMiroRunning);
     mSettingsDialog->updateCleanupFilterList(Settings::settings()->toMap(skCleanUpWorkspaceFilter));
     mSettingsDialog->updateWorkspaceList(Settings::settings()->toMap(skCleanUpWorkspaceDirectories));
@@ -5851,6 +5859,7 @@ void MainWindow::updateFonts(qreal fontSize, const QString &fontFamily)
 #else
     qreal addSize = 0.0;
 #endif
+    DEB() << "Font updated to " << fontFamily << " size " << fontSize;
     setGroupFontSize(fgText, fontSize + addSize, fontFamily);
     setGroupFontSize(fgLog, fontSize + addSize, fontFamily);
     setGroupFontSize(fgTable, fontSize + mTableFontSizeDif);

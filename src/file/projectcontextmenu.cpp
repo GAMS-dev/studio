@@ -493,7 +493,7 @@ void ProjectContextMenu::onCloseDelProject()
 
     for (PExProjectNode *pro : pro2close)
         emit closeProject(pro);
-    for (QString gsp : pro2del) {
+    for (const QString &gsp : pro2del) {
         bool ok = QFile::remove(gsp);
         if (!ok) SysLogLocator::systemLog()->append("Couldn't remove " + gsp);
     }

@@ -210,7 +210,7 @@ Server::ParseResult Server::handleReply(const QString &replyData)
         data = reList.first().split('|');
     }
 
-    bool ok = -2;
+    bool ok = false;
     switch (reply) {
     case invalidCall:
         logMessage("Debug-Server: GAMS refused to process this request: " + reList.join(", "));
@@ -329,7 +329,7 @@ void Server::parseLinesMap(const QString &breakData)
     mBreakLinesFile = file;
 }
 
-bool Server::getPair(const QString assignment, QList<int> &lines, QList<int> &coLNs)
+bool Server::getPair(const QString &assignment, QList<int> &lines, QList<int> &coLNs)
 {
     QStringList linePair = assignment.split("=");
     bool ok = (linePair.size() == 2 && !linePair.at(1).isEmpty());

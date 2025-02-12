@@ -118,7 +118,7 @@ int TextView::lineCount() const
     return mMapper->lineCount();
 }
 
-bool TextView::loadFile(const QString &fileName, QString encoding, bool initAnchor)
+bool TextView::loadFile(const QString &fileName, const QString &encoding, bool initAnchor)
 {
     if (mTextKind != FileText) return false;
     mMapper->setEncoding(encoding);

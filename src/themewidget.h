@@ -38,7 +38,7 @@ class ThemeWidget : public QWidget
     Q_OBJECT
 public:
     explicit ThemeWidget(QWidget *parent);
-    explicit ThemeWidget(QList<Theme::ColorSlot> colors, QWidget *parent, bool iconExample = false);
+    explicit ThemeWidget(const QList<Theme::ColorSlot> &colors, QWidget *parent, bool iconExample = false);
     explicit ThemeWidget(Theme::ColorSlot slotFg = Theme::invalid,
                           Theme::ColorSlot slotBg = Theme::invalid, QWidget *parent = nullptr);
     explicit ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg,

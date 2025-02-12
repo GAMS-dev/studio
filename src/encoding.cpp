@@ -122,13 +122,13 @@ QString Encoding::name(int mib)
     return list.first();
 }
 
-int Encoding::nameToOldMib(QString encName)
+int Encoding::nameToOldMib(const QString &encName)
 {
     return C_NameToOldMib.value(encName.toLower(), -1);
 }
 
 
-QString Encoding::toUtf16(QByteArray data, QByteArray encoding)
+QString Encoding::toUtf16(const QByteArray &data, const QByteArray &encoding)
 {
     if (encoding.isEmpty())
         return data;

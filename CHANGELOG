@@ -1,6 +1,17 @@
+Version 1.20.1
+==================
+- Fixed missing font update from changes in the Settings Dialog.
+- Fixed Workspace cleanup Settings when Studio starts.
+- Moved the list of files to be deleted to the details view when cleaning up workspace on startup.
+- Dropped support for openSUSE Leap 15.6.
+- Added support for Fedora 41 and Ubuntu 24.04 LTS.
+- A GAMS Engine run from Studio can now select pool instances, too.
+- A GAMS Engine pool instance can be scaled up and down from within Studio.
+
 Version 1.20.0
 ==================
-- Added fonts JetBrains Mono, Source Code Pro, Fira Code, and Cousine.- Added a new `Workspace` tab to the settings, including the clean-up workspace configuration. Furthermore, the default settings value `Number of log backup files` has been changed from `3` to `0`.
+- Added fonts JetBrains Mono, Source Code Pro, Fira Code, and Cousine.
+- Added a new `Workspace` tab to the settings, including the clean-up workspace configuration. Furthermore, the default settings value `Number of log backup files` has been changed from `3` to `0`.
 - Added JetBrains Mono as default font for text editors. The font can be switched back to the default font in Settings (F7) in the "Editor & Log" tab.
 - Fixed that the current project changes after using 'Save as...'.
 - Fixed main-file indicator when switching to the same file used by another project.

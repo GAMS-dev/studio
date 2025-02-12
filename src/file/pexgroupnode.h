@@ -113,7 +113,7 @@ public:
     QString errorText(int lstLine) override;
     void clearErrorTexts();
     bool hasErrorText(int lstLine = -1);
-    void setRunFileParameterHistory(FileId fileId, QStringList parameterLists);
+    void setRunFileParameterHistory(FileId fileId, const QStringList &parameterLists);
     QStringList runFileParameterHistory(FileId fileId) const;
     void addRunParametersHistory(const QString &option);
     QStringList getRunParametersHistory() const;

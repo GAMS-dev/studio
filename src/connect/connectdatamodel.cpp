@@ -1186,7 +1186,7 @@ void ConnectDataModel::insertLastListElement(const QString &schemaname, QStringL
     emit indexExpandedAndResized(index(idx.row(), static_cast<int>(DataItemColumn::Key), idx.parent()));
 }
 
-void ConnectDataModel::onlyRequriedAttributedChanged(int state)
+void ConnectDataModel::onlyRequriedAttributedChanged(Qt::CheckState state)
 {
      mOnlyRequriedAttributesAdded = (state==Qt::Checked);
 }

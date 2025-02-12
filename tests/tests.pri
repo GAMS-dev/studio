@@ -1,4 +1,4 @@
-QT += core testlib widgets gui svg concurrent network printsupport core5compat
+QT += core testlib widgets gui svg concurrent network printsupport
 
 CONFIG += c++14
 CONFIG -= app_bundle

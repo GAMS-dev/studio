@@ -111,17 +111,18 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 
     connect(ui->sbPrecision, &QSpinBox::valueChanged, this, &SettingsDialog::setModified);
     connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbSqueezeDefaults, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbSqueezeDefaults, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
     connect(ui->sbPrecision, &QSpinBox::valueChanged, this, &SettingsDialog::updateNumericalPrecision);
     connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, &SettingsDialog::updateNumericalPrecision);
-    connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::stateChanged, this, &SettingsDialog::updateNumericalPrecision);
+    connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::checkStateChanged, this, &SettingsDialog::updateNumericalPrecision);
 
     gdxviewer::NumericalFormatController::initPrecisionSpinBox(ui->sbPrecision);
     gdxviewer::NumericalFormatController::initFormatComboBox(ui->cbFormat);
 
     initColorPage();
     loadSettings();
+
     QString tip("<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;gms, inc&quot;)."
     "<br>These files can be executed, selected as main file,<br>and the syntax will be highlighted.<br><br>"
     "<i>The following extensions will be automatically removed:<br>%1</i></p>");
@@ -192,11 +193,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->rb_decSepStudio, &QRadioButton::toggled, this, &SettingsDialog::setModified);
     connect(ui->rb_decSepLocale, &QRadioButton::toggled, this, &SettingsDialog::setModified);
     connect(ui->rb_decSepCustom, &QRadioButton::toggled, this, &SettingsDialog::setModified);
-    connect(ui->cbLevel, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbMarginal, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbLower, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbUpper, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbScale, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbLevel, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbMarginal, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbLower, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbUpper, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbScale, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
 
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
@@ -769,6 +770,9 @@ void SettingsDialog::delayBaseThemeChange(bool valid)
 
 void SettingsDialog::open()
 {
+    loadSettings();
+    setModifiedStatus(false);
+
     QDialog::open();
     mSettings->block(); // prevent changes from outside this dialog
 }
@@ -1037,7 +1041,7 @@ void SettingsDialog::updateWorkspaceList(const QVariantMap &prevWorkspaces)
     }
     auto prevWs = prevWorkspaces;
     QList<CleanupWorkspaceItem> data;
-    for (auto workspace : workspaces) {
+    for (const auto& workspace : workspaces) {
         if (prevWs.contains(workspace)) {
             auto val = prevWs.take(workspace);
             data.append({workspace, val.toBool() ? Qt::Checked : Qt::Unchecked});
@@ -1220,7 +1224,7 @@ QStringList SettingsDialog::cleanupWorkspaces(bool dryRun)
     QStringList workspaces = mWorkspaceModel->activeWorkspaces();
 
     QStringList files, dirs;
-    for (auto ws : workspaces) {
+    for (const auto& ws : workspaces) {
         QDir dir(ws);
         auto fList = dir.entryList(filters, QDir::Files | QDir::NoDotAndDotDot);
         for (const auto& f : fList) {

@@ -465,17 +465,17 @@ void FastFileMapper::closeAndReset()
 QByteArray scanDelim(char*data, int len)
 {
     bool hasCR = false;
-    int zeros = 0;                                  // can be used to detect UTF-16 (zeros==1) or UTF-32 (zeros==3)
+    // int zeros = 0;                                  // can be used to detect UTF-16 (zeros==1) or UTF-32 (zeros==3)
     for (int i = 0; i < len; ++i) {
         if (data[i] == '\r')
             hasCR = true;
         else if (data[i] == '\n')
             return QByteArray(hasCR ? "\r\n" : "\n");
-        else if (data[i] != '\0')                   // skip zeros (UTF-16, UTF-32, or similar unicode encodings)
-            ++zeros;
+        else if (data[i] == '\0')                      // skip zeros (UTF-16, UTF-32, or similar unicode encodings)
+            /*++zeros*/;
         else {
             hasCR = false;
-            zeros = 0;
+            // zeros = 0;
         }
     }
     return QByteArray();

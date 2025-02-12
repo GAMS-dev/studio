@@ -28,7 +28,7 @@
 namespace gams {
 namespace studio {
 
-LogParser::LogParser(QString encoding)
+LogParser::LogParser(const QString &encoding)
 {
     setEncoding(encoding);
 }

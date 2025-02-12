@@ -283,14 +283,14 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
             return file.size();
         }
         idx = recordList.first();
-        QString id = recordList.at(0);
+        const QString &id = recordList.at(0);
 
         if (!mReference.contains(id.toInt())) // ignore other unreferenced symbols
             continue;
 
-        QString symbolName = recordList.at(1);
-        QString dimension = recordList.at(4);
-        QString numberOfElements = recordList.at(5);
+        const QString &symbolName = recordList.at(1);
+        const QString &dimension = recordList.at(4);
+        const QString &numberOfElements = recordList.at(5);
 
         SymbolReferenceItem* ref = mReference[id.toInt()];
         ref->setDimension(dimension.toInt());
@@ -360,10 +360,10 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
             if (recordList.size() < 6)
                 break;
             id = recordList.first().toInt();
-            QString globalLineno   = recordList.at(1);
-            QString referenceType  = recordList.at(2);
-            QString parentIdx      = recordList.at(3);
-            QString localLineumber = recordList.at(4);
+            const QString &globalLineno   = recordList.at(1);
+            const QString &referenceType  = recordList.at(2);
+            const QString &parentIdx      = recordList.at(3);
+            const QString &localLineumber = recordList.at(4);
             QString location       = recordList.at(5);
             for (int i=6; i<recordList.size(); ++i) {
                 location += " ";

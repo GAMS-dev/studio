@@ -849,7 +849,7 @@ bool PExProjectNode::hasErrorText(int lstLine)
     return (lstLine < 0) ? mErrorTexts.size() > 0 : mErrorTexts.contains(lstLine);
 }
 
-void PExProjectNode::setRunFileParameterHistory(FileId fileId, QStringList parameterLists)
+void PExProjectNode::setRunFileParameterHistory(FileId fileId, const QStringList &parameterLists)
 {
     mRunFileParameters.insert(fileId, parameterLists);
 }

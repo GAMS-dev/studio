@@ -146,7 +146,7 @@ private:
     ParseResult handleReply(const QString &replyData);
     QString toBpString(const QList<int> &lines);
     void parseLinesMap(const QString &breakData);
-    bool getPair(const QString assignment, QList<int> &lines, QList<int> &coLNs);
+    bool getPair(const QString &assignment, QList<int> &lines, QList<int> &coLNs);
     void setState(DebugState state);
 
     QString mPath;

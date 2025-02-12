@@ -114,7 +114,7 @@ public slots:
     void appendListElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, const QModelIndex& index);
 
     void insertLastListElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, const QModelIndex& index);
-    void onlyRequriedAttributedChanged(int state);
+    void onlyRequriedAttributedChanged(Qt::CheckState state);
     void reloadConnectDataModel();
 
     void onEditDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);

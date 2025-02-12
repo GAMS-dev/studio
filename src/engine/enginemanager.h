@@ -96,6 +96,8 @@ public:
     void initUsername(const QString &user);
     void getVersion();
     void getUserInstances();
+    void getUserInstancePools();
+    void updateInstancePool(const QString &label, int size);
     void getQuota();
     void listJobs();
     void listNamespaces();
@@ -117,12 +119,14 @@ signals:
     void reLoginWithOIDCError(const QString &error);
     void reAuthorize(const QString &token);
     void reGetUsername(const QString &name);
+    void reGetInvitees(const QStringList &invitees);
     void reAuthorizeError(const QString &error);
     void reGetUsernameError(const QString &error);
     void rePing(const QString &value);
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
-    void reUserInstances(const QList<QPair<QString, QList<double> > > instances, const QString &defaultLabel);
+    void reUserInstances(const QList<QPair<QString, QList<double> > > instances, QMap<QString, QString> *poolOwners,
+                         const QString &defaultLabel = QString());
     void reUserInstancesError(const QString &error);
     void reListNamspaces(const QStringList &list);
     void reListNamespacesError(const QString &error);
@@ -134,6 +138,8 @@ signals:
     void reGetJobStatus(qint32 status, qint32 processStatus);
     void reKillJob(const QString &text);
     void reGetLog(const QByteArray &data);
+    void reUpdateInstancePool();
+    void reUpdateInstancePoolError(const QString &errorText);
     void jobIsQueued();
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);

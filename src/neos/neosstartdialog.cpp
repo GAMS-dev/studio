@@ -43,11 +43,11 @@ NeosStartDialog::NeosStartDialog(const QString &eMail, QWidget *parent) :
     connect(ui->cbForceGdx, &QCheckBox::toggled, this, &NeosStartDialog::updateValues);
     connect(ui->rbShort, &QCheckBox::toggled, this, &NeosStartDialog::updateValues);
     connect(ui->rbLong, &QCheckBox::toggled, this, &NeosStartDialog::updateValues);
-    connect(ui->cbTerms, &QCheckBox::stateChanged, this, [this](){
+    connect(ui->cbTerms, &QCheckBox::checkStateChanged, this, [this](){
         Settings::settings()->setBool(SettingsKey::skNeosAcceptTerms, ui->cbTerms->isChecked());
         updateCanStart();
     });
-    connect(ui->cbHideTerms, &QCheckBox::stateChanged, this, &NeosStartDialog::updateCanStart);
+    connect(ui->cbHideTerms, &QCheckBox::checkStateChanged, this, &NeosStartDialog::updateCanStart);
     ui->cbTerms->setChecked(Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms));
     ui->cbHideTerms->setChecked(Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm));
     if (Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
