@@ -770,8 +770,7 @@ void SettingsDialog::delayBaseThemeChange(bool valid)
 
 void SettingsDialog::open()
 {
-    // workaround for initialization hickup
-    ui->fontComboBox->setCurrentFont(QFont(mSettings->toString(skEdFontFamily)));
+    loadSettings();
     setModifiedStatus(false);
 
     QDialog::open();

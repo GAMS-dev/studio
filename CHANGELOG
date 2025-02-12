@@ -1,8 +1,12 @@
 Version 1.20.1  *
 ==================
 - Fixed missing font update from changes in the Settings Dialog.
+- Fixed Workspace cleanup Settings when Studio starts.
+- Moved the list of files to be deleted to the details view when cleaning up workspace on startup.
 - Dropped support for openSUSE Leap 15.6.
 - Added support for Fedora 41 and Ubuntu 24.04 LTS.
+- A GAMS Engine run from Studio can now select pool instances, too.
+- A GAMS Engine pool instance can be scaled up and down from within Studio.
 
 Version 1.20.0
 ==================
