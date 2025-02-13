@@ -299,11 +299,6 @@ void SymbolTableModel::resetModel()
 {
     beginResetModel();
     resetSizeAndIndices();
-    if (rowCount() > 0) {
-        removeRows(0, rowCount(), QModelIndex());
-    }
-    if (mType != SymbolDataType::FileUsed)
-       sort(mCurrentSortedColumn, mCurrentAscendingSort);
     endResetModel();
 }
 
