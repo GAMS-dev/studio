@@ -4318,11 +4318,10 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
             return false;
     }
 
-    // clear the TextMarks for this group
+    // clear the TextMarks for this project
     QSet<TextMark::Type> markTypes;
     markTypes << TextMark::error << TextMark::link << TextMark::target;
-    for (PExFileNode *node: project->listFiles())
-        mTextMarkRepo.removeMarks(node->file()->id(), node->assignedProject()->id(), markTypes);
+    project->clearTextMarks(markTypes);
 
     // prepare the log
     PExLogNode* logNode = mProjectRepo.logNode(project);
