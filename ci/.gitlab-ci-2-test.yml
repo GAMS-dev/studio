@@ -100,7 +100,7 @@ test-wei:
   tags: [windows]
   allow_failure: true
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.8.2-icu:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
   needs: [fetch-ci-scripts, build-wei]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"

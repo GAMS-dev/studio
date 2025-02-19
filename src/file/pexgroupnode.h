@@ -112,6 +112,7 @@ public:
     QString tooltip() override;
     QString errorText(int lstLine) override;
     void clearErrorTexts();
+    void clearTextMarks(const QSet<TextMark::Type> &markTypes);
     bool hasErrorText(int lstLine = -1);
     void setRunFileParameterHistory(FileId fileId, const QStringList &parameterLists);
     QStringList runFileParameterHistory(FileId fileId) const;

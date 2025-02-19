@@ -1,3 +1,7 @@
+Version 1.20.2 *
+==================
+- Added entry to clear the errors of the current project to the context menu of the line numbers.
+
 Version 1.20.1
 ==================
 - Fixed missing font update from changes in the Settings Dialog.

@@ -1005,7 +1005,7 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
     if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier) && mAllowBlockEdit)
         setContextMenuPolicy(Qt::PreventContextMenu);
     if (e->button() == Qt::RightButton && e->pos().x() <= 0) {
-        showBpContext(e->pos());
+        showLineNrContext(e->pos());
         done = true;
     } else if (e->modifiers() & Qt::AltModifier && mAllowBlockEdit) {
         QTextCursor cursor = cursorForPosition(e->pos());
@@ -1212,7 +1212,7 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     delete menu;
 }
 
-void CodeEdit::showBpContext(const QPoint &pos)
+void CodeEdit::showLineNrContext(const QPoint &pos)
 {
     int line = cursorForPosition(pos).blockNumber() + 1;
     bool hasBp = mBreakpoints.contains(line) || mAimedBreakpoints.contains(line);
@@ -1232,6 +1232,13 @@ void CodeEdit::showBpContext(const QPoint &pos)
     menu.addAction("Remove all breakpoints", this, [this]() {
         emit delAllBreakpoints();
     });
+    bool showRemoveErrors = false;
+    emit getProjectHasErrors(&showRemoveErrors);
+    if (showRemoveErrors) {
+        menu.addAction("Remove project errors", this, [this]() {
+            emit delAllProjectErrors();
+        });
+    }
     menu.exec(viewport()->mapToGlobal(pos));
 }
 

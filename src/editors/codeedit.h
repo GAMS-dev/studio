@@ -130,7 +130,7 @@ protected:
     void paintEvent(QPaintEvent *e) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
 
-    void showBpContext(const QPoint &pos);
+    void showLineNrContext(const QPoint &pos);
     virtual QString lineNrText(int blockNr);
     virtual bool showLineNr() const;
     virtual bool showFolding() const;
@@ -166,6 +166,8 @@ signals:
     void addBreakpoint(int line);
     void delBreakpoint(int line);
     void delAllBreakpoints();
+    void getProjectHasErrors(bool *hasErrors);
+    void delAllProjectErrors();
 
 public slots:
     void clearSelection();

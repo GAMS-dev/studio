@@ -844,6 +844,12 @@ void PExProjectNode::clearErrorTexts()
     mErrorTexts.clear();
 }
 
+void PExProjectNode::clearTextMarks(const QSet<TextMark::Type> &markTypes)
+{
+    for (PExFileNode *node: listFiles())
+        textMarkRepo()->removeMarks(node->file()->id(), node->assignedProject()->id(), markTypes);
+}
+
 bool PExProjectNode::hasErrorText(int lstLine)
 {
     return (lstLine < 0) ? mErrorTexts.size() > 0 : mErrorTexts.contains(lstLine);

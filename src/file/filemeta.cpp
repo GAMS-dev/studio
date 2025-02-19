@@ -1328,6 +1328,24 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
                 pro->clearBreakpoints();
                 updateBreakpoints();
             });
+            connect(codeEdit, &CodeEdit::getProjectHasErrors, this, [this](bool *hasErrors) {
+                if (!hasErrors) return;
+                *hasErrors = false;
+                PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
+                if (!pro) return;
+                for (PExFileNode *node: pro->listFiles()) {
+                    const LineMarks *marks = pro->textMarkRepo()->marks(node->file()->id());
+                    if (!marks->isEmpty()) {
+                        *hasErrors = true;
+                        return;
+                    }
+                }
+            });
+            connect(codeEdit, &CodeEdit::delAllProjectErrors, this, [this]() {
+                PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
+                if (!pro) return;
+                pro->clearTextMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::target);
+            });
         }
     }
     setProjectId(project->id());
