@@ -1,6 +1,7 @@
 Version 1.20.2 *
 ==================
 - Added entry to clear the errors of the current project to the context menu of the line numbers.
+- Improved the text context menu entries for removing file(s) or project(s) listed in the Project View.
 
 Version 1.20.1
 ==================
