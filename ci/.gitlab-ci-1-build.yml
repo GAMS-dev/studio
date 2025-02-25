@@ -1,7 +1,7 @@
 build-deg:
   stage: build
   tags: [macos]
-  needs: [fetch-ci-scripts]
+  needs: [fetch-ci-scripts, quality-gate]
   variables:
     qtpath: /opt/Qt/${QT_VERSION}/bin
   rules:
@@ -25,7 +25,7 @@ build-deg:
 build-dac:
   stage: build
   tags: [macos-arm64]
-  needs: [fetch-ci-scripts]
+  needs: [fetch-ci-scripts, quality-gate]
   variables:
     qtpath: /opt/Qt/${QT_VERSION}/bin
   rules:
@@ -49,9 +49,9 @@ build-dac:
 build-leg:
   stage: build
   tags: [linux]
-  needs: [fetch-ci-scripts]
+  needs: [fetch-ci-scripts, quality-gate]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/${QT_IMAGE_VERSION}:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
   variables:
     DOLLAR_GAMS: $$$$GAMS_DISTRIB
@@ -75,11 +75,11 @@ build-leg:
 build-wei:
   stage: build
   tags: [windows]
-  needs: [fetch-ci-scripts]
+  needs: [fetch-ci-scripts, quality-gate]
   variables:
      cmd_vcvars: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-${QT_IMAGE_VERSION}:latest
     entrypoint: [""]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -108,11 +108,11 @@ build-wei:
 build-wei-debug:
   stage: build
   tags: [windows]
-  needs: [fetch-ci-scripts]
+  needs: [fetch-ci-scripts, quality-gate]
   variables:
      cmd_vcvars: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-${QT_IMAGE_VERSION}:latest
   rules:
     - if: $PF_WEI_DEBUG == "1"
   script:

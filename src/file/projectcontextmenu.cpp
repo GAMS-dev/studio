@@ -163,11 +163,11 @@ ProjectContextMenu::ProjectContextMenu()
                         emit focusProject(nullptr);
                     }));
     mActions.insert(actSep7, addSeparator());
-    mActions.insert(actCloseProject, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseProject));
-    mActions.insert(actCloseDelProject, addAction(mTxtCloseDelProject, this, &ProjectContextMenu::onCloseDelProject));
-    mActions.insert(actCloseGroup, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseGroup));
-    mActions.insert(actCloseFile, addAction(mTxtCloseFile, this, &ProjectContextMenu::onCloseFile));
-    mActions.insert(actCloseDelFile, addAction(mTxtCloseDelFile, this, &ProjectContextMenu::onCloseDelFile));
+    mActions.insert(actCloseProject, addAction(mTxtRemoveProject, this, &ProjectContextMenu::onCloseProject));
+    mActions.insert(actCloseDelProject, addAction(mTxtDeleteProject, this, &ProjectContextMenu::onCloseDelProject));
+    mActions.insert(actCloseGroup, addAction(mTxtRemoveProject, this, &ProjectContextMenu::onCloseGroup));
+    mActions.insert(actCloseFile, addAction(mTxtRemoveFile, this, &ProjectContextMenu::onCloseFile));
+    mActions.insert(actCloseDelFile, addAction(mTxtDeleteFile, this, &ProjectContextMenu::onCloseDelFile));
 
 }
 
@@ -190,13 +190,18 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     bool isGamsSys = false;
     bool isGamsSysFile = false;
     bool isProjectEfi = false;
+    bool sameProject = true;
+    PExProjectNode *firstProject = nullptr;
     for (PExAbstractNode *node: std::as_const(mNodes)) {
-        if (PExProjectNode *project = node->assignedProject())
+        if (PExProjectNode *project = node->assignedProject()) {
+            if (!firstProject) firstProject = project;
+            else if (firstProject != project) sameProject = false;
             if (project->type() > PExProjectNode::tCommon) {
                 isGamsSys = true;
                 if (project->type() > PExProjectNode::tSearch)
                     isGamsSysFile = true;
             }
+        }
         if (node->toProject() != project) {
             canMoveProject = false;
         }
@@ -337,11 +342,11 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     mActions[actCloseDelFile]->setVisible(fileNode);
     mActions[actCloseDelFile]->setEnabled(!protectNodes && !isGamsSysFile);
 
-    mActions[actCloseProject]->setText(mTxtCloseProject + (single ? "" : "s"));
-    mActions[actCloseDelProject]->setText(mTxtCloseDelProject + (single ? "" : "s"));
-    mActions[actCloseGroup]->setText(mTxtCloseGroup);
-    mActions[actCloseFile]->setText(mTxtCloseFile + (single ? "" : "s"));
-    mActions[actCloseDelFile]->setText(mTxtCloseDelFile + (single ? "" : "s"));
+    mActions[actCloseProject]->setText(mTxtRemoveProject + (single ? "" : "s"));
+    mActions[actCloseDelProject]->setText(mTxtDeleteProject + (single ? "" : "s"));
+    mActions[actCloseGroup]->setText(mTxtRemoveGroup);
+    mActions[actCloseFile]->setText(mTxtRemoveFile + (sameProject ? "" : "s"));
+    mActions[actCloseDelFile]->setText(mTxtDeleteFile + (single ? "" : "s"));
 
     // create solver option files
     mActions[actSep3]->setVisible(isProject);
