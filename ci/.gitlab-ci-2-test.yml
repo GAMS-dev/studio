@@ -66,7 +66,7 @@ test-leg:
   stage: test
   tags: [linux]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/${QT_IMAGE_VERSION}:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
   needs: [fetch-ci-scripts, build-leg]
   rules:
@@ -100,7 +100,7 @@ test-wei:
   tags: [windows]
   allow_failure: true
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-${QT_IMAGE_VERSION}:latest
   needs: [fetch-ci-scripts, build-wei]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -136,3 +136,6 @@ test-wei:
       - build/reports/*
     reports:
       junit: build/reports/*
+
+secret_detection:
+  tags: [linux]

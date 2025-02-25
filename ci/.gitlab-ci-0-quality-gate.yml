@@ -1,0 +1,8 @@
+quality-gate:
+  stage: quality
+  tags: [linux]
+  image:
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/analyzer-${QT_IMAGE_VERSION}:latest
+    entrypoint: [""]   # prevent startup.sh
+  script:
+    - SKIP=end-of-file-fixer pre-commit run -a

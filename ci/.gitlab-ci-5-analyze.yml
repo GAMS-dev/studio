@@ -3,7 +3,7 @@ codechecker-leg:
   tags: [linux]
   needs: [fetch-ci-scripts]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/analyzer-qt6.8:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/analyzer-${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
   allow_failure: false
   variables:
