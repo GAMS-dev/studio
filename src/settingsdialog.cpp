@@ -214,12 +214,18 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->miroEdit, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
     connect(ui->miroEdit, &QLineEdit::textChanged, this, &SettingsDialog::miroPathTextChanged);
     connect(ui->updateBrowser, &QTextBrowser::anchorClicked, this, &SettingsDialog::anchorClicked);
-    connect(ui->autoUpdateBox, &QCheckBox::clicked, this, [this](bool checked){ ui->updateIntervalBox->setEnabled(checked); });
+    connect(ui->autoUpdateBox, &QCheckBox::clicked, this, [this](bool checked){
+        ui->updateIntervalBox->setEnabled(checked);
+        bool current = mSettings->toInt(skAutoUpdateCheck) > 0 ? true : false;
+        setModifiedStatus(checked != current);
+    });
     adjustSize();
 
     connect(ui->checkUpdateButton, &QPushButton::clicked, this, &SettingsDialog::checkForUpdates);
-    connect(ui->updateIntervalBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [this]{ ui->nextCheckLabel->setText(nextCheckDate().toString()); });
+    connect(ui->updateIntervalBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this]{
+        ui->nextCheckLabel->setText(nextCheckDate().toString());
+        setModifiedStatus(true);
+    });
 
     ui->edUserGamsTypes->installEventFilter(this);
     ui->edAutoReloadTypes->installEventFilter(this);
@@ -1213,8 +1219,10 @@ void SettingsDialog::updateNumericalPrecision()
 
 void SettingsDialog::checkForUpdates()
 {
+    mLastCheckDate = QDate::currentDate();
+    ui->lastCheckLabel->setText(mLastCheckDate.toString());
     setCheckForUpdateSettingsState();
-    ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
+    ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-2);
     mC4U->checkForUpdate(true);
 }
 

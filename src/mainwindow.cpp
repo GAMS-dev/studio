@@ -4494,7 +4494,8 @@ void MainWindow::initDelayedElements()
     checkForEngingJob();
     connect(mSyslog, &SystemLogEdit::newMessage, this, &MainWindow::updateSystemLogTab);
 
-    appendSystemLogInfo("ICU active: " + QString(QStringConverter::availableCodecs().count() > 16 ? "true" : "false"));
+    if (QStringConverter::availableCodecs().count() < 16)
+        appendSystemLogInfo("ICU inactive: Studio will provide a reduced number of supported encodings.");
 }
 
 void MainWindow::openDelayedFiles()
