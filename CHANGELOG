@@ -1,8 +1,8 @@
-Version 1.20.2 *
+Version 1.20.2
 ==================
+- Added an entry to clear the errors of the current project, to the context menu of the line numbers.
 - Fixed state of the `Apply` button, when the `Update` settings have changed.
-- Fixed the settings `Last check date` information, when checking for updates has been executed.
-- Added entry to clear the errors of the current project to the context menu of the line numbers.
+- Fixed the settings information `Last check date`, when checking for updates has been executed.
 - Improved the text context menu entries for removing file(s) or project(s) listed in the Project View.
 - Improved information message when the International Components for Unicode (ICU) support is missing.
 
