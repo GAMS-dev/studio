@@ -300,8 +300,7 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
         if (dimension.toInt() > 0) {
             for(int dim=0; dim < dimension.toInt(); dim++) {
                 const QString &d = recordList.at(6+dim);
-                if (d.toInt() > 0) // if dimension > 0 and domain is specified
-                    domain << d.toInt();
+                domain << d.toInt();
            }
         } // do not have dimension reference if dimension = 0
         ref->setDomain(domain);
