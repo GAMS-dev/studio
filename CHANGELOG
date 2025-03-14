@@ -1,6 +1,10 @@
 Version 1.20.3 *
 ==================
 - Fixed missing universe domain in Reference File Viewer.
+- Fixed selection of the default encoding.
+- The encodings dialog starts with only a few encodings pre-selected.
+- When starting on a system with reduced available encodings, the users selection is protected.
+- Fixed Reset function in encodings dialog.
 
 Version 1.20.2
 ==================
