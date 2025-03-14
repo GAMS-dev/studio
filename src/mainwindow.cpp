@@ -1364,17 +1364,18 @@ void MainWindow::setEncodings(const QStringList &encodingsList, const QString &a
     }
     QStringList availEncodings = QStringConverter::availableCodecs();
     for (const QString &enc: encodingsList) {
-        if (!availEncodings.contains(enc, Qt::CaseInsensitive)) continue;
         QAction *act;
         act = new QAction(enc, mCodecGroupSwitch);
         act->setCheckable(true);
         // act->setData(mib);
-        act->setChecked(enc.compare(active, Qt::CaseInsensitive));
+        act->setChecked(enc.compare(active, Qt::CaseInsensitive) == 0);
+        if (!availEncodings.contains(enc, Qt::CaseInsensitive)) act->setEnabled(false);
 
         act = new QAction(enc, mCodecGroupReload);
         act->setCheckable(true);
         // act->setData(mib);
-        act->setChecked(enc.compare(active, Qt::CaseInsensitive));
+        act->setChecked(enc.compare(active, Qt::CaseInsensitive) == 0);
+        if (!availEncodings.contains(enc, Qt::CaseInsensitive)) act->setEnabled(false);
     }
     ui->menuconvert_to->addActions(mCodecGroupSwitch->actions());
     ui->menureload_with->addActions(mCodecGroupReload->actions());
@@ -3227,7 +3228,7 @@ void MainWindow::restoreFromSettings()
     if (encodings.isEmpty()) {
         QString mibEncodings = settings->toString(skEncodingMibs);
         if (mibEncodings.isEmpty())
-            encodings = "UTF-8,System,ISO-8859-1,Shift_JIS,GB2312";
+            encodings = SelectEncodings::CDefaultEncodingSelection;
         else {
             for (const QString &sMib : mibEncodings.split(',')) {
                 bool ok;

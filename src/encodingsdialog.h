@@ -36,11 +36,9 @@ class SelectEncodings : public QDialog
 public:
     explicit SelectEncodings(const QStringList &selectedEncodings, const QString &defaultEncoding, QWidget *parent = nullptr);
     ~SelectEncodings() override;
-    QList<int> selectedMibs();
     QStringList selectedEncodings();
-    int defaultCodec();
     QString defaultEncoding();
-
+    static const QString CDefaultEncodingSelection;
 private slots:
 
     void on_pbCancel_clicked();
@@ -56,8 +54,7 @@ private:
 private:
     Ui::SelectEncodings *ui;
     QList<int> mSelectedMibs;
-    int mDefaultMib;
-    QStringList mSelectedEncodings;
+    QStringList mEncodingsBackup;
     QString mDefaultEncoding;
 };
 

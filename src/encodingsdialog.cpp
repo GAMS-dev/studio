@@ -27,13 +27,15 @@
 namespace gams {
 namespace studio {
 
+const QString SelectEncodings::CDefaultEncodingSelection = QString("UTF-8,ISO-8859-1,Shift_JIS,GB2312");
+
 SelectEncodings::SelectEncodings(const QStringList &selectedEncodings, const QString &defaultEncoding, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SelectEncodings)
 {
     ui->setupUi(this);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
-    mSelectedEncodings = selectedEncodings;
+    mEncodingsBackup = selectedEncodings;
     mDefaultEncoding = defaultEncoding;
 
     QStringList encList = QStringConverter::availableCodecs();
@@ -48,14 +50,19 @@ SelectEncodings::SelectEncodings(const QStringList &selectedEncodings, const QSt
     boldFont.setBold(true);
     for (const QString &enc: std::as_const(encList)) {
         QRadioButton *rad = new QRadioButton("");
+        int i = mEncodingsBackup.indexOf(enc, 0, Qt::CaseInsensitive);
+        if (i >= 0) mEncodingsBackup.remove(i);
         rad->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
         rad->setChecked(enc == defaultEncoding);
         ui->tableWidget->setCellWidget(row, 0, rad);
 
         QCheckBox *box = new QCheckBox("");
         box->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
-        if (selectedEncodings.contains(enc) || enc.compare("System") == 0) box->setChecked(true);
-        if (enc == "System") box->setEnabled(false);
+        box->setChecked(selectedEncodings.contains(enc));
+        if (enc == "System") {
+            box->setChecked(true);
+            box->setEnabled(false);
+        }
         ui->tableWidget->setCellWidget(row, 1, box);
 
         ui->tableWidget->setItem(row, 2, new QTableWidgetItem(enc));
@@ -79,47 +86,28 @@ SelectEncodings::~SelectEncodings()
     delete ui;
 }
 
-QList<int> SelectEncodings::selectedMibs()
-{
-    QList<int> res;
-    for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
-        QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 1));
-        QRadioButton *rb = static_cast<QRadioButton*>(ui->tableWidget->cellWidget(row, 0));
-        if (box->isChecked() || rb->isChecked()) res << ui->tableWidget->item(row, 2)->data(Qt::EditRole).toInt();
-    }
-    // ensure to have UTF-8 on top and System at the 2nd place
-    if (res.contains(0)) res.move(res.indexOf(0), 0);
-    if (res.contains(106)) res.move(res.indexOf(106), 0);
-    return res;
-}
-
 QStringList SelectEncodings::selectedEncodings()
 {
     QStringList res;
     for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
         QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 1));
         QRadioButton *rb = static_cast<QRadioButton*>(ui->tableWidget->cellWidget(row, 0));
-        if (box->isChecked() || rb->isChecked()) res << ui->tableWidget->item(row, 2)->text();
+        if (box->isChecked() || rb->isChecked())
+            res << ui->tableWidget->item(row, 2)->text();
     }
-    // TODO(JM) check if necessary
-    // ensure to have UTF-8 on top and System at the 2nd place
-    // if (res.contains(0)) res.move(res.indexOf(0), 0);
-    // if (res.contains(106)) res.move(res.indexOf(106), 0);
+    // This keeps encodings from a recent run in the list that are currently not available
+    // preventing encodings be removed when running without ICU
+    res << mEncodingsBackup;
 
     return res;
 }
 
-int SelectEncodings::defaultCodec()
+QString SelectEncodings::defaultEncoding()
 {
     for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
         QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 0));
-        if (box->isChecked()) return ui->tableWidget->item(row, 2)->data(Qt::EditRole).toInt();
+        if (box->isChecked()) return ui->tableWidget->item(row, 2)->data(Qt::EditRole).toString();
     }
-    return 104;
-}
-
-QString SelectEncodings::defaultEncoding()
-{
     return mDefaultEncoding;
 }
 
@@ -136,12 +124,15 @@ void SelectEncodings::on_pbSave_clicked()
 
 void SelectEncodings::on_pbReset_clicked()
 {
+    mEncodingsBackup = CDefaultEncodingSelection.split(",");
     for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
-        int mib = ui->tableWidget->item(row, 2)->data(Qt::EditRole).toInt();
+        QString enc = ui->tableWidget->item(row, 2)->text();
         QRadioButton *rad = static_cast<QRadioButton*>(ui->tableWidget->cellWidget(row, 0));
-        rad->setChecked(mib == mDefaultMib);
+        rad->setChecked(enc.compare("UTF-8", Qt::CaseInsensitive) == 0);
         QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 1));
-        box->setChecked(mib == 0 || mSelectedMibs.contains(mib));
+        int i = mEncodingsBackup.indexOf(enc, 0, Qt::CaseInsensitive);
+        box->setChecked(i >= 0);
+        if (i >= 0) mEncodingsBackup.remove(i);
     }
     centerCurrent();
 }
@@ -156,8 +147,8 @@ void SelectEncodings::centerCurrent()
 {
     int rbRow = 0;
     for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
-        int mib = ui->tableWidget->item(row, 2)->data(Qt::EditRole).toInt();
-        if (mib == mDefaultMib) rbRow = row;
+        QString enc = ui->tableWidget->item(row, 2)->text();
+        if (enc == mDefaultEncoding) rbRow = row;
     }
     QModelIndex mi = ui->tableWidget->model()->index(rbRow, 0);
     ui->tableWidget->setCurrentIndex(mi);
