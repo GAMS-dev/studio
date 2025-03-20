@@ -22,8 +22,6 @@
 
 #include <QMainWindow>
 #include <QMessageBox>
-#include <QPrinter>
-#include <QPrintDialog>
 
 #include "file/fileevent.h"
 #include "file/filemetarepo.h"
@@ -254,7 +252,7 @@ private slots:
     void cloneBookmarkMenu(QMenu *menu);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void newProcessCall(const QString &text, const QString &call);
-    void printDocument();
+    void printDocument(QPagedPaintDevice *printer);
     void updateTabIcon(gams::studio::PExAbstractNode *node, int tabIndex);
     void runnableChanged();
 
@@ -550,8 +548,6 @@ private:
     StatusWidgets* mStatusWidgets;
     QTimer mWinStateTimer;
     QTimer mSaveSettingsTimer;
-    QPrinter mPrinter;
-    QPrintDialog *mPrintDialog = nullptr;
 
     GamsLibProcess *mLibProcess = nullptr;
     QActionGroup *mCodecGroupSwitch = nullptr;
