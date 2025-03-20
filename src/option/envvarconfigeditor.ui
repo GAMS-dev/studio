@@ -39,7 +39,7 @@
     <string>Insert</string>
    </property>
    <property name="toolTip">
-    <string>Insert Environment Varaibles</string>
+    <string>Insert Environment Variables</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Ins</string>
