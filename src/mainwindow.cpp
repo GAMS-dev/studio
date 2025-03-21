@@ -20,6 +20,9 @@
 #include <QtConcurrent>
 #include <QSslSocket>
 #include <QtWidgets>
+#include <QPrinter>
+#include <QPrintDialog>
+
 #include "file/treeitemdelegate.h"
 #include "mainwindow.h"
 #include "application.h"
@@ -537,7 +540,6 @@ MainWindow::~MainWindow()
     delete mSearchDialog;
     delete mNavigatorDialog;
     delete mNavigatorInput;
-    delete mPrintDialog;
     FileType::clear();
     HeaderViewProxy::deleteInstance();
 }
@@ -6760,23 +6762,21 @@ void MainWindow::on_actionFoldDcoTextBlocks_triggered()
     }
 }
 
-void MainWindow::printDocument()
+void MainWindow::printDocument(QPagedPaintDevice *printer)
 {
     if (focusWidget() == mRecent.editor()) {
         auto* abstractEdit = ViewHelper::toAbstractEdit(mainTabs()->currentWidget());
         if (abstractEdit)
-            abstractEdit->print(&mPrinter);
+            abstractEdit->print(printer);
     } else if (ViewHelper::editorType(recent()->editor()) == EditorType::lxiLstChild) {
         auto* lxiViewer = ViewHelper::toLxiViewer(mainTabs()->currentWidget());
         if (lxiViewer)
-            lxiViewer->print(&mPrinter);
+            lxiViewer->print(printer);
     } else if (ViewHelper::editorType(recent()->editor()) == EditorType::txtRo) {
         auto* textViewer = ViewHelper::toTextView(mainTabs()->currentWidget());
         if (textViewer)
-            textViewer->print(&mPrinter);
+            textViewer->print(printer);
     }
-    mPrintDialog->deleteLater();
-    mPrintDialog = nullptr;
 }
 
 void MainWindow::updateTabIcon(PExAbstractNode *node, int tabIndex)
@@ -6838,27 +6838,15 @@ void MainWindow::on_actionPrint_triggered()
     msgBox.setStandardButtons(QMessageBox::Yes);
     msgBox.addButton(QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::No);
-#ifdef __APPLE__
-    if (!mPrintDialog)
-        mPrintDialog = new QPrintDialog(&mPrinter, this);
-    int ret = mPrintDialog->exec();
-    if (ret == QDialog::Accepted) {
+    QPrinter printer;
+    QPrintDialog printDialog(&printer, this);
+    if (printDialog.exec() == QDialog::Accepted) {
         if (numberLines>5000) {
-             int answer = msgBox.exec();
-             if (answer == QMessageBox::No)
+             if (msgBox.exec() == QMessageBox::No)
                  return;
         }
-        printDocument();
+        printDocument(&printer);
     }
-#else
-    if (!mPrintDialog)
-        mPrintDialog = new QPrintDialog(&mPrinter, this);
-    if (numberLines > 5000) {
-        int answer = msgBox.exec();
-        if (answer == QMessageBox::No) return;
-    }
-    mPrintDialog->open(this, SLOT(printDocument()));
-#endif
 }
 
 bool MainWindow::enabledPrintAction()

@@ -2700,9 +2700,24 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize && mColumn >= 0) {
             mLastCharType = CharType::None;
-            setSize((e->key() == Qt::Key_Backspace) ? -1 : 1);
+            if (e->key() == Qt::Key_Backspace) {
+                if (mColumn > 0)
+                    setSize(-1);
+            } else {
+                bool hasContent = false;
+                QTextBlock block = mEdit->document()->findBlockByNumber(qMax(mCurrentLine, mStartLine));
+                while (block.blockNumber() >= qMin(mCurrentLine, mStartLine)) {
+                    if (block.length()-1 > mColumn) {
+                        hasContent = true;
+                        break;
+                    }
+                    block = block.previous();
+                }
+                if (hasContent) setSize(1);
+            }
         }
-        replaceBlockText("");
+        if (mSize)
+            replaceBlockText("");
         e->ignore();
     } else if (e == Hotkey::Indent) {
         mEdit->indent(mEdit->mSettings->toInt(skEdTabSize));
