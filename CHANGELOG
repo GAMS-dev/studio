@@ -1,3 +1,7 @@
+Version 1.20.4 *
+==================
+- Fixed crash when saving a file to an existing file of the same project.
+
 Version 1.20.3
 ==================
 - Fixed missing universe domain in Reference File Viewer.

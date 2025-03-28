@@ -2008,7 +2008,9 @@ void MainWindow::on_actionSave_As_triggered()
         if (choice == 0)
             continue;
         else if (choice == 2)
-                 break;
+            break;
+
+        bool done = false;
 
         // perform file copy when file is either a gdx file or a ref file
         bool exists = QFile::exists(filePath);
@@ -2036,20 +2038,24 @@ void MainWindow::on_actionSave_As_triggered()
             if (choice == 1) {
                 FileKind oldKind = node->file()->kind();
 
+                PExProjectNode *project = node->assignedProject();
+                bool isMain = false;
+                if (project) {
+                    FileMeta *mainFM = project ? project->runnableGms() : nullptr;
+                    isMain = (mainFM == fileMeta || mainFM == destFM);
+                }
+
                 if (destFM) {
                     // destination has already nodes in PE and user wants to overwrite them
                     destFM->setModified(false);
                     closeFileEditors(destFM->id());
+                    // remove destination node if it exists in source project
                     if (PExFileNode* pfn = mProjectRepo.findFile(filePath, node->assignedProject()))
-                        // destination node exists in source project
                         mProjectRepo.closeNode(pfn);
-                    QVector<PExFileNode*> destNodes = mProjectRepo.fileNodes(destFM->id());
+                    // prevend double handling
+                    done = true;
                 }
 
-
-
-
-                // when overwriting a node, remove existing to prevent project explorer to contain two identical entries
                 mProjectRepo.saveNodeAs(node, filePath);
 
                 if (oldKind == node->file()->kind()) { // if old == new
@@ -2061,11 +2067,17 @@ void MainWindow::on_actionSave_As_triggered()
                     if (node->assignedProject()->type() == PExProjectNode::tCommon)
                         on_mainTabs_tabCloseRequested(index);
                 }
+                if (isMain) {
+                    if (node->file()->kind() == FileKind::Gms)
+                        project->setRunnableGms(node->file());
+                    else
+                        project->setRunnableGms(nullptr);
+                }
                 updateStatusFile();
                 updateAndSaveSettings();
             }
         }
-        if (choice == 1) {
+        if (choice == 1 && !done) {
             PExFileNode* newNode = mProjectRepo.findOrCreateFileNode(filePath, node->assignedProject());
             openFileNode(newNode, true);
             if (ui->mainTabs->tabText(ui->mainTabs->currentIndex()) != newNode->name())

@@ -917,39 +917,36 @@ PExLogNode*ProjectRepo::logNode(PExAbstractNode* node)
 
 void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
 {
-    FileMeta *destFM = fileRepo()->findOrCreateFileMeta(target);
-    if (!destFM) {
-        SysLogLocator::systemLog()->append("Error creating file " + target);
-        return;
-    }
+
     FileMeta* sourceFM = node->file();
-    bool keepOld = fileNodes(sourceFM->id()).size() > 1;
+    QString sourceFilename = sourceFM->location();
+    QList<PExFileNode*> sourceNodes = fileNodes(sourceFM->id());
+    sourceNodes.removeAll(node);
 
-    // destination editors with the old (overwritten) content need to be closed
-    emit closeFileEditors(destFM->id());
-
-    // when overwriting a node in the same project, remove it to avoid containing two identical entries
-    if (PExFileNode* destNode = findFile(target, node->assignedProject())) {
-        closeNode(destNode);
-        destFM = fileRepo()->findOrCreateFileMeta(target);
-    }
-    QVector<PExFileNode*> destNodes = fileNodes(destFM->id());
-
-    QString oldFile = node->location();
-
-    // set location to new file and add it to the tree
-    if (sourceFM->save(target, !keepOld)) {
-        if (keepOld) {
-            // destFM has been overwritten by the contents of sourceFM: replace sourceFM by destFM in node
-            node->replaceFile(destFM);
-        } else {
-            node->setName(sourceFM->name());
-            // source filemeta is kept for destination -> set all destination nodes to this
-            for (PExFileNode *dn : destNodes)
-                dn->replaceFile(sourceFM);
+    FileMeta *destFM = fileRepo()->fileMeta(target);
+    QList<PExFileNode*> destNodes;
+    if (destFM) {
+        if (destFM->isOpen()) {
+            SysLogLocator::systemLog()->append("Editor must not be open for " + target);
+            return;
         }
+        destNodes << fileNodes(destFM->id());
+    }
 
+    if (sourceFM->save(target)) {
+        // transfer to destination
+        node->setName(sourceFM->name());
+        for (PExFileNode *node : destNodes)
+            node->replaceFile(sourceFM);
 
+        // create new FileMeta for source if there are remaining nodes
+        if (sourceNodes.size()) {
+            sourceFM = fileRepo()->findOrCreateFileMeta(sourceFilename);
+
+            for (PExFileNode *node : sourceNodes) {
+                node->replaceFile(sourceFM);
+            }
+        }
         PExProjectNode *project = node->assignedProject();
         if (project->type() == PExProjectNode::tGams) {
             bool add = false;
@@ -970,6 +967,7 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
         } else {
             addToProject(project, node);
         }
+
         project->setNeedSave();
 
         // macOS didn't focus on the new node
