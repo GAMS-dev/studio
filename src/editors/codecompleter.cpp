@@ -33,7 +33,7 @@
 #include <QAction>
 
 // uncomment this to generate elements for testcompleter
-//#define COMPLETER_DEBUG
+// #define COMPLETER_DEBUG
 
 namespace gams {
 namespace studio {
@@ -404,10 +404,10 @@ void CodeCompleterModel::removeTempData(CodeCompleterType type)
     QMap<int, CodeCompleterType> addType;
     QMap<int, CodeCompleterType>::iterator it = mType.find(range.y());
     if (it != mType.end())
-        it = mType.erase(it);
+        it = mType.erase(QMap<int, CodeCompleterType>::const_iterator(it));
     while (it != mType.end()) {
         addType.insert(it.key() - range.y() + range.x(), it.value());
-        it = mType.erase(it);
+        it = mType.erase(QMap<int, CodeCompleterType>::const_iterator(it));
     }
     mType.insert(addType);
     endRemoveRows();
@@ -782,13 +782,13 @@ QPair<int, int> CodeCompleter::getSyntax(const QTextBlock &block, int pos, int &
 
 #ifdef COMPLETER_DEBUG
     if (mEdit) {
-        if (block.isValid()) DEB() << "    mSynSim.clearBlockSyntax();";
+        if (block.isValid()) DEB() << "  mSynSim.clearBlockSyntax();";
         for (QMap<int,QPair<int, int> >::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
             if (block.isValid())
-                DEB() << "    mSynSim.addBlockSyntax(" << it.key()
+                DEB() << "  mSynSim.addBlockSyntax(" << it.key()
                       << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second << ");";
         }
-        DEB() << " <" << syntax::syntaxKindName(res.first) << ", " << res.second << ">";
+        DEB() << "   <" << syntax::syntaxKindName(res.first) << ", " << res.second << ">";
     }
 #endif
 
@@ -806,7 +806,7 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
         posInBlock = cur.positionInBlock();
 #ifdef COMPLETER_DEBUG
         QString debugLine = line;
-        DEB() << "    // TEST: \n    line = \"" << debugLine.replace("\"", "\\\"") << "\";";
+        DEB() << "  // TEST: \n    line = \"" << debugLine.replace("\"", "\\\"") << "\";";
 #endif
     }
 
@@ -1224,9 +1224,29 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
             break;
         }
     }
+    int dcoCheck = qMin(start+2, line.length());
+    int dCount = 1;
+
+    for (qsizetype i = 0; i < dcoCheck; ++i) {
+        if (line.at(i) != ' ' && line.at(i) != '\t' && line.at(i) != '$') {
+            dCount = 0;
+            break;
+        }
+        if (line.at(i) == '$')
+            ++dCount;
+        else if (dCount > 0 && line.at(i) == '$')
+            ++dCount;
+        else if (dCount == 1)
+            dCount = 0;
+        if (dCount == 2)
+            break;
+    }
+
     int subType = 0;
     if (isWhitespace) {
-        if (synKind == syntax::SyntaxKind::CommentBlock) {
+        if (dCount != 2 && start > 0)
+            filter = filter & ~cc_Dco;
+        else if (synKind == syntax::SyntaxKind::CommentBlock) {
             filter = cc_Start | ccDcoEnd;
             subType = 1;
         } else if (synKind == syntax::SyntaxKind::IgnoredHead
@@ -1259,10 +1279,9 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
             filter = ccSysSufC | ccCtConst;
         else
             filter = filter & ~cc_Dco;
-    } else {
+    } else if (dCount != 2  && start > 0) {
         filter = filter & ~cc_Dco;
     }
-
 
     if (mDebug) {
         // for analysis
