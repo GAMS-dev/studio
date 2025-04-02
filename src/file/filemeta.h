@@ -89,7 +89,7 @@ public:
     void deleteEdit(QWidget* edit);
     bool hasEditor(QWidget * const &edit) const;
     void load(QString encoding, bool init = true);
-    bool save(const QString& newLocation = "", bool transferLocation = true);
+    bool save(const QString& newLocation = "");
     void renameToBackup();
     FileDifferences compare(const QString &fileName = QString());
     bool refreshMetaData();
@@ -122,7 +122,6 @@ signals:
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void fontChangeRequest(gams::studio::FileMeta *fileMeta, QFont f);
     void saveProjects();
-    void projectTabRenamed(gams::studio::FileMeta *fileMeta);
 
 protected:
     bool eventFilter(QObject*sender, QEvent* event) override;

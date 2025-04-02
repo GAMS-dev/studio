@@ -103,7 +103,7 @@ void TestCompleter::testDeclaration()
     mSynSim.addBlockSyntax(46, SyntaxKind::IdentifierAssignmentEnd, 16);
     mSynSim.addBlockSyntax(47, SyntaxKind::Semicolon, 16);
 
-    expect = ccDcoStrt | ccSysSufC | ccCtConst | ccDeclT;
+    expect = ccSysSufC | ccCtConst | ccDeclT;
     mCompleter->updateFilter( 3, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 

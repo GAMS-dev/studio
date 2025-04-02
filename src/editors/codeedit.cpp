@@ -2620,13 +2620,17 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         bool isMove = e->modifiers() & Qt::AltModifier;
         bool isShift = e->modifiers() & Qt::ShiftModifier;
         bool isWord = e->modifiers() & Qt::ControlModifier;
+        bool done = false;
+
         if (e->key() == Qt::Key_Home) {
+            mTopFocus = true;
             if (isShift) setSize(-mColumn);
             else {
                 mColumn = 0;
                 setSize(0);
             }
         } else if (e->key() == Qt::Key_End) {
+            mTopFocus = false;
             toEnd(isShift);
         } else if (e->key() == Qt::Key_Right) {
             if (isWord) {
@@ -2659,43 +2663,55 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
                 mColumn -= 1;
                 if (isShift)
                     setSize(mSize+1);
-            } else return;
+            } else done = true;
 
         } else if (e == Hotkey::BlockSelectPgDown || e == Hotkey::BlockSelectPgUp) {
             int amount = int(mEdit->height() / mEdit->blockBoundingGeometry(block).height() / block.lineCount());
             if (e == Hotkey::BlockSelectPgDown) {
+                mTopFocus = false;
                 if (mCurrentLine + amount >= mEdit->blockCount())
                     amount = mEdit->blockCount() - mCurrentLine - 1;
                 mCurrentLine += amount;
             } else {
+                mTopFocus = true;
                 mCurrentLine = qMax(mCurrentLine - amount, 0);
             }
         } else if (e->key() == Qt::Key_Down) {
+            mTopFocus = false;
             if ((isWord || isMove)) {
                 if (mCurrentLine < mEdit->blockCount()-1) mCurrentLine += 1;
-                else return;
+                else done = true;
             } else if (isShift) {
                 if (mStartLine < mEdit->blockCount()-1) mStartLine += 1;
-                else return;
+                else done = true;
             } else if (qMax(mStartLine, mCurrentLine) < mEdit->blockCount()-1) {
                 mCurrentLine += 1;
                 mStartLine += 1;
-            } else return;
-
+            } else done = true;
         } else if (e->key() == Qt::Key_Up) {
+            mTopFocus = true;
             if ((isWord || isMove)) {
                 if (mCurrentLine > 0) mCurrentLine -= 1;
-                else return;
+                else done = true;
             } else if (isShift) {
                 if (mStartLine > 0) mStartLine -= 1;
-                else return;
+                else done = true;
             } else if (qMin(mStartLine, mCurrentLine) > 0) {
                 mCurrentLine -= 1;
                 mStartLine -= 1;
-            } else return;
-        } else return;
+            } else done = true;
+        } else done = true;
+        if (done) {
+            if (mTopFocus && mEdit->topVisibleLine() > qMin(mStartLine, mCurrentLine))
+                if (QScrollBar *sb = mEdit->verticalScrollBar())
+                    sb->setValue(qMin(mStartLine, mCurrentLine));
+            return;
+        }
         updateExtraSelections();
         emit mEdit->cursorPositionChanged();
+        if (mTopFocus && mEdit->topVisibleLine() > qMin(mStartLine, mCurrentLine))
+            if (QScrollBar *sb = mEdit->verticalScrollBar())
+                sb->setValue(qMin(mStartLine, mCurrentLine));
 
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize && mColumn >= 0) {

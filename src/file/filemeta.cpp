@@ -595,7 +595,7 @@ void FileMeta::addEditor(QWidget *edit)
     } else if (project::ProjectEdit* prOp = ViewHelper::toProjectEdit(edit)) {
         connect(prOp, &project::ProjectEdit::modificationChanged, this, &FileMeta::modificationChanged);
         connect(prOp, &project::ProjectEdit::saveProjects, mFileRepo, &FileMetaRepo::saveProjects);
-        connect(this, &FileMeta::saveProjects, mFileRepo, &FileMetaRepo::saveProjects);
+        connect(this, &FileMeta::saveProjects, mFileRepo, &FileMetaRepo::saveProjects, Qt::UniqueConnection);
     } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
         connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (connect::ConnectEditor* gcEdit = ViewHelper::toGamsConnectEditor(edit)) {
@@ -859,10 +859,9 @@ void FileMeta::load(QString encoding, bool init)
 ///
 /// \brief FileMeta::save Saves the data to a file
 /// \param newLocation the filepath of the new or replaced file
-/// \param transferLocation TRUE: transfer the location reference of this FileMeta to the new location
 /// \return
 ///
-bool FileMeta::save(const QString &newLocation, bool transferLocation)
+bool FileMeta::save(const QString &newLocation)
 {
     QString location = newLocation.isEmpty() ? mLocation : newLocation;
     QFile file(location);
@@ -926,19 +925,15 @@ bool FileMeta::save(const QString &newLocation, bool transferLocation)
 
         if (!old.copy(location)) EXCEPT() << "Can't save " << location;
     }
-    if (transferLocation) {
-        setLocation(location);
-        refreshType();
-        if (res)
-            setModified(false);
-    }
+    setLocation(location);
+    refreshType();
+    if (res)
+        setModified(false);
+
     if (kind() != FileKind::Gsp) {
-        QTimer::singleShot(500, this, [this, transferLocation, newLocation]() {
+        // reactivate file watcher
+        QTimer::singleShot(500, this, [this]() {
             mFileRepo->watch(this);
-            if (!transferLocation) {
-                if (FileMeta *meta = mFileRepo->fileMeta(newLocation))
-                    mFileRepo->watch(meta);
-            }
         });
     }
     return res;

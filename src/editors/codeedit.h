@@ -278,6 +278,7 @@ protected:
         QList<QTextEdit::ExtraSelection> mSelections;
         bool mOverwrite = false;
         bool mIsSearchSelection = false;
+        bool mTopFocus = false; // true: moving the cursor keeps the top line of BlockEdit in view
     };
     class BlockEditCursorWatch
     {
