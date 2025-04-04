@@ -40,6 +40,7 @@ public:
     EditorType type() const override;
     int lineCount();
     void setLineMarked(const QVector<bool> &newLineMarked);
+    QStringList getEnabledContextActions() override;
 
 signals:
     void keyPressed(QKeyEvent *event);

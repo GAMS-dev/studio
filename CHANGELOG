@@ -5,6 +5,7 @@ Version 1.20.4 *
 - Fixed block-edit scroll behavior, when the cursor moved up the view now scrolls to the first line of the block selection.
 - Improved GAMS license file, i.e. it now contains an empty line at the end of the file.
 - Fixed a bug where the GDX Viewer would automatically switch to another symbol in some cases.
+- Synchronized the "Edit" menu with the context menu of the editor.
 
 Version 1.20.3
 ==================

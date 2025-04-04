@@ -1133,6 +1133,7 @@ void CodeEdit::paintEvent(QPaintEvent* e)
 void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
 {
     QMenu *menu = createStandardContextMenu();
+
     bool hasBlockSelection = mBlockEdit && !mBlockEdit->blockText().isEmpty();
     QAction *lastAct = nullptr;
     for (auto i = menu->actions().count()-1; i >= 0; --i) {
@@ -1140,28 +1141,33 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
         if (act->objectName() == "edit-undo") {
             menu->removeAction(act);
             act->setShortcut(QKeySequence("Ctrl+Z"));
+            act->setIcon(Theme::icon(":/%1/undo"));
             menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-redo") {
             menu->removeAction(act);
             act->setShortcut(QKeySequence("Ctrl+Y"));
+            act->setIcon(Theme::icon(":/%1/redo"));
             menu->insertAction(lastAct, act);
         } else if (act->objectName() == "select-all") {
             if (mBlockEdit) act->setEnabled(false);
             menu->removeAction(act);
             act->disconnect();
             act->setShortcut(QKeySequence("Ctrl+A"));
+            act->setIcon(QIcon());
             connect(act, &QAction::triggered, this, &CodeEdit::selectAllText);
             menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-paste") {
             menu->removeAction(act);
             act->disconnect();
             act->setShortcut(QKeySequence("Ctrl+V"));
+            act->setIcon(Theme::icon(":/%1/paste"));
             connect(act, &QAction::triggered, this, &CodeEdit::pasteClipboard);
             menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-copy") {
             menu->removeAction(act);
             act->disconnect();
             act->setShortcut(QKeySequence("Ctrl+C"));
+            act->setIcon(Theme::icon(":/%1/copy"));
             connect(act, &QAction::triggered, this, &CodeEdit::copySelection);
             menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-cut") {
@@ -1169,6 +1175,7 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
             act->disconnect();
             if (hasBlockSelection) act->setEnabled(true);
             act->setShortcut(QKeySequence("Ctrl+X"));
+            act->setIcon(Theme::icon(":/%1/cut"));
             connect(act, &QAction::triggered, this, &CodeEdit::cutSelection);
             menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-delete") {
@@ -1176,8 +1183,13 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
             act->disconnect();
             if (hasBlockSelection) act->setEnabled(true);
             act->setShortcut(QKeySequence("Del"));
+            act->setIcon(Theme::icon(":/%1/delete-all"));
             connect(act, &QAction::triggered, this, &CodeEdit::deleteSelection);
             menu->insertAction(lastAct, act);
+        } else if (act->isSeparator() && lastAct && lastAct->objectName() == "select-all") {
+            menu->removeAction(act);
+            menu->insertAction(nullptr, act);
+            act = lastAct;
         }
         lastAct = act;
     }
@@ -1962,6 +1974,32 @@ int CodeEdit::replaceAll(FileMeta *fm, const QRegularExpression &regex, const QS
         res = AbstractEdit::replaceAll(fm, regex, replaceText, options, selectionScope);
     }
     if (mCompleter) mCompleter->suppressOpenStop();
+    return res;
+}
+
+QStringList CodeEdit::getEnabledContextActions()
+{
+    QStringList res;
+    QMenu *menu = createStandardContextMenu();
+    bool hasBlockSelection = mBlockEdit && !mBlockEdit->blockText().isEmpty();
+    for (auto i = menu->actions().count()-1; i >= 0; --i) {
+        QAction *act = menu->actions().at(i);
+        if (act->objectName() == "edit-undo") {
+            if (act->isEnabled()) res << act->objectName();
+        } else if (act->objectName() == "edit-redo") {
+            if (act->isEnabled()) res << act->objectName();
+        } else if (act->objectName() == "select-all" && !mBlockEdit) {
+            if (act->isEnabled()) res << act->objectName();
+        } else if (act->objectName() == "edit-paste") {
+            if (act->isEnabled()) res << act->objectName();
+        } else if (act->objectName() == "edit-copy") {
+            if (act->isEnabled() || hasBlockSelection) res << act->objectName();
+        } else if (act->objectName() == "edit-cut") {
+            if (act->isEnabled() || hasBlockSelection) res << act->objectName();
+        } else if (act->objectName() == "edit-delete") {
+            if (act->isEnabled() || hasBlockSelection) res << act->objectName();
+        }
+    }
     return res;
 }
 

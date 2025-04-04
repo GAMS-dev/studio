@@ -351,6 +351,7 @@ private slots:
     void on_actionUndo_triggered();
     void on_actionPaste_triggered();
     void on_actionCopy_triggered();
+    void on_actionDelete_text_triggered();
     void on_actionSelect_All_triggered();
     void on_collapseAll();
     void on_expandAll();
@@ -448,6 +449,7 @@ private slots:
     void closePinView();
     void updateProjectList();
     void updateAllowedMenus();
+    void updateEditActions();
     void on_cbFocusProject_currentIndexChanged(int index);
 
     void on_actionPin_Right_triggered();
@@ -459,11 +461,9 @@ private slots:
     void on_actionStepDebugger_triggered();
 
     void updateSystemLogTab(bool focus);
-
-
     void on_tbProjectSettings_clicked();
-
     void cleanGeneratedProjectFiles(gams::studio::NodeId projId, const QString &workspace);
+
 
 private:
     void deleteLogFiles(const QString &pattern, const QString &workspace);

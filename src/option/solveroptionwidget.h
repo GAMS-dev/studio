@@ -33,6 +33,7 @@ namespace gams {
 namespace studio {
 
 class MainWindow;
+class SystemLogEdit;
 
 namespace option {
 
@@ -71,6 +72,8 @@ public:
     void setFileChangedExtern(bool value);
 
     void toggleCommentOption();
+
+    QStringList getEnabledContextActions();
 
 signals:
     void modificationChanged(bool modifiedState);
@@ -139,6 +142,7 @@ private:
     bool mModified;
     OptionTokenizer* mOptionTokenizer;
     OptionCompleterDelegate* mOptionCompleter;
+    SystemLogEdit *mLogEdit = nullptr;
 
     void refreshOptionTableModel(bool hideAllComments);
 

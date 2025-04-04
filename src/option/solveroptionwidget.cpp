@@ -72,9 +72,10 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     if (!mOptionTokenizer->getOption()->available())
        EXCEPT() << "Could not find or load OPT library for opening '" << mLocation << "'. Please check your GAMS installation.";
 
-    SystemLogEdit* logEdit = new SystemLogEdit(this);
-    mOptionTokenizer->provideLogger(logEdit);
-    ui->solverOptionTabWidget->addTab( logEdit, "Messages" );
+    mLogEdit = new SystemLogEdit(this);
+    mLogEdit->setObjectName("log-edit");
+    mOptionTokenizer->provideLogger(mLogEdit);
+    ui->solverOptionTabWidget->addTab( mLogEdit, "Messages" );
 
     const QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation, mEncoding);
     mOptionTableModel = new SolverOptionTableModel(optionItem, mOptionTokenizer,  this);
@@ -685,7 +686,10 @@ void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
 
 void SolverOptionWidget::copyAction()
 {
-    copyDefinitionToClipboard(SolverOptionDefinitionModel::COLUMN_OPTION_NAME);
+    if (focusWidget() == mLogEdit)
+        mLogEdit->copy();
+    else
+        copyDefinitionToClipboard(SolverOptionDefinitionModel::COLUMN_OPTION_NAME);
 }
 
 void SolverOptionWidget::showOptionDefinition(bool selectRow)
@@ -918,8 +922,31 @@ void SolverOptionWidget::toggleCommentOption()
     }
 }
 
+QStringList SolverOptionWidget::getEnabledContextActions()
+{
+    QStringList res;
+    if (!focusWidget()) return res;
+    if (focusWidget() == mLogEdit)
+        return mLogEdit->getEnabledContextActions();
+
+    QStringList namedSelectAll {"select-all", "actionSelect_all"};
+    QStringList namedCopy {"edit-copy", "actionCopyDefinitionOptionName"};
+    for (QAction *act : focusWidget()->actions()) {
+        if (namedSelectAll.contains(act->objectName()) && !res.contains("select-all")) {
+            res << "select-all";
+        } else if (namedCopy.contains(act->objectName()) && !res.contains("edit-copy")) {
+            res << "edit-copy";
+        }
+    }
+    return res;
+}
+
 void SolverOptionWidget::selectAllOptions()
 {
+    if (focusWidget() == mLogEdit) {
+        mLogEdit->selectAll();
+        return;
+    }
     if (isViewCompact()) return;
 
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();

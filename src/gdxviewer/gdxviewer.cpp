@@ -575,6 +575,26 @@ void GdxViewer::writeState(const QString &location)
 
 }
 
+QStringList GdxViewer::getEnabledContextActions()
+{
+    QStringList res;
+    if (focusWidget() == ui->tvSymbols) {
+        if (!ui->tvSymbols->selectionModel()->selectedIndexes().isEmpty()) return {"edit-copy"};
+    } else {
+        QWidget *wid = focusWidget();
+        for (QAction *act : wid->actions()) {
+            if (act->objectName() == "edit-copy") {
+                if (act->isEnabled()) res << act->objectName();
+            } else if (act->objectName() == "select-all") {
+                if (act->isEnabled()) res << act->objectName();
+            }
+        }
+    }
+    return res;
+}
+
+
+
 QString GdxViewer::gdxFile() const
 {
     return mGdxFile;

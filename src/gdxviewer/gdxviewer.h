@@ -65,9 +65,8 @@ public:
     GdxViewerState *state() const;
     void readState(const QVariantMap& map);
     void writeState(const QString &location);
-
+    QStringList getEnabledContextActions();
     GdxSymbolTableModel *gdxSymbolTable() const;
-
     void saveDelete();
 
 public slots:
