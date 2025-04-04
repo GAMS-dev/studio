@@ -191,7 +191,7 @@ void GamsLicensingDialog::writeLicenseFile(GamsLicenseInfo &licenseInfo, QString
 
     if (licenseFile.open(QFile::WriteOnly | QFile::Text)) {
         QTextStream stream(&licenseFile);
-        stream << license.join("\n");
+        stream << license.join("\n") << "\n";
         licenseFile.close();
     } else {
         auto msg = QString("Unable to write %1 : %2").arg(QDir::toNativeSeparators(licenseFile.fileName()),
@@ -266,7 +266,7 @@ void GamsLicensingDialog::installAlp()
     ui->errorLabel->clear();
     GamsGetKeyProcess proc;
     proc.setAlpId(ui->idEdit->text().trimmed());
-    auto license = proc.execute().split("\n");
+    auto license = proc.execute().split("\n", Qt::SkipEmptyParts);
     for (int i=0; i<license.size(); ++i) {
         license[i] = license[i].trimmed();
     }

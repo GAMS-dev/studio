@@ -140,6 +140,21 @@ void TextViewEdit::setLineMarked(const QVector<bool> &newLineMarked)
     mLineMarked = newLineMarked;
 }
 
+QStringList TextViewEdit::getEnabledContextActions()
+{
+    QStringList res;
+    QMenu *menu = createStandardContextMenu();
+    for (auto i = menu->actions().count()-1; i >= 0; --i) {
+        QAction *act = menu->actions().at(i);
+        if (act->objectName() == "select-all" && !blockEdit()) {
+            if (act->isEnabled()) res << act->objectName();
+        } else if (act->objectName() == "edit-copy" && mMapper.hasSelection()) {
+            res << act->objectName();
+        }
+    }
+    return res;
+}
+
 void TextViewEdit::keyPressEvent(QKeyEvent *event)
 {
 //    if (event->key() == Qt::Key_Control) {
@@ -171,6 +186,7 @@ void TextViewEdit::contextMenuEvent(QContextMenuEvent *e)
             if (blockEdit()) act->setEnabled(false);
             menu->removeAction(act);
             act->disconnect();
+            act->setIcon(QIcon());
             connect(act, &QAction::triggered, this, &CodeEdit::selectAllText);
             menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-paste" && act->isEnabled()) {
@@ -184,11 +200,16 @@ void TextViewEdit::contextMenuEvent(QContextMenuEvent *e)
             act->disconnect();
             act->setEnabled(mMapper.hasSelection());
             act->setShortcut(QKeySequence("Ctrl+C"));
+            act->setIcon(Theme::icon(":/%1/copy"));
             connect(act, &QAction::triggered, this, &TextViewEdit::copySelection);
             menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-delete") {
             menu->removeAction(act);
             act->disconnect();
+        } else if (act->isSeparator() && lastAct && lastAct->objectName() == "select-all") {
+            menu->removeAction(act);
+            menu->insertAction(nullptr, act);
+            act = lastAct;
         }
         lastAct = act;
     }

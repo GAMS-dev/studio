@@ -106,6 +106,10 @@ void GdxViewer::updateSelectedSymbol(const QItemSelection &selected, const QItem
         GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
         if (!selectedSymbol) return;
 
+        QString name = selectedSymbol->name();
+        mState->setSelectedSymbol(selectedSymbol->name());
+        mState->setSelectedSymbolIsAlias(selectedSymbol->type() == GMS_DT_ALIAS);
+
         //aliases are also aliases in the sense of the view
         if (selectedSymbol->type() == GMS_DT_ALIAS) {
             selectedIdx = selectedSymbol->subType();
@@ -570,6 +574,26 @@ void GdxViewer::writeState(const QString &location)
     Settings::settings()->setMap(skGdxStates, states);
 
 }
+
+QStringList GdxViewer::getEnabledContextActions()
+{
+    QStringList res;
+    if (focusWidget() == ui->tvSymbols) {
+        if (!ui->tvSymbols->selectionModel()->selectedIndexes().isEmpty()) return {"edit-copy"};
+    } else {
+        QWidget *wid = focusWidget();
+        for (QAction *act : wid->actions()) {
+            if (act->objectName() == "edit-copy") {
+                if (act->isEnabled()) res << act->objectName();
+            } else if (act->objectName() == "select-all") {
+                if (act->isEnabled()) res << act->objectName();
+            }
+        }
+    }
+    return res;
+}
+
+
 
 QString GdxViewer::gdxFile() const
 {

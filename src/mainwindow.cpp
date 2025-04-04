@@ -351,6 +351,7 @@ MainWindow::MainWindow(QWidget *parent)
     mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
     initIcons();
     restoreFromSettings();
+    connect(ui->menuEdit, &QMenu::aboutToShow, this, &MainWindow::updateEditActions);
 
     search::SearchFileHandler* sfh = new search::SearchFileHandler(this);
     mSearchDialog = new search::SearchDialog(sfh, this);
@@ -497,6 +498,39 @@ void MainWindow::updateAllowedMenus()
     ui->actionCopy_Project->setEnabled(projectCanMove);
     ui->actionCopy_Project->setText(isSmallProject ? "&Export Project..." :"&Copy Project...");
     ui->actionCopy_Project->setToolTip(isSmallProject ? "Export Project" :"Copy Project");
+}
+
+void MainWindow::updateEditActions()
+{
+    QWidget *wid = focusWidget();
+    if ((!ViewHelper::toTextView(wid) && wid != mSyslog) || (!wid && mRecent.editor()))
+        wid = mRecent.editor();
+    QStringList enabledActions;
+    if (AbstractEdit *edit = ViewHelper::toAbstractEdit(wid))
+        enabledActions = edit->getEnabledContextActions();
+    else if (TextView * tv = ViewHelper::toTextView(wid))
+        enabledActions = tv->edit()->getEnabledContextActions();
+    else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid))
+        enabledActions = gdx->getEnabledContextActions();
+    else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(wid))
+        enabledActions = sow->getEnabledContextActions();
+    else if (ViewHelper::toGamsConfigEditor(wid))
+        enabledActions = {"select-all"};
+
+    QHash<QString, QAction*> editActions {
+        {"edit-undo", ui->actionUndo}, {"edit-redo", ui->actionRedo}, {"select-all", ui->actionSelect_All},
+        {"edit-paste", ui->actionPaste}, {"edit-copy", ui->actionCopy}, {"edit-cut", ui->actionCut},
+        {"edit-delete", ui->actionDelete_text}};
+    auto iter = editActions.begin();
+    while (iter != editActions.end()) {
+        iter.value()->setEnabled(false);
+        ++iter;
+    }
+    if (!wid) return;
+    for (const QString &actName : enabledActions) {
+        QAction *act = editActions.value(actName, nullptr);
+        if (act) act->setEnabled(true);
+    }
 }
 
 void MainWindow::watchProjectTree()
@@ -732,6 +766,7 @@ void MainWindow::initIcons()
     ui->actionCompile_with_GDX_Creation->setIcon(Theme::icon(":/%1/code-gdx"));
     ui->actionCopy->setIcon(Theme::icon(":/%1/copy"));
     ui->actionCut->setIcon(Theme::icon(":/%1/cut"));
+    ui->actionDelete_text->setIcon(Theme::icon(":/%1/delete-all"));
     ui->actionClose_Tab->setIcon(Theme::icon(":/%1/remove"));
     ui->actionExit_Application->setIcon(Theme::icon(":/%1/door-open"));
     ui->actionGAMS_Library->setIcon(Theme::icon(":/%1/books"));
@@ -6101,6 +6136,17 @@ void MainWindow::on_actionCopy_triggered()
     }
 }
 
+void MainWindow::on_actionDelete_text_triggered()
+{
+    if (!focusWidget()) return;
+
+    if (CodeEdit *ce = ViewHelper::toCodeEdit(mRecent.editor())) {
+        ce->deleteSelection();
+    } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(mRecent.editor())) {
+        ae->textCursor().removeSelectedText();
+    }
+}
+
 void MainWindow::on_actionSelect_All_triggered()
 {
     if (focusWidget() == ui->projectView){
@@ -6111,11 +6157,13 @@ void MainWindow::on_actionSelect_All_triggered()
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
     if (!fm || !focusWidget()) return;
 
-    if (fm->kind() == FileKind::Gdx) {
-        gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
-        gdx->selectAllAction();
+    if (TextView *tv = ViewHelper::toTextView(focusWidget())) {
+        tv->selectAllText();
     } else if (focusWidget() == mSyslog) {
         mSyslog->selectAll();
+    } else if (fm->kind() == FileKind::Gdx) {
+        gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
+        gdx->selectAllAction();
     } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(focusWidget())) {
         ae->selectAll();
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
@@ -7001,6 +7049,7 @@ QStringList MainWindow::projectWorkspaces() const
     }
     return workspaces;
 }
+
 
 }
 }

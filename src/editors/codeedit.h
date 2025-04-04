@@ -119,6 +119,7 @@ public:
     void replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope) override;
     int replaceAll(FileMeta *fm, const QRegularExpression &regex, const QString &replaceText,
                    QFlags<QTextDocument::FindFlag> options, bool selectionScope) override;
+    QStringList getEnabledContextActions() override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

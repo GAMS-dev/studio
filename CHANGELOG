@@ -1,8 +1,11 @@
-Version 1.20.4 *
+Version 1.20.4
 ==================
-- Fixed crash when saving a file to an existing file of the same project.
-- Fixed completer suggests DCO at wrong place.
-- Fixed block-edit scroll behavior, when the cursor moved up the view now scrolls to the first line of the block selection.
+- Fixed a crash when saving a file to an existing file of the same project.
+- Fixed completer suggesting DCO at the wrong place, i.e. only allow DCO at the beginning of the line.
+- Fixed block-edit scroll behavior, when the cursor moved up. The view now scrolls to the first line of the block selection.
+- Fixed a bug where the GDX Viewer would automatically switch to another symbol in some cases.
+- Improved GAMS license file, i.e. it now contains an empty line at the end of the file.
+- Improved the `Edit` and context menus by synchronizing the `Edit` menu with the context menu of the editor views.
 
 Version 1.20.3
 ==================

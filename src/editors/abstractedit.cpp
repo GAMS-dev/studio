@@ -29,6 +29,7 @@
 #include <QToolTip>
 #include <QTextDocumentFragment>
 #include <QApplication>
+#include <QMenu>
 
 
 namespace gams {
@@ -503,6 +504,31 @@ void AbstractEdit::scrollSynchronize(int dx, int dy)
 {
     horizontalScrollBar()->setValue(horizontalScrollBar()->value() + dx);
     verticalScrollBar()->setValue(verticalScrollBar()->value() + dy);
+}
+
+QStringList AbstractEdit::getEnabledContextActions()
+{
+    QStringList res;
+    QMenu *menu = createStandardContextMenu();
+    for (auto i = menu->actions().count()-1; i >= 0; --i) {
+        QAction *act = menu->actions().at(i);
+        if (act->objectName() == "edit-undo") {
+            if (act->isEnabled()) res << act->objectName();
+        } else if (act->objectName() == "edit-redo") {
+            if (act->isEnabled()) res << act->objectName();
+        } else if (act->objectName() == "select-all") {
+            if (act->isEnabled()) res << act->objectName();
+        } else if (act->objectName() == "edit-paste") {
+            if (act->isEnabled()) res << act->objectName();
+        } else if (act->objectName() == "edit-copy") {
+            if (act->isEnabled()) res << act->objectName();
+        } else if (act->objectName() == "edit-cut") {
+            if (act->isEnabled()) res << act->objectName();
+        } else if (act->objectName() == "edit-delete") {
+            if (act->isEnabled()) res << act->objectName();
+        }
+    }
+    return res;
 }
 
 void AbstractEdit::internalExtraSelUpdate()

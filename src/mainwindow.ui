@@ -203,9 +203,10 @@
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
     <addaction name="separator"/>
+    <addaction name="actionCut"/>
     <addaction name="actionCopy"/>
     <addaction name="actionPaste"/>
-    <addaction name="actionCut"/>
+    <addaction name="actionDelete_text"/>
     <addaction name="actionSelect_All"/>
     <addaction name="separator"/>
     <addaction name="menuAdvanced"/>
@@ -1703,6 +1704,24 @@
   <action name="actionNone_Show_All">
    <property name="text">
     <string>-Show All-</string>
+   </property>
+  </action>
+  <action name="actionDelete_text">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/delete-all</normaloff>:/solid/delete-all</iconset>
+   </property>
+   <property name="text">
+    <string>Delete</string>
+   </property>
+   <property name="toolTip">
+    <string>Deletes the selected text</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
  </widget>

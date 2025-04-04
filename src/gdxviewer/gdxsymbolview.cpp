@@ -63,6 +63,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     //create context menu
     QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", this, [this]() { copySelectionToClipboard(","); });
+    cpComma->setObjectName("edit-copy");
     mContextMenuTV.addAction(cpComma);
     cpComma->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpComma->setShortcutVisibleInContextMenu(true);
@@ -94,6 +95,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mContextMenuTV.addSeparator();
 
     QAction* aSelectAll = mContextMenuLV.addAction("Select All\tCtrl+A", this, [this]() { selectAll(); });
+    aSelectAll->setObjectName("select-all");
     mContextMenuTV.addAction(aSelectAll);
     aSelectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     aSelectAll->setShortcutVisibleInContextMenu(true);
@@ -1091,5 +1093,3 @@ void GdxSymbolView::markSearchResults()
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams
-
-

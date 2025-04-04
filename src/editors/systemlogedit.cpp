@@ -105,13 +105,23 @@ void SystemLogEdit::mouseReleaseEvent(QMouseEvent *event)
 void SystemLogEdit::contextMenuEvent(QContextMenuEvent *e)
 {
     QMenu *menu = createStandardContextMenu();
+    QAction *lastAct = nullptr;
     for (int i = menu->actions().count()-1; i >= 0; --i) {
         QAction *act = menu->actions().at(i);
         if (act->objectName() == "edit-copy") {
             act->disconnect();
             act->setShortcut(QKeySequence("Ctrl+C"));
+            act->setIcon(Theme::icon(":/%1/copy"));
             connect(act, &QAction::triggered, this, &SystemLogEdit::copy);
+        } else if (act->objectName() == "select-all") {
+            act->setShortcut(QKeySequence("Ctrl+A"));
+            act->setIcon(QIcon());
+        } else if (act->isSeparator() && lastAct && lastAct->objectName() == "select-all") {
+            menu->removeAction(act);
+            menu->insertAction(nullptr, act);
+            act = lastAct;
         }
+        lastAct = act;
     }
     QAction act("Clear Log", this);
     connect(&act, &QAction::triggered, this, &SystemLogEdit::clear);

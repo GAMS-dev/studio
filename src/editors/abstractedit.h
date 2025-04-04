@@ -75,6 +75,7 @@ public:
     virtual int replaceAll(FileMeta *fm, const QRegularExpression &regex,
                            const QString &replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope);
     virtual void scrollSynchronize(int dx, int dy);
+    virtual QStringList getEnabledContextActions();
 
 signals:
     void requestLstTexts(gams::studio::NodeId groupId, const QVector<int> &lstLines, QStringList &result);
