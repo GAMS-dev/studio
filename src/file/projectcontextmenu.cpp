@@ -277,9 +277,9 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     }
 
     mActions[actExplorer]->setEnabled(single);
-    mActions[actExplorer]->setVisible(!isGamsSys);
+    mActions[actExplorer]->setVisible(!(isGamsSys && isProject));
     mActions[actOpenTerminal]->setEnabled(single);
-    mActions[actOpenTerminal]->setVisible(!isFreeSpace && !isGamsSys);
+    mActions[actOpenTerminal]->setVisible(!isFreeSpace && !(isGamsSys && isProject));
 
     mActions[actGdxDiff]->setEnabled(isOpenableWithGdxDiff);
     mActions[actGdxDiff]->setVisible(isOpenableWithGdxDiff);
@@ -326,7 +326,6 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
 
     mActions[actSep1]->setVisible(isProject);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && !isGamsSys && single);
-//    mActions[actSetMain]->setEnabled(single);
 
     mActions[actAddNewFile]->setVisible((isProject || isGroup) && !isGamsSys);
     mActions[actAddExisting]->setVisible((isProject || isGroup) && !isGamsSys);
