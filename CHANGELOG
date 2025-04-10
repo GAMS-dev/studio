@@ -3,6 +3,7 @@ Version 1.20.5 *
 - Added 'Open Location' and 'Open Terminal' to the context menu of the GAMS-System project.
 - Added mark for active PF file.
 - Fixed icon highlighting for current project.
+- Improved Took out the DCOs for embeddedCode from the Completer offers.
 - Upgraded to Qt 6.8.3 on all platforms.
 
 Version 1.20.4
