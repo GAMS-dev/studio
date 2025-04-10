@@ -30,7 +30,7 @@ class FileIcon
 {
     FileIcon();
 public:
-    static QIcon iconForFileKind(FileKind kind, bool isReadonly = false, bool isMain = false, QIcon::Mode mode = QIcon::Normal, int alpha = 100);
+    static QIcon iconForFileKind(FileKind kind, bool isReadonly = false, bool isActive = false, QIcon::Mode mode = QIcon::Normal, int alpha = 100);
 };
 
 } // namespace studio

@@ -1084,6 +1084,7 @@ bool FileMeta::isReadOnly() const
 {
     AbstractEdit* edit = mEditors.isEmpty() ? nullptr : ViewHelper::toAbstractEdit(mEditors.first());
     if (edit) return edit->isReadOnly();
+    if (mForceReadOnly) return true;
 
     if (kind() == FileKind::TxtRO
             || kind() == FileKind::Lst

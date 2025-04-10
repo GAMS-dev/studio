@@ -671,14 +671,22 @@ void PExProjectNode::setParameterFile(FileMeta *pfFile)
         return;
     }
     QString pfPath = pfFile ? pfFile->location() : "";
+    FileMeta *prevPf = parameterFile();
     setParameterFile(pfPath);
-
-    emit changed(id());
+    if (PExFileNode *node = findFile(prevPf))
+        emit projectRepo()->nodeChanged(node->id());
+    if (PExFileNode *node = findFile(parameterFile()))
+        emit projectRepo()->nodeChanged(node->id());
 }
 
 void PExProjectNode::setParameterFile(const QString &fileName)
 {
+    QString old = parameter("pf");
+    PExFileNode *oldPf = old.isEmpty() ? nullptr : findFile(old);
     setParameter("pf", fileName);
+    if (oldPf) emit changed(oldPf->id());
+    PExFileNode *newPf = fileName.isEmpty() ? nullptr : findFile(fileName);
+    if (newPf) emit changed(newPf->id());
     emit changed(id());
 }
 
@@ -1014,7 +1022,8 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
 
             } else if (item.optionId == opt->getOrdinalNumber("ParmFile")) {
                 if (value == "default") value = "\"" + filestem + ".pf\"";
-                setParameter("pf", value.isEmpty() ? "" : cleanPath(path, value));
+                setParameterFile(value.isEmpty() ? "" : cleanPath(path, value));
+                emit runnableChanged();
 
             } else if (item.optionId == opt->getOrdinalNumber("logoption")) {
                 int lo = item.value.toInt(&ok);

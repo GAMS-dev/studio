@@ -151,11 +151,18 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     }   break;
 
     case Qt::DecorationRole: {
-        QModelIndex parInd = ind;
-        while (parInd.isValid() && parInd.parent().isValid() && parInd.parent().parent().isValid())
-            parInd = parInd.parent();
+        PExProjectNode *project = node(ind)->assignedProject();
+        bool isCurProject = false;
+        if (mCurrent.isValid() && project) {
+            PExAbstractNode *curNode = mProjectRepo->node(mCurrent);
+            if (curNode) {
+                PExProjectNode *curPro = curNode->assignedProject();
+                if (curPro && project->id() == curPro->id()) isCurProject = true;
+            }
+        }
+
         QIcon::Mode mode = isCurrent(ind) ? QIcon::Active : isSelected(ind) ? QIcon::Selected : QIcon::Normal;
-        return node(ind)->icon(mode, isCurrentProject(parInd) ? 100 : 50);
+        return node(ind)->icon(mode, isCurProject ? 100 : 50);
     }
 
     case Qt::ToolTipRole:

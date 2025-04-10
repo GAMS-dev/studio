@@ -12,6 +12,8 @@
         <file alias="file-alt">file-alt.svg</file>
         <file alias="file-connect">file-connect.svg</file>
         <file alias="file-edit">file-edit.svg</file>
+        <file alias="file-param">file-param.svg</file>
+        <file alias="file-param-run">file-param-run.svg</file>
         <file alias="filter">filter.svg</file>
         <file alias="filter-off">filter-off.svg</file>
         <file alias="folder">folder.svg</file>

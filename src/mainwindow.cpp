@@ -256,7 +256,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
     connect(&mFileMetaRepo, &FileMetaRepo::setGroupFontSize, this, &MainWindow::setGroupFontSize);
     connect(&mFileMetaRepo, &FileMetaRepo::scrollSynchronize, this, &MainWindow::scrollSynchronize);
-    connect(&mFileMetaRepo, &FileMetaRepo::saveProjects, this, &MainWindow::updateAndSaveSettings);
+    connect(&mFileMetaRepo, &FileMetaRepo::saveProjects, this, [this]() {
+        updateAndSaveSettings();
+        for (int i = 1; i < mainTabs()->count(); ++i)
+            updateTabIcon(nullptr, i);
+
+    });
     connect(&mProjectRepo, &ProjectRepo::addWarning, this, &MainWindow::appendSystemLogWarning);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::openFolder, this, &MainWindow::openFolder);
@@ -2217,6 +2222,8 @@ void MainWindow::loadCommandLines(PExProjectNode* oldProj, PExProjectNode* proj)
 
 void MainWindow::activeTabChanged(int index)
 {
+    for (int i = 1; i < mainTabs()->count(); ++i)
+        updateTabIcon(nullptr, i);
     if (!mWp) return;
     if (mCurrentMainTab >= 0) updateTabIcon(nullptr, mCurrentMainTab);
     if  (index >= 0) updateTabIcon(nullptr, index);
@@ -5267,6 +5274,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         updateTabIcon(nullptr, mCurrentMainTab);
         updateRecentEdit(mRecent.editor(), edit);
     }
+    for (int i = 1; i < mainTabs()->count(); ++i)
+        updateTabIcon(nullptr, i);
     addToHistory(fileMeta->location());
     if (project && project->type() == PExProjectNode::tCommon) addToHistory(project->fileName());
 }
@@ -6854,6 +6863,7 @@ void MainWindow::updateTabIcon(PExAbstractNode *node, int tabIndex)
         if (!node) node = project;
     }
     int alpha = tabIndex == mainTabs()->currentIndex() ? 100 : 40;
+    if (node && node->assignedProject() == mRecent.project(false)) alpha = 100;
     QIcon icon = node->icon(QIcon::Normal, alpha);
 #ifndef __APPLE__
     ui->mainTabs->setTabIcon(tabIndex, icon);
@@ -6862,9 +6872,8 @@ void MainWindow::updateTabIcon(PExAbstractNode *node, int tabIndex)
 
 void MainWindow::runnableChanged()
 {
-    for (int i = 1; i < mainTabs()->count(); ++i) {
+    for (int i = 1; i < mainTabs()->count(); ++i)
         updateTabIcon(nullptr, i);
-    }
     if (Settings::settings()->toBool(skOptionsPerMainFile)) {
         loadCommandLines(nullptr, mRecent.project());
         if (PExProjectNode *proj = mRecent.project()) {
@@ -6877,7 +6886,6 @@ void MainWindow::runnableChanged()
                     proj->setRunFileParameterHistory(id, params);
             }
         }
-
     }
 }
 
