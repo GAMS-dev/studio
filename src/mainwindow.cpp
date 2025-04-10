@@ -69,6 +69,7 @@
 #include "tabbarstyle.h"
 #include "support/gamslicenseinfo.h"
 #include "support/checkforupdate.h"
+#include "gamscom/continuouslinedata.h"
 #include "headerviewproxy.h"
 #include "pinviewwidget.h"
 #include "file/pathselect.h"
@@ -383,6 +384,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     mSyslog = new SystemLogEdit(this);
+    mSyslog->setProperty("SYS", "LOG");
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
     mSyslog->setFont(getEditorFont(fgLog));
     connect(mSyslog, &AbstractEdit::zoomRequest, this, [this](int delta) {
@@ -581,7 +583,7 @@ MainWindow::~MainWindow()
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
-    mWp->setProperty("WP", "WP");
+    mWp->setProperty("SYS", "WP");
     //JM: Changed the parameter from (const QString &var) to (QString var) to avoid crash.
     //    When the labels have been recalculated, the string that belongs to the label becomes invalid.
     connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
@@ -713,6 +715,30 @@ void MainWindow::adjustFonts()
 
     f.setPointSizeF(f.pointSizeF() * fontFactorStatusbar);
     ui->statusBar->setFont(f);
+}
+
+void MainWindow::updateProfilerAction()
+{
+    PExProjectNode *project = mRecent.project();
+    if (project) {
+        ui->actionShow_Profiler->setVisible(true);
+        ui->actionShow_Profiler->setChecked(project->doProfile() && project->isProfilerVisible());
+        bool enabled = project->doProfile();
+        if (!enabled) {
+            option::OptionTokenizer *opt = mGamsParameterEditor->getOptionTokenizer();
+            QList<option::OptionItem> optList = opt->tokenize(mGamsParameterEditor->getCurrentCommandLineData());
+            for (option::OptionItem item : optList) {
+                if (item.key.compare("profile", Qt::CaseInsensitive) == 0) {
+                    enabled = true;
+                    break;
+                }
+            }
+        }
+        ui->actionShow_Profiler->setEnabled(enabled);
+    } else {
+        ui->actionShow_Profiler->setVisible(false);
+    }
+
 }
 
 QVector<PExAbstractNode *> MainWindow::selectedNodes(QModelIndex index)
@@ -852,6 +878,10 @@ void MainWindow::initToolBar()
     ui->toolBar->insertSeparator(ui->actionProject_View);
     connect(mGamsParameterEditor->dockChild(), &AbstractView::zoomRequest, this, [this](int delta) {
         zoomWidget(mGamsParameterEditor->dockChild(), delta);
+    });
+
+    connect(mGamsParameterEditor, &option::ParameterEditor::optionsChanged, this, [this](const QString &) {
+        updateProfilerAction();
     });
 }
 
@@ -2554,7 +2584,7 @@ void MainWindow::stopDebugServer(PExProjectNode* project, bool stateChecked)
 
     ui->debugWidget->setDebugServer(nullptr);
     project->gotoPaused(-1);
-    project->stopDebugServer();
+    project->stopComServer();
 }
 
 void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
@@ -2914,7 +2944,9 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
         ui->mainTabs->removeTab(index);
         if (widget == mRecent.editor())
             mSearchDialog->editorChanged(nullptr);
+        PExProjectNode *lastProject = mRecent.project();
         mRecent.removeEditor(widget);
+        if (mRecent.project() != lastProject) updateProfilerAction();
         return;
     }
     PExProjectNode *project = mRecent.project();
@@ -3495,7 +3527,9 @@ void MainWindow::closePinView()
     if (edit) {
         mPinView->setWidget(nullptr);
         mPinView->setVisible(false);
+        PExProjectNode *lastProject = mRecent.project();
         mRecent.removeEditor(edit);
+        if (mRecent.project() != lastProject) updateProfilerAction();
         FileMeta *fm = mFileMetaRepo.fileMeta(edit);
         if (fm) {
             fm->deleteEdit(edit);
@@ -4287,7 +4321,7 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     }
 }
 
-void MainWindow::execute(const QString &commandLineStr, AbstractProcess* process, debugger::DebugStartMode debug)
+void MainWindow::execute(const QString &commandLineStr, AbstractProcess* process, gamscom::ComFeatures comMode)
 {
     PExProjectNode* project = currentProject();
     if (!project) {
@@ -4298,16 +4332,18 @@ void MainWindow::execute(const QString &commandLineStr, AbstractProcess* process
         process = new GamsProcess();
     bool ready = executePrepare(project, commandLineStr, process);
     if (ready) {
-        if (debug == debugger::NoDebug || project->startDebugServer(debug)) {
-            if (debug != debugger::NoDebug) {
+        if (project->doProfile()) comMode.setFlag(gamscom::cfProfile);
+        else project->setProfilerVisible(false);
+        updateProfilerAction();
+        if (comMode == gamscom::cfNoCom || project->startComServer(comMode)) {
+            if (comMode & gamscom::cfRunDebug)
                 ui->debugWidget->setVisible(true);
-            }
             execution(project);
         }
-        else if (debug) {
-            appendSystemLogWarning("Could not start debugger for project [" + project->name() + "]. "
-                                   + (project->debugServer() ? " Debugger is already running."
-                                                             : "Too many activeDebuggers."));
+        else if (comMode) {
+            appendSystemLogWarning("Could not start server connection for project [" + project->name() + "]. "
+                                   + (project->comServer() ? " Server is already running."
+                                                             : "Too many active servers."));
         }
     }
 }
@@ -4324,7 +4360,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
         wid->setFocus();
 
     // gather modified files and autosave or request to save
-    QVector<FileMeta*> modifiedFiles;
+    QList<FileMeta*> modifiedFiles;
     if (settings->toBool(skAutosaveOnRun)) {
         modifiedFiles = mFileMetaRepo.modifiedFiles();
     } else {
@@ -4435,31 +4471,32 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     option::Option *opt = mGamsParameterEditor->getOptionTokenizer()->getOption();
     if (process)
         project->setProcess(process);
-    AbstractProcess* groupProc = project->process();
+    AbstractProcess* projectProc = project->process();
     int logOption = 0;
-    groupProc->setParameters(project->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList, opt, logOption));
+    projectProc->setParameters(project->analyzeParameters(gmsFilePath, projectProc->defaultParameters(), itemList, opt, logOption));
     logNode->prepareRun(logOption);
     logNode->setJumpToLogEnd(true);
 
-    groupProc->setProjectId(project->id());
-    groupProc->setWorkingDirectory(workDir);
+    projectProc->setProjectId(project->id());
+    projectProc->setWorkingDirectory(workDir);
 
     // disable MIRO menus
-    if (dynamic_cast<miro::AbstractMiroProcess*>(groupProc) ) {
+    if (dynamic_cast<miro::AbstractMiroProcess*>(projectProc) ) {
         setMiroRunning(true);
-        connect(groupProc, &AbstractProcess::finished, this, [this](){setMiroRunning(false);});
+        connect(projectProc, &AbstractProcess::finished, this, [this](){setMiroRunning(false);});
     }
-    connect(groupProc, &AbstractProcess::newProcessCall, this, &MainWindow::newProcessCall, Qt::UniqueConnection);
-    connect(groupProc, &AbstractProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
+    connect(projectProc, &AbstractProcess::newProcessCall, this, &MainWindow::newProcessCall, Qt::UniqueConnection);
+    connect(projectProc, &AbstractProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
 
-    logNode->linkToProcess(groupProc);
+    logNode->linkToProcess(projectProc);
     return true;
 }
 
 void MainWindow::execution(PExProjectNode *project)
 {
-    AbstractProcess* groupProc = project->process();
-    groupProc->execute();
+    project->updateProfilerForOpenNodes();
+    qApp->processEvents();
+    project->process()->execute();
     ui->toolBar->repaint();
 
     ui->dockProcessLog->raise();
@@ -4469,14 +4506,14 @@ void MainWindow::updateRunState()
 {
     updateMiroEnabled(false);
     mGamsParameterEditor->updateRunState(isActiveProjectRunnable(), isRecentGroupRunning());
-    debugger::Server *debugServer = nullptr;
+    gamscom::Server *debugServer = nullptr;
     if (PExProjectNode *project = currentProject()) {
-        debugServer = project->debugServer();
+        debugServer = project->comServer();
         ui->debugWidget->setText("Project: " + project->name());
         mPinControl.projectSwitched(project);
     }
     ui->debugWidget->setDebugServer(debugServer);
-    ui->debugWidget->setVisible(debugServer);
+    ui->debugWidget->setVisible(debugServer && debugServer->features().testFlag(gamscom::cfRunDebug));
     updateAllowedMenus();
 }
 
@@ -4602,7 +4639,7 @@ void MainWindow::on_actionRunDebugger_triggered()
     if (ui->debugWidget->isVisible()) {
         emit ui->debugWidget->sendRun();
     } else {
-        execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebug), nullptr, debugger::RunDebug);
+        execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebug), nullptr, gamscom::cfRunDebug);
     }
 }
 
@@ -4611,7 +4648,7 @@ void MainWindow::on_actionStepDebugger_triggered()
     if (ui->debugWidget->isVisible()) {
         emit ui->debugWidget->sendStepLine();
     } else {
-        execute(mGamsParameterEditor->on_runAction(option::RunActionState::StepDebug), nullptr, debugger::StepDebug);
+        execute(mGamsParameterEditor->on_runAction(option::RunActionState::StepDebug), nullptr, gamscom::cfStepDebug);
     }
 }
 
@@ -5291,6 +5328,28 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         if (!ae->isReadOnly()) {
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
             connect(fileMeta, &FileMeta::modifiedChanged, this, &MainWindow::fileModifiedChanged, Qt::UniqueConnection);
+            connect(fileMeta, &FileMeta::getProfilerMaxCompoundValues, this, [this]
+                    (qreal &timeSec, size_t &memory, size_t &loops) {
+                PExProjectNode *project = mRecent.project();
+                if (project) project->profiler()->getMaxCompoundValues(timeSec, memory, loops);
+            });
+            connect(fileMeta, &FileMeta::getProfilerMaxData, this, [this]
+                    (QList<QPair<int, qreal>> &maxTimeContLine, QList<QPair<int,int>> &maxLoopsContLine) {
+                PExProjectNode *project = mRecent.project();
+                if (project) {
+                    maxTimeContLine = project->profiler()->maxTime();
+                    maxLoopsContLine = project->profiler()->maxLoops();
+                }
+            });
+            connect(fileMeta, &FileMeta::jumpToContinuousLine, this, [this](int contLine) {
+                PExProjectNode *project = mRecent.project();
+                if (project) {
+                    QString file = project->contLineData()->filename(contLine);
+                    int line = project->contLineData()->fileLine(contLine);
+                    if (line < 1) line = 1;
+                    if (line > 0) project->jumpToFile(file, line - 1);
+                }
+            });
         }
     } else if (fileMeta->kind() == FileKind::Gsp || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Pf
                || fileMeta->kind() == FileKind::Guc || fileMeta->kind() == FileKind::Efi || fileMeta->kind() == FileKind::GCon) {
@@ -5418,7 +5477,7 @@ void MainWindow::focusProject(PExProjectNode *project)
 void MainWindow::closeProject(PExProjectNode* project)
 {
     if (!project) return;
-    bool delay = project->debugServer();
+    bool delay = project->comServer();
     if (!terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
         return;
     QVector<FileMeta*> changedFiles;
@@ -5577,6 +5636,7 @@ void MainWindow::closeFileEditors(const FileId &fileId, bool willReopen)
         mClosedTabs << fm->location();
     int lastIndex = 0;
 
+    PExProjectNode *lastProject = mRecent.project();
     NavigationHistoryLocator::navigationHistory()->stopRecord();
     // close all related editors, tabs and clean up
     while (!fm->editors().isEmpty()) {
@@ -5596,6 +5656,7 @@ void MainWindow::closeFileEditors(const FileId &fileId, bool willReopen)
     }
     if (fm->kind() != FileKind::Gsp)
         mClosedTabsIndexes << lastIndex;
+    if (!willReopen && mRecent.project() != lastProject) updateProfilerAction();
 
 
     // if the file has been removed, remove nodes
@@ -7048,6 +7109,15 @@ QStringList MainWindow::projectWorkspaces() const
         workspaces << project->workDir();
     }
     return workspaces;
+}
+
+void MainWindow::on_actionShow_Profiler_toggled(bool showProfiler)
+{
+    PExProjectNode *project = mRecent.project();
+    if (project && project->doProfile()) {
+        project->setProfilerVisible(showProfiler);
+    }
+    updateProfilerAction();
 }
 
 

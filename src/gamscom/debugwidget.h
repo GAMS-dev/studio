@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_DEBUGGER_DEBUGWIDGET_H
-#define GAMS_STUDIO_DEBUGGER_DEBUGWIDGET_H
+#ifndef GAMS_STUDIO_GAMSCOM_DEBUGWIDGET_H
+#define GAMS_STUDIO_GAMSCOM_DEBUGWIDGET_H
 
 #include <QWidget>
 #include "server.h"
 
 namespace gams {
 namespace studio {
-namespace debugger {
+namespace gamscom {
 
 namespace Ui {
 class DebugWidget;
@@ -67,4 +67,4 @@ private:
 } // namespace debugger
 } // namespace studio
 } // namespace gams
-#endif // GAMS_STUDIO_DEBUGGER_DEBUGWIDGET_H
+#endif // GAMS_STUDIO_GAMSCOM_DEBUGWIDGET_H

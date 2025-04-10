@@ -63,13 +63,14 @@ CodeEdit::CodeEdit(QWidget *parent)
     mParenthesesDelay.setSingleShot(true);
     mSettings = Settings::settings();
     mCompleterTimer.setSingleShot(true);
+    mProfilerCol << 0;
 
     connect(&mCompleterTimer, &QTimer::timeout, this, &CodeEdit::checkCompleterAutoOpen);
     connect(&mBlinkBlockEdit, &QTimer::timeout, this, &CodeEdit::blockEditBlink);
     connect(&mWordDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     connect(&mParenthesesDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     connect(this, &CodeEdit::blockCountChanged, this, &CodeEdit::blockCountHasChanged);
-    connect(this, &CodeEdit::updateRequest, this, &CodeEdit::updateLineNumberArea);
+    connect(this, &CodeEdit::updateRequest, this, &CodeEdit::updateViewport);
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::startCompleterTimer);
@@ -87,6 +88,10 @@ CodeEdit::~CodeEdit()
     mCompleter = nullptr;
     delete mLineNumberArea;
     mLineNumberArea = nullptr;
+    if (mProfilerArea) delete mProfilerArea;
+    if (mProfilerHeader) delete mProfilerHeader;
+    mProfilerArea = nullptr;
+    mProfilerHeader = nullptr;
     if (mBlockEdit) endBlockEdit();
     if (mBlockEditSelection) {
         BlockEdit *ed = mBlockEditSelection;
@@ -126,6 +131,47 @@ int CodeEdit::lineNumberAreaWidth()
     return space;
 }
 
+int CodeEdit::profilerWidth()
+{
+    if (!mProfilerArea || !mProfilerArea->isVisible()) return 0;
+    int uTime;
+    int uMem;
+    emit getProfilerCurrentUnits(uTime, uMem);
+    qreal maxTimes;
+    size_t maxMemory;
+    size_t maxLoops;
+    emit getProfilerMaxCompoundValues(maxTimes, maxMemory, maxLoops);
+    mColumnFlags = ProfilerColumns(mSettings->toInt((skEdProfilerCols)));
+    mProfilerCol.clear();
+    mProfilerCol << 0;
+    if (mColumnFlags.testFlag(pcTime)) {
+        QString sTime = EditorHelper::formatTime2(maxTimes, uTime, true);
+        if (sTime.length() < 5) sTime = "1.234";
+        mProfilerCol << fontMetrics().horizontalAdvance(QString(" %1 ").arg(sTime));
+    }
+    if (mColumnFlags.testFlag(pcMemory)) {
+        QString sMem = EditorHelper::formatMemory2(maxMemory, uMem, true);
+        if (sMem.length() < 5) sMem = "1.234";
+        mProfilerCol << mProfilerCol.last() + fontMetrics().horizontalAdvance(QString(" %1 ").arg(sMem));
+    }
+    if (mColumnFlags.testFlag(pcLoop))
+        mProfilerCol << mProfilerCol.last() + fontMetrics().horizontalAdvance(QString(" %1 ").arg(maxLoops));
+    mProfilerLoopDigits = qMax(3, QString::number(maxLoops).length());
+    return mProfilerCol.last();
+}
+
+int CodeEdit::profilerHeaderHeight()
+{
+    if (!mProfilerArea) return 0;
+    return qRound(blockBoundingGeometry(firstVisibleBlock()).translated(contentOffset()).height());
+}
+
+void CodeEdit::updateProfilerWidth()
+{
+    updateViewportSize();
+    update();
+}
+
 int CodeEdit::iconSize()
 {
     return fontMetrics().height()-3;
@@ -136,29 +182,37 @@ LineNumberArea* CodeEdit::lineNumberArea()
     return mLineNumberArea;
 }
 
-void CodeEdit::updateLineNumberAreaWidth()
+void CodeEdit::updateViewportSize()
 {
-    setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
-    if (viewportMargins().left() != mLnAreaWidth) {
-        mLineNumberArea->update();
-        mLnAreaWidth = viewportMargins().left();
-    }
+    // singleShot to prevent circular call
+    QTimer::singleShot(0, this, [this]() {
+        setViewportMargins(lineNumberAreaWidth() + profilerWidth(), profilerHeaderHeight(), 0, 0);
+        if (viewportMargins().left() != mLnAreaWidth) {
+            mLineNumberArea->update();
+            mLnAreaWidth = viewportMargins().left();
+        }
+    });
 }
 
-void CodeEdit::updateLineNumberArea(const QRect &rect, int dy)
+void CodeEdit::updateViewport(const QRect &rect, int dy)
 {
-    if (!mLineNumberArea) return;
     if (dy) {
-        mLineNumberArea->scroll(0, dy);
+        if (mLineNumberArea)
+            mLineNumberArea->scroll(0, dy);
+        if (mProfilerArea && mProfilerArea->isVisible())
+            mProfilerArea->scroll(0, dy);
     } else {
         int top = rect.y();
         int bottom = top + rect.height();
         // NOTE! major performance issue on calling :blockBoundingGeometry()
-        mLineNumberArea->update(0, top, mLineNumberArea->width(), bottom-top);
+        if (mLineNumberArea)
+            mLineNumberArea->update(0, top, mLineNumberArea->width(), bottom-top);
+        if (mProfilerArea && mProfilerArea->isVisible())
+            mProfilerArea->update(contentsRect().right()-mProfilerArea->width(), top, mProfilerArea->width(), bottom-top);
     }
 
     if (rect.contains(viewport()->rect()))
-        updateLineNumberAreaWidth();
+        updateViewportSize();
 }
 
 void CodeEdit::blockEditBlink()
@@ -352,12 +406,37 @@ void CodeEdit::pasteClipboard()
 
 void CodeEdit::resizeEvent(QResizeEvent *e)
 {
-    AbstractEdit::resizeEvent(e);
+    if (e) AbstractEdit::resizeEvent(e);
 
     QRect cr = contentsRect();
-    mLineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
-    updateLineNumberAreaWidth();
+    int left = cr.left();
+    int pHeight = profilerHeaderHeight();
+    if (mProfilerArea && mProfilerArea->isVisible()) {
+        int wid = profilerWidth();
+        int hWid = wid + pHeight + fontMetrics().horizontalAdvance("⏵") + 4;
+        mProfilerArea->setGeometry(QRect(left, cr.top() + pHeight, wid, cr.height() - pHeight));
+        mProfilerHeader->setGeometry(QRect(left, cr.top(), hWid, pHeight));
+        left += wid;
+    }
+    mLineNumberArea->setGeometry(QRect(left, cr.top() + pHeight, lineNumberAreaWidth(), cr.height() - pHeight));
+    updateViewportSize();
     updateExtraSelections();
+}
+
+void CodeEdit::showEvent(QShowEvent *e)
+{
+    if (mProfilerArea && mProfilerArea->isVisible()) {
+        QRect cr = contentsRect();
+        int pHeight = profilerHeaderHeight();
+        int wid = profilerWidth();
+        int hWid = wid + pHeight + fontMetrics().horizontalAdvance("≡⏵") + 4;
+        int left = cr.left();
+        if (left != mProfilerArea->geometry().left()) {
+            mProfilerArea->setGeometry(QRect(left, cr.top() + pHeight, wid, cr.height() - pHeight));
+            mProfilerHeader->setGeometry(QRect(left, cr.top(), hWid, pHeight));
+        }
+    }
+    AbstractEdit::showEvent(e);
 }
 
 void CodeEdit::keyPressEvent(QKeyEvent* e)
@@ -637,6 +716,7 @@ bool CodeEdit::toggleFolding(QTextBlock block)
     document()->adjustSize();
     viewport()->update();
     mLineNumberArea->update();
+    if (mProfilerArea && mProfilerArea->isVisible()) mProfilerArea->update();
     return true;
 }
 
@@ -673,6 +753,7 @@ void CodeEdit::foldAll(bool onlyDCO)
     document()->adjustSize();
     viewport()->update();
     mLineNumberArea->update();
+    if (mProfilerArea && mProfilerArea->isVisible()) mProfilerArea->update();
 }
 
 void CodeEdit::unfoldAll()
@@ -688,6 +769,7 @@ void CodeEdit::unfoldAll()
     document()->adjustSize();
     viewport()->update();
     mLineNumberArea->update();
+    if (mProfilerArea && mProfilerArea->isVisible()) mProfilerArea->update();
 }
 
 LinePair CodeEdit::findFoldBlock(int line, bool onlyThisLine) const
@@ -788,6 +870,27 @@ void CodeEdit::scrollContentsBy(int dx, int dy)
     AbstractEdit::scrollContentsBy(dx, dy);
     if (reDx)
         horizontalScrollBar()->setValue(horizontalScrollBar()->value() + reDx);
+}
+
+void CodeEdit::setHasProfiler(bool hasProfiler)
+{
+    if (mProfilerArea && !hasProfiler) {
+        delete mProfilerArea;
+        mProfilerArea = nullptr;
+        delete mProfilerHeader;
+        mProfilerHeader = nullptr;
+        updateViewportSize();
+    }
+    if (hasProfiler && !mProfilerArea) {
+        mProfilerArea = new ProfilerArea(this);
+        mProfilerArea->setMouseTracking(true);
+        mProfilerArea->setVisible(true);
+        mProfilerHeader = new ProfilerHeader(this);
+        mProfilerHeader->setMouseTracking(true);
+        mProfilerHeader->setVisible(true);
+        resizeEvent(nullptr);
+        updateViewportSize();
+    }
 }
 
 bool CodeEdit::ensureUnfolded(int line)
@@ -1220,8 +1323,130 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
             act->setEnabled(foldRes % 3 > 0);
         } else act->setEnabled(false);
     }
+
     menu->exec(e->globalPos());
     delete menu;
+}
+
+void CodeEdit::setProfilerHeaderContext(const QPoint &pos)
+{
+    mProfilerHeaderContext = pcNone;
+    int flatButtonStart = mProfilerCol.last() + profilerHeaderHeight() + 4;
+    if (pos.x() > flatButtonStart && pos.x() < flatButtonStart + fontMetrics().horizontalAdvance("⏵"))
+        mProfilerHeaderContext = pcAll;
+    int col = 1;
+    if (mProfilerCol.size() <= col || pos.x() < mProfilerCol.at(0)) return;
+
+    if (mColumnFlags.testFlag(pcTime) && pos.x() < mProfilerCol.at(1)) {
+        mProfilerHeaderContext = pcTime;
+        return;
+    }
+    if (mColumnFlags.testFlag(pcTime)) {
+        ++col;
+        if (mProfilerCol.size() <= col) return;
+    }
+    if (mColumnFlags.testFlag(pcMemory) && pos.x() < mProfilerCol.at(col)) {
+        mProfilerHeaderContext = pcMemory;
+        return;
+    }
+}
+
+void CodeEdit::profilerContextMenuEvent(QContextMenuEvent *e)
+{
+    QMenu menu(this);
+
+    QList<QPair<int, qreal>> countTime;
+    QList<QPair<int, int>> maxLoops;
+    emit getProfilerMaxData(countTime, maxLoops);
+    menu.addSection("highest time");
+    for (int i = 0; i < countTime.size(); ++i) {
+        menu.addAction(QString("%1: %2 s").arg(i+1).arg(countTime.at(i).second, 0, 'f', 3), this, [this, countTime, i]() {
+            emit jumpToContinuousLine(countTime.at(i).first);
+        });
+    }
+    menu.addSection("max loops");
+    for (int i = 0; i < maxLoops.size(); ++i) {
+        menu.addAction(QString("%1: %2 ↻").arg(i+1).arg(maxLoops.at(i).second), this, [this, maxLoops, i]() {
+            emit jumpToContinuousLine(maxLoops.at(i).first);
+        });
+    }
+    menu.exec(e->globalPos());
+}
+
+void CodeEdit::profilerHeaderContextMenuEvent(QContextMenuEvent *e)
+{
+    if (mProfilerHeaderContext == pcAll) {
+        int curCols = mSettings->toInt(skEdProfilerCols);
+        int prevCols = mSettings->toInt(skEdProfilerPrevCols);
+        if (curCols == pcNone) {
+            curCols = prevCols;
+        } else {
+            prevCols = curCols;
+            curCols = pcNone;
+        }
+        mSettings->setInt(skEdProfilerCols, curCols);
+        mSettings->setInt(skEdProfilerPrevCols, prevCols);
+        emit profilerSettingsChanged();
+        mProfilerHeader->update();
+        return;
+    }
+    QMenu menu(this);
+    QActionGroup group(&menu);
+    if (mProfilerHeaderContext == pcNone) {
+        int visibleCols = mSettings->toInt(skEdProfilerCols);
+        menu.addAction("Show &time", this, [this, visibleCols]() {
+            mSettings->setInt(skEdProfilerCols, visibleCols & 1 ? visibleCols - 1 : visibleCols + 1);
+            emit profilerSettingsChanged();
+        });
+        menu.actions().last()->setCheckable(true);
+        menu.actions().last()->setChecked(visibleCols & 1);
+
+        menu.addAction("Show &memory", this, [this, visibleCols]() {
+            mSettings->setInt(skEdProfilerCols, visibleCols & 2 ? visibleCols - 2 : visibleCols + 2);
+            emit profilerSettingsChanged();
+        });
+        menu.actions().last()->setCheckable(true);
+        menu.actions().last()->setChecked(visibleCols & 2);
+
+        menu.addAction("Show &loops", this, [this, visibleCols]() {
+            mSettings->setInt(skEdProfilerCols, visibleCols & 4 ? visibleCols - 4 : visibleCols + 4);
+            emit profilerSettingsChanged();
+        });
+        menu.actions().last()->setCheckable(true);
+        menu.actions().last()->setChecked(visibleCols & 4);
+    } else {
+        QStringList timeUnits;
+        QStringList memUnits;
+        emit getProfilerUnits(timeUnits, memUnits);
+        int uTime;
+        int uMem;
+        emit getProfilerCurrentUnits(uTime, uMem);
+        if (mProfilerHeaderContext == pcTime) {
+            for (int i = 0; i < timeUnits.size(); ++i) {
+                menu.addAction(QString("%1").arg(timeUnits.at(i)), this, [this, i, uMem]() {
+                    emit setProfilerCurrentUnits(i, uMem);
+                    emit profilerSettingsChanged();
+                });
+                menu.actions().last()->setCheckable(true);
+                menu.actions().last()->setChecked(i == uTime);
+                group.addAction(menu.actions().last());
+            }
+        } else if (mProfilerHeaderContext == pcMemory) {
+            for (int i = 0; i < memUnits.size(); ++i) {
+                menu.addAction(QString("%1").arg(memUnits.at(i)), this, [this, uTime, i]() {
+                    emit setProfilerCurrentUnits(uTime, i);
+                    emit profilerSettingsChanged();
+                });
+                menu.actions().last()->setCheckable(true);
+                menu.actions().last()->setChecked(i == uMem);
+                group.addAction(menu.actions().last());
+            }
+        }
+    }
+
+    menu.exec(e->globalPos());
+    if (mProfilerHeader)
+        mProfilerHeader->update();
 }
 
 void CodeEdit::showLineNrContext(const QPoint &pos)
@@ -1288,7 +1513,8 @@ void CodeEdit::marksChanged(const QSet<int> &dirtyLines)
     }
     if (doPaint) {
         mLineNumberArea->update();
-        updateLineNumberAreaWidth();
+        if (mProfilerArea && mProfilerArea->isVisible()) mProfilerArea->update();
+        updateViewportSize();
     }
 }
 
@@ -1297,7 +1523,8 @@ void CodeEdit::blockCountHasChanged(int newBlockCount)
     Q_UNUSED(newBlockCount)
     mFoldMark = LinePair();
     mLineNumberArea->update();
-    updateLineNumberAreaWidth();
+    if (mProfilerArea && mProfilerArea->isVisible()) mProfilerArea->update();
+    updateViewportSize();
 }
 
 void CodeEdit::dragEnterEvent(QDragEnterEvent* e)
@@ -1636,7 +1863,7 @@ void CodeEdit::startBlockEdit(int blockNr, int colNr)
     setCursorWidth(0);
     mBlockEdit->setOverwriteMode(overwrite);
     mBlockEdit->startCursorTimer();
-    updateLineNumberAreaWidth();
+    updateViewportSize();
 }
 
 void CodeEdit::endBlockEdit(bool adjustCursor)
@@ -2376,6 +2603,12 @@ QString CodeEdit::getToolTipText(const QPoint &pos)
             return QString("Breakpoint moved to line %1").arg(mAimedBreakpoints.value(cursor.blockNumber()+1));
         }
     }
+    if (pos.x() < 0 || pos.x() > viewport()->width()) {
+        QTextCursor cursor = cursorForPosition(pos);
+        QStringList profileText;
+        emit getProfileLong(cursor.blockNumber() + 1, profileText);
+        return profileText.join('\n');
+    }
     checkLinks(pos, true, &fileName);
     if (!fileName.isEmpty()) {
         fileName = QDir::toNativeSeparators(fileName);
@@ -2429,7 +2662,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
     QPainter painter(mLineNumberArea);
     bool hasMarks = marks() && marks()->hasVisibleMarks();
     if (hasMarks && mIconCols == 0) {
-        QTimer::singleShot(0, this, &CodeEdit::updateLineNumberAreaWidth);
+        QTimer::singleShot(0, this, &CodeEdit::updateViewportSize);
         event->accept();
         return;
     }
@@ -2457,7 +2690,6 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 markRect.setHeight(bottom-top);
                 painter.fillRect(markRect, toColor(Theme::Edit_linenrAreaMarkBg));
             }
-
             if(showLineNr()) {
                 QString number = lineNrText(blockNumber + 1);
                 QFont f = font();
@@ -2522,6 +2754,256 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
         bottom = top + static_cast<int>(blockBoundingRect(block).height());
         ++blockNumber;
     }
+    event->accept();
+}
+
+void CodeEdit::paintTextBox(QPainter *painter, int iRect, QRect gapRect, QString text, qreal alpha)
+{
+    if (mProfilerCol.size() <= iRect) return;
+    QRect rect(mProfilerCol.at(iRect-1) + gapRect.width(), gapRect.top(),
+               mProfilerCol.at(iRect) - mProfilerCol.at(iRect-1) - gapRect.width(), gapRect.height());
+    if (alpha > .0 && alpha <= 1.) {
+        Theme::ColorSlot base = Theme::Edit_background;
+        QColor color = Theme::profileColor(base, alpha);
+        painter->setBrush(color);
+        QPen pen = painter->pen();
+        painter->setPen(Qt::NoPen);
+        painter->drawRect(rect);
+        painter->setPen(pen);
+    }
+    rect.setWidth(rect.width() - gapRect.width());
+    painter->drawText(rect, Qt::AlignRight, text);
+}
+
+void CodeEdit::profilerPaintEvent(QPaintEvent *event)
+{
+    QTextBlock block = firstVisibleBlock();
+    int blockNumber = block.blockNumber();
+    QPainter painter(mProfilerArea);
+    QRectF fRect = blockBoundingGeometry(block).translated(contentOffset());
+    int top = static_cast<int>(fRect.top());
+    int height = qRound(fRect.height());
+    int bottom = top + static_cast<int>(fRect.height());
+    QRect paintRect(event->rect());
+    QRect cr = contentsRect();
+
+    painter.save();
+    QBrush backBrush(palette().base());
+    painter.fillRect(cr, backBrush);
+    painter.restore();
+
+    int gap = fontMetrics().horizontalAdvance(" ") / 2;
+    qreal timeSum = 0.; size_t loopSum = 0;
+    emit getProfilerSums(timeSum, loopSum);
+    int timeUnit;
+    int memUnit;
+    emit getProfilerCurrentUnits(timeUnit, memUnit);
+
+    while (block.isValid() && top <= paintRect.bottom()) {
+        if (block.isVisible() && bottom >= paintRect.top()) {
+            qreal time = 0.; size_t mem = 0; size_t loop = 0;
+            emit getProfileShort(blockNumber + 1, time, mem, loop);
+            if (loop && mColumnFlags) {
+                QRect gapRect(0, top, gap, height);
+                int iRect = 1;
+                if (mColumnFlags.testFlag(pcTime)) {
+                    qreal alpha = (timeSum > 0) ?  time / timeSum : 0.;
+                    paintTextBox(&painter, iRect++, gapRect, EditorHelper::formatTime2(time, timeUnit, true), alpha);
+                }
+                if (mColumnFlags.testFlag(pcMemory)) {
+                    paintTextBox(&painter, iRect++, gapRect, EditorHelper::formatMemory2(mem, memUnit, true));
+                }
+                if (mColumnFlags.testFlag(pcLoop)) {
+                    qreal alpha = (loopSum > 0) ?  qreal(loop) / qreal(loopSum) : 0.;
+                    paintTextBox(&painter, iRect++, gapRect, EditorHelper::formatLoop(loop, mProfilerLoopDigits), alpha);
+                }
+            }
+        }
+        block = block.next();
+        top = bottom;
+        bottom = top + static_cast<int>(blockBoundingRect(block).height());
+        ++blockNumber;
+    }
+    event->accept();
+}
+
+void CodeEdit::profilerPaintHeaderEvent(QPaintEvent *event)
+{
+    if (!mProfilerHeader) return;
+    QPainter painter(mProfilerHeader);
+    QRectF fRect(0, 0, profilerWidth() + profilerHeaderHeight(), profilerHeaderHeight());
+    QString timeStr;
+    QString memStr;
+    {
+        QStringList timeUnits;
+        QStringList memUnits;
+        emit getProfilerUnits(timeUnits, memUnits);
+        int timeUnit;
+        int memUnit;
+        emit getProfilerCurrentUnits(timeUnit, memUnit);
+        if (timeUnits.size() > timeUnit) timeStr = timeUnits.at(timeUnit);
+        if (memUnits.size() > memUnit) memStr = memUnits.at(memUnit);
+    }
+    int gap = fontMetrics().horizontalAdvance(" ") / 2;
+    int top = contentsRect().top();
+    int height = profilerHeaderHeight();
+    QTextOption optC = QTextOption(Qt::AlignHCenter);
+    QTextOption optR = QTextOption(Qt::AlignRight | Qt::AlignVCenter);
+
+    painter.save();
+    painter.setPen(Qt::SolidLine);
+    painter.setPen(Theme::color(Theme::Edit_text));
+    QFont f = painter.font();
+    f.setBold(true);
+    QFont f2 = f;
+    f2.setPointSizeF(f2.pointSizeF() * .75);
+    painter.setFont(f);
+    QColor highlight = palette().color(QPalette::Button).lighter(120);
+
+    int iRect = 1;
+    if (mColumnFlags.testFlag(pcTime) && mProfilerCol.size() > iRect) {
+        int wid = mProfilerCol.at(iRect) - mProfilerCol.at(iRect-1) - gap;
+        QRect rect(mProfilerCol.at(iRect-1) + gap, top, wid, height-1);
+        if (mProfilerHeaderContext == pcTime)
+            painter.fillRect(rect, highlight);
+        else
+            rect.moveTopLeft(rect.topLeft() + QPoint(1,1));
+        painter.drawText(rect, timeStr + " ", optC);
+        painter.setFont(f2);
+        painter.drawText(rect, "▼", optR);
+        painter.setFont(f);
+        ++iRect;
+    }
+
+    if (mColumnFlags.testFlag(pcMemory) && mProfilerCol.size() > iRect) {
+        int wid = mProfilerCol.at(iRect) - mProfilerCol.at(iRect-1) - gap;
+        QRect rect(mProfilerCol.at(iRect-1) + gap, top, wid, height-1);
+        if (mProfilerHeaderContext == pcMemory)
+            painter.fillRect(rect, highlight);
+        else
+            rect.moveTopLeft(rect.topLeft() + QPoint(1,1));
+        painter.drawText(rect, memStr + " ", optC);
+        painter.setFont(f2);
+        painter.drawText(rect, "▼", optR);
+        painter.setFont(f);
+        ++iRect;
+    }
+
+    if (mColumnFlags.testFlag(pcLoop) && mProfilerCol.size() > iRect) {
+        QRect rect(mProfilerCol.at(iRect-1) + gap, top, mProfilerCol.at(iRect) - mProfilerCol.at(iRect-1) - gap, height);
+        painter.drawText(rect, "↻", optC);
+    }
+
+    int left = mProfilerCol.size() ? mProfilerCol.last() + 4 : 4;
+    QRect rect(left, top, height-1, height-1);
+    if (mProfilerHeaderContext == pcNone)
+        painter.fillRect(rect, highlight);
+    else
+        rect.moveTopLeft(rect.topLeft() + QPoint(1,1));
+    painter.drawText(rect, "≡", optC);
+
+    left += rect.width();
+    rect = QRect(left, top, fontMetrics().horizontalAdvance("⏴"), height-1);
+
+    if (mProfilerHeaderContext == pcAll)
+        painter.fillRect(rect, highlight);
+    else
+        rect.moveTopLeft(rect.topLeft() + QPoint(1,1));
+    painter.drawText(rect, mColumnFlags == pcNone ? "⏵" : "⏴", optC);
+
+    painter.restore();
+    event->accept();
+}
+
+void CodeEdit::moveLines(bool moveLinesUp)
+{
+    QTextCursor cursor(textCursor());
+    QTextCursor anchor = cursor;
+    int blockEditOffset = 0;
+    bool shiftEstablished = false;
+    cursor.beginEditBlock();
+    anchor.setPosition(cursor.anchor());
+    QTextBlock firstBlock;
+    QTextBlock lastBlock;
+    if (cursor.anchor() >= cursor.position()) {
+        firstBlock = cursor.block();
+        lastBlock = anchor.block();
+        if ((!anchor.positionInBlock()) && (cursor.hasSelection())) {
+            lastBlock = lastBlock.previous();
+            anchor.setPosition(anchor.position()-1);
+        }
+    } else {
+        firstBlock = anchor.block();
+        lastBlock = cursor.block();
+        if ((!cursor.positionInBlock()) && (cursor.hasSelection())) {
+            lastBlock = lastBlock.previous();
+            cursor.setPosition(cursor.position()-1);
+        }
+    }
+    if (mBlockEdit) {
+        firstBlock = cursor.document()->findBlockByNumber(qMin(mBlockEdit->startLine(),mBlockEdit->currentLine()));
+        lastBlock = cursor.document()->findBlockByNumber(qMax(mBlockEdit->startLine(),mBlockEdit->currentLine()));
+        blockEditOffset = cursor.positionInBlock();
+        anchor.setPosition(lastBlock.position()+lastBlock.length());
+        cursor.setPosition(firstBlock.position());
+    }
+    int shift = 0;
+    QPoint selection(anchor.position(), cursor.position());
+    if (moveLinesUp) {
+        if (mBlockEdit && (firstBlock == cursor.document()->firstBlock())) {
+            cursor.endEditBlock();
+            return;
+        }
+        if (firstBlock.blockNumber()) {
+            QTextCursor ncur(firstBlock.previous());
+            ncur.setPosition(firstBlock.position(), QTextCursor::KeepAnchor);
+            QString temp = ncur.selectedText();
+            ncur.removeSelectedText();
+            if (!lastBlock.next().isValid()) {
+                ncur.setPosition(lastBlock.position() + lastBlock.length() - 1);
+                temp = '\n' + temp.left(temp.size() - 1);
+            } else
+                ncur.setPosition(lastBlock.next().position());
+            ncur.insertText(temp);
+            shift = -int(temp.length());
+            shiftEstablished = true;
+        }
+    } else {
+        if (mBlockEdit && (lastBlock == cursor.document()->lastBlock())){
+            cursor.endEditBlock();
+            return;
+        }
+        if (lastBlock != document()->lastBlock()) {
+            QTextCursor ncur(lastBlock.next());
+            bool isEnd = !lastBlock.next().next().isValid();
+            if (isEnd)
+                ncur.setPosition(ncur.position() + ncur.block().length() - 1, QTextCursor::KeepAnchor);
+            else
+                ncur.setPosition(ncur.position() + ncur.block().length(), QTextCursor::KeepAnchor);
+            QString temp = ncur.selectedText();
+            ncur.removeSelectedText();
+            if (isEnd) {
+                temp += '\n';
+                ncur.deletePreviousChar();
+            }
+            ncur.setPosition(firstBlock.position());
+            ncur.insertText(temp);
+            shift = int(temp.length());
+            shiftEstablished = true;
+        }
+    }
+    if (mBlockEdit) {
+        cursor.setPosition(cursor.document()->findBlockByNumber(mBlockEdit->currentLine()).position()+blockEditOffset);
+        if (shiftEstablished)
+            mBlockEdit->shiftVertical(moveLinesUp ? -1 : 1);
+    } else {
+        cursor.setPosition(selection.x() + shift);
+        cursor.setPosition(selection.y() + shift, QTextCursor::KeepAnchor);
+    }
+    cursor.endEditBlock();
+    setTextCursor(cursor);
+    if (mCompleter)
+        mCompleter->suppressNextOpenTrigger();
 }
 
 CodeEdit::BlockEdit::BlockEdit(CodeEdit* edit, int blockNr, int colNr)
@@ -3074,6 +3556,25 @@ void CodeEdit::BlockEdit::replaceBlockText(const QStringList &inTexts)
     cursor.endEditBlock();
 }
 
+void CodeEdit::BlockEdit::shiftVertical(int offset)
+{
+    mCurrentLine = qBound(0, mCurrentLine +offset, mEdit->blockCount()-1);
+    mStartLine = qBound(0, mStartLine +offset, mEdit->blockCount()-1);
+}
+
+
+LineNumberArea::LineNumberArea(CodeEdit *editor) : QWidget(editor) {
+    mCodeEditor = editor;
+}
+
+QSize LineNumberArea::sizeHint() const {
+    return QSize(mCodeEditor->lineNumberAreaWidth(), 0);
+}
+
+void LineNumberArea::paintEvent(QPaintEvent *event) {
+    mCodeEditor->lineNumberAreaPaintEvent(event);
+}
+
 void LineNumberArea::mousePressEvent(QMouseEvent *event)
 {
     QPoint pos = event->pos();
@@ -3139,102 +3640,85 @@ void LineNumberArea::leaveEvent(QEvent *event)
     QWidget::leaveEvent(event);
 }
 
-void CodeEdit::BlockEdit::shiftVertical(int offset)
+ProfilerArea::ProfilerArea(CodeEdit *editor) : QWidget(editor)
 {
-    mCurrentLine = qBound(0, mCurrentLine +offset, mEdit->blockCount()-1);
-    mStartLine = qBound(0, mStartLine +offset, mEdit->blockCount()-1);
+    mCodeEditor = editor;
 }
 
-void CodeEdit::moveLines(bool moveLinesUp)
+QSize ProfilerArea::sizeHint() const
 {
-    QTextCursor cursor(textCursor());
-    QTextCursor anchor = cursor;
-    int blockEditOffset = 0;
-    bool shiftEstablished = false;
-    cursor.beginEditBlock();
-    anchor.setPosition(cursor.anchor());
-    QTextBlock firstBlock;
-    QTextBlock lastBlock;
-    if (cursor.anchor() >= cursor.position()) {
-        firstBlock = cursor.block();
-        lastBlock = anchor.block();
-        if ((!anchor.positionInBlock()) && (cursor.hasSelection())) {
-            lastBlock = lastBlock.previous();
-            anchor.setPosition(anchor.position()-1);
-        }
-    } else {
-        firstBlock = anchor.block();
-        lastBlock = cursor.block();
-        if ((!cursor.positionInBlock()) && (cursor.hasSelection())) {
-            lastBlock = lastBlock.previous();
-            cursor.setPosition(cursor.position()-1);
-        }
-    }
-    if (mBlockEdit) {
-        firstBlock = cursor.document()->findBlockByNumber(qMin(mBlockEdit->startLine(),mBlockEdit->currentLine()));
-        lastBlock = cursor.document()->findBlockByNumber(qMax(mBlockEdit->startLine(),mBlockEdit->currentLine()));
-        blockEditOffset = cursor.positionInBlock();
-        anchor.setPosition(lastBlock.position()+lastBlock.length());
-        cursor.setPosition(firstBlock.position());
-    }
-    int shift = 0;
-    QPoint selection(anchor.position(), cursor.position());
-    if (moveLinesUp) {
-        if (mBlockEdit && (firstBlock == cursor.document()->firstBlock())) {
-            cursor.endEditBlock();
-            return;
-        }
-        if (firstBlock.blockNumber()) {
-            QTextCursor ncur(firstBlock.previous());
-            ncur.setPosition(firstBlock.position(), QTextCursor::KeepAnchor);
-            QString temp = ncur.selectedText();
-            ncur.removeSelectedText();
-            if (!lastBlock.next().isValid()) {
-                ncur.setPosition(lastBlock.position() + lastBlock.length() - 1);
-                temp = '\n' + temp.left(temp.size() - 1);
-            } else
-                ncur.setPosition(lastBlock.next().position());
-            ncur.insertText(temp);
-            shift = -int(temp.length());
-            shiftEstablished = true;
-        }
-    } else {
-        if (mBlockEdit && (lastBlock == cursor.document()->lastBlock())){
-            cursor.endEditBlock();
-            return;
-        }
-        if (lastBlock != document()->lastBlock()) {
-            QTextCursor ncur(lastBlock.next());
-            bool isEnd = !lastBlock.next().next().isValid();
-            if (isEnd)
-                ncur.setPosition(ncur.position() + ncur.block().length() - 1, QTextCursor::KeepAnchor);
-            else
-                ncur.setPosition(ncur.position() + ncur.block().length(), QTextCursor::KeepAnchor);
-            QString temp = ncur.selectedText();
-            ncur.removeSelectedText();
-            if (isEnd) {
-                temp += '\n';
-                ncur.deletePreviousChar();
-            }
-            ncur.setPosition(firstBlock.position());
-            ncur.insertText(temp);
-            shift = int(temp.length());
-            shiftEstablished = true;
-        }
-    }
-    if (mBlockEdit) {
-        cursor.setPosition(cursor.document()->findBlockByNumber(mBlockEdit->currentLine()).position()+blockEditOffset);
-        if (shiftEstablished)
-            mBlockEdit->shiftVertical(moveLinesUp ? -1 : 1);
-    } else {
-        cursor.setPosition(selection.x() + shift);
-        cursor.setPosition(selection.y() + shift, QTextCursor::KeepAnchor);
-    }
-    cursor.endEditBlock();
-    setTextCursor(cursor);
-    if (mCompleter)
-        mCompleter->suppressNextOpenTrigger();
+    QWidget::sizeHint();
+    return QSize(mCodeEditor->profilerWidth(), 0);
 }
+
+void ProfilerArea::paintEvent(QPaintEvent *event)
+{
+    mCodeEditor->profilerPaintEvent(event);
+}
+
+void ProfilerArea::mouseMoveEvent(QMouseEvent *event)
+{
+    QPoint pos1 = event->pos();
+    pos1.setX(pos1.x() - width());
+    QMouseEvent e(event->type(), pos1, mapToGlobal(pos1), event->button(), event->buttons(), event->modifiers());
+    mCodeEditor->mouseMoveEvent(&e);
+}
+
+void ProfilerArea::wheelEvent(QWheelEvent *event)
+{
+    mCodeEditor->wheelEvent(event);
+}
+
+void ProfilerArea::contextMenuEvent(QContextMenuEvent *e)
+{
+    mCodeEditor->profilerContextMenuEvent(e);
+}
+
+ProfilerHeader::ProfilerHeader(CodeEdit *editor) : QWidget(editor)
+{
+    mCodeEditor = editor;
+}
+
+QSize ProfilerHeader::sizeHint() const
+{
+    QWidget::sizeHint();
+    return QSize(mCodeEditor->profilerWidth() + mCodeEditor->profilerHeaderHeight(), mCodeEditor->profilerHeaderHeight());
+}
+
+void ProfilerHeader::paintEvent(QPaintEvent *event)
+{
+    mCodeEditor->profilerPaintHeaderEvent(event);
+}
+
+void ProfilerHeader::mousePressEvent(QMouseEvent *event)
+{
+    mCodeEditor->setProfilerHeaderContext(event->pos());
+}
+
+void ProfilerHeader::mouseMoveEvent(QMouseEvent *event)
+{
+    mCodeEditor->setProfilerHeaderContext(event->pos());
+    repaint();
+}
+
+void ProfilerHeader::mouseReleaseEvent(QMouseEvent *event)
+{
+    QContextMenuEvent e(QContextMenuEvent::Mouse, event->pos(), event->globalPosition().toPoint());
+    contextMenuEvent(&e);
+}
+
+void ProfilerHeader::leaveEvent(QEvent *event)
+{
+    Q_UNUSED(event)
+    mCodeEditor->mProfilerHeaderContext = pcNone;
+    repaint();
+}
+
+void ProfilerHeader::contextMenuEvent(QContextMenuEvent *e)
+{
+    mCodeEditor->profilerHeaderContextMenuEvent(e);
+}
+
 
 } // namespace studio
 } // namespace gams

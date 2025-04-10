@@ -276,4 +276,3 @@ void ThemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)
 
 } // namespace studio
 } // namespace gams
-

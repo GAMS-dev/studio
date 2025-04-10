@@ -20,4 +20,3 @@ SOURCES +=                    \
     $$SRCPATH/exception.cpp   \
     $$SRCPATH/commonpaths.cpp \
     $$SRCPATH/support/SolverConfigInfo.cpp \
-

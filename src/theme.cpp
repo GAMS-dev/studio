@@ -68,6 +68,9 @@ void Theme::initSlotTexts()
     mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
     mSlotText.insert(Edit_linenrAreaFg,         "Line number");
     mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line number");
+    mSlotText.insert(Edit_profilingBg1,          "Profiling tone low");
+    mSlotText.insert(Edit_profilingBg2,          "Profiling tone medium");
+    mSlotText.insert(Edit_profilingBg3,          "Profiling tone high");
     mSlotText.insert(Edit_foldLineFg,           "Folded lines marker");
     mSlotText.insert(Edit_linenrAreaFoldBg,     "Fold marker");
     mSlotText.insert(Mark_errorFg,              "Error marker");
@@ -139,6 +142,9 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_linenrAreaBg,              QColor(245,245,245));
     mColorThemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(225,255,235));
     mColorThemes[sNr].insert(Edit_linenrAreaFoldBg,          QColor(135,195,255));
+    mColorThemes[sNr].insert(Edit_profilingBg1,              QColor( 55,235, 20));
+    mColorThemes[sNr].insert(Edit_profilingBg2,              QColor(255,205,  0));
+    mColorThemes[sNr].insert(Edit_profilingBg3,              QColor(255, 55, 20));
     mColorThemes[sNr].insert(Edit_linenrAreaFg,              QColor(Qt::gray));
     mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::black));
     mColorThemes[sNr].insert(Edit_logRemoteBk,               QColor(245,255,235));
@@ -568,6 +574,39 @@ void Theme::setFlags(Theme::ColorSlot slot, Theme::FontFlag flag)
     Color dat = instance()->mColorThemes.at(theme).value(slot);
     dat.fontFlag = flag;
     instance()->mColorThemes[theme].insert(slot, dat);
+}
+
+///
+/// \brief Theme::mixColor Mixes the color from mixSlot into the one from baseSlot by the ammount of alpha
+/// \param baseSlot
+/// \param mixSlot
+/// \param alpha A value in the interval of [0..1]
+/// \return
+///
+QColor Theme::mixColor(ColorSlot baseSlot, ColorSlot mixSlot, qreal alpha)
+{
+    QColor res = color(baseSlot);
+    QColor mix = color(mixSlot);
+    res.setRed  (qRound(alpha * (mix.red()   - res.red()  ) + res.red()));
+    res.setGreen(qRound(alpha * (mix.green() - res.green()) + res.green()));
+    res.setBlue (qRound(alpha * (mix.blue()  - res.blue() ) + res.blue()));
+    return res;
+}
+
+qreal CProfileMinAlpha = 0.05;
+qreal CProfileMaxAlpha = 0.75;
+qreal CProfileLow = 0.05;
+qreal CProfileMid = 0.25;
+
+QColor Theme::profileColor(ColorSlot baseSlot, qreal alpha)
+{
+    ColorSlot mixSlot = alpha < CProfileLow ? Edit_profilingBg1 : alpha < CProfileMid ? Edit_profilingBg2 : Edit_profilingBg3;
+    qreal minAlpha = alpha < CProfileLow ? CProfileMinAlpha : CProfileMinAlpha + 0.2;
+    qreal shade = alpha < CProfileLow ? alpha / CProfileLow
+                                      : alpha < CProfileMid ? (alpha - CProfileLow) / (CProfileMid - CProfileLow)
+                                        : (alpha - CProfileMid) / (1. - CProfileMid);
+    shade = minAlpha + shade * (CProfileMaxAlpha - minAlpha);
+    return mixColor(baseSlot, mixSlot, shade);
 }
 
 QVariantList Theme::writeUserThemes() const

@@ -6,4 +6,3 @@ Add yaml-cpp.natvis to your Visual C++ project like any other source file.  It w
 ## Compatibility and Troubleshooting
 
 This has been tested for MSVC 2017. It is expected to be compatible with VS 2015 and VS 2019. If you have any problems, you can open an issue here: https://github.com/peterchen-cp/yaml-cpp-natvis
-

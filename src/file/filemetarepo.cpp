@@ -58,20 +58,12 @@ FileMeta *FileMetaRepo::fileMeta(QWidget* const &editor) const
         if (!meta)
             DEB() << "FileMeta request failed for \'" << editor->property("location").toString() << "'";
         return meta;
-    } else if (editor->property("WP").toString() == "WP") {
+    } else if (!editor->property("SYS").toString().isEmpty()) {
         return nullptr;
     } else {
         DEB() << "No location information for requested editor, type " << editor->objectName();
-        FileMeta *res = nullptr;
-        DEB() << " - trying to find file meta";
-        for (FileMeta *meta : fileMetas()) {
-            if (meta->editors().contains(editor)) {
-                DEB() << " - found: " << meta->location();
-                res = meta;
-                break;
-            }
-        }
-        return res;
+        DEB() << " - Parent: " << (editor->parentWidget() ? editor->parentWidget()->objectName() : "-none-");
+        return nullptr;
     }
 }
 
@@ -170,9 +162,9 @@ ProjectRepo *FileMetaRepo::projectRepo() const
     return mProjectRepo;
 }
 
-QVector<FileMeta*> FileMetaRepo::openFiles() const
+QList<FileMeta*> FileMetaRepo::openFiles() const
 {
-    QVector<FileMeta*> res;
+    QList<FileMeta*> res;
     QHashIterator<FileId, FileMeta*> i(mFiles);
     while (i.hasNext()) {
         i.next();
@@ -181,9 +173,9 @@ QVector<FileMeta*> FileMetaRepo::openFiles() const
     return res;
 }
 
-QVector<FileMeta*> FileMetaRepo::modifiedFiles() const
+QList<FileMeta *> FileMetaRepo::modifiedFiles() const
 {
-    QVector<FileMeta*> res;
+    QList<FileMeta*> res;
     QHashIterator<FileId, FileMeta*> i(mFiles);
     while (i.hasNext()) {
         i.next();

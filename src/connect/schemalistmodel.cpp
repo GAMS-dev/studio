@@ -100,4 +100,3 @@ void SchemaListModel::setToolTip(const QModelIndex &index)
 } // namespace connect
 } // namespace studio
 } // namespace gams
-

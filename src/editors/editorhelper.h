@@ -30,6 +30,13 @@ class EditorHelper
 public:
     static void nextWord(int offset, int &pos, const QString &text);
     static void prevWord(int offset, int &pos, const QString &text);
+    static QString formatTime(qreal timeSec, bool compact = false);
+    static QString formatTime2(qreal timeSec, int &unitIndex, bool compact = false);
+    static QString timeUnit(qreal timeSec);
+    static QString formatMemory(size_t bytes, bool compact = false);
+    static QString formatMemory2(size_t bytes, int &unitIndex, bool compact = false);
+    static QString memoryUnit(size_t bytes);
+    static QString formatLoop(size_t loop, int digits);
 };
 
 }

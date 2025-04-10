@@ -244,4 +244,3 @@ QVariantList XmlRpc::parseParams(QIODevice *device, QString &method)
 } // namespace neos
 } // namespace studio
 } // namespace gams
-

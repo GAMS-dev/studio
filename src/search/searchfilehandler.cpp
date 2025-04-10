@@ -44,7 +44,7 @@ QSet<FileMeta *> SearchFileHandler::fileMetas()
 
 QSet<FileMeta*> SearchFileHandler::openFiles()
 {
-    QVector<FileMeta*> openFiles = mMain->fileRepo()->openFiles();
+    auto openFiles = mMain->fileRepo()->openFiles();
     return QSet<FileMeta*>(openFiles.begin(), openFiles.end());
 }
 

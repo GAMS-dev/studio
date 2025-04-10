@@ -166,4 +166,3 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
 
 } // namespace studio
 } // namespace gams
-

@@ -19,6 +19,7 @@
  */
 #include "filemeta.h"
 #include "filemetarepo.h"
+#include "gamscom/continuouslinedata.h"
 #include "projectrepo.h"
 #include "filetype.h"
 #include "editors/codeedit.h"
@@ -144,9 +145,9 @@ FileMeta::~FileMeta()
     mFileRepo->removeFile(this);
 }
 
-QVector<QPoint> FileMeta::getEditPositions()
+QList<QPoint> FileMeta::getEditPositions()
 {
-    QVector<QPoint> res;
+    QList<QPoint> res;
     for (QWidget* widget: std::as_const(mEditors)) {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(widget);
         if (edit) {
@@ -157,7 +158,7 @@ QVector<QPoint> FileMeta::getEditPositions()
     return res;
 }
 
-void FileMeta::setEditPositions(const QVector<QPoint> &edPositions)
+void FileMeta::setEditPositions(const QList<QPoint> &edPositions)
 {
     int i = 0;
     for (QWidget* widget: std::as_const(mEditors)) {
@@ -838,7 +839,7 @@ void FileMeta::load(QString encoding, bool init)
                     //decoder = QStringDecoder(*encode);
 
             }
-            QVector<QPoint> edPos = getEditPositions();
+            QList<QPoint> edPos = getEditPositions();
             mLoading = true;
             if (mHighlighter) mHighlighter->pause();
             document()->setPlainText(text);
@@ -1341,6 +1342,58 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
                 if (!pro) return;
                 pro->clearTextMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::target);
             });
+            connect(codeEdit, &CodeEdit::getProfilerSums, this, [this](qreal &timeSec, size_t &loops) {
+                PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
+                if (!pro || !pro->profiler()) return;
+                pro->profiler()->getSums(timeSec, loops);
+            });
+            connect(codeEdit, &CodeEdit::getProfilerUnits, this, [this](QStringList &timeUnits, QStringList &memoryUnits) {
+                PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
+                if (!pro || !pro->profiler()) return;
+                pro->profiler()->getUnits(timeUnits, memoryUnits);
+            });
+            connect(codeEdit, &CodeEdit::getProfilerCurrentUnits, this, [this](int &timeUnit, int &memoryUnit) {
+                PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
+                if (!pro || !pro->profiler()) return;
+                pro->profiler()->getCurrentUnits(timeUnit, memoryUnit);
+            });
+            connect(codeEdit, &CodeEdit::setProfilerCurrentUnits, this, [this](int timeUnit, int memoryUnit) {
+                PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
+                if (!pro || !pro->profiler()) return;
+                pro->profiler()->setCurrentUnits(timeUnit, memoryUnit);
+            });
+            connect(codeEdit, &CodeEdit::profilerSettingsChanged, this, [this]() {
+                // invalidate all editors ...
+                const auto metas = mFileRepo->openFiles();
+                for (const FileMeta *fm : metas) {
+                    for (QWidget *wid : fm->editors())
+                        if (CodeEdit *ce = ViewHelper::toCodeEdit(wid))
+                            ce->updateProfilerWidth();
+                }
+            });
+
+            connect(codeEdit, &CodeEdit::getProfileShort, this, [this](int line, qreal &timeSec, size_t &memory, size_t &loops) {
+                PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
+                if (!pro || !pro->profiler()) return;
+                int contLine = pro->contLineData()->continuousLine(mLocation, line);
+                if (contLine < 0)
+                    contLine = pro->profiler()->continuousLine(mLocation, line);
+                if (contLine > 0) {
+                    pro->profiler()->getProfile(contLine, timeSec, memory, loops);
+                }
+            });
+            connect(codeEdit, &CodeEdit::getProfileLong, this, [this](int line, QStringList &profileData) {
+                PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
+                if (!pro || !pro->profiler()) return;
+                int contLine = pro->profiler()->continuousLine(mLocation, line);
+                if (contLine > 0) {
+                    pro->profiler()->getProfileText(contLine, profileData);
+                }
+            });
+            codeEdit->setHasProfiler(project->doProfile() && project->isProfilerVisible());
+            connect(codeEdit, &CodeEdit::getProfilerMaxCompoundValues, this, &FileMeta::getProfilerMaxCompoundValues);
+            connect(codeEdit, &CodeEdit::getProfilerMaxData, this, &FileMeta::getProfilerMaxData);
+            connect(codeEdit, &CodeEdit::jumpToContinuousLine, this, &FileMeta::jumpToContinuousLine);
         }
     }
     setProjectId(project->id());

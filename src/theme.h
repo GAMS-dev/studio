@@ -58,6 +58,9 @@ public:
         Edit_linenrAreaFoldBg,
         Edit_linenrAreaFg,
         Edit_linenrAreaMarkFg,
+        Edit_profilingBg1,
+        Edit_profilingBg2,
+        Edit_profilingBg3,
         Edit_logRemoteBk,
 
         Mark_errorFg,
@@ -155,6 +158,9 @@ public:
     static QByteArray &data(const QString &name, QIcon::Mode mode, int alpha = 100);
     static bool hasFlag(ColorSlot slot, FontFlag flag);
     static void setFlags(ColorSlot slot, FontFlag flag);
+    static QColor mixColor(ColorSlot baseSlot, ColorSlot mixSlot, qreal alpha);
+    static QColor profileColor(ColorSlot baseSlot, qreal alpha);
+
     static const QColor CAutoBackground;
 
 signals:

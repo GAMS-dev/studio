@@ -127,4 +127,3 @@ void EnvVarCfgCompleterDelegate::updateCurrentEditedIndex(const QModelIndex &ind
 } // namespace option
 } // namespace studio
 } // namespace gams
-

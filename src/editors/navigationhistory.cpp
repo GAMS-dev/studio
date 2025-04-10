@@ -190,4 +190,3 @@ bool NavigationHistory::isRecording()
 
 } // namespace studio
 } // namespace gams
-

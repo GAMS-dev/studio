@@ -20,4 +20,3 @@ SOURCES += \
     $$SRCPATH/editors/sysloglocator.cpp \
     $$SRCPATH/file/filetype.cpp \
     $$SRCPATH/support/solverconfiginfo.cpp
-

@@ -59,4 +59,3 @@ private:
 } // namespace gams
 
 #endif // COMMANDLINE_H
-

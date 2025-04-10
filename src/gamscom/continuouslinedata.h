@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_DEBUGGER_BREAKPOINTDATA_H
-#define GAMS_STUDIO_DEBUGGER_BREAKPOINTDATA_H
+#ifndef GAMS_STUDIO_GAMSCOM_CONTINUOUSLINE_H
+#define GAMS_STUDIO_GAMSCOM_CONTINUOUSLINE_H
 
 #include "common.h"
 
@@ -29,13 +29,13 @@
 
 namespace gams {
 namespace studio {
-namespace debugger {
+namespace gamscom {
 
-class BreakpointData
+class ContinuousLineData
 {
 public:
-    explicit BreakpointData();
-    virtual ~BreakpointData();
+    explicit ContinuousLineData();
+    virtual ~ContinuousLineData();
 
     void clearLinesMap();
     bool addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &contLines);
@@ -72,4 +72,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // GAMS_STUDIO_DEBUGGER_BREAKPOINTDATA_H
+#endif // GAMS_STUDIO_GAMSCOM_CONTINUOUSLINE_H

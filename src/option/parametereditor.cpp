@@ -524,6 +524,7 @@ void ParameterEditor::loadCommandLine(const QStringList &history)
             this, &ParameterEditor::updateParameterTableModel );
     disconnect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, &ParameterEditor::updateCommandLineStr);
     disconnect(this, &ParameterEditor::commandLineChanged, mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
+    disconnect(ui->gamsParameterCommandLine, &QComboBox::currentTextChanged, this, &ParameterEditor::optionsChanged);
 
     ui->gamsParameterTreeView->clearSelection();
     ui->gamsParameterTreeView->collapseAll();
@@ -544,6 +545,7 @@ void ParameterEditor::loadCommandLine(const QStringList &history)
             this, &ParameterEditor::updateParameterTableModel, Qt::UniqueConnection);
     connect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, &ParameterEditor::updateCommandLineStr, Qt::UniqueConnection);
     connect(this, &ParameterEditor::commandLineChanged, mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
+    connect(ui->gamsParameterCommandLine, &QComboBox::currentTextChanged, this, &ParameterEditor::optionsChanged);
 
     if (history.isEmpty()) {
         ui->gamsParameterTreeView->clearSelection();
@@ -551,6 +553,7 @@ void ParameterEditor::loadCommandLine(const QStringList &history)
     }
     ui->gamsParameterCommandLine->setCurrentIndex(0);
     emit ui->gamsParameterCommandLine->commandLineChanged(ui->gamsParameterCommandLine->lineEdit(), ui->gamsParameterCommandLine->currentText());
+    emit optionsChanged(ui->gamsParameterCommandLine->currentText());
 }
 
 void ParameterEditor::selectSearchField()

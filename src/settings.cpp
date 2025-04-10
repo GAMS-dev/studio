@@ -354,6 +354,8 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEdLineWrapEditor, scUser, {"editor","lineWrapEditor"}, false);
     safelyAdd(res, skEdLineWrapProcess, scUser, {"editor","lineWrapProcess"}, false);
     safelyAdd(res, skEdClearLog, scUser, {"editor","clearLog"}, false);
+    safelyAdd(res, skEdProfilerCols, scUser, {"editor","ProfilerCols"}, 7);
+    safelyAdd(res, skEdProfilerPrevCols, scUser, {"editor","ProfilerPrevCols"}, 7);
     safelyAdd(res, skEdWordUnderCursor, scUser, {"editor","wordUnderCursor"}, false);
     safelyAdd(res, skEdHighlightCurrentLine, scUser, {"editor","highlightCurrentLine"}, false);
     safelyAdd(res, skEdAutoIndent, scUser, {"editor","autoIndent"}, true);

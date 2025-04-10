@@ -86,7 +86,7 @@ signals:
     void parameterLoaded(const QString &location);
     void ParameterTableModelChanged(const QString &commandLineStr);
     void commandLineChanged(QLineEdit* lineEdit, const QList<gams::studio::option::OptionItem> &optionItems);
-    void requestDebugPort(int &port);
+    void optionsChanged(const QString &commandLineStr);
 
 public slots:
     void updateParameterTableModel(QLineEdit* lineEdit, const QString &commandLineStr);

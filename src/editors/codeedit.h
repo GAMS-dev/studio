@@ -26,7 +26,6 @@
 #include <QTimer>
 #include "editors/abstractedit.h"
 #include "syntax/textmark.h"
-#include "syntax/blockdata.h"
 #include "syntax/syntaxcommon.h"
 
 class QPaintEvent;
@@ -39,10 +38,22 @@ namespace studio {
 
 class Settings;
 class LineNumberArea;
+class ProfilerArea;
+class ProfilerHeader;
 class SearchWidget;
 class CodeCompleter;
 
 enum BreakpointType {bpNone, bpAimedBp, bpRealBp};
+
+enum ProfilerColumn {
+    pcNone   = 0,
+    pcTime   = 1,
+    pcMemory = 2,
+    pcLoop   = 4,
+    pcAll    = 7
+};
+typedef QFlags<ProfilerColumn> ProfilerColumns;
+
 
 struct BlockEditPos
 {
@@ -75,8 +86,10 @@ public:
     CodeEdit(QWidget *parent = nullptr);
     ~CodeEdit() override;
 
-    void lineNumberAreaPaintEvent(QPaintEvent *event);
     virtual int lineNumberAreaWidth();
+    int profilerWidth();
+    int profilerHeaderHeight();
+    void updateProfilerWidth();
     virtual int foldState(int line, bool &folded, int *start = nullptr, QString *closingSymbol = nullptr) const;
     int iconSize();
     LineNumberArea* lineNumberArea();
@@ -120,9 +133,11 @@ public:
     int replaceAll(FileMeta *fm, const QRegularExpression &regex, const QString &replaceText,
                    QFlags<QTextDocument::FindFlag> options, bool selectionScope) override;
     QStringList getEnabledContextActions() override;
+    void setHasProfiler(bool hasProfiler);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    void showEvent(QShowEvent *e) override;
     void keyPressEvent(QKeyEvent *e) override;
     void keyReleaseEvent(QKeyEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
@@ -130,6 +145,13 @@ protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
+    void setProfilerHeaderContext(const QPoint &pos);
+    void profilerContextMenuEvent(QContextMenuEvent *e);
+    void profilerHeaderContextMenuEvent(QContextMenuEvent *e);
+    void lineNumberAreaPaintEvent(QPaintEvent *event);
+    void paintTextBox(QPainter *painter, int iRect, QRect gapRect, QString text, qreal alpha = -1.);
+    void profilerPaintEvent(QPaintEvent *event);
+    void profilerPaintHeaderEvent(QPaintEvent *event);
 
     void showLineNrContext(const QPoint &pos);
     virtual QString lineNrText(int blockNr);
@@ -169,6 +191,16 @@ signals:
     void delAllBreakpoints();
     void getProjectHasErrors(bool *hasErrors);
     void delAllProjectErrors();
+    void getProfilerSums(qreal &timeSec, size_t &memory);
+    void getProfilerUnits(QStringList &timeUnits, QStringList &memoryUnits);
+    void getProfilerCurrentUnits(int &timeUnit, int &memoryUnit);
+    void setProfilerCurrentUnits(int unitIndex, int memoryUnit);
+    void getProfileShort(int line, qreal &timeSec, size_t &memory, size_t &loops);
+    void getProfileLong(int line, QStringList &profileData);
+    void profilerSettingsChanged();
+    void getProfilerMaxCompoundValues(qreal &timeSec, size_t &memory, size_t &loops);
+    void getProfilerMaxData(QList<QPair<int, qreal>> &maxTimeContLine, QList<QPair<int,int>> &maxLoopsContLine);
+    void jumpToContinuousLine(int contLine);
 
 public slots:
     void clearSelection();
@@ -187,11 +219,11 @@ protected slots:
 
 private slots:
     void blockCountHasChanged(int newBlockCount);
-    void updateLineNumberAreaWidth(/*int newBlockCount*/);
+    void updateViewportSize(/*int newBlockCount*/);
     void recalcExtraSelections();
     void startCompleterTimer();
     void updateCompleter();
-    void updateLineNumberArea(const QRect &, int);
+    void updateViewport(const QRect &, int);
     void blockEditBlink();
     void checkBlockInsertion();
     void undoCommandAdded();
@@ -200,6 +232,8 @@ private slots:
 private:
     friend class BlockEdit;
     friend class LineNumberArea;
+    friend class ProfilerArea;
+    friend class ProfilerHeader;
 
     void adjustIndent(QTextCursor cursor);
     void truncate(const QTextBlock &block);
@@ -302,6 +336,8 @@ protected:
 
 private:
     LineNumberArea *mLineNumberArea;
+    ProfilerArea *mProfilerArea = nullptr;
+    ProfilerHeader *mProfilerHeader = nullptr;
     CodeCompleter *mCompleter = nullptr;
     QTimer mCompleterTimer;
     int mCurrentCol;
@@ -332,6 +368,10 @@ private:
     SortedIntMap mBreakpoints;
     SortedIntMap mAimedBreakpoints;
     int mBreakLine = -1;
+    QList<int> mProfilerCol;
+    ProfilerColumns mColumnFlags = pcAll;
+    ProfilerColumn mProfilerHeaderContext = pcNone;
+    int mProfilerLoopDigits = 0;
     QTextCursor mPreDebugCursor;
 
     static QRegularExpression mRex0LeadingSpaces;
@@ -346,21 +386,11 @@ private:
 class LineNumberArea : public QWidget
 {
 public:
-    LineNumberArea(CodeEdit *editor) : QWidget(editor) {
-        mCodeEditor = editor;
-    }
-
-    QSize sizeHint() const override {
-        return QSize(mCodeEditor->lineNumberAreaWidth(), 0);
-    }
-    QHash<int, QIcon> &icons() {
-        return mIcons;
-    }
+    LineNumberArea(CodeEdit *editor);
+    QSize sizeHint() const override;
 
 protected:
-    void paintEvent(QPaintEvent *event) override {
-        mCodeEditor->lineNumberAreaPaintEvent(event);
-    }
+    void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
@@ -369,8 +399,42 @@ protected:
 
 private:
     CodeEdit *mCodeEditor;
-    QHash<int, QIcon> mIcons;
     bool mNoCursorFocus = false;
+};
+
+class ProfilerArea : public QWidget
+{
+public:
+    ProfilerArea(CodeEdit *editor);
+    ~ProfilerArea() override {}
+    QSize sizeHint() const override;
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
+    void contextMenuEvent(QContextMenuEvent *e) override;
+
+private:
+    CodeEdit *mCodeEditor;
+};
+
+class ProfilerHeader : public QWidget
+{
+public:
+    ProfilerHeader(CodeEdit *editor);
+    ~ProfilerHeader() override {}
+    QSize sizeHint() const override;
+protected:
+    void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+    void contextMenuEvent(QContextMenuEvent *e) override;
+
+private:
+    CodeEdit *mCodeEditor;
 };
 
 } // namespace studio

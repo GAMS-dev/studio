@@ -107,4 +107,3 @@ Result SearchResultModel::at(int index) const
 }
 }
 }
-

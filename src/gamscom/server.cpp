@@ -25,11 +25,13 @@
 #include <QDir>
 #include <QTimer>
 
+#include "profiler.h"
+#include "exception.h"
 #include "logger.h"
 
 namespace gams {
 namespace studio {
-namespace debugger {
+namespace gamscom {
 
 const quint16 CFirstDebugPort = 3563;
 const quint16 CLastDebugPort = 4563;
@@ -49,8 +51,14 @@ Server::~Server()
     mServer = nullptr;
 }
 
+void Server::setProfiler(Profiler *profiler)
+{
+    mProfiler = profiler;
+}
+
 void Server::init()
 {
+    // calls
     mCalls.insert(invalidReply, "invalidReply");
     mCalls.insert(addBP, "addBP");
     mCalls.insert(delBP, "delBP");
@@ -60,17 +68,21 @@ void Server::init()
     mCalls.insert(pause, "pause");
     mCalls.insert(writeGDX, "writeGDX");
 
+    // replies
     mReplies.insert("invalidCall", invalidCall);
     mReplies.insert("linesMap", linesMap);
     mReplies.insert("linesMapDone", linesMapDone);
+
     mReplies.insert("paused", paused);
     mReplies.insert("gdxReady", gdxReady);
+
+    mReplies.insert("profileData", profileData);
 }
 
-bool Server::start()
+bool Server::start(ComFeatures features)
 {
     if (mServer->isListening()) {
-        logMessage("WARNING: The Debug-Server already listens to port" + QString::number(mServer->serverPort()));
+        logMessage("WARNING: The GAMScom-Server already listens to port" + QString::number(mServer->serverPort()));
         return true;
     }
 
@@ -80,14 +92,20 @@ bool Server::start()
     while (mPortsInUse.contains(port) || !mServer->listen(QHostAddress::LocalHost, port)) {
         ++port;
         if (port > CLastDebugPort) {
-            logMessage("Debug-Server could not find a free port!");
+            logMessage("GAMScom-Server could not find a free port!");
             return false;
         }
     }
+    mComFeatures = features;
     mPortsInUse << mServer->serverPort();
 
-    logMessage("Debug-Server started. Listening at port " + QString::number(port));
+    DEB() << "GAMScom-Server: Studio connected to GAMS on port " << port;
     return true;
+}
+
+ComFeatures Server::features()
+{
+    return mComFeatures;
 }
 
 void Server::stopAndDelete()
@@ -106,20 +124,20 @@ void Server::newConnection()
     if (!mServer) return;
     QTcpSocket *socket = mServer->nextPendingConnection();
     if (mSocket) {
-        logMessage("Debug-Server: already connected to a socket");
+        logMessage("GAMScom-Server: already connected to a socket");
         if (socket) socket->deleteLater();
         return;
     }
     if (!socket) return;
     mSocket = socket;
     connect(socket, &QTcpSocket::disconnected, this, [this]() {
-        logMessage("Debug-Server: Socket disconnected");
+        DEB() << "GAMScom-Server: Socket disconnected";
         deleteSocket();
     });
     connect(socket, &QTcpSocket::readyRead, this, [this]() {
         QByteArray data = mSocket->readAll();
         QList<QByteArray> packets = data.split('\0');
-        for (const QByteArray &packet : packets) {
+        for (const QByteArray &packet : std::as_const(packets)) {
             if (packet.isEmpty()) continue;
             if (mIncompletePacket.isEmpty())
                 mIncompletePacket = packet;
@@ -137,7 +155,7 @@ void Server::newConnection()
                 mIncompletePacket.clear();
         }
     });
-    logMessage("Debug-Server: Socket connected to GAMS");
+    DEB() << "GAMScom-Server: Socket connected to GAMS";
     setState(Prepare);
     emit connected();
 }
@@ -156,7 +174,7 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
 {
     if (!mSocket || !mSocket->isOpen()) {
         QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1) : QString();
-        logMessage("Debug-Server: Socket not open, can't process '" + mCalls.value(call, "undefinedCall")
+        logMessage("GAMScom-Server: Socket not open, can't process '" + mCalls.value(call, "undefinedCall")
                    + (arguments.isEmpty() ? "'" : (":" + arguments.at(0) + "'" + additionals)));
         return;
     }
@@ -165,7 +183,7 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
     QString keyword = mCalls.value(call);
     if (keyword.isEmpty()) {
         QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1) : QString();
-        logMessage("Debug-Server: Undefined call '" + QString::number(int(call))
+        logMessage("GAMScom-Server: Undefined call '" + QString::number(int(call))
                    + (arguments.isEmpty() ? "'" : (":" + arguments.at(0) + "'" + additionals)));
         return;
     }
@@ -178,7 +196,7 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
             progress = true;
         }
         if (!progress) {
-            logMessage("Debug-Server: Call line too long. Can't send more than 255 characters at once '"
+            logMessage("GAMScom-Server: Call line too long. Can't send more than 255 characters at once '"
                        + QString::number(int(call)) + ":" + remain.first() + "'");
             break;
         }
@@ -199,7 +217,7 @@ Server::ParseResult Server::handleReply(const QString &replyData)
     if (!reList.isEmpty()) {
         reply = mReplies.value(reList.at(0), invalid);
         if (reply == invalid && mLastReply == linesMap) {
-            reply = linesMap;
+            reply = mLastReply;
         } else if (reply != invalid) {
             reList.removeFirst();
             mLastReply = reply;
@@ -213,26 +231,38 @@ Server::ParseResult Server::handleReply(const QString &replyData)
     bool ok = false;
     switch (reply) {
     case invalidCall:
-        logMessage("Debug-Server: GAMS refused to process this request: " + reList.join(", "));
+        logMessage("GAMScom-Server: GAMS refused to process this request: " + reList.join(", "));
         break;
     case linesMap: {
         if (reList.size() < 1) return prIncomplete; // wait for more data
-        for (const QString &line : reList) {
+        for (const QString &line : std::as_const(reList)) {
             parseLinesMap(line);
         }
     }   break;
     case linesMapDone: {
         if (!mRemainData.isEmpty())
             parseLinesMap(" ");
+        if (mComFeatures.testFlag(cfProfile)) {
+            if (mIncludes.isEmpty()) {
+                if (!mBreakLinesFile.isEmpty())
+                    mIncludes << new IncludeLine(mBreakLinesFile);
+            } else {
+                if (mIncludes.first()->contLine == 1 && mIncludes.first()->outerContLine == std::numeric_limits<int>::max())
+                    mIncludes.first()->outerContLine = 1;
+                else
+                    mIncludes.prepend(new IncludeLine(mIncludes.first()->parentFile));
+            }
+            mProfiler->addIncludes(mIncludes);
+        }
         emit signalMapDone();
     }   break;
     case paused: {
         if (reList.size() < 1) return prIncomplete; // wait for more data
         if (reList.size() > 1)
-            logMessage("Debug-Server: [paused] Only one entry expected. Additional data ignored.");
+            logMessage("GAMScom-Server: [paused] Only one entry expected. Additional data ignored.");
         int line = data.at(0).toInt(&ok);
         if (!ok) {
-            logMessage("Debug-Server: [paused] Can't parse continuous line number: " + data.at(0));
+            logMessage("GAMScom-Server: [paused] Can't parse continuous line number: " + data.at(0));
             return prError;
         }
 
@@ -245,19 +275,27 @@ Server::ParseResult Server::handleReply(const QString &replyData)
             file = QDir::fromNativeSeparators(data.first());
 
         if (file.isEmpty()) {
-            logMessage("Debug-Server: [gdxReady] Missing name for GDX file.");
+            logMessage("GAMScom-Server: [gdxReady] Missing name for GDX file.");
             return prIncomplete;
         }
         if (!QFile::exists(file)) {
-            logMessage("Debug-Server: [gdxReady] File not found: " + file);
+            logMessage("GAMScom-Server: [gdxReady] File not found: " + file);
             return prError;
         }
         emit signalGdxReady(file);
     }   break;
+    case profileData: {
+        if (reList.size() < 1) return prIncomplete; // wait for more data
+        if (reList.size() > 1)
+            logMessage("GAMScom-Server: [profileData] Only one entry expected. Additional data ignored.");
+        return parseProfileData(reList.at(0));
+    }   break;
+
     default:
-        logMessage("Debug-Server: Unknown GAMS request: " + reList.join(", "));
+        logMessage("GAMScom-Server: Unknown GAMS request: " + reList.join(", "));
         return prError;
     }
+
 
     return prOk;
 }
@@ -282,14 +320,17 @@ void Server::parseLinesMap(const QString &breakData)
     if (mRemainData.isEmpty()) {
         data = breakData.split('|');
     } else if ((c < '0' || c > '9') && c != '=' && c != '|') {
-        // This is probably a filename, then the remain data is complete and can be processed
-        QStringList linePair = mRemainData.split("=");
+        // This is probably a filename, then mRemainData is complete and can be processed
         QList<int> lines;
         QList<int> coLNs;
-        if (getPair(mRemainData, lines, coLNs))
-            emit signalLinesMap(mBreakLinesFile, lines, coLNs);
-        else {
-            logMessage("Debug-Server: breakLines parse error: " + mRemainData);
+        QList<int> incLines;
+        if (getPair(mRemainData, lines, coLNs, incLines)) {
+            if (!incLines.isEmpty() && !mBreakLinesFile.isEmpty())
+                addInclude(mBreakLinesFile, incLines);
+            if (!lines.isEmpty())
+                emit signalLinesMap(mBreakLinesFile, lines, coLNs);
+        } else {
+            logMessage("GAMScom-Server: breakLines parse error: " + mRemainData);
         }
         if (mVerbose) {
             QString list("DATA-> " + mBreakLinesFile + " : ");
@@ -299,22 +340,29 @@ void Server::parseLinesMap(const QString &breakData)
             logMessage(list);
         }
         mRemainData = QString();
-        if (breakData == " ") return;
-        data = breakData.split('|');
+        if (breakData != " ")
+            data = breakData.split('|');
     } else {
         data = ("|" + mRemainData + breakData).split('|');
     }
     if (data.size() > 0)
         mRemainData = data.takeLast();
     else mRemainData = QString();
-    if (data.isEmpty()) return;
+    if (data.isEmpty()) {
+        return;
+    }
 
     QString file = (data.first().isEmpty() ? mBreakLinesFile : QDir::fromNativeSeparators(data.first()));
     QList<int> lines;
     QList<int> coLNs;
+    QList<int> incLines;
     for (int i = 1; i < data.size(); ++i) {
-        bool ok = getPair(data.at(i), lines, coLNs);
-        if (!ok) logMessage("Debug-Server: breakLines parse error: " + data.at(i));
+        bool ok = getPair(data.at(i), lines, coLNs, incLines);
+        if (!incLines.isEmpty() && !mBreakLinesFile.isEmpty()) {
+            addInclude(mBreakLinesFile, incLines);
+            incLines.clear();
+        }
+        if (!ok) logMessage("GAMScom-Server: breakLines parse error: " + data.at(i));
     }
     if (!lines.isEmpty()) {
         if (mVerbose) {
@@ -326,24 +374,90 @@ void Server::parseLinesMap(const QString &breakData)
         }
         emit signalLinesMap(file, lines, coLNs);
     }
+    int firstContLine = std::numeric_limits<int>::max();
+    if (!coLNs.isEmpty()) firstContLine = coLNs.first();
+    if (!incLines.isEmpty() && firstContLine > incLines.first())
+        firstContLine = incLines.first();
+    trackInclude(file, firstContLine);
     mBreakLinesFile = file;
 }
 
-bool Server::getPair(const QString &assignment, QList<int> &lines, QList<int> &coLNs)
+Server::ParseResult Server::parseProfileData(const QString &rawData)
 {
-    QStringList linePair = assignment.split("=");
+    QStringList data = rawData.split('|');
+    if (data.size() < 4) return prIncomplete;
+    bool ok;
+    int contLine = data.at(0).toInt(&ok);
+    if (!ok) return prError;
+    qreal sec = data.at(2).toDouble(&ok);
+    if (!ok) return prError;
+    qreal mbMem = data.at(3).toDouble(&ok);
+    if (!ok) return prError;
+    size_t mem = qRound64(mbMem / .000001);
+    if (mProfiler) {
+        mProfiler->add(contLine, data.at(1), sec, mem);
+    }
+    return prOk;
+}
+
+bool Server::getPair(const QString &assignment, QList<int> &lines, QList<int> &coLNs, QList<int> &incLines)
+{
+    bool isInc = assignment.startsWith('!');
+    QStringList linePair = (isInc ? assignment.last(assignment.length()-1) : assignment).split("=");
     bool ok = (linePair.size() == 2 && !linePair.at(1).isEmpty());
     if (ok) {
         int line = linePair.at(0).toInt(&ok);
         if (ok) {
             int coLN = linePair.at(1).toInt(&ok);
             if (ok) {
-                lines << line;
-                coLNs << coLN;
+                if (isInc) {
+                    incLines << line << coLN;
+                } else {
+                    lines << line;
+                    coLNs << coLN;
+                }
             }
         }
     }
     return ok;
+}
+
+void Server::addInclude(const QString &filename, QList<int> &incLine)
+{
+    if (incLine.length() != 2) FATAL() << "Error in Server::setLastInclude: wrong count of numbers";
+    if (filename.isEmpty()) EXCEPT() << "Filename for include-line must not be empty";
+
+    trackInclude(filename, incLine.at(1)); // to cleanup mIncludeParents and possibly add outerContLine
+    mIncludes << new IncludeLine(filename, incLine.at(0), incLine.at(1));
+    mIncludeParents << new IncludeLine(filename, incLine.at(0), incLine.at(1));
+}
+
+void Server::trackInclude(const QString &filename, int firstContLine)
+{
+    bool needInclude = mIncludes.size() && mIncludes.last()->childFile.isEmpty();
+    if (firstContLine < std::numeric_limits<int>::max()) {
+        // reduce parent list if file found and update affected outerContLine
+        for (int i = 0; i < mIncludeParents.size(); ++i) {
+            if (filename.compare(mIncludeParents.at(i)->parentFile) == 0) {
+                // filename is a parent: clear children
+                while (mIncludeParents.size() > i) {
+                    for (int i = mIncludes.size()-1; i >= 0; --i) {
+                        IncludeLine *incData = mIncludes[i];
+                        if (incData->parentFile == mIncludeParents.last()->parentFile &&
+                            (firstContLine - 1 < incData->outerContLine)) {
+                            mIncludes[i]->outerContLine = firstContLine - 1;
+                            break;
+                        }
+                    }
+                    delete mIncludeParents.takeLast();
+                }
+                break;
+            }
+        }
+    }
+    if (needInclude) {
+        mIncludes.last()->childFile = filename;
+    }
 }
 
 void Server::setState(DebugState state)

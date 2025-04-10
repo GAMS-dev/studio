@@ -46,8 +46,8 @@ public:
     void init(TextMarkRepo* textMarkRepo, ProjectRepo *projectRepo);
     TextMarkRepo *textMarkRepo() const;
     ProjectRepo *projectRepo() const;
-    QVector<FileMeta*> openFiles() const;
-    QVector<FileMeta*> modifiedFiles() const;
+    QList<FileMeta *> openFiles() const;
+    QList<FileMeta*> modifiedFiles() const;
     QWidgetList editors() const;
     void unwatch(const FileMeta* fm);
     void unwatch(const QString &filePath);

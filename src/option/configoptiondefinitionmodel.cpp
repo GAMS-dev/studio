@@ -133,4 +133,3 @@ void ConfigOptionDefinitionModel::modifyOptionDefinition(const QList<ParamConfig
 } // namespace option
 } // namespace studio
 } // namespace gams
-

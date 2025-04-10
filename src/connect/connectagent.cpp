@@ -47,4 +47,3 @@ void ConnectAgent::loadFromString(const QString &input)
 } // namespace connect
 } // namespace studio
 } // namespace gams
-

@@ -34,7 +34,8 @@
 #include "projectedit.h"
 #include "settings.h"
 #include "viewhelper.h"
-#include "debugger/breakpointdata.h"
+#include "gamscom/continuouslinedata.h"
+#include "gamscom/profiler.h"
 
 #include <QtConcurrent>
 #include <QFileInfo>
@@ -223,7 +224,12 @@ PExProjectNode::PExProjectNode(const QString &filePath, const QString &basePath,
     , mWorkDir(workDir)
     , mType(type)
 {
-    mBreakpointData = new debugger::BreakpointData();
+    mContLineData = new gamscom::ContinuousLineData();
+    mProfiler = new gamscom::Profiler();
+    mProfiler->setContinuousLineData(mContLineData);
+    mUpdateEditsTimer.setSingleShot(true);
+    connect(&mUpdateEditsTimer, &QTimer::timeout, this, &PExProjectNode::updateOpenEditors);
+
     if (mWorkDir.isEmpty()) mWorkDir = basePath;
     if (runFileMeta && runFileMeta->kind() == FileKind::Gms) {
         setRunnableGms(runFileMeta);
@@ -258,8 +264,8 @@ void PExProjectNode::setProcess(AbstractProcess* process)
         mGamsProcess->disconnect();
     mGamsProcess.reset(process);
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
-    if (mDebugServer)
-        connect(mGamsProcess.get(), &AbstractProcess::interruptGenerated, mDebugServer, &debugger::Server::sendStepLine);
+    if (mComServer)
+        connect(mGamsProcess.get(), &AbstractProcess::interruptGenerated, mComServer, &gamscom::Server::sendStepLine);
 
 }
 
@@ -270,8 +276,10 @@ AbstractProcess *PExProjectNode::process() const
 
 PExProjectNode::~PExProjectNode()
 {
-    delete mBreakpointData;
-    mBreakpointData = nullptr;
+    delete mContLineData;
+    mContLineData = nullptr;
+    delete mProfiler;
+    mProfiler = nullptr;
     setProjectEditFileMeta(nullptr);
 }
 
@@ -484,11 +492,73 @@ QString PExProjectNode::resolveHRef(const QString &href, PExFileNode *&node, int
     return res;
 }
 
+void PExProjectNode::updateOpenEditors()
+{
+    if (mProfiler)
+        mProfiler->setCurrentUnits();
+
+    for (FileMeta *meta : fileRepo()->fileMetas()) {
+        if (meta->isOpen() && meta->projectId() == id()) {
+            for (QWidget *wid : meta->editors()) {
+                if (isProfilerVisible()) {
+                    if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
+                        ce->updateProfilerWidth();
+                    }
+                }
+                wid->update();
+            }
+        }
+    }
+    if (mComServer) mUpdateEditsTimer.isSingleShot();
+}
+
+bool PExProjectNode::isProfilerVisible() const
+{
+    return mProfilerVisible;
+}
+
+void PExProjectNode::setProfilerVisible(bool profilerVisible)
+{
+    if (mProfilerVisible == profilerVisible) return;
+    mProfilerVisible = profilerVisible;
+    for (PExFileNode *node : listFiles()) {
+        if (node->projectId() != id()) continue;
+        for (QWidget *ed : node->file()->editors())
+            if (CodeEdit *ce = ViewHelper::toCodeEdit(ed))
+                ce->setHasProfiler(mProfilerVisible);
+    }
+}
+
+void PExProjectNode::updateProfilerForOpenNodes()
+{
+    for (PExFileNode *node : listFiles()) {
+        if (node->projectId() != id()) continue;
+        for (QWidget *ed : node->file()->editors())
+            if (CodeEdit *ce = ViewHelper::toCodeEdit(ed))
+                ce->updateProfilerWidth();
+    }
+}
+
+gamscom::ContinuousLineData *PExProjectNode::contLineData() const
+{
+    return mContLineData;
+}
+
+gamscom::Profiler *PExProjectNode::profiler() const
+{
+    return mProfiler;
+}
+
+bool PExProjectNode::doProfile() const
+{
+    return mDoProfile;
+}
+
 void PExProjectNode::setVerbose(bool verbose)
 {
     mVerbose = verbose;
-    if (mDebugServer)
-        mDebugServer->setVerbose(mVerbose);
+    if (mComServer)
+        mComServer->setVerbose(mVerbose);
 }
 
 QString PExProjectNode::engineJobToken() const
@@ -508,9 +578,9 @@ QString PExProjectNode::tempGdx() const
     return mTempGdx;
 }
 
-debugger::Server *PExProjectNode::debugServer() const
+gamscom::Server *PExProjectNode::comServer() const
 {
-    return mDebugServer;
+    return mComServer;
 }
 
 PExProjectNode::Type PExProjectNode::type() const
@@ -754,6 +824,12 @@ void PExProjectNode::jumpToHRef(const QString &href)
     }
 }
 
+void PExProjectNode::jumpToFile(const QString &filename, int line)
+{
+    PExFileNode *node = projectRepo()->findOrCreateFileNode(filename, this);
+    if (node) node->file()->jumpTo(id(), true, line);
+}
+
 void PExProjectNode::createMarks(const LogParser::MarkData &marks)
 {
     if (marks.hasErr() && !marks.hRef.isEmpty()) {
@@ -804,39 +880,39 @@ void insertSorted(QList<int> &list, int value)
 void PExProjectNode::addBreakpoint(const QString &filename, int line)
 {
     bool isRunning = mGamsProcess && mGamsProcess.get()->state() != QProcess::NotRunning;
-    int resLine = mBreakpointData->addBreakpoint(filename, line, isRunning);
+    int resLine = mContLineData->addBreakpoint(filename, line, isRunning);
 
-    if (mDebugServer) {
-        int contLine = mBreakpointData->continuousLine(filename, resLine);
+    if (mComServer) {
+        int contLine = mContLineData->continuousLine(filename, resLine);
         if (contLine >= 0)
-            mDebugServer->addBreakpoint(contLine);
+            mComServer->addBreakpoint(contLine);
     }
 }
 
 void PExProjectNode::delBreakpoint(const QString &filename, int line)
 {
-    mBreakpointData->delBreakpoint(filename, line);
+    mContLineData->delBreakpoint(filename, line);
 
-    if (mDebugServer) {
-        int contLine = mBreakpointData->continuousLine(filename, line);
+    if (mComServer) {
+        int contLine = mContLineData->continuousLine(filename, line);
         if (contLine >= 0)
-            mDebugServer->delBreakpoint(contLine);
+            mComServer->delBreakpoint(contLine);
     }
 }
 
 void PExProjectNode::clearBreakpoints()
 {
-    mBreakpointData->delBreakpoints();
-    if (mDebugServer)
-        mDebugServer->clearBreakpoints();
+    mContLineData->delBreakpoints();
+    if (mComServer)
+        mComServer->clearBreakpoints();
     for (const PExFileNode *node : listFiles())
         node->file()->updateBreakpoints();
 }
 
 void PExProjectNode::breakpoints(const QString &filename, SortedIntMap &bps, SortedIntMap &aimedBps) const
 {
-    bps = mBreakpointData->bpFileLines(filename);
-    aimedBps = mBreakpointData->bpAimedFileLines(filename);
+    bps = mContLineData->bpFileLines(filename);
+    aimedBps = mContLineData->bpAimedFileLines(filename);
 }
 
 void PExProjectNode::clearErrorTexts()
@@ -914,6 +990,7 @@ QStringList PExProjectNode::getRunParametersHistory() const
 ///
 QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const QStringList &defaultParameters, const QList<option::OptionItem> &itemList, option::Option *opt, int &logOption)
 {
+    mDoProfile = false;
     bool ok;
     // set studio default parameters
     QMultiMap<int, QString> gamsArguments;
@@ -1019,6 +1096,11 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
             } else if (item.optionId == opt->getOrdinalNumber("logoption")) {
                 int lo = item.value.toInt(&ok);
                 if (ok) logOption = lo;
+
+            } else if (item.optionId == opt->getOrdinalNumber("profile")) {
+                mDoProfile = item.value.toInt(&ok) > 0;
+                if (!ok) mDoProfile = false;
+                mProfilerVisible = mDoProfile;
 
             } else if (item.optionId == opt->getOrdinalNumber("logfile")) {
                 if (!value.endsWith(".log", FileType::fsCaseSense()))
@@ -1217,39 +1299,62 @@ void PExProjectNode::clearParameters()
     if (willChange) setNeedSave();
 }
 
-bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
+bool PExProjectNode::startComServer(gamscom::ComFeatures features)
 {
-    if (!mDebugServer) {
-        mDebugServer = new debugger::Server(workDir(), this);
-        mDebugServer->setVerbose(mVerbose);
-        connect(mDebugServer, &debugger::Server::connected, this, [this]() {
-            mBreakpointData->clearLinesMap();
-        });
-        connect(mDebugServer, &debugger::Server::signalMapDone, this, [this, mode]() {
-            mBreakpointData->adjustBreakpoints();
-            for (const QString &file : mBreakpointData->bpFiles()) {
-                FileMeta *meta = fileRepo()->fileMeta(file);
-                if (meta)
-                    meta->updateBreakpoints();
+    if (!features) return false;
+    if (!mComServer) {
+        mComServer = new gamscom::Server(workDir(), this);
+        mComServer->setVerbose(mVerbose);
+        if (features & gamscom::cfProfile) {
+            mComServer->setProfiler(mProfiler);
+            mProfiler->clear();
+            for (PExFileNode *node : listFiles()) {
+                for (QWidget *wid :node->file()->editors()) {
+                    if (CodeEdit *ce = ViewHelper::toCodeEdit(wid))
+                        ce->setHasProfiler(true);
+                }
             }
-            mDebugServer->addBreakpoints(mBreakpointData->bpContinuousLines());
-            if (mode == debugger::RunDebug)
-                mDebugServer->sendRun();
-            else
-                mDebugServer->sendStepLine();
+        }
+        connect(mComServer, &gamscom::Server::connected, this, [this]() {
+            mContLineData->clearLinesMap();
+            mIncludes.clear();
+            if (mProfiler) mProfiler->clear();
         });
-        connect(mDebugServer, &debugger::Server::addProcessLog, this, &PExProjectNode::addProcessLog);
-        connect(mDebugServer, &debugger::Server::signalGdxReady, this, &PExProjectNode::openDebugGdx);
-        connect(mDebugServer, &debugger::Server::signalPaused, this, &PExProjectNode::gotoPaused);
-        connect(mDebugServer, &debugger::Server::signalStop, this, &PExProjectNode::terminate);
-        connect(mDebugServer, &debugger::Server::signalLinesMap, this, &PExProjectNode::addLinesMap);
+        connect(mComServer, &gamscom::Server::signalMapDone, this, [this, features]() {
+            if (features & gamscom::cfRunDebug) {
+                mContLineData->adjustBreakpoints();
+                for (const QString &file : mContLineData->bpFiles()) {
+                    FileMeta *meta = fileRepo()->fileMeta(file);
+                    if (meta)
+                        meta->updateBreakpoints();
+                }
+                mComServer->addBreakpoints(mContLineData->bpContinuousLines());
+                if (features & gamscom::cfStepDebug)
+                    mComServer->sendStepLine();
+                else
+                    mComServer->sendRun();
+            } else
+                mComServer->sendRun();
+        });
+
+        connect(mComServer, &gamscom::Server::addProcessLog, this, &PExProjectNode::addProcessLog);
+        connect(mComServer, &gamscom::Server::signalGdxReady, this, &PExProjectNode::openDebugGdx);
+        connect(mComServer, &gamscom::Server::signalPaused, this, &PExProjectNode::gotoPaused);
+        connect(mComServer, &gamscom::Server::signalStop, this, &PExProjectNode::terminate);
+        connect(mComServer, &gamscom::Server::signalLinesMap, this, &PExProjectNode::addLinesMap);
         if (process())
-            connect(process(), &AbstractProcess::interruptGenerated, mDebugServer, &debugger::Server::sendStepLine);
+            connect(process(), &AbstractProcess::interruptGenerated, mComServer, &gamscom::Server::sendStepLine);
     }
-    bool res = mDebugServer->start();
+    bool res = mComServer->start(features);
     if (process()) {
         QStringList params = process()->parameters();
-        params << ("DebugPort=" + QString::number(mDebugServer->port()));
+        if (features & gamscom::cfRunDebug)
+            params << ("DebugPort=" + QString::number(mComServer->port()));
+        if (features & gamscom::cfProfile) {
+            params << ("ProfilePort=" + QString::number(mComServer->port()));
+            updateOpenEditors();
+            mUpdateEditsTimer.start(1000);
+        }
         process()->setParameters(params);
     } else {
         DEB() << "Process isn't up already.";
@@ -1257,15 +1362,16 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
     return res;
 }
 
-void PExProjectNode::stopDebugServer()
+void PExProjectNode::stopComServer()
 {
-    if (mDebugServer) {
-        disconnect(mDebugServer);
-        debugger::Server *server = mDebugServer;
-        mDebugServer = nullptr;
+    if (mComServer) {
+        mUpdateEditsTimer.start(1000);
+        disconnect(mComServer);
+        gamscom::Server *server = mComServer;
+        mComServer = nullptr;
         delete server;
     }
-    mBreakpointData->resetAimedBreakpoints();
+    mContLineData->resetAimedBreakpoints();
     for (const PExFileNode *node : listFiles())
         node->file()->updateBreakpoints();
 }
@@ -1320,8 +1426,8 @@ void PExProjectNode::openDebugGdx(const QString &gdxFile)
 
 void PExProjectNode::gotoPaused(int contLine)
 {
-    QString file = mBreakpointData->filename(contLine);
-    int fileLine = mBreakpointData->fileLine(contLine);
+    QString file = mContLineData->filename(contLine);
+    int fileLine = mContLineData->fileLine(contLine);
 
     PExFileNode *node = projectRepo()->findOrCreateFileNode(file, this);
     if (mPausedInFile && mPausedInFile != node) {
@@ -1342,8 +1448,8 @@ void PExProjectNode::gotoPaused(int contLine)
     }
     mPausedInFile = node;
     if (contLine > 0) {
-        mTempGdx = mDebugServer->gdxTempFile();
-        mDebugServer->sendWriteGdx(QDir::toNativeSeparators(mTempGdx));
+        mTempGdx = mComServer->gdxTempFile();
+        mComServer->sendWriteGdx(QDir::toNativeSeparators(mTempGdx));
     }
 }
 
@@ -1359,7 +1465,7 @@ void PExProjectNode::processState(QProcess::ProcessState &state)
 
 void PExProjectNode::addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &continuousLines)
 {
-    mBreakpointData->addLinesMap(filename, fileLines, continuousLines);
+    mContLineData->addLinesMap(filename, fileLines, continuousLines);
 }
 
 PExRootNode::PExRootNode(ProjectRepo* repo)

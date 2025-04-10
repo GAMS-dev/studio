@@ -742,4 +742,3 @@ QString ConfigParamTableModel::getParameterTableEntry(int row)
 } // namepsace option
 } // namespace studio
 } // namespace gams
-

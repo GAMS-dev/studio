@@ -27,4 +27,3 @@ SOURCES += \
     $$SRCPATH/exception.cpp                     \
     $$SRCPATH/commandlineparser.cpp             \
     testfilemapper.cpp
-

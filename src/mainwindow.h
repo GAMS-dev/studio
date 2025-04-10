@@ -28,8 +28,8 @@
 #include "file/projectcontextmenu.h"
 #include "file/projectrepo.h"
 #include "file/recentdata.h"
-#include "debugger/server.h"
-#include "debugger/pincontrol.h"
+#include "gamscom/server.h"
+#include "gamscom/pincontrol.h"
 #include "modeldialog/libraryitem.h"
 #include "search/resultsview.h"
 #include "option/parametereditor.h"
@@ -159,7 +159,7 @@ public:
     void toggleSearchDialog();
     void toggleFullscreen();
     void execute(const QString &commandLineStr, AbstractProcess* process = nullptr,
-                 gams::studio::debugger::DebugStartMode debug = gams::studio::debugger::NoDebug);
+                 gamscom::ComFeatures comMode = gams::studio::gamscom::cfNoCom);
 
     void resetHistory();
     void removeFromHistory(const QString &file);
@@ -463,6 +463,7 @@ private slots:
     void updateSystemLogTab(bool focus);
     void on_tbProjectSettings_clicked();
     void cleanGeneratedProjectFiles(gams::studio::NodeId projId, const QString &workspace);
+    void on_actionShow_Profiler_toggled(bool showProfiler);
 
 
 private:
@@ -476,6 +477,7 @@ private:
     void initEnvironment();
     void initNavigator();
     void adjustFonts();
+    void updateProfilerAction();
     QVector<PExAbstractNode*> selectedNodes(QModelIndex index = QModelIndex());
     bool handleFileChanges(FileMeta *fc, bool closeAndWillReopen);
     PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);
@@ -532,7 +534,7 @@ private:
     SettingsDialog *mSettingsDialog = nullptr;
     OpenPermission mOpenPermission = opNone;
     pin::PinViewWidget *mPinView = nullptr;
-    debugger::PinControl mPinControl;
+    gamscom::PinControl mPinControl;
     QHash<FontGroup, qreal> mGroupFontSize;
     NodeId mFocussedLog;
 

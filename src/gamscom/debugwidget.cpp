@@ -22,7 +22,7 @@
 
 namespace gams {
 namespace studio {
-namespace debugger {
+namespace gamscom {
 
 DebugWidget::DebugWidget(QWidget *parent) :
     QWidget(parent),

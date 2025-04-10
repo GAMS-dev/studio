@@ -29,6 +29,10 @@ class TestCodeEdit : public QObject
 private slots:
     void test_nextWord();
     void test_prevWord();
+    void testSecondsToString();
+    void testSecondsToString2();
+    void testBytesToString();
+    void testBytesToString2();
 };
 
 #endif // TESTCODEEDIT_H

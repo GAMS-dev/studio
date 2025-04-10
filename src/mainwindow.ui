@@ -95,7 +95,7 @@
      </widget>
     </item>
     <item>
-     <widget class="gams::studio::debugger::DebugWidget" name="debugWidget" native="true"/>
+     <widget class="gams::studio::gamscom::DebugWidget" name="debugWidget" native="true"/>
     </item>
     <item>
      <widget class="gams::studio::support::UpdateWidget" name="updateWidget" native="true">
@@ -130,7 +130,7 @@
     </property>
     <widget class="QMenu" name="menuFocus_Project">
      <property name="title">
-      <string>Focus Project</string>
+      <string>&amp;Focus Project</string>
      </property>
     </widget>
     <addaction name="actionNew"/>
@@ -261,6 +261,7 @@
     <addaction name="actionFoldAllTextBlocks"/>
     <addaction name="actionUnfoldAllTextBlocks"/>
     <addaction name="actionFoldDcoTextBlocks"/>
+    <addaction name="actionShow_Profiler"/>
     <addaction name="separator"/>
     <addaction name="menuBookmarks"/>
     <addaction name="actionReset_Views"/>
@@ -1724,6 +1725,23 @@
     <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
+  <action name="actionShow_Profiler">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Profiler</string>
+   </property>
+   <property name="toolTip">
+    <string>Shows profiler data if available</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+P</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::TextHeuristicRole</enum>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -1745,9 +1763,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>gams::studio::debugger::DebugWidget</class>
+   <class>gams::studio::gamscom::DebugWidget</class>
    <extends>QWidget</extends>
-   <header>debugger/debugwidget.h</header>
+   <header>gamscom/debugwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

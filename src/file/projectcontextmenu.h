@@ -121,4 +121,3 @@ private:
 } // namespace gams
 
 #endif // PROJECTCONTEXTMENU_H
-

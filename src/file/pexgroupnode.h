@@ -22,10 +22,11 @@
 
 #include <QProcess>
 #include <QFileInfoList>
+#include "gamscom/profiler.h"
 #include "process/abstractprocess.h"
 #include "editors/logparser.h"
 #include "pexabstractnode.h"
-#include "debugger/server.h"
+#include "gamscom/server.h"
 
 namespace gams {
 namespace studio {
@@ -39,9 +40,10 @@ namespace option {
 struct OptionItem;
 class Option;
 }
-namespace debugger {
-class BreakpointData;
+namespace gamscom {
+class ContinuousLineData;
 class Server;
+class Profiler;
 }
 
 class PExGroupNode : public PExAbstractNode
@@ -130,9 +132,9 @@ public:
     void setParameter(const QString& kind, const QString& path);
     void clearParameters();
 
-    debugger::Server *debugServer() const;
-    bool startDebugServer(gams::studio::debugger::DebugStartMode mode);
-    void stopDebugServer();
+    gamscom::Server *comServer() const;
+    bool startComServer(gamscom::ComFeatures mode);
+    void stopComServer();
     QString engineJobToken() const;
     void setEngineJobToken(const QString &engineJobToken, bool touch = true);
 
@@ -154,9 +156,13 @@ public:
     bool wantsGspFile();
 
     QString tempGdx() const;
-
-
     void setVerbose(bool verbose);
+    gamscom::Profiler *profiler() const;
+    gamscom::ContinuousLineData *contLineData() const;
+    bool doProfile() const;
+    bool isProfilerVisible() const;
+    void setProfilerVisible(bool profilerVisible);
+    void updateProfilerForOpenNodes();
 
 signals:
     void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
@@ -172,6 +178,7 @@ public slots:
     void setErrorText(int lstLine, const QString &text);
     void hasHRef(const QString &href, QString &fileName);
     void jumpToHRef(const QString &href);
+    void jumpToFile(const QString &filename, int line = 0);
     void createMarks(const LogParser::MarkData &marks);
     void switchLst(const QString &lstFile);
     void registerGeneratedFile(const QString &fileName);
@@ -187,6 +194,7 @@ protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
     void openDebugGdx(const QString &gdxFile);
     void addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &continuousLines);
+    void updateOpenEditors();
 
 protected:
     friend class ProjectRepo;
@@ -211,16 +219,21 @@ private:
     Type mType = tCommon;
     QScopedPointer<AbstractProcess> mGamsProcess;
     QString mEngineJobToken;
+    QTimer mUpdateEditsTimer;
     PExLogNode* mLogNode = nullptr;
     FileMeta *mProjectEditFileMeta = nullptr;
     QHash<int, QString> mErrorTexts;
     QHash<FileId, QStringList> mRunFileParameters;
     QHash<QString, QString> mParameterHash;
+    QHash<QString, QMap<int, QString>> mIncludes;
     ChangeState mChangeState = csNone;
-    debugger::Server *mDebugServer = nullptr;
+    gamscom::Server *mComServer = nullptr;
     QString mTempGdx;
+    gamscom::Profiler *mProfiler;
+    bool mDoProfile = false;
+    bool mProfilerVisible = false;
     bool mVerbose = false;
-    debugger::BreakpointData *mBreakpointData;
+    gamscom::ContinuousLineData *mContLineData;
     PExFileNode *mPausedInFile = nullptr;
 
 private:

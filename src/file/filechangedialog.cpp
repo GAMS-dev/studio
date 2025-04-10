@@ -86,5 +86,3 @@ void FileChangeDialog::buttonClicked()
 
 } // namespace studio
 } // namespace gams
-
-

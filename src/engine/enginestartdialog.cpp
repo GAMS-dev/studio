@@ -1143,4 +1143,3 @@ void EngineStartDialog::on_sbInstSize_valueChanged(int value)
 } // namespace engine
 } // namespace studio
 } // namespace gams
-

@@ -17,26 +17,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "breakpointdata.h"
+#include "continuouslinedata.h"
 
 namespace gams {
 namespace studio {
-namespace debugger {
+namespace gamscom {
 
-BreakpointData::BreakpointData()
+ContinuousLineData::ContinuousLineData()
 { }
 
-BreakpointData::~BreakpointData()
+ContinuousLineData::~ContinuousLineData()
 { }
 
-void BreakpointData::clearLinesMap()
+void ContinuousLineData::clearLinesMap()
 {
     mLastCln4File.clear();
     mCln2Line.clear();
     mFileLine2Cln.clear();
 }
 
-bool BreakpointData::addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &contLines)
+bool ContinuousLineData::addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &contLines)
 {
     if (fileLines.isEmpty() || fileLines.size() != contLines.size())
         return false;
@@ -54,17 +54,17 @@ bool BreakpointData::addLinesMap(const QString &filename, const QList<int> &file
     return true;
 }
 
-bool BreakpointData::hasLinesMap()
+bool ContinuousLineData::hasLinesMap()
 {
     return !mFileLine2Cln.isEmpty();
 }
 
-int BreakpointData::continuousLine(const QString &filename, int fileLine) const
+int ContinuousLineData::continuousLine(const QString &filename, int fileLine) const
 {
     return mFileLine2Cln.value(filename).value(fileLine, -1);
 }
 
-QString BreakpointData::filename(int contLine) const
+QString ContinuousLineData::filename(int contLine) const
 {
     if (contLine < 0 || mLastCln4File.isEmpty()) return QString();
     const auto iter = mLastCln4File.lowerBound(contLine);
@@ -73,17 +73,17 @@ QString BreakpointData::filename(int contLine) const
     return iter.value();
 }
 
-int BreakpointData::fileLine(int contLine) const
+int ContinuousLineData::fileLine(int contLine) const
 {
     return mCln2Line.value(contLine, -1);
 }
 
-QStringList BreakpointData::bpFiles()
+QStringList ContinuousLineData::bpFiles()
 {
     return mActiveBp.keys();
 }
 
-void BreakpointData::adjustBreakpoints()
+void ContinuousLineData::adjustBreakpoints()
 {
     QMap<QString, SortedIntMap> newBp;
     QMap<QString, SortedIntMap> newAimBp;
@@ -103,7 +103,7 @@ void BreakpointData::adjustBreakpoints()
     mAimedBp = newAimBp;
 }
 
-void BreakpointData::adjustBreakpoint(const QString &filename, int &fileLine)
+void ContinuousLineData::adjustBreakpoint(const QString &filename, int &fileLine)
 {
     const QMap<int, int> map = mFileLine2Cln.value(filename);
     if (map.isEmpty()) {
@@ -115,7 +115,7 @@ void BreakpointData::adjustBreakpoint(const QString &filename, int &fileLine)
     fileLine = (iter == map.constEnd()) ? map.lastKey() : iter.key();
 }
 
-int BreakpointData::addBreakpoint(const QString &filename, int fileLine, bool isRunning)
+int ContinuousLineData::addBreakpoint(const QString &filename, int fileLine, bool isRunning)
 {
     const QMap<int, int> map = mFileLine2Cln.value(filename);
     int resLine = fileLine;
@@ -133,7 +133,7 @@ int BreakpointData::addBreakpoint(const QString &filename, int fileLine, bool is
     return resLine;
 }
 
-void BreakpointData::delBreakpoint(const QString &filename, int fileLine)
+void ContinuousLineData::delBreakpoint(const QString &filename, int fileLine)
 {
     SortedIntMap lines = mActiveBp.value(filename);
     lines.remove(fileLine);
@@ -155,28 +155,28 @@ void BreakpointData::delBreakpoint(const QString &filename, int fileLine)
         mAimedBp.insert(filename, lines);
 }
 
-void BreakpointData::delBreakpoints()
+void ContinuousLineData::delBreakpoints()
 {
     mActiveBp.clear();
     mAimedBp.clear();
 }
 
-void BreakpointData::resetAimedBreakpoints()
+void ContinuousLineData::resetAimedBreakpoints()
 {
     mAimedBp = mActiveBp;
 }
 
-SortedIntMap BreakpointData::bpFileLines(const QString &filename) const
+SortedIntMap ContinuousLineData::bpFileLines(const QString &filename) const
 {
     return mActiveBp.value(filename);
 }
 
-SortedIntMap BreakpointData::bpAimedFileLines(const QString &filename) const
+SortedIntMap ContinuousLineData::bpAimedFileLines(const QString &filename) const
 {
     return mAimedBp.value(filename);
 }
 
-QList<int> BreakpointData::bpContinuousLines() const
+QList<int> ContinuousLineData::bpContinuousLines() const
 {
     QList<int> res;
     auto itFile = mActiveBp.constBegin();

@@ -1,0 +1,118 @@
+/**
+ * GAMS Studio
+ *
+ * Copyright (c) 2017-2025 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2025 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+#ifndef PROFILER_H
+#define PROFILER_H
+
+#include <QObject>
+#include <QList>
+#include <QMap>
+
+namespace gams {
+namespace studio {
+namespace gamscom {
+
+class ContinuousLineData;
+
+struct IncludeLine {
+    IncludeLine(const QString &_file, int _line, int _contLine) : parentFile(_file), line(_line), contLine(_contLine) { }
+    IncludeLine(const QString &_file) : parentFile(_file), line(1), contLine(1), outerContLine(1) { }
+    QString parentFile;
+    int line;
+    int contLine;
+    int outerContLine = std::numeric_limits<int>::max();
+    QString childFile;
+};
+
+struct ProfileData {
+    ProfileData() {}
+    ProfileData(const QString &s, qreal time, size_t mem): statement(s)
+        , timeInSec(time), timeInSecMin(time), timeInSecMax(time)
+        , memoryMin(mem), memoryMax(mem), lastMemoryDelta(mem), loops(1) {}
+    void add(qreal time, size_t mem) {
+        if (timeInSecMin > time) timeInSecMin = time;
+        if (timeInSecMax < time) timeInSecMax = time;
+        timeInSec += time;
+        if (memoryMin > mem) memoryMin = mem;
+        if (memoryMax < mem) {
+            lastMemoryDelta = mem - memoryMax;
+            memoryMax = mem;
+        }
+        ++loops;
+    }
+    QString statement;
+    qreal timeInSec = 0.;
+    qreal timeInSecMin = 0.;
+    qreal timeInSecMax = 0.;
+    size_t memoryMin = 0;
+    size_t memoryMax = 0;
+    size_t lastMemoryDelta = 0ull;
+    size_t loops = 0ull;
+};
+
+class Profiler : public QObject
+{
+    Q_OBJECT
+public:
+    Profiler();
+    ~Profiler();
+    void clear();
+    bool isEmpty();
+    void setContinuousLineData(ContinuousLineData *contLines);
+    void add(int contLine, const QString &statement, qreal timeSec, size_t memory);
+    void getSums(qreal &timeSec, size_t &loops);
+    int continuousLine(QString filename, int localLine);
+
+    void getUnits(QStringList &timeUnits, QStringList &memUnits);
+    void getCurrentUnits(int &timeUnit, int &memUnit);
+    void setCurrentUnits(int timeUnit = -1, int memUnit = -1);
+    void addIncludes(const QList<IncludeLine *> lines);
+
+    void getProfile(int contLine, qreal &timeSec, size_t &memory, size_t &loops);
+    void getProfileText(int contLine, QStringList &profileData);
+
+    void getMaxCompoundValues(qreal &timeSec, size_t &memory, size_t &loops);
+    QList<QPair<int, qreal> > maxTime() const;
+    QList<QPair<int, int> > maxLoops() const;
+
+    static const QStringList CTimeUnits;
+    static const QStringList CMemoryUnits;
+    static const QStringList CAggStatements;
+
+private:
+    ContinuousLineData *mContLines = nullptr;
+
+    QMap<int, QMap<QString, ProfileData>> mProfileData;
+    QMap<QString, QMap<int, QPair<int, int>> > mFileLine2Cln; // filename, localLine [contLine, contLineEnd]
+    QList<QPair<int, ProfileData>> mMaxSingleTime;
+    QList<QPair<int, ProfileData>> mMaxSingleLoops;
+    qreal mMaxCompountTime = 0.;
+    size_t mMaxMemory = 0ull;
+    size_t mMaxLoops = 0ull;
+    int mCurrentTimeUnit = 0;
+    int mCurrentMemoryUnit = 0;
+    qreal mSumTimeInSec = 0.;
+    size_t mSumLoop = 0ull;
+};
+
+} // namespace gamscom
+} // namespace studio
+} // namespace gams
+
+#endif // PROFILER_H

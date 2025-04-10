@@ -27,7 +27,7 @@
 
 namespace gams {
 namespace studio {
-namespace debugger {
+namespace gamscom {
 
 struct PinData {
     PinData();

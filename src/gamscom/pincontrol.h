@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_DEBUGGER_PINCONTROL_H
-#define GAMS_STUDIO_DEBUGGER_PINCONTROL_H
+#ifndef GAMS_STUDIO_GAMSCOM_PINCONTROL_H
+#define GAMS_STUDIO_GAMSCOM_PINCONTROL_H
 
 #include "file/pexgroupnode.h"
 #include <QHash>
@@ -30,7 +30,7 @@ namespace pin {
 class PinViewWidget;
 }
 
-namespace debugger {
+namespace gamscom {
 
 struct PinData;
 
@@ -64,4 +64,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // GAMS_STUDIO_DEBUGGER_PINCONTROL_H
+#endif // GAMS_STUDIO_GAMSCOM_PINCONTROL_H

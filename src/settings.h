@@ -108,6 +108,8 @@ enum SettingsKey {
     skEdLineWrapEditor,
     skEdLineWrapProcess,
     skEdClearLog,
+    skEdProfilerCols,
+    skEdProfilerPrevCols,
     skEdWordUnderCursor,
     skEdHighlightCurrentLine,
     skEdAutoIndent,

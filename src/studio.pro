@@ -81,10 +81,11 @@ SOURCES += \
     connect/schemadefinitionmodel.cpp \
     connect/schemalistmodel.cpp \
     connect/treecellresizer.cpp \
-    debugger/breakpointdata.cpp \
-    debugger/debugwidget.cpp \
-    debugger/pincontrol.cpp \
-    debugger/server.cpp \
+    gamscom/continuouslinedata.cpp \
+    gamscom/debugwidget.cpp \
+    gamscom/pincontrol.cpp \
+    gamscom/profiler.cpp \
+    gamscom/server.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
     editors/chunktextmapper.cpp \
@@ -308,10 +309,11 @@ HEADERS += \
     connect/schemadefinitionmodel.h \
     connect/schemalistmodel.h \
     connect/treecellresizer.h \
-    debugger/breakpointdata.h \
-    debugger/debugwidget.h \
-    debugger/pincontrol.h \
-    debugger/server.h \
+    gamscom/continuouslinedata.h \
+    gamscom/debugwidget.h \
+    gamscom/pincontrol.h \
+    gamscom/profiler.h \
+    gamscom/server.h \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
     editors/abstracttextmapper.h \
@@ -520,7 +522,7 @@ HEADERS += \
 FORMS += \
     confirmdialog.ui \
     connect/connecteditor.ui \
-    debugger/debugwidget.ui \
+    gamscom/debugwidget.ui \
     encodingsdialog.ui \
     engine/efieditor.ui \
     engine/enginestartdialog.ui \

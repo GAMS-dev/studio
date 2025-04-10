@@ -122,6 +122,10 @@ signals:
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void fontChangeRequest(gams::studio::FileMeta *fileMeta, QFont f);
     void saveProjects();
+    void projectTabRenamed(gams::studio::FileMeta *fileMeta);
+    void getProfilerMaxCompoundValues(qreal &timeSec, size_t &memory, size_t &loops);
+    void getProfilerMaxData(QList<QPair<int, qreal>> &maxTimeContLine, QList<QPair<int,int>> &maxLoopsContLine);
+    void jumpToContinuousLine(int contLine);
 
 protected:
     bool eventFilter(QObject*sender, QEvent* event) override;
@@ -146,8 +150,8 @@ private:
 
     friend class FileMetaRepo;
     FileMeta(FileMetaRepo* fileRepo, const FileId &id, const QString &location, FileType *knownType = nullptr);
-    QVector<QPoint> getEditPositions();
-    void setEditPositions(const QVector<QPoint> &edPositions);
+    QList<QPoint> getEditPositions();
+    void setEditPositions(const QList<QPoint> &edPositions);
     bool checkActivelySavedAndReset();
     void updateEditsCompleter();
     void linkDocument(QTextDocument *doc = nullptr);

@@ -117,4 +117,3 @@ void PaletteManager::applyPalette(int i)
 
 }
 }
-
