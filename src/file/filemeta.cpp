@@ -1085,6 +1085,7 @@ bool FileMeta::isReadOnly() const
 {
     AbstractEdit* edit = mEditors.isEmpty() ? nullptr : ViewHelper::toAbstractEdit(mEditors.first());
     if (edit) return edit->isReadOnly();
+    if (mForceReadOnly) return true;
 
     if (kind() == FileKind::TxtRO
             || kind() == FileKind::Lst
@@ -1316,6 +1317,12 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
                 if (!pro) return;
                 pro->delBreakpoint(mLocation, line);
+                updateBreakpoints();
+            });
+            connect(codeEdit, &CodeEdit::delBreakpoints, this, [this](int line, bool before) {
+                PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
+                if (!pro) return;
+                pro->delBreakpoints(mLocation, line, before);
                 updateBreakpoints();
             });
             connect(codeEdit, &CodeEdit::delAllBreakpoints, this, [this]() {

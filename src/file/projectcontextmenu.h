@@ -110,7 +110,7 @@ private:
     QString mWorkspace;
 
     // Strings
-    QString mTxtRemoveGroup = "Remove Files in This &Folder";
+    QString mTxtRemoveGroup = "Remove Files of this &Folder";
     QString mTxtRemoveProject = "Remove &Project";
     QString mTxtDeleteProject = "&Delete Project File";
     QString mTxtRemoveFile = "&Remove from Project";

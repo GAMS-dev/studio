@@ -153,7 +153,7 @@ protected:
     void profilerPaintEvent(QPaintEvent *event);
     void profilerPaintHeaderEvent(QPaintEvent *event);
 
-    void showLineNrContext(const QPoint &pos);
+    void showLineNrContextMenu(const QPoint &pos);
     virtual QString lineNrText(int blockNr);
     virtual bool showLineNr() const;
     virtual bool showFolding() const;
@@ -188,6 +188,7 @@ signals:
     void jumpToHRef(const QString &href);
     void addBreakpoint(int line);
     void delBreakpoint(int line);
+    void delBreakpoints(int line, bool before);
     void delAllBreakpoints();
     void getProjectHasErrors(bool *hasErrors);
     void delAllProjectErrors();

@@ -1108,7 +1108,7 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
     if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier) && mAllowBlockEdit)
         setContextMenuPolicy(Qt::PreventContextMenu);
     if (e->button() == Qt::RightButton && e->pos().x() <= 0) {
-        showLineNrContext(e->pos());
+        showLineNrContextMenu(e->pos());
         done = true;
     } else if (e->modifiers() & Qt::AltModifier && mAllowBlockEdit) {
         QTextCursor cursor = cursorForPosition(e->pos());
@@ -1449,7 +1449,7 @@ void CodeEdit::profilerHeaderContextMenuEvent(QContextMenuEvent *e)
         mProfilerHeader->update();
 }
 
-void CodeEdit::showLineNrContext(const QPoint &pos)
+void CodeEdit::showLineNrContextMenu(const QPoint &pos)
 {
     int line = cursorForPosition(pos).blockNumber() + 1;
     bool hasBp = mBreakpoints.contains(line) || mAimedBreakpoints.contains(line);
@@ -1465,6 +1465,12 @@ void CodeEdit::showLineNrContext(const QPoint &pos)
             emit delBreakpoint(line);
         else
             emit addBreakpoint(line);
+    });
+    menu.addAction("Remove previous breakpoints", this, [this, line]() {
+        emit delBreakpoints(line, true);
+    });
+    menu.addAction("Remove subsequent breakpoints", this, [this, line]() {
+        emit delBreakpoints(line, false);
     });
     menu.addAction("Remove all breakpoints", this, [this]() {
         emit delAllBreakpoints();

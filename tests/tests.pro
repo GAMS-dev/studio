@@ -20,6 +20,6 @@ SUBDIRS +=                              \
            testcompleter                \
            testconnect                  \
            testfilemapper               \
-           testservicelocators \
+           testservicelocators          \
            testversioninfoloader
 #           testsolverconfiginfo

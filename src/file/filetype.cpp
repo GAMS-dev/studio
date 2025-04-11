@@ -22,9 +22,6 @@
 #include <QFileInfo>
 
 #include "filetype.h"
-#include "exception.h"
-#include "theme.h"
-#include "connect/connect.h"
 #include "support/solverconfiginfo.h"
 
 namespace gams {

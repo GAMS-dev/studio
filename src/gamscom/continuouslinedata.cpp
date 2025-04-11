@@ -155,7 +155,38 @@ void ContinuousLineData::delBreakpoint(const QString &filename, int fileLine)
         mAimedBp.insert(filename, lines);
 }
 
-void ContinuousLineData::delBreakpoints()
+QList<int> ContinuousLineData::delBreakpoints(const QString &filename, int fileLine, bool before)
+{
+    if (!mActiveBp.contains(filename)) return QList<int>();
+    QList<int> removedContLines;
+    SortedIntMap lines;
+    SortedIntMap actLines = mActiveBp.value(filename);
+    auto iLine = actLines.begin();
+    while (iLine != actLines.end()) {
+        if (before) {
+            if (iLine.value() >= fileLine)
+                lines.insert(iLine.key(), iLine.value());
+            else
+                removedContLines << iLine.value();
+        } else {
+            if (iLine.value() <= fileLine)
+                lines.insert(iLine.key(), iLine.value());
+            else
+                removedContLines << iLine.value();
+        }
+        ++iLine;
+    }
+    if (!lines.isEmpty()) {
+        mActiveBp.insert(filename, lines);
+        mAimedBp.insert(filename, lines);
+    } else {
+        mActiveBp.remove(filename);
+        mAimedBp.remove(filename);
+    }
+    return removedContLines;
+}
+
+void ContinuousLineData::clearBreakpoints()
 {
     mActiveBp.clear();
     mAimedBp.clear();

@@ -69,12 +69,13 @@ void CodeCompleterModel::initData()
     QList<QPair<QString, QString>> src = syntax::SyntaxData::directives();
     QList<QPair<QString, QString>>::ConstIterator it = src.constBegin();
     while (it != src.constEnd()) {
-        if (it->first == "offText" || it->first == "offEcho" || it->first == "offPut" ||
-                it->first == "offEmbeddedCode" || it->first == "endEmbeddedCode" || it->first == "pauseEmbeddedCode") {
-            mData << '$' + it->first;
-            mDescription << it->second;
-        } else {
-            delayedIterators << it;
+        if (!it->first.endsWith("mbeddedCode") && !it->first.endsWith("mbeddedCodeS") && !it->first.endsWith("mbeddedCodeV")) {
+            if (it->first == "offText" || it->first == "offEcho" || it->first == "offPut") {
+                mData << '$' + it->first;
+                mDescription << it->second;
+            } else {
+                delayedIterators << it;
+            }
         }
         ++it;
     }
