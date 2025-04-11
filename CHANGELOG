@@ -1,5 +1,9 @@
 Version 1.21.0 *
 ==================
+- Added profiler information to the editors when using the GAMS option 'profile'
+
+Version 1.20.5 *
+==================
 - Added 'Open Location' and 'Open Terminal' to the context menu of the GAMS-System project.
 - Added profiler information to the editors when using the GAMS option 'profile'
 - Upgraded to Qt 6.8.3 on all platforms.
