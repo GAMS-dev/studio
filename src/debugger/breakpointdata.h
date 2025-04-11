@@ -48,7 +48,8 @@ public:
     void adjustBreakpoints();
     int addBreakpoint(const QString &filename, int fileLine, bool isRunning = false);
     void delBreakpoint(const QString &filename, int fileLine);
-    void delBreakpoints();
+    QList<int> delBreakpoints(const QString &filename, int fileLine, bool before);
+    void clearBreakpoints();
     void resetAimedBreakpoints();
     QStringList bpFiles();
     SortedIntMap bpFileLines(const QString &filename) const;
@@ -62,7 +63,7 @@ private:
     QStringList mFiles;
     QMap<int, QString> mLastCln4File;
     QMap<int, int> mCln2Line;
-    QMap<QString, QMap<int, int> > mFileLine2Cln;
+    QMap<QString, SortedIntMap> mFileLine2Cln;
 
     QMap<QString, SortedIntMap> mActiveBp;
     QMap<QString, SortedIntMap> mAimedBp;

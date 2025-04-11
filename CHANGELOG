@@ -1,6 +1,7 @@
 Version 1.20.5 *
 ==================
 - Added 'Open Location' and 'Open Terminal' to the context menu of the GAMS-System project.
+- Added "Remove Previous Breakpoints" to the context menu of the code editor.
 - Added mark for active PF file.
 - Fixed icon highlighting for current project.
 - Improved Took out the DCOs for embeddedCode from the Completer offers.

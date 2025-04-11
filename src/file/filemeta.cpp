@@ -1318,6 +1318,12 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
                 pro->delBreakpoint(mLocation, line);
                 updateBreakpoints();
             });
+            connect(codeEdit, &CodeEdit::delBreakpoints, this, [this](int line, bool before) {
+                PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
+                if (!pro) return;
+                pro->delBreakpoints(mLocation, line, before);
+                updateBreakpoints();
+            });
             connect(codeEdit, &CodeEdit::delAllBreakpoints, this, [this]() {
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
                 if (!pro) return;

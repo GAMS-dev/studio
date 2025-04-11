@@ -155,7 +155,38 @@ void BreakpointData::delBreakpoint(const QString &filename, int fileLine)
         mAimedBp.insert(filename, lines);
 }
 
-void BreakpointData::delBreakpoints()
+QList<int> BreakpointData::delBreakpoints(const QString &filename, int fileLine, bool before)
+{
+    if (!mActiveBp.contains(filename)) return QList<int>();
+    QList<int> removedContLines;
+    SortedIntMap lines;
+    SortedIntMap actLines = mActiveBp.value(filename);
+    auto iLine = actLines.begin();
+    while (iLine != actLines.end()) {
+        if (before) {
+            if (iLine.value() >= fileLine)
+                lines.insert(iLine.key(), iLine.value());
+            else
+                removedContLines << iLine.value();
+        } else {
+            if (iLine.value() <= fileLine)
+                lines.insert(iLine.key(), iLine.value());
+            else
+                removedContLines << iLine.value();
+        }
+        ++iLine;
+    }
+    if (!lines.isEmpty()) {
+        mActiveBp.insert(filename, lines);
+        mAimedBp.insert(filename, lines);
+    } else {
+        mActiveBp.remove(filename);
+        mAimedBp.remove(filename);
+    }
+    return removedContLines;
+}
+
+void BreakpointData::clearBreakpoints()
 {
     mActiveBp.clear();
     mAimedBp.clear();

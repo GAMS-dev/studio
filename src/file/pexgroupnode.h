@@ -177,6 +177,7 @@ public slots:
     void registerGeneratedFile(const QString &fileName);
     void addBreakpoint(const QString &filename, int line);
     void delBreakpoint(const QString &filename, int line);
+    void delBreakpoints(const QString &filename, int line, bool before);
     void clearBreakpoints();
     void breakpoints(const QString &filename, SortedIntMap &bps, SortedIntMap &aimedBps) const;
     void gotoPaused(int contLine);

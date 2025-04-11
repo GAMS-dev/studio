@@ -832,9 +832,22 @@ void PExProjectNode::delBreakpoint(const QString &filename, int line)
     }
 }
 
+void PExProjectNode::delBreakpoints(const QString &filename, int line, bool before)
+{
+    QList<int> removedContLines = mBreakpointData->delBreakpoints(filename, line, before);
+
+    if (mDebugServer) {
+        for (int contLine : removedContLines) {
+            if (contLine >= 0)
+                mDebugServer->delBreakpoint(contLine);
+        }
+    }
+
+}
+
 void PExProjectNode::clearBreakpoints()
 {
-    mBreakpointData->delBreakpoints();
+    mBreakpointData->clearBreakpoints();
     if (mDebugServer)
         mDebugServer->clearBreakpoints();
     for (const PExFileNode *node : listFiles())
