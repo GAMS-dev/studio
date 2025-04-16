@@ -2,13 +2,14 @@ Version 1.21.0 *
 ==================
 - Added profiler information to the editors when using the GAMS option 'profile'
 
-Version 1.20.5 *
+Version 1.20.5
 ==================
-- Added 'Open Location' and 'Open Terminal' to the context menu of the GAMS-System project.
-- Added "Remove Previous Breakpoints" to the context menu of the code editor.
-- Added mark for active PF file.
+- Added `Open Location` and `Open Terminal` to the project context menu.
+- Added `Remove Previous Breakpoints` to the code editor context menu.
+- Added a dedicated icon for the active PF file.
 - Fixed icon highlighting for current project.
-- Improved Took out the DCOs for embeddedCode from the Completer offers.
+- Fixed a GDX Viewer crash when selecting a symbol in a newly created GDX file.
+- Removed the DCOs `embeddedCode` from the Completer list.
 - Upgraded to Qt 6.8.3 on all platforms.
 
 Version 1.20.4
