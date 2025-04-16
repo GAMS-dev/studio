@@ -1,9 +1,10 @@
-Version 1.20.5 *
+Version 1.20.5
 ==================
 - Added `Open Location` and `Open Terminal` to the project context menu.
 - Added `Remove Previous Breakpoints` to the code editor context menu.
 - Added a dedicated icon for the active PF file.
 - Fixed icon highlighting for current project.
+- Fixed a GDX Viewer crash when selecting a symbol in a newly created GDX file.
 - Removed the DCOs `embeddedCode` from the Completer list.
 - Upgraded to Qt 6.8.3 on all platforms.
 
