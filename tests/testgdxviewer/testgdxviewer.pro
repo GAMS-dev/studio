@@ -28,6 +28,7 @@ SOURCES += \
     $$SRCPATH/gdxviewer/gdxsymbol.cpp \
     $$SRCPATH/gdxviewer/gdxsymbolheaderview.cpp \
     $$SRCPATH/gdxviewer/gdxsymboltablemodel.cpp \
+    $$SRCPATH/gdxviewer/gdxsymboltableview.cpp \
     $$SRCPATH/gdxviewer/gdxsymbolview.cpp \
     $$SRCPATH/gdxviewer/gdxsymbolviewstate.cpp \
     $$SRCPATH/gdxviewer/gdxviewer.cpp \
@@ -76,6 +77,7 @@ HEADERS += \
     $$SRCPATH/gdxviewer/gdxsymbol.h \
     $$SRCPATH/gdxviewer/gdxsymbolheaderview.h \
     $$SRCPATH/gdxviewer/gdxsymboltablemodel.h \
+    $$SRCPATH/gdxviewer/gdxsymboltableview.h \
     $$SRCPATH/gdxviewer/gdxsymbolview.h \
     $$SRCPATH/gdxviewer/gdxsymbolviewstate.h \
     $$SRCPATH/gdxviewer/gdxviewer.h \

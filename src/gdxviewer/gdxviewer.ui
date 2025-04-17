@@ -18,7 +18,7 @@
     <number>0</number>
    </property>
    <property name="sizeConstraint">
-    <enum>QLayout::SetMinimumSize</enum>
+    <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
    </property>
    <property name="leftMargin">
     <number>0</number>
@@ -35,7 +35,7 @@
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="childrenCollapsible">
       <bool>false</bool>
@@ -106,7 +106,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QTableView" name="tvSymbols">
+        <widget class="GdxSymbolTableView" name="tvSymbols">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -123,10 +123,10 @@
           <bool>true</bool>
          </property>
          <property name="selectionMode">
-          <enum>QAbstractItemView::SingleSelection</enum>
+          <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
          </property>
          <property name="selectionBehavior">
-          <enum>QAbstractItemView::SelectRows</enum>
+          <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
          </property>
          <property name="sortingEnabled">
           <bool>true</bool>
@@ -166,6 +166,11 @@
    <class>gams::studio::FilterLineEdit</class>
    <extends>QLineEdit</extends>
    <header>filterlineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>GdxSymbolTableView</class>
+   <extends>QTableView</extends>
+   <header>gdxviewer/gdxsymboltableview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

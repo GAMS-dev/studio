@@ -148,6 +148,7 @@ SOURCES += \
     gdxviewer/gdxsymbol.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
     gdxviewer/gdxsymboltablemodel.cpp \
+    gdxviewer/gdxsymboltableview.cpp \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxsymbolviewstate.cpp \
     gdxviewer/gdxviewer.cpp \
@@ -377,6 +378,7 @@ HEADERS += \
     gdxviewer/gdxsymbol.h \
     gdxviewer/gdxsymbolheaderview.h \
     gdxviewer/gdxsymboltablemodel.h \
+    gdxviewer/gdxsymboltableview.h \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxsymbolviewstate.h \
     gdxviewer/gdxviewer.h \
