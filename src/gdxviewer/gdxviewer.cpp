@@ -476,6 +476,7 @@ void GdxViewer::applyState()
 {
     if (!mState) return;
     ui->tvSymbols->horizontalHeader()->restoreState(mState->symbolTableHeaderState());
+    ui->tvSymbols->setColumnHidden(5,true); //hide the "Loaded" column
     ui->tvSymbols->horizontalHeader()->setStretchLastSection(false);
     ui->tvSymbols->resizeColumnsToContents();
     ui->tvSymbols->horizontalHeader()->setStretchLastSection(true);
