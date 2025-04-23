@@ -4316,7 +4316,8 @@ void MainWindow::execute(const QString &commandLineStr, AbstractProcess* process
                                    + (project->debugServer() ? " Debugger is already running."
                                                              : "Too many activeDebuggers."));
         }
-    }
+    } else if (!process->lastError().isEmpty())
+        appendSystemLogError(process->lastError());
 }
 
 
@@ -4444,7 +4445,11 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
         project->setProcess(process);
     AbstractProcess* groupProc = project->process();
     int logOption = 0;
+    logNode->linkToProcess(groupProc);
     groupProc->setParameters(project->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList, opt, logOption));
+    if (groupProc->parameters().isEmpty())
+        return false;
+
     logNode->prepareRun(logOption);
     logNode->setJumpToLogEnd(true);
 
@@ -4459,7 +4464,6 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     connect(groupProc, &AbstractProcess::newProcessCall, this, &MainWindow::newProcessCall, Qt::UniqueConnection);
     connect(groupProc, &AbstractProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
 
-    logNode->linkToProcess(groupProc);
     return true;
 }
 
@@ -4740,8 +4744,11 @@ void MainWindow::prepareNeosProcess()
     updateAndSaveSettings();
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(project->process());
     neosPtr->setStarting();
-    if (!executePrepare(project, mGamsParameterEditor->getCurrentCommandLineData()))
+    if (!executePrepare(project, mGamsParameterEditor->getCurrentCommandLineData())) {
+        if (!neosPtr->lastError().isEmpty())
+            appendSystemLogError(neosPtr->lastError());
         return;
+    }
     if (!mIgnoreSslErrors) {
         connect(neosPtr, &neos::NeosProcess::sslValidation, this, &MainWindow::sslValidation);
         neosPtr->validate();
@@ -4967,7 +4974,10 @@ void MainWindow::prepareEngineProcess()
             updateAndSaveSettings();
         }
     });
-    executePrepare(project, mGamsParameterEditor->getCurrentCommandLineData());
+    if (!executePrepare(project, mGamsParameterEditor->getCurrentCommandLineData())) {
+        appendSystemLogError("Error executing GAMS Engine job: " + project->process()->lastError());
+        return;
+    }
     if (project->engineJobToken().isEmpty())
         execution(project);
     else

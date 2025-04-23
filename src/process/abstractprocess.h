@@ -70,6 +70,7 @@ public:
     void setProjectId(const NodeId &projectId);
 
     int exitCode() const;
+    QByteArray lastError() const;
 
 signals:
     void finished(int nodeId, int exitCode); // translated NodeId to int and back to get it through queued connection
@@ -94,6 +95,7 @@ protected:
     NodeId mProjectId = NodeId();
     QProcess mProcess;
     QMutex mOutputMutex;
+    QByteArray mLastError;
 
 private:
     QString mApplication;
