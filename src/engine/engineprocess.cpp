@@ -107,7 +107,8 @@ void EngineProcess::execute()
 {
     QDir dir(mOutPath);
     if (dir.exists() && !dir.isEmpty() && !modelName().isEmpty()) {
-        emit newStdChannelData("\nCan't create directory " + mOutPath.toUtf8() + '\n');
+        mLastError = "Can't create directory " + mOutPath.toUtf8();
+        emit newStdChannelData("\n" + mLastError + '\n');
         setProcState(ProcIdle);
         return;
     }
@@ -239,7 +240,8 @@ void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
         mSubProc = nullptr;
     }
     if (exitCode || exitStatus == QProcess::CrashExit) {
-        emit newStdChannelData("\nErrors while packing. exitCode: " + QString::number(exitCode).toUtf8());
+        mLastError = "Errors while packing. exitCode: " + QString::number(exitCode).toUtf8();
+        emit newStdChannelData("\n" + mLastError);
         completed(exitCode);
     } else if (mProcState == Proc2Pack) {
         setProcState(Proc2Pack2);
@@ -254,7 +256,8 @@ void EngineProcess::pack2Completed(int exitCode, QProcess::ExitStatus exitStatus
         mSubProc = nullptr;
     }
     if (exitCode || exitStatus == QProcess::CrashExit) {
-        emit newStdChannelData("\nErrors while packing2. exitCode: " + QString::number(exitCode).toUtf8());
+        mLastError = "Errors while packing2. exitCode: " + QString::number(exitCode).toUtf8();
+        emit newStdChannelData("\n" + mLastError);
         completed(exitCode);
     } else if (mProcState == Proc2Pack2) {
         QString modlName = modelName();
@@ -380,7 +383,6 @@ AbstractProcess::TerminateOption EngineProcess::terminateOption()
                                                                                                      : termRemote;
 }
 
-
 void EngineProcess::setParameters(const QStringList &parameters)
 {
     if (parameters.size()) {
@@ -389,7 +391,8 @@ void EngineProcess::setParameters(const QStringList &parameters)
             mMainFile = mMainFile.mid(1, mMainFile.length()-2);
         mMainFile = QDir(workingDirectory()).relativeFilePath(mMainFile);
         if (mMainFile.startsWith("..")) {
-            emit newStdChannelData("\nThe run file isn't located inside the working directory or it's subfolders.\n");
+            mLastError = "The run file isn't located inside the working directory or it's subfolders.";
+            emit newStdChannelData("\nERROR: " + mLastError + "\n");
             mOutPath = "";
             return;
         }
@@ -610,7 +613,8 @@ void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
         mManager->getLog();
         if (gamsExitCode) {
             QByteArray code = QString::number(gamsExitCode).toLatin1();
-            emit newStdChannelData("\nGAMS terminated with exit code " +code+ "\n");
+            mLastError = "GAMS terminated with exit code " + code;
+            emit newStdChannelData("\n" + mLastError + "\n");
         }
         setProcState(Proc5GetResult);
         mManager->getOutputFile();
@@ -729,13 +733,15 @@ void EngineProcess::reGetOutputFile(const QByteArray &data)
     mPollTimer.stop();
     disconnect(&mPollTimer, &QTimer::timeout, this, &EngineProcess::pollStatus);
     if (data.isEmpty()) {
-        emit newStdChannelData("\nEmpty result received\n");
+        mLastError = "Empty result received";
+        emit newStdChannelData("\n" + mLastError + "\n");
         completed(-1);
         return;
     }
     QFile res(mOutPath+"/solver-output.zip");
     if (res.exists() && !res.remove()) {
-        emit newStdChannelData("\nError on removing file "+res.fileName().toUtf8()+"\n");
+        mLastError = "Error on removing file "+res.fileName().toUtf8();
+        emit newStdChannelData("\n" + mLastError + "\n");
         completed(-1);
     }
     if (res.open(QFile::WriteOnly)) {
@@ -745,7 +751,8 @@ void EngineProcess::reGetOutputFile(const QByteArray &data)
         startUnpacking();
         return;
     }
-    emit newStdChannelData("\nError writing file "+res.fileName().toUtf8()+"\n");
+    mLastError = "Error writing file "+res.fileName().toUtf8();
+    emit newStdChannelData("\n" + mLastError + "\n");
     completed(-1);
 }
 
@@ -753,7 +760,8 @@ void EngineProcess::reError(const QString &errorText)
 {
     mPollTimer.stop();
     disconnect(&mPollTimer, &QTimer::timeout, this, &EngineProcess::pollStatus);
-    emit newStdChannelData("\n"+errorText.toUtf8()+"\n");
+    mLastError = errorText.toUtf8();
+    emit newStdChannelData("\n" + mLastError + "\n");
     completed(-1);
 }
 
@@ -904,7 +912,8 @@ void EngineProcess::startPacking()
     QString baseName = modelName();
     QFile file(mOutPath+'/' + baseName + ".gms");
     if (!file.open(QFile::WriteOnly)) {
-        emit newStdChannelData("\n*** Can't create file: "+file.fileName().toUtf8()+'\n');
+        mLastError = "Can't create file: "+file.fileName().toUtf8();
+        emit newStdChannelData("\n*** " + mLastError + '\n');
         completed(-1);
         return;
     }
@@ -912,13 +921,15 @@ void EngineProcess::startPacking()
     file.close();
     file.setFileName(mOutPath+'/' + baseName + ".g00");
     if (file.exists() && !file.remove()) {
-        emit newStdChannelData("\n*** Can't remove file from subdirectory: "+file.fileName().toUtf8()+'\n');
+        mLastError = "Can't remove file from subdirectory: "+file.fileName().toUtf8();
+        emit newStdChannelData("\n*** " + mLastError + '\n');
         completed(-1);
         return;
     }
     file.setFileName(mWorkPath + '/' + modelName() + ".g00");
     if (!file.rename(mOutPath+'/' + baseName + ".g00")) {
-        emit newStdChannelData("\n*** Can't move file to subdirectory: "+file.fileName().toUtf8()+'\n');
+        mLastError = "Can't move file to subdirectory: "+file.fileName().toUtf8();
+        emit newStdChannelData("\n*** " + mLastError + '\n');
         completed(-1);
         return;
     }
@@ -935,7 +946,8 @@ void EngineProcess::startPacking()
             if (!destDir.exists())
                 destDir.mkpath(".");
             if (!file.copy(dest.filePath())) {
-                emit newStdChannelData("\n*** Can't copy file to subdirectory: "+file.fileName().toUtf8()+'\n');
+                mLastError = "Can't copy file to subdirectory: "+file.fileName().toUtf8();
+                emit newStdChannelData("\n*** " + mLastError + '\n');
                 completed(-1);
                 return;
             }

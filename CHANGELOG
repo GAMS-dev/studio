@@ -2,6 +2,12 @@ Version 1.21.0 *
 ==================
 - Added profiler information to the editors when using the GAMS option 'profile'
 
+Version 1.20.6
+==================
+- Fixed the GDX Viewer symbol table showing a "Loaded" column in some cases.
+- Fixed jumping of the horizontal scroll bar of the GDX Viewer symbol table.
+- Improved error handling of failed GAMS Engine run.
+
 Version 1.20.5
 ==================
 - Added `Open Location` and `Open Terminal` to the project context menu.

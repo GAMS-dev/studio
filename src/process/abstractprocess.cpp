@@ -119,6 +119,11 @@ void AbstractProcess::interruptIntern(bool hardKill)
 #endif
 }
 
+QByteArray AbstractProcess::lastError() const
+{
+    return mLastError;
+}
+
 
 void AbstractProcess::setWorkingDirectory(const QString &workingDirectory)
 {

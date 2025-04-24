@@ -125,7 +125,7 @@ void GdxViewer::updateSelectedSymbol(const QItemSelection &selected, const QItem
             std::ignore = QtConcurrent::run(&GdxViewer::loadSymbol, this, selectedSymbol);
 
         if (ui->splitter->widget(1) != mSymbolViews.at(selectedIdx))
-        ui->splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
+            ui->splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
     }
     else if (ui->splitter->widget(1) != ui->widget)
         ui->splitter->replaceWidget(1, ui->widget);
@@ -476,6 +476,7 @@ void GdxViewer::applyState()
 {
     if (!mState) return;
     ui->tvSymbols->horizontalHeader()->restoreState(mState->symbolTableHeaderState());
+    ui->tvSymbols->setColumnHidden(5,true); //hide the "Loaded" column
     ui->tvSymbols->horizontalHeader()->setStretchLastSection(false);
     ui->tvSymbols->resizeColumnsToContents();
     ui->tvSymbols->horizontalHeader()->setStretchLastSection(true);
