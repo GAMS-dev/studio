@@ -32,8 +32,8 @@ variables:
       value: 0
       description: "Name of custom branch, or X.Y.Z for published distribution, or 0 if version is specified in text file with lines GAMS_DISTRIB_MAJOR=X, GAMS_DISTRIB_MINOR=Y, GAMS_DISTRIB_GOLD=Z"
   QT_IMAGE_VERSION:
-      value: qt6.8.3
+      value: qt6.9.0
       description: "Current Qt image version"
   QT_VERSION:
-    value: 6.8.3
+    value: 6.9.0
     description: "Current Qt version"
