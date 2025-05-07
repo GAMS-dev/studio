@@ -1,4 +1,4 @@
-Version 1.20.6 *
+Version 1.20.6
 ==================
 - Fixed the GDX Viewer symbol table showing a "Loaded" column in some cases.
 - Fixed jumping of the horizontal scroll bar of the GDX Viewer symbol table.
