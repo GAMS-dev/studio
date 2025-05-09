@@ -5808,28 +5808,26 @@ void MainWindow::toggleSearchDialog()
     }
 }
 
-void MainWindow::updateResults(search::SearchResultModel* results)
+void MainWindow::updateResults(search::SearchResultModel* model)
 {
     int index = ui->logTabs->indexOf(resultsView()); // did widget exist before?
 
     delete mResultsView;
-    mResultsView = new search::ResultsView(results, this);
-    connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateMatchLabel, Qt::UniqueConnection);
-    connect(mSearchDialog, &search::SearchDialog::selectResult, mResultsView, &search::ResultsView::selectItem);
+    mResultsView = new search::ResultsView(model, this);
+    connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(),
+            &search::SearchDialog::updateMatchLabel, Qt::UniqueConnection);
+    connect(mSearchDialog, &search::SearchDialog::selectResult,
+            mResultsView, &search::ResultsView::selectItem);
 
-    QString nr;
-    if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
-    else nr = QString::number(results->size());
-
-    QString pattern = results->searchRegex().pattern().replace("\n", "");
-    QString title("Results: " + pattern + " (" + nr + ")");
+    QString pattern = model->searchRegex().pattern().replace("\n", "");
+    QString title("Results: " + pattern + " (" + model->resultCountString() + ")");
 
     ui->dockProcessLog->show();
     ui->dockProcessLog->activateWindow();
     ui->dockProcessLog->raise();
 
-    if (index != -1) ui->logTabs->removeTab(index); // remove old result page
-
+    if (index != -1)
+        ui->logTabs->removeTab(index); // remove old result page
     ui->logTabs->addTab(mResultsView, title); // add new result page
     ui->logTabs->setCurrentWidget(mResultsView);
 
@@ -5994,6 +5992,8 @@ void MainWindow::updateFonts(qreal fontSize, const QString &fontFamily)
     setGroupFontSize(fgLog, fontSize + addSize, fontFamily);
     setGroupFontSize(fgTable, fontSize + mTableFontSizeDif);
     mWp->zoomReset();
+    if (mResultsView)
+        mResultsView->resetZoom();
 }
 
 void MainWindow::updateEditorLineWrapping()
@@ -6315,6 +6315,10 @@ void MainWindow::on_actionZoom_In_triggered()
 void MainWindow::zoomWidget(QWidget *widget, int range)
 {
     FontGroup fg;
+    if (mResultsView->isAncestorOf(widget)) {
+        range < 0 ? mResultsView->zoomOut() : mResultsView->zoomIn();
+        return;
+    }
     while (widget && !ViewHelper::toAbstractView(widget) && !ViewHelper::toLxiViewer(widget)
            && !ViewHelper::toTextView(widget) && !ViewHelper::toAbstractEdit(widget)
            && widget != mSyslog && widget != mWp && widget != centralWidget()
@@ -6337,8 +6341,9 @@ void MainWindow::zoomWidget(QWidget *widget, int range)
     else if (widget == mWp) {
         emit mWp->zoomRequest(range);
         return;
-    } else
+    } else {
         return;
+    }
 
     qreal fontSize = widget->font().pointSizeF() + range;
     setGroupFontSize(fg, fontSize);

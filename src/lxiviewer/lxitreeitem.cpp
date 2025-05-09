@@ -23,8 +23,14 @@ namespace gams {
 namespace studio {
 namespace lxiviewer {
 
-LxiTreeItem::LxiTreeItem(const QString &index, int lineNr, const QString &text, LxiTreeItem *parentItem)
-    : mIndex(index), mLineNr(lineNr), mText(text), mParentItem(parentItem)
+LxiTreeItem::LxiTreeItem(const QString &index,
+                         int lineNr,
+                         const QString &text,
+                         LxiTreeItem *parentItem)
+    : mIndex(index)
+    , mLineNr(lineNr)
+    , mText(text)
+    , mParentItem(parentItem)
 {
 
 }
@@ -53,7 +59,6 @@ int LxiTreeItem::row() const
 {
     if (mParentItem)
         return mParentItem->mChildItems.indexOf(const_cast<LxiTreeItem*>(this));
-
     return 0;
 }
 

@@ -17,41 +17,53 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SEARCHRESULTVIEWITEMDELEGATE_H
-#define SEARCHRESULTVIEWITEMDELEGATE_H
+#ifndef RESULTTREEVIEW_H
+#define RESULTTREEVIEW_H
 
-#include <QStyledItemDelegate>
+#include <QTreeView>
 
 namespace gams {
 namespace studio {
 namespace search {
 
-class SearchResultViewItemDelegate
-    : public QStyledItemDelegate
+#define ZOOM_FACTOR 1
+
+class ResultTreeView : public QTreeView
 {
     Q_OBJECT
 
 public:
-    explicit SearchResultViewItemDelegate(QObject *parent = nullptr);
+    ResultTreeView(QWidget *parent = nullptr);
 
-    void setFont(QFont font);
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
-    void paint(QPainter *painter, const QStyleOptionViewItem &option,
-               const QModelIndex &index) const override;
+    void zoomIn(int range = 1);
+    void zoomOut(int range = 1);
+    void resetZoom();
 
-    QSize sizeHint(const QStyleOptionViewItem &option,
-                   const QModelIndex &index) const override;
+signals:
+    void doubleClick();
+
+public slots:
+    void showCustomContextMenu(const QPoint &pos);
+
+    void resizeColumns();
+
+protected:
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 private:
-    QString elideRichText(const QString &richText, int maxWidth,
-                          const QFontMetrics &metrics) const;
+    void zoom(int range);
 
-    QFont mFont;
-    QFontMetrics mFontMetrics;
+private:
+    QFont mBaseFont;
+    QMenu* mMenu;
+    QAction* mCollapsAllAction;
+    QAction* mExpandAllAction;
 };
 
 }
 }
 }
 
-#endif // SEARCHRESULTVIEWITEMDELEGATE_H
+#endif // RESULTTREEVIEW_H

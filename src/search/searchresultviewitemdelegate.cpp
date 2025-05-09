@@ -18,17 +18,34 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "searchresultviewitemdelegate.h"
+#include "common.h"
+#include "resultitem.h"
+
 #include <QApplication>
 #include <QPainter>
 #include <QTextCursor>
 #include <QTextDocument>
 
-SearchResultViewItemDelegate::SearchResultViewItemDelegate(QObject *parent)
-    : QStyledItemDelegate{parent}
-{ }
+namespace gams {
+namespace studio {
+namespace search {
 
-void SearchResultViewItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
-                     const QModelIndex &index) const
+SearchResultViewItemDelegate::SearchResultViewItemDelegate(QObject *parent)
+    : QStyledItemDelegate(parent)
+    , mFontMetrics(static_cast<QWidget*>(parent)->font())
+{
+    setFont(static_cast<QWidget*>(parent)->font());
+}
+
+void SearchResultViewItemDelegate::setFont(QFont font)
+{
+    mFont = font;
+    mFontMetrics = QFontMetrics(mFont);
+}
+
+void SearchResultViewItemDelegate::paint(QPainter *painter,
+                                         const QStyleOptionViewItem &option,
+                                         const QModelIndex &index) const
 {
     if (!index.isValid())
         return;
@@ -42,19 +59,42 @@ void SearchResultViewItemDelegate::paint(QPainter *painter, const QStyleOptionVi
     opt.rect = opt.rect.adjusted(padding, padding, -padding, -padding);
 
     QTextDocument doc;
-    doc.setHtml(elideRichText(opt.text, opt.rect.width(), opt.fontMetrics));
+    doc.setHtml(elideRichText(opt.text, opt.rect.width(), mFontMetrics));
 
     opt.text = "";
     opt.widget->style()->drawControl(QStyle::CE_ItemViewItem, &option, painter, opt.widget);
 
     painter->translate(opt.rect.left(), opt.rect.top());
     QRect clip(0, 0, opt.rect.width(), opt.rect.height());
+    doc.setDefaultFont(mFont);
     doc.drawContents(painter, clip);
 
     painter->restore();
 }
 
-QString SearchResultViewItemDelegate::elideRichText(const QString &richText, int maxWidth, const QFontMetrics &metrics) const
+QSize SearchResultViewItemDelegate::sizeHint(const QStyleOptionViewItem &option,
+                                             const QModelIndex &index) const
+{
+    auto size = QStyledItemDelegate::sizeHint(option, index);
+    size.setHeight(static_cast<int>(size.height()*TABLE_ROW_HEIGHT));
+    if (index.isValid()) {
+        auto item = static_cast<ResultItem*>(index.internalPointer());
+        if (!item->hasChilds()) {
+            QTextDocument doc;
+            doc.setHtml(index.data().toString());
+            size.setWidth(static_cast<int>(doc.size().width()));
+        } else {
+            auto s = mFontMetrics.size(Qt::TextSingleLine, " ").width();
+            auto t = mFontMetrics.size(Qt::TextSingleLine, index.data().toString()).width();
+            size.setWidth(t+s);
+        }
+    }
+    return size;
+}
+
+QString SearchResultViewItemDelegate::elideRichText(const QString &richText,
+                                                    int maxWidth,
+                                                    const QFontMetrics &metrics) const
 {
     QTextDocument doc;
     doc.setHtml(richText);
@@ -78,4 +118,8 @@ QString SearchResultViewItemDelegate::elideRichText(const QString &richText, int
         return doc.toHtml();
     }
     return richText;
+}
+
+}
+}
 }

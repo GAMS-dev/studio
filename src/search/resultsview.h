@@ -23,8 +23,9 @@
 #include <QTableWidget>
 #include <QTextCursor>
 #include <QWidget>
-#include "searchresultmodel.h"
 
+#include "searchresultmodel.h"
+#include "searchresultviewitemdelegate.h"
 
 namespace gams {
 namespace studio {
@@ -45,35 +46,49 @@ class ResultsView : public QWidget
 
 public:
     explicit ResultsView(SearchResultModel* searchResultList, MainWindow *parent = nullptr);
+
     ~ResultsView();
+
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
     void resizeColumnsToContent();
 
-    void selectItem(int index);
+    void selectItem(int row);
     int selectedItem();
 
     void setOutdated();
     bool isOutdated();
 
-    void jumpToResult(int selectedRow, bool focus = true);
+    void expandAll();
+
+    void zoomIn();
+
+    void zoomOut();
+
+    void resetZoom();
 
 signals:
     void updateMatchLabel(int row, int max);
 
-private slots:
-    void on_tableView_clicked(const QModelIndex &index);
-    void on_tableView_doubleClicked(const QModelIndex &index);
-
 protected:
-    void keyPressEvent(QKeyEvent* event);
+    void keyPressEvent(QKeyEvent* event) override;
+
+private slots:
+    void handleDoubleClick();
+
+private:
+    void selectResult(const QModelIndex &index);
+    int prevSibling(ResultItem *parent);
+    int nextSibling();
+
+    void jumpToResult(bool focus = true);
 
 private:
     Ui::ResultsView *ui;
     MainWindow *mMain;
-    SearchResultModel* mResultList;
+    SearchResultModel* mResultModel;
+    SearchResultViewItemDelegate *mDelegate = nullptr;
     bool mOutdated = false;
-
-private:
-    int selectNextItem(bool backwards = false);
 };
 
 }

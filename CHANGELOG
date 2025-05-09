@@ -2,6 +2,7 @@ Version 1.21.0 *
 ==================
 - Added profiler information to the editors when using the GAMS option 'profile'
 - Upgraded to Qt 6.9.0 on all platforms.
+- Improved search result view is now using a tree view, which shows the files, containing results, first.
 
 Version 1.20.6
 ==================

@@ -27,10 +27,18 @@ namespace gams {
 namespace studio {
 namespace search {
 
-SearchWorker::SearchWorker(const SearchFile &file, const QRegularExpression &regex, QPoint from, QPoint to,
-                           QList<Result> *list, bool showResults)
-    : mFiles(QList<SearchFile>() << file), mMatches(list), mRegex(regex), mFrom(from), mTo(to),
-      mShowResults(showResults)
+SearchWorker::SearchWorker(const SearchFile &file,
+                           const QRegularExpression &regex,
+                           QPoint from,
+                           QPoint to,
+                           QList<Result> *list,
+                           bool showResults)
+    : mFiles(QList<SearchFile>() << file)
+    , mMatches(list)
+    , mRegex(regex)
+    , mFrom(from)
+    , mTo(to)
+    , mShowResults(showResults)
 {
     // for now, searching with bounds works without extra thread
     mFindInSelection = true;
@@ -40,10 +48,16 @@ SearchWorker::SearchWorker(const SearchFile &file, const QRegularExpression &reg
     mTo += QPoint(0,1);
 }
 
-SearchWorker::SearchWorker(const QList<SearchFile> &files, const QRegularExpression &regex,
-                           QList<Result> *list, bool showResults)
-    : mFiles(files), mMatches(list), mRegex(regex), mFrom(QPoint(0,0)), mTo(QPoint(0,0)),
-      mShowResults(showResults)
+SearchWorker::SearchWorker(const QList<SearchFile> &files,
+                           const QRegularExpression &regex,
+                           QList<Result> *list,
+                           bool showResults)
+    : mFiles(files)
+    , mMatches(list)
+    , mRegex(regex)
+    , mFrom(QPoint(0,0))
+    , mTo(QPoint(0,0))
+    , mShowResults(showResults)
 {
     mFindInSelection = false;
 }

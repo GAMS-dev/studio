@@ -24,8 +24,14 @@ namespace gams {
 namespace studio {
 namespace lxiviewer {
 
-LxiTreeModel::LxiTreeModel(LxiTreeItem *root, const QVector<int> &lineNrs, const QVector<LxiTreeItem*> &treeItems, QObject *parent)
-    : QAbstractItemModel(parent), mRootItem(root), mLineNrs(lineNrs), mTreeItems(treeItems)
+LxiTreeModel::LxiTreeModel(LxiTreeItem *root,
+                           const QVector<int> &lineNrs,
+                           const QVector<LxiTreeItem*> &treeItems,
+                           QObject *parent)
+    : QAbstractItemModel(parent)
+    , mRootItem(root)
+    , mLineNrs(lineNrs)
+    , mTreeItems(treeItems)
 {
 
 }

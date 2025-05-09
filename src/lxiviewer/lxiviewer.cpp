@@ -99,7 +99,6 @@ bool LxiViewer::eventFilter(QObject *watched, QEvent *event)
         }
     } else if (event->type() == QEvent::FontChange && watched == mTextView->edit()) {
         setFont(mTextView->edit()->font());
-
     } else if (event->type() == QEvent::Wheel && watched == ui->lxiTreeView) {
         QWheelEvent *wheelEv = static_cast<QWheelEvent*>(event);
         if (wheelEv->modifiers().testFlag(Qt::ControlModifier)) {
@@ -107,7 +106,6 @@ bool LxiViewer::eventFilter(QObject *watched, QEvent *event)
             return true;
         }
     }
-
     return false;
 }
 

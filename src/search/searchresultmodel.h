@@ -20,33 +20,53 @@
 #ifndef SEARCHRESULTLIST_H
 #define SEARCHRESULTLIST_H
 
-#include <QAbstractTableModel>
+#include <QAbstractItemModel>
 #include <QRegularExpression>
+
 #include "result.h"
 
 namespace gams {
 namespace studio {
 namespace search {
 
-class SearchResultModel : public QAbstractTableModel
+class ResultItem;
+
+class SearchResultModel : public QAbstractItemModel
 {
     Q_OBJECT
-public:
-    SearchResultModel(const QRegularExpression &regex, const QList<Result> &results);
 
-    QList<Result> results() const;
+public:
+    SearchResultModel(const QRegularExpression &regex, const QList<Result> &results, QObject *parent = nullptr);
+
+    ~SearchResultModel();
+
     QRegularExpression searchRegex();
-    int size();
-    Result at(int index) const;
+
+    int resultCount();
+
+    QString resultCountString();
+
+    ResultItem* item(int logicalIndex);
+
+    QModelIndex index(int row, int column,
+                      const QModelIndex &parent = QModelIndex()) const override;
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+
+    QModelIndex parent(const QModelIndex &index) const override;
+
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
 private:
     QRegularExpression mSearchRegex;
     QList<Result> mResults;
+    QHash<int, ResultItem*> mItems;
+    ResultItem* mRootItem;
+    bool mMaxPlusResutls = false;
 };
 
 }

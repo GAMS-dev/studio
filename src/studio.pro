@@ -246,7 +246,9 @@ SOURCES += \
     reference/symboltablemodel.cpp \
     search/fileworker.cpp \
     search/result.cpp \
+    search/resultitem.cpp \
     search/resultsview.cpp \
+    search/resulttreeview.cpp \
     search/search.cpp \
     search/searchdialog.cpp \
     search/searchfilehandler.cpp \
@@ -478,7 +480,9 @@ HEADERS += \
     search/abstractsearchfilehandler.h \
     search/fileworker.h \
     search/result.h \
+    search/resultitem.h \
     search/resultsview.h \
+    search/resulttreeview.h \
     search/search.h \
     search/searchdialog.h \
     search/searchfilehandler.h \
