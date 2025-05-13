@@ -162,6 +162,7 @@ signals:
     void openFolder(QString path, gams::studio::PExProjectNode* project);
     void changed();
     void runnableChanged();
+    void updateProfilerAction();
     void childrenChanged();
     void logTabRenamed(QWidget *wid, const QString &newName);
     void refreshProjectTabName(QWidget *wid);

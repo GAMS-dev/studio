@@ -38,7 +38,7 @@ enum ComFeature {
     cfNoCom     =  0,
     cfRunDebug  =  1,
     cfStepDebug =  3, // this includes the smRunDebug flag (2+1)
-    cfProfile   =  4,
+    cfProfiler =  4,
 };
 typedef QFlags<ComFeature> ComFeatures;
 
@@ -66,6 +66,7 @@ enum CallReply {
 
     // Reply (GAMS -> Server)
     invalidCall,     //  invalidCall \n -the-invalid-call-
+    features,        //  features \n flags (+1=debug, +2=profiler, +4=futureUse, +8=...)
     linesMap,        //  linesMap \n file|line=contLN[|line=contLN] [\n file|line=contLN[|line=contLN]]
                      //   (where contLN is the internal continous-line-number that CMEX is working with.)
                      //   (sends all lines known by CMEX, packages can be split before '|'. Until we haven't another
@@ -117,7 +118,7 @@ public:
     bool isListening();
     quint16 port();
     bool start(ComFeatures features);
-    ComFeatures features();
+    ComFeatures comFeatures();
     QString gdxTempFile() const;
     void setVerbose(bool verbose);
 
@@ -130,6 +131,7 @@ signals:
     void signalPaused(int contLine);
     void signalStop();
     void stateChanged(DebugState state);
+    void signalProfiler(bool active);
 
 public slots:
     void addBreakpoint(int contLine);

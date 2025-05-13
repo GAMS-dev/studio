@@ -173,6 +173,7 @@ signals:
     void openInPinView(gams::studio::PExProjectNode *project, QWidget *editInMainTabs);
     void openFileNode(PExFileNode *node);
     void switchToTab(FileMeta *fileMeta);
+    void updateProfilerAction();
 
 public slots:
     void setErrorText(int lstLine, const QString &text);
@@ -187,6 +188,7 @@ public slots:
     void delBreakpoints(const QString &filename, int line, bool before);
     void clearBreakpoints();
     void breakpoints(const QString &filename, SortedIntMap &bps, SortedIntMap &aimedBps) const;
+    void switchProfiler(bool active);
     void gotoPaused(int contLine);
     void terminate();
     void processState(QProcess::ProcessState &state);

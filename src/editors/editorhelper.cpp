@@ -221,9 +221,9 @@ QString EditorHelper::memoryUnit(size_t bytes)
     return res;
 }
 
-QString EditorHelper::formatLoop(size_t loop, int digits)
+QString EditorHelper::formatSteps(size_t steps, int digits)
 {
-    return QString("%3").arg(loop).rightJustified(digits + 2, ' ');
+    return QString("%3").arg(steps).rightJustified(digits + 2, ' ');
 }
 
 }

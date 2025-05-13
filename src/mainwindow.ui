@@ -288,23 +288,23 @@
     <addaction name="separator"/>
     <addaction name="actionUpdate"/>
    </widget>
-   <widget class="QMenu" name="menu_GAMs">
+   <widget class="gams::studio::CheckMenu" name="menu_GAMs">
     <property name="title">
      <string>&amp;GAMS</string>
     </property>
     <property name="toolTipsVisible">
      <bool>true</bool>
     </property>
-    <addaction name="actionRun"/>
-    <addaction name="actionRun_with_GDX_Creation"/>
+    <addaction name="actionRunCompile"/>
     <addaction name="actionRunDebugger"/>
     <addaction name="actionStepDebugger"/>
     <addaction name="separator"/>
-    <addaction name="actionCompile"/>
-    <addaction name="actionCompile_with_GDX_Creation"/>
+    <addaction name="actionRunCompileWithSelected"/>
+    <addaction name="action1_Create_GDX"/>
+    <addaction name="action2_Create_RF"/>
+    <addaction name="action3_Profiling"/>
     <addaction name="separator"/>
     <addaction name="actionRunNeos"/>
-    <addaction name="separator"/>
     <addaction name="actionRunEngine"/>
     <addaction name="separator"/>
     <addaction name="actionInterrupt"/>
@@ -822,13 +822,16 @@
     <string>F6</string>
    </property>
   </action>
-  <action name="actionRun">
+  <action name="actionRunCompile">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
      <normaloff>:/solid/play</normaloff>:/solid/play</iconset>
    </property>
    <property name="text">
-    <string>&amp;Run</string>
+    <string>&amp;Run, Compile</string>
+   </property>
+   <property name="toolTip">
+    <string>Run (Click), Compile (Shift+Click)</string>
    </property>
    <property name="shortcut">
     <string>F9</string>
@@ -845,20 +848,17 @@
    <property name="toolTip">
     <string>Compile</string>
    </property>
-   <property name="shortcut">
-    <string>Shift+F9</string>
-   </property>
   </action>
-  <action name="actionRun_with_GDX_Creation">
+  <action name="actionRunCompileWithSelected">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
      <normaloff>:/solid/run-gdx</normaloff>:/solid/run-gdx</iconset>
    </property>
    <property name="text">
-    <string>Run with GDX, RF Creation</string>
+    <string>Run, Compile &amp;with ...</string>
    </property>
    <property name="toolTip">
-    <string>Run and create both, a GDX and reference file with default names.</string>
+    <string>Run (Click), Compile (Shift+Click)  with the selected options</string>
    </property>
    <property name="shortcut">
     <string>F10</string>
@@ -894,19 +894,16 @@
     <string>Shift+F11</string>
    </property>
   </action>
-  <action name="actionCompile_with_GDX_Creation">
+  <action name="actionCompileWithSelected">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
      <normaloff>:/solid/code-gdx</normaloff>:/solid/code-gdx</iconset>
    </property>
    <property name="text">
-    <string>Compile with GDX, RF Creation</string>
+    <string>Compile with ...</string>
    </property>
    <property name="toolTip">
     <string>Compile and create both, a GDX and reference file with default names.</string>
-   </property>
-   <property name="shortcut">
-    <string>Shift+F10</string>
    </property>
   </action>
   <action name="actionRunNeos">
@@ -1739,6 +1736,48 @@
     <enum>QAction::MenuRole::TextHeuristicRole</enum>
    </property>
   </action>
+  <action name="action1_Create_GDX">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;1 Create GDX</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a GDX File</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="action2_Create_RF">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;2 Create RF</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a Reference File</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="action3_Profiling">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;3 Profiling</string>
+   </property>
+   <property name="toolTip">
+    <string>Activate Profiling</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -1764,6 +1803,11 @@
    <extends>QWidget</extends>
    <header>gamscom/debugwidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>gams::studio::CheckMenu</class>
+   <extends>QMenu</extends>
+   <header>checkmenu.h</header>
   </customwidget>
  </customwidgets>
  <resources>

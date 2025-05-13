@@ -49,8 +49,9 @@ enum ProfilerColumn {
     pcNone   = 0,
     pcTime   = 1,
     pcMemory = 2,
-    pcLoop   = 4,
-    pcAll    = 7
+    pcRows   = 4,
+    pcSteps  = 8,
+    pcAll    = 15
 };
 typedef QFlags<ProfilerColumn> ProfilerColumns;
 
@@ -192,15 +193,15 @@ signals:
     void delAllBreakpoints();
     void getProjectHasErrors(bool *hasErrors);
     void delAllProjectErrors();
-    void getProfilerSums(qreal &timeSec, size_t &memory);
+    void getProfilerSums(qreal &timeSec, size_t &rows, size_t &memory);
     void getProfilerUnits(QStringList &timeUnits, QStringList &memoryUnits);
     void getProfilerCurrentUnits(int &timeUnit, int &memoryUnit);
     void setProfilerCurrentUnits(int unitIndex, int memoryUnit);
-    void getProfileShort(int line, qreal &timeSec, size_t &memory, size_t &loops);
+    void getProfileShort(int line, qreal &timeSec, size_t &memory, size_t &rows, size_t &steps);
     void getProfileLong(int line, QStringList &profileData);
     void profilerSettingsChanged();
-    void getProfilerMaxCompoundValues(qreal &timeSec, size_t &memory, size_t &loops);
-    void getProfilerMaxData(QList<QPair<int, qreal>> &maxTimeContLine, QList<QPair<int,int>> &maxLoopsContLine);
+    void getProfilerMaxCompoundValues(qreal &timeSec, size_t &memory, size_t &rows, size_t &steps);
+    void getProfilerMaxData(QList<QPair<int, qreal>> &maxTimeContLine, QList<QPair<int,int>> &maxStepsContLine);
     void jumpToContinuousLine(int contLine);
 
 public slots:
@@ -372,7 +373,7 @@ private:
     QList<int> mProfilerCol;
     ProfilerColumns mColumnFlags = pcAll;
     ProfilerColumn mProfilerHeaderContext = pcNone;
-    int mProfilerLoopDigits = 0;
+    int mProfilerStepsDigits = 0;
     QTextCursor mPreDebugCursor;
 
     static QRegularExpression mRex0LeadingSpaces;

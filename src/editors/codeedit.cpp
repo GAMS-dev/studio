@@ -133,15 +133,18 @@ int CodeEdit::lineNumberAreaWidth()
 
 int CodeEdit::profilerWidth()
 {
-    if (!mProfilerArea || !mProfilerArea->isVisible()) return 0;
+    if (!mProfilerArea) return 0;
+
     int uTime;
     int uMem;
     emit getProfilerCurrentUnits(uTime, uMem);
     qreal maxTimes;
     size_t maxMemory;
-    size_t maxLoops;
-    emit getProfilerMaxCompoundValues(maxTimes, maxMemory, maxLoops);
+    size_t maxRows;
+    size_t maxSteps;
+    emit getProfilerMaxCompoundValues(maxTimes, maxMemory, maxRows, maxSteps);
     mColumnFlags = ProfilerColumns(mSettings->toInt((skEdProfilerCols)));
+    if (mProfilerArea) mProfilerArea->setVisible(mColumnFlags != pcNone);
     mProfilerCol.clear();
     mProfilerCol << 0;
     if (mColumnFlags.testFlag(pcTime)) {
@@ -154,9 +157,12 @@ int CodeEdit::profilerWidth()
         if (sMem.length() < 5) sMem = "1.234";
         mProfilerCol << mProfilerCol.last() + fontMetrics().horizontalAdvance(QString(" %1 ").arg(sMem));
     }
-    if (mColumnFlags.testFlag(pcLoop))
-        mProfilerCol << mProfilerCol.last() + fontMetrics().horizontalAdvance(QString(" %1 ").arg(maxLoops));
-    mProfilerLoopDigits = qMax(3, QString::number(maxLoops).length());
+    if (mColumnFlags.testFlag(pcRows)) {
+        mProfilerCol << mProfilerCol.last() + fontMetrics().horizontalAdvance(QString(" %1 ").arg(maxRows));
+    }
+    if (mColumnFlags.testFlag(pcSteps))
+        mProfilerCol << mProfilerCol.last() + fontMetrics().horizontalAdvance(QString(" %1 ").arg(maxSteps));
+    mProfilerStepsDigits = qMax(3, QString::number(maxSteps).length());
     return mProfilerCol.last();
 }
 
@@ -411,7 +417,7 @@ void CodeEdit::resizeEvent(QResizeEvent *e)
     QRect cr = contentsRect();
     int left = cr.left();
     int pHeight = profilerHeaderHeight();
-    if (mProfilerArea && mProfilerArea->isVisible()) {
+    if (mProfilerArea) {
         int wid = profilerWidth();
         int hWid = wid + pHeight + fontMetrics().horizontalAdvance("⏵") + 4;
         mProfilerArea->setGeometry(QRect(left, cr.top() + pHeight, wid, cr.height() - pHeight));
@@ -425,7 +431,7 @@ void CodeEdit::resizeEvent(QResizeEvent *e)
 
 void CodeEdit::showEvent(QShowEvent *e)
 {
-    if (mProfilerArea && mProfilerArea->isVisible()) {
+    if (mProfilerArea) {
         QRect cr = contentsRect();
         int pHeight = profilerHeaderHeight();
         int wid = profilerWidth();
@@ -1337,17 +1343,35 @@ void CodeEdit::setProfilerHeaderContext(const QPoint &pos)
     int col = 1;
     if (mProfilerCol.size() <= col || pos.x() < mProfilerCol.at(0)) return;
 
-    if (mColumnFlags.testFlag(pcTime) && pos.x() < mProfilerCol.at(1)) {
-        mProfilerHeaderContext = pcTime;
-        return;
-    }
     if (mColumnFlags.testFlag(pcTime)) {
+        if (pos.x() < mProfilerCol.at(1)) {
+            mProfilerHeaderContext = pcTime;
+            return;
+        }
         ++col;
         if (mProfilerCol.size() <= col) return;
     }
-    if (mColumnFlags.testFlag(pcMemory) && pos.x() < mProfilerCol.at(col)) {
-        mProfilerHeaderContext = pcMemory;
-        return;
+    if (mColumnFlags.testFlag(pcMemory)) {
+        if (pos.x() < mProfilerCol.at(col)) {
+            mProfilerHeaderContext = pcMemory;
+            return;
+        }
+        ++col;
+        if (mProfilerCol.size() <= col) return;
+    }
+    if (mColumnFlags.testFlag(pcRows)) {
+        if (pos.x() < mProfilerCol.at(col)) {
+            mProfilerHeaderContext = pcRows;
+            return;
+        }
+        ++col;
+        if (mProfilerCol.size() <= col) return;
+    }
+    if (mColumnFlags.testFlag(pcSteps)) {
+        if (pos.x() < mProfilerCol.at(col)) {
+            mProfilerHeaderContext = pcSteps;
+            return;
+        }
     }
 }
 
@@ -1356,18 +1380,18 @@ void CodeEdit::profilerContextMenuEvent(QContextMenuEvent *e)
     QMenu menu(this);
 
     QList<QPair<int, qreal>> countTime;
-    QList<QPair<int, int>> maxLoops;
-    emit getProfilerMaxData(countTime, maxLoops);
+    QList<QPair<int, int>> maxSteps;
+    emit getProfilerMaxData(countTime, maxSteps);
     menu.addSection("highest time");
     for (int i = 0; i < countTime.size(); ++i) {
         menu.addAction(QString("%1: %2 s").arg(i+1).arg(countTime.at(i).second, 0, 'f', 3), this, [this, countTime, i]() {
             emit jumpToContinuousLine(countTime.at(i).first);
         });
     }
-    menu.addSection("max loops");
-    for (int i = 0; i < maxLoops.size(); ++i) {
-        menu.addAction(QString("%1: %2 ↻").arg(i+1).arg(maxLoops.at(i).second), this, [this, maxLoops, i]() {
-            emit jumpToContinuousLine(maxLoops.at(i).first);
+    menu.addSection("max steps");
+    for (int i = 0; i < maxSteps.size(); ++i) {
+        menu.addAction(QString("%1: %2 ↻").arg(i+1).arg(maxSteps.at(i).second), this, [this, maxSteps, i]() {
+            emit jumpToContinuousLine(maxSteps.at(i).first);
         });
     }
     menu.exec(e->globalPos());
@@ -1408,12 +1432,19 @@ void CodeEdit::profilerHeaderContextMenuEvent(QContextMenuEvent *e)
         menu.actions().last()->setCheckable(true);
         menu.actions().last()->setChecked(visibleCols & 2);
 
-        menu.addAction("Show &loops", this, [this, visibleCols]() {
+        menu.addAction("Show &rows", this, [this, visibleCols]() {
             mSettings->setInt(skEdProfilerCols, visibleCols & 4 ? visibleCols - 4 : visibleCols + 4);
             emit profilerSettingsChanged();
         });
         menu.actions().last()->setCheckable(true);
         menu.actions().last()->setChecked(visibleCols & 4);
+
+        menu.addAction("Show &steps", this, [this, visibleCols]() {
+            mSettings->setInt(skEdProfilerCols, visibleCols & 8 ? visibleCols - 8 : visibleCols + 8);
+            emit profilerSettingsChanged();
+        });
+        menu.actions().last()->setCheckable(true);
+        menu.actions().last()->setChecked(visibleCols & 8);
     } else {
         QStringList timeUnits;
         QStringList memUnits;
@@ -2799,17 +2830,17 @@ void CodeEdit::profilerPaintEvent(QPaintEvent *event)
     painter.restore();
 
     int gap = fontMetrics().horizontalAdvance(" ") / 2;
-    qreal timeSum = 0.; size_t loopSum = 0;
-    emit getProfilerSums(timeSum, loopSum);
+    qreal timeSum = 0.; size_t rowsSum = 0; size_t stepsSum = 0;
+    emit getProfilerSums(timeSum, rowsSum, stepsSum);
     int timeUnit;
     int memUnit;
     emit getProfilerCurrentUnits(timeUnit, memUnit);
 
     while (block.isValid() && top <= paintRect.bottom()) {
         if (block.isVisible() && bottom >= paintRect.top()) {
-            qreal time = 0.; size_t mem = 0; size_t loop = 0;
-            emit getProfileShort(blockNumber + 1, time, mem, loop);
-            if (loop && mColumnFlags) {
+            qreal time = 0.; size_t mem = 0; size_t rows = 0; size_t steps = 0;
+            emit getProfileShort(blockNumber + 1, time, mem, rows, steps);
+            if (steps && mColumnFlags) {
                 QRect gapRect(0, top, gap, height);
                 int iRect = 1;
                 if (mColumnFlags.testFlag(pcTime)) {
@@ -2819,9 +2850,13 @@ void CodeEdit::profilerPaintEvent(QPaintEvent *event)
                 if (mColumnFlags.testFlag(pcMemory)) {
                     paintTextBox(&painter, iRect++, gapRect, EditorHelper::formatMemory2(mem, memUnit, true));
                 }
-                if (mColumnFlags.testFlag(pcLoop)) {
-                    qreal alpha = (loopSum > 0) ?  qreal(loop) / qreal(loopSum) : 0.;
-                    paintTextBox(&painter, iRect++, gapRect, EditorHelper::formatLoop(loop, mProfilerLoopDigits), alpha);
+                if (mColumnFlags.testFlag(pcRows)) {
+                    qreal alpha = (rowsSum > 0) ?  qreal(rows) / qreal(rowsSum) : 0.;
+                    paintTextBox(&painter, iRect++, gapRect, EditorHelper::formatSteps(rows, mProfilerStepsDigits), alpha);
+                }
+                if (mColumnFlags.testFlag(pcSteps)) {
+                    qreal alpha = (stepsSum > 0) ?  qreal(steps) / qreal(stepsSum) : 0.;
+                    paintTextBox(&painter, iRect++, gapRect, EditorHelper::formatSteps(steps, mProfilerStepsDigits), alpha);
                 }
             }
         }
@@ -2895,7 +2930,14 @@ void CodeEdit::profilerPaintHeaderEvent(QPaintEvent *event)
         ++iRect;
     }
 
-    if (mColumnFlags.testFlag(pcLoop) && mProfilerCol.size() > iRect) {
+    if (mColumnFlags.testFlag(pcRows) && mProfilerCol.size() > iRect) {
+        int wid = mProfilerCol.at(iRect) - mProfilerCol.at(iRect-1) - gap;
+        QRect rect(mProfilerCol.at(iRect-1) + gap, top, wid, height-1);
+        painter.drawText(rect, "#", optC); // symbols ☷ ∑ #
+        ++iRect;
+    }
+
+    if (mColumnFlags.testFlag(pcSteps) && mProfilerCol.size() > iRect) {
         QRect rect(mProfilerCol.at(iRect-1) + gap, top, mProfilerCol.at(iRect) - mProfilerCol.at(iRect-1) - gap, height);
         painter.drawText(rect, "↻", optC);
     }

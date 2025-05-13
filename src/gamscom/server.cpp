@@ -70,6 +70,7 @@ void Server::init()
 
     // replies
     mReplies.insert("invalidCall", invalidCall);
+    mReplies.insert("features", features);
     mReplies.insert("linesMap", linesMap);
     mReplies.insert("linesMapDone", linesMapDone);
 
@@ -103,7 +104,7 @@ bool Server::start(ComFeatures features)
     return true;
 }
 
-ComFeatures Server::features()
+ComFeatures Server::comFeatures()
 {
     return mComFeatures;
 }
@@ -233,6 +234,19 @@ Server::ParseResult Server::handleReply(const QString &replyData)
     case invalidCall:
         logMessage("GAMScom-Server: GAMS refused to process this request: " + reList.join(", "));
         break;
+    case features: {
+        if (reList.size() < 1) return prIncomplete; // wait for more data
+        if (reList.size() > 1)
+            logMessage("GAMScom-Server: [features] Only one entry expected. Additional data ignored.");
+
+        int flags = data.at(0).toInt(&ok);
+
+        if (!ok) {
+            logMessage("GAMScom-Server: [features] Can't parse continuous line number: " + data.at(0));
+            return prError;
+        }
+        emit signalProfiler(flags & 2);
+    }   break;
     case linesMap: {
         if (reList.size() < 1) return prIncomplete; // wait for more data
         for (const QString &line : std::as_const(reList)) {
@@ -242,7 +256,7 @@ Server::ParseResult Server::handleReply(const QString &replyData)
     case linesMapDone: {
         if (!mRemainData.isEmpty())
             parseLinesMap(" ");
-        if (mComFeatures.testFlag(cfProfile)) {
+        if (mComFeatures.testFlag(cfProfiler)) {
             if (mIncludes.isEmpty()) {
                 if (!mBreakLinesFile.isEmpty())
                     mIncludes << new IncludeLine(mBreakLinesFile);
@@ -394,8 +408,11 @@ Server::ParseResult Server::parseProfileData(const QString &rawData)
     qreal mbMem = data.at(3).toDouble(&ok);
     if (!ok) return prError;
     size_t mem = qRound64(mbMem / .000001);
+    size_t rows = 0;
+    if (data.size() > 4)
+        rows = data.at(4).toULongLong(&ok);
     if (mProfiler) {
-        mProfiler->add(contLine, data.at(1), sec, mem);
+        mProfiler->add(contLine, data.at(1), sec, mem, rows);
     }
     return prOk;
 }

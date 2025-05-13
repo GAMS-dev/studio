@@ -69,6 +69,8 @@ enum SettingsKey {
     skPinViewSize,
     skPinOrientation,
     skPinScollLock,
+    skLastRun,
+    skRunOptions,
 
     // settings of help page
     skHelpBookmarks,

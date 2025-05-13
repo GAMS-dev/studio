@@ -17,29 +17,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef EDITORHELPER_H
-#define EDITORHELPER_H
+#ifndef CHECKMENU_H
+#define CHECKMENU_H
 
-#include <QString>
+#include <QMenu>
 
 namespace gams {
 namespace studio {
 
-class EditorHelper
+class CheckMenu : public QMenu
 {
+    Q_OBJECT
 public:
-    static void nextWord(int offset, int &pos, const QString &text);
-    static void prevWord(int offset, int &pos, const QString &text);
-    static QString formatTime(qreal timeSec, bool compact = false);
-    static QString formatTime2(qreal timeSec, int &unitIndex, bool compact = false);
-    static QString timeUnit(qreal timeSec);
-    static QString formatMemory(size_t bytes, bool compact = false);
-    static QString formatMemory2(size_t bytes, int &unitIndex, bool compact = false);
-    static QString memoryUnit(size_t bytes);
-    static QString formatSteps(size_t steps, int digits);
+    CheckMenu(QWidget *parent = nullptr);
+    virtual ~CheckMenu();
+
+protected:
+    void showEvent(QShowEvent *event) override;
+    void hideEvent(QHideEvent *event) override;
+
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
+
 };
 
-}
-}
+} // namespace studio
+} // namespace gams
 
-#endif // EDITORHELPER_H
+#endif // CHECKMENU_H

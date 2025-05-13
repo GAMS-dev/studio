@@ -42,10 +42,10 @@ struct IncludeLine {
 
 struct ProfileData {
     ProfileData() {}
-    ProfileData(const QString &s, qreal time, size_t mem): statement(s)
+    ProfileData(const QString &s, qreal time, size_t mem, size_t rows): statement(s)
         , timeInSec(time), timeInSecMin(time), timeInSecMax(time)
-        , memoryMin(mem), memoryMax(mem), lastMemoryDelta(mem), loops(1) {}
-    void add(qreal time, size_t mem) {
+        , memoryMin(mem), memoryMax(mem), lastMemoryDelta(mem), rowsMin(rows), rowsMax(rows), steps(1) {}
+    void add(qreal time, size_t mem, size_t rows) {
         if (timeInSecMin > time) timeInSecMin = time;
         if (timeInSecMax < time) timeInSecMax = time;
         timeInSec += time;
@@ -54,16 +54,20 @@ struct ProfileData {
             lastMemoryDelta = mem - memoryMax;
             memoryMax = mem;
         }
-        ++loops;
+        if (rowsMin > rows) rowsMin = rows;
+        if (rowsMax < rows) rowsMax = rows;
+        ++steps;
     }
     QString statement;
     qreal timeInSec = 0.;
     qreal timeInSecMin = 0.;
     qreal timeInSecMax = 0.;
-    size_t memoryMin = 0;
-    size_t memoryMax = 0;
+    size_t memoryMin = 0ull;
+    size_t memoryMax = 0ull;
     size_t lastMemoryDelta = 0ull;
-    size_t loops = 0ull;
+    size_t rowsMin = 0ull;
+    size_t rowsMax = 0ull;
+    size_t steps = 0ull;
 };
 
 class Profiler : public QObject
@@ -72,11 +76,12 @@ class Profiler : public QObject
 public:
     Profiler();
     ~Profiler();
+    void setMainFile(const QString &filepath) { mMainFile = filepath; }
     void clear();
     bool isEmpty();
     void setContinuousLineData(ContinuousLineData *contLines);
-    void add(int contLine, const QString &statement, qreal timeSec, size_t memory);
-    void getSums(qreal &timeSec, size_t &loops);
+    void add(int contLine, const QString &statement, qreal timeSec, size_t memory, size_t rows);
+    void getSums(qreal &timeSec, size_t &rows, size_t &steps);
     int continuousLine(QString filename, int localLine);
 
     void getUnits(QStringList &timeUnits, QStringList &memUnits);
@@ -84,12 +89,12 @@ public:
     void setCurrentUnits(int timeUnit = -1, int memUnit = -1);
     void addIncludes(const QList<IncludeLine *> lines);
 
-    void getProfile(int contLine, qreal &timeSec, size_t &memory, size_t &loops);
+    void getProfile(int contLine, qreal &timeSec, size_t &memory, size_t &rows, size_t &steps);
     void getProfileText(int contLine, QStringList &profileData);
 
-    void getMaxCompoundValues(qreal &timeSec, size_t &memory, size_t &loops);
+    void getMaxCompoundValues(qreal &timeSec, size_t &memory, size_t &rows, size_t &steps);
     QList<QPair<int, qreal> > maxTime() const;
-    QList<QPair<int, int> > maxLoops() const;
+    QList<QPair<int, int> > maxSteps() const;
 
     static const QStringList CTimeUnits;
     static const QStringList CMemoryUnits;
@@ -101,14 +106,17 @@ private:
     QMap<int, QMap<QString, ProfileData>> mProfileData;
     QMap<QString, QMap<int, QPair<int, int>> > mFileLine2Cln; // filename, localLine [contLine, contLineEnd]
     QList<QPair<int, ProfileData>> mMaxSingleTime;
-    QList<QPair<int, ProfileData>> mMaxSingleLoops;
+    QList<QPair<int, ProfileData>> mMaxSingleSteps;
+    QString mMainFile;
     qreal mMaxCompountTime = 0.;
     size_t mMaxMemory = 0ull;
-    size_t mMaxLoops = 0ull;
+    size_t mMaxRows = 0ull;
+    size_t mMaxSteps = 0ull;
     int mCurrentTimeUnit = 0;
     int mCurrentMemoryUnit = 0;
     qreal mSumTimeInSec = 0.;
-    size_t mSumLoop = 0ull;
+    size_t mSumRows = 0ull;
+    size_t mSumSteps = 0ull;
 };
 
 } // namespace gamscom

@@ -295,10 +295,10 @@ private slots:
     // Edit
 
     // GAMS
-    void on_actionRun_triggered();
-    void on_actionRun_with_GDX_Creation_triggered();
+    void on_actionRunCompile_triggered();
+    void on_actionRunCompileWithSelected_triggered();
     void on_actionCompile_triggered();
-    void on_actionCompile_with_GDX_Creation_triggered();
+    void on_actionCompileWithSelected_triggered();
     void on_actionInterrupt_triggered();
     void on_actionStop_triggered();
     void on_actionGAMS_Library_triggered();
@@ -464,7 +464,7 @@ private slots:
     void on_tbProjectSettings_clicked();
     void cleanGeneratedProjectFiles(gams::studio::NodeId projId, const QString &workspace);
     void on_actionShow_Profiler_toggled(bool showProfiler);
-
+    void updateProfilerAction();
 
 private:
     void deleteLogFiles(const QString &pattern, const QString &workspace);
@@ -477,7 +477,6 @@ private:
     void initEnvironment();
     void initNavigator();
     void adjustFonts();
-    void updateProfilerAction();
     QVector<PExAbstractNode*> selectedNodes(QModelIndex index = QModelIndex());
     bool handleFileChanges(FileMeta *fc, bool closeAndWillReopen);
     PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);

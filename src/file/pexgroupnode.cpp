@@ -509,7 +509,7 @@ void PExProjectNode::updateOpenEditors()
             }
         }
     }
-    if (mComServer) mUpdateEditsTimer.isSingleShot();
+    if (mProfilerVisible) mUpdateEditsTimer.isSingleShot();
 }
 
 bool PExProjectNode::isProfilerVisible() const
@@ -934,6 +934,17 @@ void PExProjectNode::breakpoints(const QString &filename, SortedIntMap &bps, Sor
     aimedBps = mContLineData->bpAimedFileLines(filename);
 }
 
+void PExProjectNode::switchProfiler(bool active)
+{
+    mDoProfile = active;
+    mProfiler->setMainFile(runnableGms() ? runnableGms()->location() : "");
+    setProfilerVisible(active);
+    emit updateProfilerAction();
+    updateOpenEditors();
+    if (active)
+        mUpdateEditsTimer.start(1000);
+}
+
 void PExProjectNode::clearErrorTexts()
 {
     mErrorTexts.clear();
@@ -1116,11 +1127,6 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
             } else if (item.optionId == opt->getOrdinalNumber("logoption")) {
                 int lo = item.value.toInt(&ok);
                 if (ok) logOption = lo;
-
-            } else if (item.optionId == opt->getOrdinalNumber("profile")) {
-                mDoProfile = item.value.toInt(&ok) > 0;
-                if (!ok) mDoProfile = false;
-                mProfilerVisible = mDoProfile;
 
             } else if (item.optionId == opt->getOrdinalNumber("logfile")) {
                 if (!value.endsWith(".log", FileType::fsCaseSense()))
@@ -1321,20 +1327,11 @@ void PExProjectNode::clearParameters()
 
 bool PExProjectNode::startComServer(gamscom::ComFeatures features)
 {
-    if (!features) return false;
     if (!mComServer) {
         mComServer = new gamscom::Server(workDir(), this);
         mComServer->setVerbose(mVerbose);
-        if (features & gamscom::cfProfile) {
-            mComServer->setProfiler(mProfiler);
-            mProfiler->clear();
-            for (PExFileNode *node : listFiles()) {
-                for (QWidget *wid :node->file()->editors()) {
-                    if (CodeEdit *ce = ViewHelper::toCodeEdit(wid))
-                        ce->setHasProfiler(true);
-                }
-            }
-        }
+        mComServer->setProfiler(mProfiler);
+        mProfiler->clear();
         connect(mComServer, &gamscom::Server::connected, this, [this]() {
             mContLineData->clearLinesMap();
             mIncludes.clear();
@@ -1359,6 +1356,7 @@ bool PExProjectNode::startComServer(gamscom::ComFeatures features)
 
         connect(mComServer, &gamscom::Server::addProcessLog, this, &PExProjectNode::addProcessLog);
         connect(mComServer, &gamscom::Server::signalGdxReady, this, &PExProjectNode::openDebugGdx);
+        connect(mComServer, &gamscom::Server::signalProfiler, this, &PExProjectNode::switchProfiler);
         connect(mComServer, &gamscom::Server::signalPaused, this, &PExProjectNode::gotoPaused);
         connect(mComServer, &gamscom::Server::signalStop, this, &PExProjectNode::terminate);
         connect(mComServer, &gamscom::Server::signalLinesMap, this, &PExProjectNode::addLinesMap);
@@ -1370,11 +1368,7 @@ bool PExProjectNode::startComServer(gamscom::ComFeatures features)
         QStringList params = process()->parameters();
         if (features & gamscom::cfRunDebug)
             params << ("DebugPort=" + QString::number(mComServer->port()));
-        if (features & gamscom::cfProfile) {
-            params << ("ProfilePort=" + QString::number(mComServer->port()));
-            updateOpenEditors();
-            mUpdateEditsTimer.start(1000);
-        }
+        params << ("ComPort=" + QString::number(mComServer->port()));
         process()->setParameters(params);
     } else {
         DEB() << "Process isn't up already.";

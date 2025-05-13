@@ -123,8 +123,8 @@ signals:
     void fontChangeRequest(gams::studio::FileMeta *fileMeta, QFont f);
     void saveProjects();
     void projectTabRenamed(gams::studio::FileMeta *fileMeta);
-    void getProfilerMaxCompoundValues(qreal &timeSec, size_t &memory, size_t &loops);
-    void getProfilerMaxData(QList<QPair<int, qreal>> &maxTimeContLine, QList<QPair<int,int>> &maxLoopsContLine);
+    void getProfilerMaxCompoundValues(qreal &timeSec, size_t &memory, size_t &rows, size_t &steps);
+    void getProfilerMaxData(QList<QPair<int, qreal>> &maxTimeContLine, QList<QPair<int,int>> &maxStepsContLine);
     void jumpToContinuousLine(int contLine);
 
 protected:

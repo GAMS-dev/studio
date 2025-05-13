@@ -311,6 +311,8 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skPinOrientation, scSys, {"pinView", "orientation"}, 1);
     safelyAdd(res, skPinScollLock, scSys, {"pinView", "scrollLock"}, false);
     safelyAdd(res, skHistory, scSys, {"history"}, QJsonArray());
+    safelyAdd(res, skLastRun, scSys, {"lastRun"}, 0);
+    safelyAdd(res, skRunOptions, scSys, {"runOptions"}, 3);
 
     // user model library directory
     safelyAdd(res, skUserModelLibraryDir, scUser, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir());

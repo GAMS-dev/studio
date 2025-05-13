@@ -26,6 +26,7 @@
 #include "file/treeitemdelegate.h"
 #include "mainwindow.h"
 #include "application.h"
+#include "gamscom/server.h"
 #include "option/lineeditcompleteevent.h"
 #include "ui_mainwindow.h"
 #include "editors/codeedit.h"
@@ -74,7 +75,6 @@
 #include "pinviewwidget.h"
 #include "file/pathselect.h"
 #include "msgbox.h"
-
 #include "encoding.h"
 
 #ifdef __APPLE__
@@ -130,6 +130,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Shortcuts
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
+    new QShortcut(QKeySequence("Shift+F9"), this, this, &MainWindow::on_actionCompile_triggered, Qt::ApplicationShortcut);
+    new QShortcut(QKeySequence("Shift+F10"), this, this, &MainWindow::on_actionCompileWithSelected_triggered, Qt::ApplicationShortcut);
 
 #ifdef __APPLE__
     ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
@@ -350,6 +352,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::newAssemblyFileData,
             this, &MainWindow::writeNewAssemblyFileData);
 
+    // main menu
+
     ui->menuEncoding->setEnabled(false);
     CommonPaths::setDefaultWorkingDir(Settings::settings()->toString(SettingsKey::skDefaultWorkspace));
     engine::EngineProcess::startupInit();
@@ -375,6 +379,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
     connect(mSearchDialog, &search::SearchDialog::toggle, this, &MainWindow::toggleSearchDialog);
     connect(&mProjectRepo, &ProjectRepo::runnableChanged, this, &MainWindow::runnableChanged);
+    connect(&mProjectRepo, &ProjectRepo::updateProfilerAction, this, &MainWindow::updateProfilerAction);
     connect(&mProjectRepo, &ProjectRepo::getConfigPaths, this, [](QStringList &configPaths) {
         configPaths = CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath);
     });
@@ -794,7 +799,7 @@ void MainWindow::initIcons()
 {
     setWindowIcon(Theme::icon(":/img/gams-w"));
     ui->actionCompile->setIcon(Theme::icon(":/%1/code"));
-    ui->actionCompile_with_GDX_Creation->setIcon(Theme::icon(":/%1/code-gdx"));
+    ui->actionCompileWithSelected->setIcon(Theme::icon(":/%1/code-gdx"));
     ui->actionCopy->setIcon(Theme::icon(":/%1/copy"));
     ui->actionCut->setIcon(Theme::icon(":/%1/cut"));
     ui->actionDelete_text->setIcon(Theme::icon(":/%1/delete-all"));
@@ -813,8 +818,8 @@ void MainWindow::initIcons()
     ui->actionProject_View->setIcon(Theme::icon(":/%1/project"));
     ui->actionRedo->setIcon(Theme::icon(":/%1/redo"));
     ui->actionReset_Zoom->setIcon(Theme::icon(":/%1/search-off"));
-    ui->actionRun->setIcon(Theme::icon(":/%1/play"));
-    ui->actionRun_with_GDX_Creation->setIcon(Theme::icon(":/%1/run-gdx"));
+    ui->actionRunCompile->setIcon(Theme::icon(":/%1/play"));
+    ui->actionRunCompileWithSelected->setIcon(Theme::icon(":/%1/run-gdx"));
     ui->actionRunDebugger->setIcon(Theme::icon(":/%1/run-debug"));
     ui->actionStepDebugger->setIcon(Theme::icon(":/%1/step-debug"));
     ui->actionRunNeos->setIcon(Theme::icon(":/img/neos", false, ":/img/neos-g"));
@@ -873,9 +878,15 @@ void MainWindow::initFonts()
 
 void MainWindow::initToolBar()
 {
-    mGamsParameterEditor = new option::ParameterEditor(
-        ui->actionRun, ui->actionRun_with_GDX_Creation, ui->actionRunDebugger, ui->actionStepDebugger, ui->actionCompile,
-        ui->actionCompile_with_GDX_Creation, ui->actionRunNeos, ui->actionRunEngine, ui->actionInterrupt, ui->actionStop, this);
+    QList<QAction*> actionFlags;
+    actionFlags << ui->action1_Create_GDX << ui->action2_Create_RF << ui->action3_Profiling;
+    int runOptions = Settings::settings()->toInt(skRunOptions);
+    ui->action1_Create_GDX->setChecked(runOptions & 1);
+    ui->action2_Create_RF->setChecked(runOptions & 2);
+    ui->action3_Profiling->setChecked(runOptions & 4);
+    mGamsParameterEditor = new option::ParameterEditor(ui->actionRunCompile, ui->actionCompile,
+                ui->actionRunCompileWithSelected, ui->actionCompileWithSelected, ui->actionRunDebugger, ui->actionStepDebugger,
+                actionFlags, ui->actionRunNeos, ui->actionRunEngine,  ui->actionInterrupt, ui->actionStop, this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
@@ -3232,6 +3243,11 @@ void MainWindow::updateAndSaveSettings()
     settings->setBool(skSearchCaseSens, searchDialog()->caseSens());
     settings->setBool(skSearchWholeWords, searchDialog()->wholeWords());
 
+    int runOptions = (ui->action1_Create_GDX->isChecked() ? 1 : 0) +
+                     (ui->action2_Create_RF->isChecked() ? 2 : 0) +
+                     (ui->action3_Profiling->isChecked() ? 4 : 0);
+    Settings::settings()->setInt(skRunOptions, runOptions);
+
 #ifdef QWEBENGINE
     QVariantList joBookmarks;
     QMap<QString, QString> bookmarkMap(helpWidget()->getBookmarkMap());
@@ -4339,15 +4355,13 @@ void MainWindow::execute(const QString &commandLineStr, AbstractProcess* process
         process = new GamsProcess();
     bool ready = executePrepare(project, commandLineStr, process);
     if (ready) {
-        if (project->doProfile()) comMode.setFlag(gamscom::cfProfile);
-        else project->setProfilerVisible(false);
         updateProfilerAction();
-        if (comMode == gamscom::cfNoCom || project->startComServer(comMode)) {
+        if (project->startComServer(comMode)) {
             if (comMode & gamscom::cfRunDebug)
                 ui->debugWidget->setVisible(true);
             execution(project);
         }
-        else if (comMode) {
+        else {
             appendSystemLogWarning("Could not start server connection for project [" + project->name() + "]. "
                                    + (project->comServer() ? " Server is already running."
                                                              : "Too many active servers."));
@@ -4524,7 +4538,7 @@ void MainWindow::updateRunState()
         mPinControl.projectSwitched(project);
     }
     ui->debugWidget->setDebugServer(debugServer);
-    ui->debugWidget->setVisible(debugServer && debugServer->features().testFlag(gamscom::cfRunDebug));
+    ui->debugWidget->setVisible(debugServer && debugServer->comFeatures().testFlag(gamscom::cfRunDebug));
     updateAllowedMenus();
 }
 
@@ -4635,14 +4649,30 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
     }
 }
 
-void MainWindow::on_actionRun_triggered()
+void MainWindow::on_actionRunCompile_triggered()
 {
-    execute(mGamsParameterEditor->on_runAction(option::RunActionState::Run), nullptr);
+    option::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
+            ? option::RunActionState::Compile
+            : option::RunActionState::Run;
+    execute(mGamsParameterEditor->on_runAction(state), nullptr);
 }
 
-void MainWindow::on_actionRun_with_GDX_Creation_triggered()
+void MainWindow::on_actionRunCompileWithSelected_triggered()
 {
-    execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunWithGDXCreation), nullptr);
+    option::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
+            ? option::RunActionState::CompileWithSelected
+            : option::RunActionState::RunWithSelected;
+    execute(mGamsParameterEditor->on_runAction(state), nullptr);
+}
+
+void MainWindow::on_actionCompile_triggered()
+{
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::Compile), nullptr);
+}
+
+void MainWindow::on_actionCompileWithSelected_triggered()
+{
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithSelected), nullptr);
 }
 
 void MainWindow::on_actionRunDebugger_triggered()
@@ -4673,16 +4703,6 @@ void MainWindow::updateSystemLogTab(bool focus)
         }
         ui->logTabs->updateSystemLogTab();
     }
-}
-
-void MainWindow::on_actionCompile_triggered()
-{
-    execute(mGamsParameterEditor->on_runAction(option::RunActionState::Compile), nullptr);
-}
-
-void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
-{
-    execute(mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation), nullptr);
 }
 
 void MainWindow::on_actionRunNeos_triggered()
@@ -5335,7 +5355,7 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
         connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
         connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
-        ce->addAction(ui->actionRun);
+        ce->addAction(ui->actionRunCompile);
     }
     if (TextView *tv = ViewHelper::toTextView(edit)) {
         connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
@@ -5348,16 +5368,16 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
             connect(fileMeta, &FileMeta::modifiedChanged, this, &MainWindow::fileModifiedChanged, Qt::UniqueConnection);
             connect(fileMeta, &FileMeta::getProfilerMaxCompoundValues, this, [this]
-                    (qreal &timeSec, size_t &memory, size_t &loops) {
+                    (qreal &timeSec, size_t &memory, size_t &rows, size_t &steps) {
                 PExProjectNode *project = mRecent.project();
-                if (project) project->profiler()->getMaxCompoundValues(timeSec, memory, loops);
+                if (project) project->profiler()->getMaxCompoundValues(timeSec, memory, rows, steps);
             });
             connect(fileMeta, &FileMeta::getProfilerMaxData, this, [this]
-                    (QList<QPair<int, qreal>> &maxTimeContLine, QList<QPair<int,int>> &maxLoopsContLine) {
+                    (QList<QPair<int, qreal>> &maxTimeContLine, QList<QPair<int,int>> &maxStepsContLine) {
                 PExProjectNode *project = mRecent.project();
                 if (project) {
                     maxTimeContLine = project->profiler()->maxTime();
-                    maxLoopsContLine = project->profiler()->maxLoops();
+                    maxStepsContLine = project->profiler()->maxSteps();
                 }
             });
             connect(fileMeta, &FileMeta::jumpToContinuousLine, this, [this](int contLine) {
@@ -7137,7 +7157,7 @@ QStringList MainWindow::projectWorkspaces() const
 void MainWindow::on_actionShow_Profiler_toggled(bool showProfiler)
 {
     PExProjectNode *project = mRecent.project();
-    if (project && project->doProfile()) {
+    if (project && project->doProfile() && project->isProfilerVisible() != showProfiler) {
         project->setProfilerVisible(showProfiler);
     }
     updateProfilerAction();

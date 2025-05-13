@@ -329,9 +329,9 @@ void NavigatorDialog::collectQuickActions(QSet<NavigatorContent> &content)
 
     // run
     content.insert(NavigatorContent("Run GAMS",
-                                    std::bind(&MainWindow::on_actionRun_triggered, mMain)));
-    content.insert(NavigatorContent("Run GAMS with GDX creation",
-                                    std::bind(&MainWindow::on_actionRun_with_GDX_Creation_triggered, mMain)));
+                                    std::bind(&MainWindow::on_actionRunCompile_triggered, mMain)));
+    content.insert(NavigatorContent("Run GAMS with selected Options",
+                                    std::bind(&MainWindow::on_actionRunCompileWithSelected_triggered, mMain)));
     content.insert(NavigatorContent("Run NEOS",
                                     std::bind(&MainWindow::on_actionRunNeos_triggered, mMain)));
     content.insert(NavigatorContent("Run GAMS Engine",

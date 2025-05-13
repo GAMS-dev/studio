@@ -59,6 +59,7 @@ SOURCES += \
     abstractview.cpp \
     application.cpp \
     autosavehandler.cpp \
+    checkmenu.cpp \
     cleanupfiltermodel.cpp \
     colors/palettemanager.cpp \
     commandlineparser.cpp \
@@ -290,6 +291,7 @@ HEADERS += \
     abstractview.h \
     application.h \
     autosavehandler.h \
+    checkmenu.h \
     cleanupfiltermodel.h \
     colors/palettemanager.h \
     commandlineparser.h \

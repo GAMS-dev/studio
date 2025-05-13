@@ -1349,10 +1349,10 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
                 if (!pro) return;
                 pro->clearTextMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::target);
             });
-            connect(codeEdit, &CodeEdit::getProfilerSums, this, [this](qreal &timeSec, size_t &loops) {
+            connect(codeEdit, &CodeEdit::getProfilerSums, this, [this](qreal &timeSec, size_t &rows, size_t &steps) {
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
                 if (!pro || !pro->profiler()) return;
-                pro->profiler()->getSums(timeSec, loops);
+                pro->profiler()->getSums(timeSec, rows, steps);
             });
             connect(codeEdit, &CodeEdit::getProfilerUnits, this, [this](QStringList &timeUnits, QStringList &memoryUnits) {
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
@@ -1379,14 +1379,14 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
                 }
             });
 
-            connect(codeEdit, &CodeEdit::getProfileShort, this, [this](int line, qreal &timeSec, size_t &memory, size_t &loops) {
+            connect(codeEdit, &CodeEdit::getProfileShort, this, [this](int line, qreal &timeSec, size_t &memory, size_t &rows, size_t &steps) {
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
                 if (!pro || !pro->profiler()) return;
                 int contLine = pro->contLineData()->continuousLine(mLocation, line);
                 if (contLine < 0)
                     contLine = pro->profiler()->continuousLine(mLocation, line);
                 if (contLine > 0) {
-                    pro->profiler()->getProfile(contLine, timeSec, memory, loops);
+                    pro->profiler()->getProfile(contLine, timeSec, memory, rows, steps);
                 }
             });
             connect(codeEdit, &CodeEdit::getProfileLong, this, [this](int line, QStringList &profileData) {

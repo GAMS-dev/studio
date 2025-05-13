@@ -43,11 +43,11 @@ class ParameterEditor;
 
 enum class RunActionState {
     Run,
-    RunWithGDXCreation,
+    RunWithSelected,
     RunDebug,
     StepDebug,
     Compile,
-    CompileWithGDXCreation,
+    CompileWithSelected,
     RunNeos,
     RunEngine
 };
@@ -57,9 +57,10 @@ class ParameterEditor : public QWidget
     Q_OBJECT
 
 public:
-    explicit ParameterEditor(QAction* aRun, QAction* aRunGDX, QAction* aRunDebug, QAction* aStepDebug, QAction* aCompile,
-                             QAction* aCompileGDX, QAction* aRunNeos, QAction *aRunEngine,
-                             QAction* aInterrupt, QAction* aStop, MainWindow *parent = nullptr);
+    explicit ParameterEditor(QAction *aRun, QAction *aCompile, QAction *aRunWith, QAction *aCompileWith,
+                             QAction* aRunDebug, QAction* aStepDebug, QList<QAction*> aActionFlags,
+                             QAction* aRunNeos, QAction *aRunEngine, QAction* aInterrupt, QAction* aStop,
+                             MainWindow *parent = nullptr);
     ~ParameterEditor();
 
     QString on_runAction(RunActionState state);
@@ -124,8 +125,9 @@ private slots:
     void resizeColumnsToContents();
 
 private:
-    void setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aRunDebug, QAction *aStepDebug, QAction *aCompile,
-                            QAction *aCompileGDX, QAction *aRunNeos, QAction *aRunEngine);
+    void setRunsActionGroup(QAction *aRun, QAction *aCompile, QAction *aRunWith, QAction *aCompileWith,
+                            QAction *aRunDebug, QAction *aStepDebug, QList<QAction *> aActionFlags,
+                            QAction *aRunNeos, QAction *aRunEngine);
     void setInterruptActionGroup(QAction* aInterrupt, QAction* aStop);
     void setRunActionsEnabled(bool enable);
     void setInterruptActionsEnabled(bool enable);
@@ -140,12 +142,13 @@ private:
     AbstractView *mDockChild = nullptr;
     bool mHasSSL = false;
 
-    QAction* actionRun;
-    QAction* actionRun_with_GDX_Creation;
+    QAction* actionRunCompile;
+    QAction* actionCompile;
     QAction* actionRunDebug;
     QAction* actionStepDebug;
-    QAction* actionCompile;
-    QAction* actionCompile_with_GDX_Creation;
+    QAction *actionRunCompileWithSelected;
+    QAction *actionCompileWithSelected;
+    QList<QAction*> actionFlags;
     QAction* actionRunNeos;
     QAction* actionRunEngine;
 
