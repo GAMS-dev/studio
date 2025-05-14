@@ -4,6 +4,7 @@ Version 1.21.0 *
 - Restore the last run mode in the toolbar on Studio start.
 - Upgraded to Qt 6.9.0 on all platforms.
 - Improved search result view is now using a tree view, which shows the files, containing results, first.
+- Fixed crash when open a file from the Welcome Page.
 
 Version 1.20.6
 ==================

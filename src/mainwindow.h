@@ -180,7 +180,7 @@ public:
     SettingsDialog* settingsDialog() const;
 
 public slots:
-    gams::studio::PExFileNode* openFilePath(const QString &filePath, gams::studio::PExProjectNode* knownProject = nullptr,
+    gams::studio::PExFileNode* openFilePath(const QString filePath, gams::studio::PExProjectNode* knownProject = nullptr,
                                             gams::studio::OpenGroupOption opt = ogNone, bool focus = false, bool forcedAsTextEditor = false,
                                             gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFolder(const QString &path, gams::studio::PExProjectNode* project = nullptr);

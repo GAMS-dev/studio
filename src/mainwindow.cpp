@@ -4059,7 +4059,7 @@ bool MainWindow::eventFilter(QObject* sender, QEvent* event)
     return false;
 }
 
-PExFileNode* MainWindow::openFilePath(const QString &filePath, PExProjectNode* knownProject, OpenGroupOption opt,
+PExFileNode* MainWindow::openFilePath(const QString filePath, PExProjectNode* knownProject, OpenGroupOption opt,
                                       bool focus, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     if (!QFileInfo::exists(filePath))

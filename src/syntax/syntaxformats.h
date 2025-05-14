@@ -228,8 +228,8 @@ struct SyntaxBlock
     bool error;
     SyntaxShift shift;
     SyntaxKind next;
-    int length() { return end-start; }
-    bool isValid() { return syntax && start<end; }
+    int length() const { return end-start; }
+    bool isValid() const { return syntax && start<end; }
 };
 
 class SyntaxFormula;
