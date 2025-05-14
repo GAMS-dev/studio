@@ -110,19 +110,20 @@ void ProjectProxyModel::selectionChanged(const QItemSelection &selected, const Q
     PExAbstractNode *first = mSourceModel->projectRepo()->node(firstId);
     mSourceModel->mAddProjects.clear();
     int selKind = !first ? 0 : first->toProject() ? 1 : 2;
-    const auto sInds = selected.indexes();
-    for (const QModelIndex &ind: sInds) {
+    const auto selInds = selected.indexes();
+    for (const QModelIndex &ind: selInds) {
         NodeId id = nodeId(ind);
+        QModelIndex srcInd = mapToSource(ind);
         PExAbstractNode *node = mSourceModel->projectRepo()->node(id);
         int nodeKind = !node ? 0 : node->toProject() ? 1 : 2;
         if (nodeKind == 1 && selKind == 2) {
-            mSourceModel->mAddProjects << ind;
+            mSourceModel->mAddProjects << srcInd;
         }
         if (id.isValid() && !mSourceModel->mSelected.contains(id) && (!selKind || nodeKind == selKind)) {
             mSourceModel->mSelected << id;
             emit dataChanged(ind, ind);
         } else {
-            mSourceModel->mDeclined << ind;
+            mSourceModel->mDeclined << srcInd;
         }
     }
 }
