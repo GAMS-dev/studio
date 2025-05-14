@@ -1,6 +1,7 @@
 Version 1.21.0 *
 ==================
 - Added profiler information to the editors when using the GAMS option 'profile'
+- Restore the last run mode in the toolbar on Studio start.
 - Upgraded to Qt 6.9.0 on all platforms.
 - Improved search result view is now using a tree view, which shows the files, containing results, first.
 
