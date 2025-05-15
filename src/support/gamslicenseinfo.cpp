@@ -66,11 +66,13 @@ GamsLicenseInfo::GamsLicenseInfo()
                                         mLicenseFilePath.toStdString().c_str(),
                                         msg,
                                         &rc);
+    palNetworkLicenseOKSet(mPAL, true);
 }
 
 GamsLicenseInfo::~GamsLicenseInfo()
 {
-    if (mPAL) palFree(&mPAL);
+    if (mPAL)
+        palFree(&mPAL);
 }
 
 int GamsLicenseInfo::solvers() const
@@ -162,9 +164,7 @@ bool GamsLicenseInfo::isLicenseValid(const QStringList &license)
         palLicenseRegisterGAMS(mPAL, i++, line.trimmed().toStdString().c_str());
     }
     palLicenseRegisterGAMSDone(mPAL);
-    palNetworkLicenseOKSet(mPAL, true);
     bool ret = !palLicenseValidation(mPAL);
-    palNetworkLicenseOKSet(mPAL, false);
     return ret;
 }
 
@@ -282,9 +282,7 @@ bool GamsLicenseInfo::isGamsLicense(const QStringList &license)
         palLicenseRegisterGAMS(mPAL, i++, line.trimmed().toStdString().c_str());
     }
     palLicenseRegisterGAMSDone(mPAL);
-    palNetworkLicenseOKSet(mPAL, true);
     int result = !palLicenseCheckSubSys(mPAL, "07") || !palLicenseCheckSubSys(mPAL, "08");
-    palNetworkLicenseOKSet(mPAL, false);
     return !result;
 }
 
