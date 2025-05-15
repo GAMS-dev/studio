@@ -364,10 +364,11 @@ private:
 /// \brief Defines the syntax for the remain of a DCO line.
 class SyntaxDcoBody: public SyntaxAbstract
 {
-    QVector<QChar> mEolComChars;
+    QList<QChar> mEolComChars;
 public:
     SyntaxDcoBody(SyntaxKind kind, SharedSyntaxData* sharedData);
-    void setCommentChars(const QVector<QChar> &chars);
+    void setCommentChars(const QList<QChar> &chars);
+    QList<QChar> commentChars() const;
     SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, SyntaxState state, bool &hasContent) override;
 };

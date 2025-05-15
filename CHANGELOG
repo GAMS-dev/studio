@@ -5,6 +5,7 @@ Version 1.21.0 *
 - Upgraded to Qt 6.9.0 on all platforms.
 - Improved search result view is now using a tree view, which shows the files, containing results, first.
 - Fixed crash when open a file from the Welcome Page.
+- Fixed missing syntax highlighting for end-of-line comment when led by spaces.
 
 Version 1.20.6
 ==================

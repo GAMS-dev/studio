@@ -312,9 +312,9 @@ SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, SyntaxState state, const
             // This only activates the current eolCom
 //            mSharedData->commentEndLine()->setCommentChars("!!");
             for (SyntaxFormula * sf: mSharedData->allFormula()) {
-                sf->setSpecialDynamicChars(QVector<QChar>() << '!');
+                sf->setSpecialDynamicChars(QList<QChar>() << '!');
             }
-            mSharedData->dcoBody()->setCommentChars(QVector<QChar>() << '!');
+            mSharedData->dcoBody()->setCommentChars(QList<QChar>() << '!');
          } else if (match.captured(2).startsWith("eolcom", Qt::CaseInsensitive)) {
             int i = match.capturedEnd(2);
             while (isWhitechar(line,i)) ++i;
@@ -323,9 +323,9 @@ SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, SyntaxState state, const
             if (i+comSize <= line.length()) {
                 mSharedData->commentEndLine()->setCommentChars(line.mid(i,comSize));
                 for (SyntaxFormula * sf: mSharedData->allFormula()) {
-                    sf->setSpecialDynamicChars(QVector<QChar>() << line.at(i));
+                    sf->setSpecialDynamicChars(QList<QChar>() << line.at(i));
                 }
-                mSharedData->dcoBody()->setCommentChars(QVector<QChar>() << line.at(i));
+                mSharedData->dcoBody()->setCommentChars(QList<QChar>() << line.at(i));
             }
         }
     }
@@ -383,7 +383,12 @@ SyntaxDcoBody::SyntaxDcoBody(SyntaxKind kind, SharedSyntaxData *sharedData)
                "SyntaxDcoBody", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
 }
 
-void SyntaxDcoBody::setCommentChars(const QVector<QChar> &chars)
+QList<QChar> SyntaxDcoBody::commentChars() const
+{
+    return mEolComChars;
+}
+
+void SyntaxDcoBody::setCommentChars(const QList<QChar> &chars)
 {
     mEolComChars = chars;
 }
@@ -522,12 +527,19 @@ SyntaxFormula::SyntaxFormula(SyntaxKind kind, SharedSyntaxData *sharedData) : Sy
 
 SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index)
 {
-    Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
     if (start >= line.length()) return SyntaxBlock(this);
     int prev = 0;
+    if (start + mSharedData->dcoBody()->commentChars().length() < line.length()) {
+        for (int i = 0; i < mSharedData->dcoBody()->commentChars().length(); ++i) {
+            if (line.at(start + i) != mSharedData->dcoBody()->commentChars().at(i))
+                break;
+            if (i + 1 == mSharedData->dcoBody()->commentChars().length())
+                return SyntaxBlock(this);
+        }
+    }
 
     if (kind() == SyntaxKind::ExecuteBody || state.flavor & flavorAbortCmd) {
         if (entryKind == SyntaxKind::Abort || entryKind == SyntaxKind::Execute || entryKind == SyntaxKind::ExecuteTool) {
