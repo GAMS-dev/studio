@@ -34,6 +34,8 @@ GamsGetKeyProcess::GamsGetKeyProcess()
 QString GamsGetKeyProcess::execute()
 {
     QStringList args({mAlpId});
+    if (!mCheckoutDuration.isEmpty())
+        args << "-c" << mCheckoutDuration;
     auto appPath = nativeAppPath();
     if (appPath.isEmpty())
         return QString();
@@ -63,6 +65,16 @@ QString GamsGetKeyProcess::alpId() const
 void GamsGetKeyProcess::setAlpId(const QString &id)
 {
     mAlpId = id;
+}
+
+QString GamsGetKeyProcess::checkoutDuration() const
+{
+    return mCheckoutDuration;
+}
+
+void GamsGetKeyProcess::setCheckouDuration(const QString &duration)
+{
+    mCheckoutDuration = duration;
 }
 
 QString GamsGetKeyProcess::nativeAppPath()

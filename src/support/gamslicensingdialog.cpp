@@ -31,6 +31,7 @@
 #include <QDir>
 #include <QFile>
 #include <QMessageBox>
+#include <QRegularExpressionValidator>
 #include <QSortFilterProxyModel>
 #include <QFontDatabase>
 #include <QFileDialog>
@@ -50,6 +51,8 @@ GamsLicensingDialog::GamsLicensingDialog(const QString &title, QWidget *parent)
     this->setWindowTitle(title);
     ui->label->setText(gamsLicense());
     ui->gamslogo->setPixmap(Theme::icon(":/img/gams-w24").pixmap(ui->gamslogo->size()));
+    QRegularExpression regex("^\\d+$");
+    ui->cdEdit->setValidator(new QRegularExpressionValidator(regex, this));
     connect(ui->copyButton, &QPushButton::clicked, this, &GamsLicensingDialog::copyLicenseInfo);
     connect(ui->fileButton, &QPushButton::clicked, this, &GamsLicensingDialog::installFile);
     connect(ui->alpButton, &QPushButton::clicked, this, &GamsLicensingDialog::installAlp);
@@ -266,6 +269,7 @@ void GamsLicensingDialog::installAlp()
     ui->errorLabel->clear();
     GamsGetKeyProcess proc;
     proc.setAlpId(ui->idEdit->text().trimmed());
+    proc.setCheckouDuration(ui->cdEdit->text());
     auto license = proc.execute().split("\n", Qt::SkipEmptyParts);
     for (int i=0; i<license.size(); ++i) {
         license[i] = license[i].trimmed();

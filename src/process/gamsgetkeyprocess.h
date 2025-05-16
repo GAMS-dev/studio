@@ -33,6 +33,9 @@ public:
     QString alpId() const;
     void setAlpId(const QString& id);
 
+    QString checkoutDuration() const;
+    void setCheckouDuration(const QString& duration);
+
     QString execute();
 
 private:
@@ -40,8 +43,9 @@ private:
 
 private:
     QString mApplication;
-    QString mAlpId;
     QProcess mProcess;
+    QString mAlpId;
+    QString mCheckoutDuration;
 };
 
 }
