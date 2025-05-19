@@ -2255,7 +2255,7 @@ void MainWindow::loadCommandLines(PExProjectNode* oldProj, PExProjectNode* proj)
     if (!proj) {
         // switched to welcome page
         mGamsParameterEditor->loadCommandLine(QStringList());
-    } else if (oldProj != proj) {
+    } else {
         // switched to valid node
         mGamsParameterEditor->loadCommandLine(proj->getRunParametersHistory());
     }
