@@ -76,6 +76,7 @@ public:
     void setAuthToken(const QString &bearerToken);
     QString authToken() const { return mAuthToken; }
     void setNamespace(const QString &nSpace);
+    void setPriority(const QString &priority);
     void setIgnoreSslErrorsCurrentUrl(bool ignore);
     bool isIgnoreSslErrors() const;
     void getUsername();
@@ -87,6 +88,7 @@ public:
     void getQuota();
     void setSelectedInstance(const QString &selectedInstance);
     void getVersion();
+    void getConfiguration();
     void addLastCert();
     bool inKubernetes() const;
     void updateQuota(qreal parallel);
@@ -115,6 +117,7 @@ signals:
     void reListNamespacesError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
+    void rePrioAccess(bool hasAccess);
     void reUserInstances(const QList<QPair<QString, QList<double> > > instances, QMap<QString, QString> *poolOwners,
                          const QString &defaultLabel = QString());
     void reUserInstancesError(const QString &errorText);
@@ -182,6 +185,7 @@ private:
     QString mMainFile;
     QString mEngineVersion;
     QString mGamsVersion;
+    QString mPriority;
     bool mInKubernetes = false;
     QString mUserInstance;
     QString mJobTag;

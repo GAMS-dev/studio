@@ -76,6 +76,9 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->laAvailVolume->setVisible(false);
     ui->laAvailVolSec->setVisible(false);
     ui->ssoPane->setVisible(false);
+    ui->laPriority->setVisible(false);
+    ui->cbPriority->setVisible(false);
+    ui->cbPriority->setCurrentIndex(1);
 
     if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) != 0)
         ui->laLogo->setPixmap(QPixmap(QString::fromUtf8(":/img/engine-logo-w")));
@@ -123,6 +126,7 @@ void EngineStartDialog::setResume(bool resume)
             mProc->setIgnoreSslErrorsCurrentUrl(true);
         mUrlChanged = false;
         mProc->getVersion();
+        mProc->getConfiguration();
         mProc->listProvider();
         return;
     }
@@ -156,6 +160,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reListProvider, this, &EngineStartDialog::reListProvider);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
+    connect(mProc, &EngineProcess::rePrioAccess, this, &EngineStartDialog::rePrioAccess);
     connect(mProc, &EngineProcess::reUserInstances, this, &EngineStartDialog::reUserInstances, Qt::UniqueConnection);
     connect(mProc, &EngineProcess::reUserInstancesError, this, &EngineStartDialog::reUserInstancesError);
     connect(mProc, &EngineProcess::reUpdateInstancePool, this, &EngineStartDialog::reUpdateInstancePool);
@@ -165,6 +170,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     mProc->setForceGdx(ui->cbForceGdx->isChecked());
     mProc->initUsername(user());
     mProc->setNamespace(ui->cbNamespace->currentText());
+    mProc->setPriority(ui->cbPriority->isVisible() ? ui->cbPriority->currentText() : "");
 }
 
 EngineProcess *EngineStartDialog::process() const
@@ -368,6 +374,7 @@ void EngineStartDialog::showSubmit()
     ui->laAvailDisk->setVisible(mProc->inKubernetes());
     ui->laAvailVolume->setVisible(mProc->inKubernetes());
     ui->laAvailVolSec->setVisible(mProc->inKubernetes());
+    if (ui->cbPriority->isVisible()) ui->laPriority->setMinimumWidth(ui->laNamespace->geometry().width());
     updateSubmitStates();
     if (!mHiddenMode)
         ensureOpened();
@@ -479,6 +486,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     }
     mProc->setJobTag(ui->edJobTag->text().trimmed());
     mProc->setNamespace(ui->cbNamespace->currentText());
+    mProc->setPriority(ui->cbPriority->isVisible() ? ui->cbPriority->currentText() : "");
     emit submit(start);
 }
 
@@ -492,6 +500,7 @@ void EngineStartDialog::getVersionAndIP()
                 mProc->setIgnoreSslErrorsCurrentUrl(true);
             mUrlChanged = false;
             mProc->getVersion();
+            mProc->getConfiguration();
             mProc->listProvider();
             return;
         }
@@ -664,6 +673,14 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     // if server not found on hidden dialog - open dialog anyway
     if (!isVisible()) {
         ensureOpened();
+    }
+}
+
+void EngineStartDialog::rePrioAccess(bool hasAccess)
+{
+    if (hasAccess != ui->cbPriority->isVisible()) {
+        ui->laPriority->setVisible(true);
+        ui->cbPriority->setVisible(true);
     }
 }
 

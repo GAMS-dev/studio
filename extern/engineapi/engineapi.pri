@@ -31,6 +31,7 @@ HEADERS += \
     $${PWD}/OAILog_piece.h \
     $${PWD}/OAIMessage.h \
     $${PWD}/OAIMessage_and_token.h \
+    $${PWD}/OAIMessage_with_webhook_id.h \
     $${PWD}/OAIModel_auth_token.h \
     $${PWD}/OAIModel_configuration.h \
     $${PWD}/OAIModel_default_instance.h \
@@ -53,6 +54,7 @@ HEADERS += \
     $${PWD}/OAINamespace_quota.h \
     $${PWD}/OAINamespace_with_permission.h \
     $${PWD}/OAINot_found.h \
+    $${PWD}/OAIPassword_policy.h \
     $${PWD}/OAIPerm_and_username.h \
     $${PWD}/OAIQuota.h \
     $${PWD}/OAIQuota_exceeded.h \
@@ -67,6 +69,7 @@ HEADERS += \
     $${PWD}/OAIUser.h \
     $${PWD}/OAIUser_group_member.h \
     $${PWD}/OAIUser_groups.h \
+    $${PWD}/OAIVapid_info.h \
     $${PWD}/OAIWebhook.h \
     $${PWD}/OAIWebhook_parameterized_event.h \
 # APIs
@@ -120,6 +123,7 @@ SOURCES += \
     $${PWD}/OAILog_piece.cpp \
     $${PWD}/OAIMessage.cpp \
     $${PWD}/OAIMessage_and_token.cpp \
+    $${PWD}/OAIMessage_with_webhook_id.cpp \
     $${PWD}/OAIModel_auth_token.cpp \
     $${PWD}/OAIModel_configuration.cpp \
     $${PWD}/OAIModel_default_instance.cpp \
@@ -142,6 +146,7 @@ SOURCES += \
     $${PWD}/OAINamespace_quota.cpp \
     $${PWD}/OAINamespace_with_permission.cpp \
     $${PWD}/OAINot_found.cpp \
+    $${PWD}/OAIPassword_policy.cpp \
     $${PWD}/OAIPerm_and_username.cpp \
     $${PWD}/OAIQuota.cpp \
     $${PWD}/OAIQuota_exceeded.cpp \
@@ -156,6 +161,7 @@ SOURCES += \
     $${PWD}/OAIUser.cpp \
     $${PWD}/OAIUser_group_member.cpp \
     $${PWD}/OAIUser_groups.cpp \
+    $${PWD}/OAIVapid_info.cpp \
     $${PWD}/OAIWebhook.cpp \
     $${PWD}/OAIWebhook_parameterized_event.cpp \
 # APIs

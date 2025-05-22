@@ -52,6 +52,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersion);
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersionIntern);
     connect(mManager, &EngineManager::reVersionError, this, &EngineProcess::reVersionError);
+    connect(mManager, &EngineManager::rePrioAccess, this, &EngineProcess::rePrioAccess);
     connect(mManager, &EngineManager::reUserInstances, this, &EngineProcess::reUserInstances);
     connect(mManager, &EngineManager::reUserInstancesError, this, &EngineProcess::reUserInstancesError);
     connect(mManager, &EngineManager::reUpdateInstancePool, this, &EngineProcess::reUpdateInstancePool);
@@ -265,7 +266,7 @@ void EngineProcess::pack2Completed(int exitCode, QProcess::ExitStatus exitStatus
 
         QString instance;
         if (mInKubernetes) instance = mUserInstance;
-        mManager->submitJob(modlName, mNamespace, zip, remoteParameters(), instance, mJobTag);
+        mManager->submitJob(modlName, mNamespace, zip, mPriority, remoteParameters(), instance, mJobTag);
         setProcState(Proc3Queued);
     }
 }
@@ -505,6 +506,11 @@ void EngineProcess::setNamespace(const QString &nSpace)
     mNamespace = nSpace;
 }
 
+void EngineProcess::setPriority(const QString &priority)
+{
+    mPriority = priority;
+}
+
 void EngineProcess::setIgnoreSslErrorsCurrentUrl(bool ignore)
 {
     mManager->setIgnoreSslErrorsCurrentUrl(ignore);
@@ -562,6 +568,11 @@ void EngineProcess::getQuota()
 void EngineProcess::getVersion()
 {
     mManager->getVersion();
+}
+
+void EngineProcess::getConfiguration()
+{
+    mManager->getConfiguration();
 }
 
 void EngineProcess::completed(int exitCode)

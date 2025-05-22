@@ -130,6 +130,7 @@ private slots:
     void reListNamespacesError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool inKubernetes);
     void reVersionError(const QString &errorText);
+    void rePrioAccess(bool hasAccess);
     void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
     void reUserInstances(const QList<QPair<QString, QList<double> > > &instances, QMap<QString, QString> *poolOwners,
                          const QString &defaultLabel = QString());

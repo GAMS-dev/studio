@@ -1,7 +1,10 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.5)
 
 project(gams_engine)
 
+set(CMAKE_AUTOMOC ON)
+
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Network Gui)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Network Gui)
 
 include(GNUInstallDirs)
@@ -37,6 +40,7 @@ add_library(${PROJECT_NAME}
   OAILog_piece.h
   OAIMessage.h
   OAIMessage_and_token.h
+  OAIMessage_with_webhook_id.h
   OAIModel_auth_token.h
   OAIModel_configuration.h
   OAIModel_default_instance.h
@@ -59,6 +63,7 @@ add_library(${PROJECT_NAME}
   OAINamespace_quota.h
   OAINamespace_with_permission.h
   OAINot_found.h
+  OAIPassword_policy.h
   OAIPerm_and_username.h
   OAIQuota.h
   OAIQuota_exceeded.h
@@ -73,6 +78,7 @@ add_library(${PROJECT_NAME}
   OAIUser.h
   OAIUser_group_member.h
   OAIUser_groups.h
+  OAIVapid_info.h
   OAIWebhook.h
   OAIWebhook_parameterized_event.h
   OAIAuthApi.h
@@ -121,6 +127,7 @@ add_library(${PROJECT_NAME}
   OAILog_piece.cpp
   OAIMessage.cpp
   OAIMessage_and_token.cpp
+  OAIMessage_with_webhook_id.cpp
   OAIModel_auth_token.cpp
   OAIModel_configuration.cpp
   OAIModel_default_instance.cpp
@@ -143,6 +150,7 @@ add_library(${PROJECT_NAME}
   OAINamespace_quota.cpp
   OAINamespace_with_permission.cpp
   OAINot_found.cpp
+  OAIPassword_policy.cpp
   OAIPerm_and_username.cpp
   OAIQuota.cpp
   OAIQuota_exceeded.cpp
@@ -157,6 +165,7 @@ add_library(${PROJECT_NAME}
   OAIUser.cpp
   OAIUser_group_member.cpp
   OAIUser_groups.cpp
+  OAIVapid_info.cpp
   OAIWebhook.cpp
   OAIWebhook_parameterized_event.cpp
   OAIAuthApi.cpp

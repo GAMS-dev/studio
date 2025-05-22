@@ -95,13 +95,14 @@ public:
     void getUsername();
     void initUsername(const QString &user);
     void getVersion();
+    void getConfiguration();
     void getUserInstances();
     void getUserInstancePools();
     void updateInstancePool(const QString &label, int size);
     void getQuota();
     void listJobs();
     void listNamespaces();
-    void submitJob(const QString &modelName, const QString &nSpace, const QString &zipFile, const QList<QString>& params, const QString &instance, const QString &tag);
+    void submitJob(const QString &modelName, const QString &nSpace, const QString &zipFile, const QString &priority, const QList<QString>& params, const QString &instance, const QString &tag);
     void getJobStatus();
     void getLog();
     void getOutputFile();
@@ -125,6 +126,7 @@ signals:
     void rePing(const QString &value);
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
+    void rePrioAccess(bool hasAccess);
     void reUserInstances(const QList<QPair<QString, QList<double> > > instances, QMap<QString, QString> *poolOwners,
                          const QString &defaultLabel = QString());
     void reUserInstancesError(const QString &error);
