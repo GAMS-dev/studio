@@ -64,7 +64,9 @@ private:
     QStringList mNoAttributes;
 
     bool hasActiveLabelFilter(GdxSymbol *sym);
+    bool hasActiveLabelFilterState(GdxSymbol *sym);
     bool hasActiveValueFilter(GdxSymbol *sym);
+    bool hasActiveValueFilterState(GdxSymbol *sym);
     bool hasActiveFilter(GdxSymbol *sym);
 
 };

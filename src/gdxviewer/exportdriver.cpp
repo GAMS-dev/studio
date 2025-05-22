@@ -155,11 +155,11 @@ QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFi
         int columnDimension = 0;
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
             name = sym->name() + PROJ_SUFFIX;
-        GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
         GdxViewerState *state = mGdxViewer->state();
         GdxSymbolViewState *symViewState = nullptr;
         if (state)
             symViewState = mGdxViewer->state()->symbolViewState(sym->aliasedSymbol()->name());
+        GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
         if (symView && symView->isTableViewActive()) {
             tableViewActive = true;
             columnDimension = symView->getTvModel()->tvColDim();
@@ -203,12 +203,12 @@ QString ExportDriver::generateProjections(bool applyFilters, bool hiddenAttribut
             if (hiddenAttributes)
                 suffix = ".all";
             else {
-                GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
                 GdxViewerState *state = mGdxViewer->state();
                 GdxSymbolViewState *symViewState = nullptr;
                 QVector<bool> attributes;
                 if (state)
                     symViewState = mGdxViewer->state()->symbolViewState(sym->aliasedSymbol()->name());
+                GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
                 if (symView)
                     attributes = symView->showAttributes();
                 else if (symViewState)
@@ -278,81 +278,148 @@ QString ExportDriver::generateFilters()
             inst += "- Filter:\n";
             inst += "    name: " + name + "\n";
             inst += "    newName: " + newName + "\n";
-
-            // label filters
-            if (hasActiveLabelFilter(sym)) {
-                inst += "    labelFilters:\n";
-                for (int d=0; d<sym->dim(); d++) {
-                    if (sym->filterActive(d)) {
-                        bool *showUels = sym->showUelInColumn().at(d);
-                        std::vector<int> uels = *sym->uelsInColumn().at(d);
-                        inst += "      - dimension: " + QString::number(d+1) + "\n";
-
-                        // switch between keep and reject for improved performance
-                        size_t uelCount = uels.size();
-                        size_t showUelCount = 0;
-                        for (int uel: uels) {
-                            if (showUels[uel])
-                                showUelCount++;
-                        }
-                        bool useReject = showUelCount > uelCount/2;
-                        if (useReject)
+        }
+        // label filters
+        if (hasActiveLabelFilterState(sym)) {
+            GdxViewerState *state = mGdxViewer->state();
+            GdxSymbolViewState *symViewState = nullptr;
+            if (state) {
+                symViewState = state->symbolViewState(sym->name());
+                if (symViewState) {
+                    inst += "    labelFilters:\n";
+                    for (int d=0; d<sym->dim(); d++) {
+                        if (symViewState->uncheckedLabels()[d].size() > 0) {
+                            QList<QString> labels = symViewState->uncheckedLabels()[d];
+                            inst += "      - dimension: " + QString::number(d+1) + "\n";
                             inst += "        reject: [";
-                        else
-                            inst += "        keep: [";
-                        bool needTrim = false;
-                        for (int uel: uels) {
-                            if ( (!useReject && showUels[uel]) || (useReject && !showUels[uel]) ) {
-                                inst += "'" + mGdxViewer->gdxSymbolTable()->uel2Label(uel) + "', ";
-                                needTrim = true;
-                            }
-                        }
-                        if (needTrim) {
+                            for (QString label: labels)
+                                inst += "'" + label + "', ";
                             int pos = inst.lastIndexOf(QChar(','));
                             inst.remove(pos, 2);
+                            inst += "]\n";
                         }
-                        inst += "]\n";
                     }
                 }
             }
+        }
+        else if (hasActiveLabelFilter(sym)) {
+            inst += "    labelFilters:\n";
+            for (int d=0; d<sym->dim(); d++) {
+                if (sym->filterActive(d)) {
+                    bool *showUels = sym->showUelInColumn().at(d);
+                    std::vector<int> uels = *sym->uelsInColumn().at(d);
+                    inst += "      - dimension: " + QString::number(d+1) + "\n";
 
-            if (hasActiveValueFilter(sym)) {
-                // value filters
-                inst += "    valueFilters:\n";
-                for (int d=sym->dim(); d<sym->filterColumnCount(); d++) {
-                    if (sym->filterActive(d)) {
+                    // switch between keep and reject for improved performance
+                    size_t uelCount = uels.size();
+                    size_t showUelCount = 0;
+                    for (int uel: uels) {
+                        if (showUels[uel])
+                            showUelCount++;
+                    }
+                    bool useReject = showUelCount > uelCount/2;
+                    if (useReject)
+                        inst += "        reject: [";
+                    else
+                        inst += "        keep: [";
+                    bool needTrim = false;
+                    for (int uel: uels) {
+                        if ( (!useReject && showUels[uel]) || (useReject && !showUels[uel]) ) {
+                            inst += "'" + mGdxViewer->gdxSymbolTable()->uel2Label(uel) + "', ";
+                            needTrim = true;
+                        }
+                    }
+                    if (needTrim) {
+                        int pos = inst.lastIndexOf(QChar(','));
+                        inst.remove(pos, 2);
+                    }
+                    inst += "]\n";
+                }
+            }
+        }
+
+        // value filters
+        if (hasActiveValueFilterState(sym)) {
+            GdxViewerState *state = mGdxViewer->state();
+            GdxSymbolViewState *symViewState = nullptr;
+            if (state) {
+                symViewState = state->symbolViewState(sym->name());
+                if (symViewState) {
+                    inst += "    valueFilters:\n";
+                    for (int d=sym->dim(); d<sym->filterColumnCount(); d++) {
                         int valColIndex = d-sym->dim();
-                        QStringList valColumns;
-                        valColumns << "level" << "marginal" << "lower" << "upper" << "scale";
-                        ValueFilter *vf = sym->valueFilter(valColIndex);
-                        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
-                            inst += "      - attribute: " + valColumns[valColIndex] + "\n";
-                        else // parameters
-                            inst += "      - attribute: value\n";
-                        QString min = numerics::DoubleFormatter::format(vf->currentMin(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
-                        QString max = numerics::DoubleFormatter::format(vf->currentMax(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
-                        if (vf->exclude()) {
-                            inst += "        rule: (x<" + min + ") | (x>" + max + ")\n";
-                        } else
-                            inst += "        rule: (x>=" + min + ") & (x<=" + max + ")\n";
+                        ValueFilterState vfs = symViewState->valueFilterState()[valColIndex];
+                        if (vfs.active) {
+                            QStringList valColumns;
+                            valColumns << "level" << "marginal" << "lower" << "upper" << "scale";
+                            if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
+                                inst += "      - attribute: " + valColumns[valColIndex] + "\n";
+                            else // parameters
+                                inst += "      - attribute: value\n";
+                            QString min = numerics::DoubleFormatter::format(vfs.min, numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
+                            QString max = numerics::DoubleFormatter::format(vfs.max, numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
+                            if (vfs.exclude) {
+                                inst += "        rule: (x<" + min + ") | (x>" + max + ")\n";
+                            } else
+                                inst += "        rule: (x>=" + min + ") & (x<=" + max + ")\n";
 
-                        //special values
-                        QString rejectSpecialValues = "";
-                        if (!vf->showEps())
-                            rejectSpecialValues += "EPS, ";
-                        if (!vf->showPInf())
-                            rejectSpecialValues += "INF, ";
-                        if (!vf->showMInf())
-                            rejectSpecialValues += "-INF, ";
-                        if (!vf->showNA())
-                            rejectSpecialValues += "NA, ";
-                        if (!vf->showUndef())
-                            rejectSpecialValues += "UNDEF, ";
-                        if (!rejectSpecialValues.isEmpty()) {
+                            //special values
+                            QString rejectSpecialValues = "";
+                            if (!vfs.showEps)
+                                rejectSpecialValues += "EPS, ";
+                            if (!vfs.showPInf)
+                                rejectSpecialValues += "INF, ";
+                            if (!vfs.showMInf)
+                                rejectSpecialValues += "-INF, ";
+                            if (!vfs.showNA)
+                                rejectSpecialValues += "NA, ";
+                            if (!vfs.showUndef)
+                                rejectSpecialValues += "UNDEF, ";
+                            if (!rejectSpecialValues.isEmpty()) {
                                 int pos = rejectSpecialValues.lastIndexOf(QChar(','));
                                 rejectSpecialValues.remove(pos, 2);
-                            inst += "        rejectSpecialValues: [" + rejectSpecialValues + "]\n";
+                                inst += "        rejectSpecialValues: [" + rejectSpecialValues + "]\n";
+                            }
                         }
+                    }
+                }
+            }
+        }
+        else if (hasActiveValueFilter(sym)) {
+            inst += "    valueFilters:\n";
+            for (int d=sym->dim(); d<sym->filterColumnCount(); d++) {
+                if (sym->filterActive(d)) {
+                    int valColIndex = d-sym->dim();
+                    QStringList valColumns;
+                    valColumns << "level" << "marginal" << "lower" << "upper" << "scale";
+                    ValueFilter *vf = sym->valueFilter(valColIndex);
+                    if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
+                        inst += "      - attribute: " + valColumns[valColIndex] + "\n";
+                    else // parameters
+                        inst += "      - attribute: value\n";
+                    QString min = numerics::DoubleFormatter::format(vf->currentMin(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
+                    QString max = numerics::DoubleFormatter::format(vf->currentMax(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
+                    if (vf->exclude()) {
+                        inst += "        rule: (x<" + min + ") | (x>" + max + ")\n";
+                    } else
+                        inst += "        rule: (x>=" + min + ") & (x<=" + max + ")\n";
+
+                    //special values
+                    QString rejectSpecialValues = "";
+                    if (!vf->showEps())
+                        rejectSpecialValues += "EPS, ";
+                    if (!vf->showPInf())
+                        rejectSpecialValues += "INF, ";
+                    if (!vf->showMInf())
+                        rejectSpecialValues += "-INF, ";
+                    if (!vf->showNA())
+                        rejectSpecialValues += "NA, ";
+                    if (!vf->showUndef())
+                        rejectSpecialValues += "UNDEF, ";
+                    if (!rejectSpecialValues.isEmpty()) {
+                            int pos = rejectSpecialValues.lastIndexOf(QChar(','));
+                            rejectSpecialValues.remove(pos, 2);
+                        inst += "        rejectSpecialValues: [" + rejectSpecialValues + "]\n";
                     }
                 }
             }
@@ -381,12 +448,12 @@ QString ExportDriver::generateDomainsNew(GdxSymbol *sym)
     QString dom;
     sym = sym->aliasedSymbol();
     if (sym->dim() > 0) {
-        GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
         GdxViewerState *state = mGdxViewer->state();
         GdxSymbolViewState *symViewState = nullptr;
         if (state)
             symViewState = state->symbolViewState(sym->name());
         QVector<int> dimOrder;
+        GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
         if (symView) {
             if (symView->isTableViewActive())
                 dimOrder = symView->getTvModel()->tvDimOrder();
@@ -428,6 +495,24 @@ bool ExportDriver::hasActiveLabelFilter(GdxSymbol *sym)
     return false;
 }
 
+bool ExportDriver::hasActiveLabelFilterState(GdxSymbol *sym)
+{
+    if (!sym->isLoaded()) {
+        GdxViewerState *state = mGdxViewer->state();
+        GdxSymbolViewState *symViewState = nullptr;
+        if (state) {
+            symViewState = state->symbolViewState(sym->name());
+            if (symViewState) {
+                for (int d=0; d<sym->dim(); d++) {
+                    if (symViewState->uncheckedLabels()[d].size() > 0)
+                        return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 bool ExportDriver::hasActiveValueFilter(GdxSymbol *sym)
 {
     for (int i=sym->dim(); i<sym->filterColumnCount(); i++)
@@ -436,9 +521,27 @@ bool ExportDriver::hasActiveValueFilter(GdxSymbol *sym)
     return false;
 }
 
+bool ExportDriver::hasActiveValueFilterState(GdxSymbol *sym)
+{
+    if (!sym->isLoaded()) {
+        GdxViewerState *state = mGdxViewer->state();
+        GdxSymbolViewState *symViewState = nullptr;
+        if (state) {
+            symViewState = state->symbolViewState(sym->name());
+            if (symViewState) {
+                for (ValueFilterState vfs : symViewState->valueFilterState()) {
+                    if (vfs.active)
+                        return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 bool ExportDriver::hasActiveFilter(GdxSymbol *sym)
 {
-    return hasActiveLabelFilter(sym) || hasActiveValueFilter(sym);
+    return hasActiveLabelFilter(sym) || hasActiveLabelFilterState(sym) || hasActiveValueFilter(sym) || hasActiveValueFilterState(sym);
 }
 
 
