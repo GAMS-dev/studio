@@ -92,6 +92,7 @@ void TestGdxViewer::test_export()
                                  QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir(true)).absoluteFilePath("trnsport_export.xlsx")),
                                  QDir::toNativeSeparators(CommonPaths::defaultWorkingDir(true)),
                                  true,
+                                 true,
                                  "EPS",
                                  "INF",
                                  "-INF",

@@ -73,6 +73,7 @@ public:
     void setFocusSearchEdit();
 
     void applyDefaults();
+    QVector<bool> showAttributes();
 
 public slots:
     void enableControls();

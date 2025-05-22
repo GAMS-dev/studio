@@ -179,7 +179,7 @@ bool ExportDialog::save(bool fileExistsWarning)
     }
     mRecentPath = QFileInfo(output).path();
     ui->leExcel->setText(output);
-    bool rc =  mExportDriver->save(connectFile, ui->leExcel->text().trimmed(), ui->cbFilter->isChecked(), ui->leEps->text(), ui->lePosInf->text(), ui->leNegInf->text(), ui->leUndef->text(), ui->leNA->text());
+    bool rc =  mExportDriver->save(connectFile, ui->leExcel->text().trimmed(), ui->cbFilter->isChecked(), ui->cbAttributes->isChecked(), ui->leEps->text(), ui->lePosInf->text(), ui->leNegInf->text(), ui->leUndef->text(), ui->leNA->text());
     return rc;
 }
 

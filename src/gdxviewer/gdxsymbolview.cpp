@@ -487,6 +487,14 @@ void GdxSymbolView::applyDefaults()
     mRestoreSqZeroes = Settings::settings()->toBool(SettingsKey::skGdxDefaultRestoreSqueezeZeroes);
 }
 
+QVector<bool> GdxSymbolView::showAttributes()
+{
+    QVector<bool> showAttributes;
+    for (QCheckBox* cb : std::as_const(mShowValColActions))
+        showAttributes.append(cb->isChecked());
+    return showAttributes;
+}
+
 void GdxSymbolView::showContextMenu(QPoint p)
 {
     //mContextMenu.exec(ui->tvListView->mapToGlobal(p));

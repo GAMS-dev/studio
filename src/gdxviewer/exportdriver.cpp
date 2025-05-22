@@ -48,11 +48,11 @@ ExportDriver::~ExportDriver()
 
 }
 
-bool ExportDriver::save(const QString& connectFile, const QString &output, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
+bool ExportDriver::save(const QString& connectFile, const QString &output, bool applyFilters, bool hiddenAttributes, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
     QFile f(connectFile);
     if (f.open(QFile::WriteOnly | QFile::Text)) {
-        f.write(generateInstructions(mGdxViewer->gdxFile(), output, applyFilters, eps, posInf, negInf, undef, na).toUtf8());
+        f.write(generateInstructions(mGdxViewer->gdxFile(), output, applyFilters, hiddenAttributes, eps, posInf, negInf, undef, na).toUtf8());
         f.close();
     }
     return true;
@@ -67,9 +67,9 @@ void ExportDriver::execute(const QString &connectFile, const QString &workingDir
     mProc->execute();
 }
 
-void ExportDriver::saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
+void ExportDriver::saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters, bool hiddenAttributes, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
-    if (save(connectFile, output, applyFilters, eps, posInf, negInf, undef, na))
+    if (save(connectFile, output, applyFilters, hiddenAttributes, eps, posInf, negInf, undef, na))
         execute(connectFile, workingDirectory);
 }
 
@@ -79,13 +79,14 @@ void ExportDriver::cancelProcess(int waitMSec)
         mProc->stop(waitMSec);
 }
 
-QString ExportDriver::generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
+QString ExportDriver::generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters, bool hiddenAttributes, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
     QString inst;
+    mNoAttributes.clear();
     inst += generateGdxReader(gdxFile);
     if (applyFilters)
         inst += generateFilters();
-    inst += generateProjections(applyFilters);
+    inst += generateProjections(applyFilters, hiddenAttributes);
     inst += generateExcelWriter(output, applyFilters, eps, posInf, negInf, undef, na);
     return inst;
 }
@@ -115,6 +116,7 @@ QString ExportDriver::generateGdxReader(const QString &gdxFile)
 QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
     bool isNumber = false;
+    bool tableViewActive = false;
     QString sq = "'";
     QString dq = "\"";
 
@@ -158,14 +160,24 @@ QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFi
         GdxSymbolViewState *symViewState = nullptr;
         if (state)
             symViewState = mGdxViewer->state()->symbolViewState(sym->aliasedSymbol()->name());
-        if (symView && symView->isTableViewActive())
+        if (symView && symView->isTableViewActive()) {
+            tableViewActive = true;
             columnDimension = symView->getTvModel()->tvColDim();
-        else if (symViewState && symViewState->tableViewActive())
+        }
+        else if (symViewState && symViewState->tableViewActive()) {
+            tableViewActive = true;
             columnDimension = symViewState->tvColDim();
-        else if (!symView && !symViewState && sym->dim() > 1 && GdxSymbolView::DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView))
+        }
+        else if (!symView && !symViewState && sym->dim() > 1 && GdxSymbolView::DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView)) {
+            tableViewActive = true;
             columnDimension = 1;
-        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
-            columnDimension += 1;
+        }
+        if ((sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)) {
+            if (!mNoAttributes.contains(sym->name()))
+                columnDimension += 1;
+            else if (tableViewActive)
+                columnDimension = 0;
+        }
         if (generateDomains(sym) != generateDomainsNew(sym))
             name = sym->name() + PROJ_SUFFIX;
         inst += "      - name: " + name + "\n";
@@ -176,7 +188,7 @@ QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFi
 }
 
 
-QString ExportDriver::generateProjections(bool applyFilters)
+QString ExportDriver::generateProjections(bool applyFilters, bool hiddenAttributes)
 {
     QString inst;
     for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
@@ -186,19 +198,63 @@ QString ExportDriver::generateProjections(bool applyFilters)
         QString dom = generateDomains(sym);
         QString domNew = generateDomainsNew(sym);
         bool domOrderChanged = dom != domNew;
-        QString all_suffix = "";
+        QString suffix = "";
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU) {
-            all_suffix = ".all";
+            if (hiddenAttributes)
+                suffix = ".all";
+            else {
+                GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
+                GdxViewerState *state = mGdxViewer->state();
+                GdxSymbolViewState *symViewState = nullptr;
+                QVector<bool> attributes;
+                if (state)
+                    symViewState = mGdxViewer->state()->symbolViewState(sym->aliasedSymbol()->name());
+                if (symView)
+                    attributes = symView->showAttributes();
+                else if (symViewState)
+                    attributes = symViewState->getShowAttributes();
+                else {
+                    attributes.append(Settings::settings()->toBool(SettingsKey::skGdxDefaultShowLevel));
+                    attributes.append(Settings::settings()->toBool(SettingsKey::skGdxDefaultShowMarginal));
+                    attributes.append(Settings::settings()->toBool(SettingsKey::skGdxDefaultShowLower));
+                    attributes.append(Settings::settings()->toBool(SettingsKey::skGdxDefaultShowUpper));
+                    attributes.append(Settings::settings()->toBool(SettingsKey::skGdxDefaultShowScale));
+                }
+                QStringList attributesStr;
+                attributesStr << "l" << "m" << "lo" << "up" << "scale";
+                bool all_attributes = true;
+                for (int i=0; i<GMS_VAL_MAX; i++) {
+                    all_attributes = all_attributes && attributes[i];
+                }
+                if (all_attributes)
+                    suffix = ".all";
+                else {
+                    for (int i=0; i<GMS_VAL_MAX; i++) {
+                        if (attributes[i]) {
+                            suffix += attributesStr[i] + ", ";
+                        }
+                    }
+                    if (suffix.length() > 0) {
+                        int pos = suffix.lastIndexOf(QChar(','));
+                        suffix.remove(pos, 2);
+                        suffix = ".[" + suffix + "]";
+                    }
+                }
+            }
         }
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU || domOrderChanged) {
             if (hasActiveFilter(sym) && applyFilters)
-                name = sym->name() + FILTER_SUFFIX + all_suffix + dom;
+                name = sym->name() + FILTER_SUFFIX + suffix + dom;
             else
-                name = sym->name() + all_suffix + dom;
+                name = sym->name() + suffix + dom;
             newName = sym->name() + PROJ_SUFFIX + domNew;
             inst += "- Projection:\n";
             inst += "    name: " + name + "\n";
             inst += "    newName: " + newName + "\n";
+            if (suffix.length() == 0) {
+                mNoAttributes << sym->name();
+                inst += "    asSet: True\n";
+            }
             if (domOrderChanged) {
                 inst += "- PythonCode:\n";
                 inst += "    code: |\n";
@@ -244,12 +300,17 @@ QString ExportDriver::generateFilters()
                             inst += "        reject: [";
                         else
                             inst += "        keep: [";
+                        bool needTrim = false;
                         for (int uel: uels) {
-                            if ( (!useReject && showUels[uel]) || (useReject && !showUels[uel]) )
+                            if ( (!useReject && showUels[uel]) || (useReject && !showUels[uel]) ) {
                                 inst += "'" + mGdxViewer->gdxSymbolTable()->uel2Label(uel) + "', ";
+                                needTrim = true;
+                            }
                         }
-                        int pos = inst.lastIndexOf(QChar(','));
-                        inst.remove(pos, 2);
+                        if (needTrim) {
+                            int pos = inst.lastIndexOf(QChar(','));
+                            inst.remove(pos, 2);
+                        }
                         inst += "]\n";
                     }
                 }

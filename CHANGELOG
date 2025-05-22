@@ -9,6 +9,7 @@ Version 1.21.0 *
 - Fixed missing syntax highlighting for end-of-line comment when led by spaces.
 - Fixed the handling of network licenses, i.e. in some cases the solver license information was not correct.
 - Fixed disappeared command line parameter when switching from welcome page.
+- Added an option to exclude hidden attributes when exporting data using the GDX Viewer. This is the new default.
 
 Version 1.20.6
 ==================

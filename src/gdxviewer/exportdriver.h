@@ -37,9 +37,9 @@ class ExportDriver : public QObject
 public:
     explicit ExportDriver(GdxViewer *gdxViewer, ExportModel *exportModel, QObject *parent = nullptr);
     ~ExportDriver();
-    bool save(const QString& connectFile, const QString &output, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na);
+    bool save(const QString& connectFile, const QString &output, bool applyFilters, bool hiddenAttributes, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na);
     void execute(const QString &connectFile, const QString &workingDirectory);
-    void saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na);
+    void saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters, bool hiddenAttributes, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na);
     void cancelProcess(int waitMSec=0);
 
 signals:
@@ -52,14 +52,16 @@ private:
     QScopedPointer<ConnectProcess> mProc;
     GdxViewer *mGdxViewer = nullptr;
     ExportModel *mExportModel = nullptr;
-    QString generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na);
+    QString generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters, bool hiddenAttributes, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na);
     QString generateGdxReader(const QString &gdxFile);
     QString generateExcelWriter(const QString &excelFile, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na);
-    QString generateProjections(bool applyFilters);
+    QString generateProjections(bool applyFilters, bool hiddenAttributes);
     QString generateFilters();
 
     QString generateDomains(GdxSymbol *sym);
     QString generateDomainsNew(GdxSymbol *sym);
+
+    QStringList mNoAttributes;
 
     bool hasActiveLabelFilter(GdxSymbol *sym);
     bool hasActiveValueFilter(GdxSymbol *sym);

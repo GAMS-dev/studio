@@ -19,37 +19,47 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="lTargetFormat">
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_attributes">
+       <property name="toolTip">
+        <string>Include hidden attributes in the exported data</string>
+       </property>
        <property name="text">
-        <string>Target Format:</string>
+        <string>Hidden Attributes</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
+     <item row="1" column="3">
       <widget class="QPushButton" name="pbBrowseExcel">
        <property name="text">
         <string>Browse...</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="1" column="0">
+      <widget class="QLabel" name="lExcel">
+       <property name="text">
+        <string>Excel File:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
       <widget class="QLineEdit" name="leConnect"/>
      </item>
      <item row="3" column="0">
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="label_filters">
+       <property name="toolTip">
+        <string>Export data with applied filters</string>
+       </property>
        <property name="text">
         <string>Apply Filters</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QCheckBox" name="cbFilter">
+     <item row="2" column="3">
+      <widget class="QPushButton" name="pbBrowseConnect">
        <property name="text">
-        <string/>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
+        <string>Browse...</string>
        </property>
       </widget>
      </item>
@@ -60,24 +70,27 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="2">
-      <widget class="QPushButton" name="pbBrowseConnect">
-       <property name="text">
-        <string>Browse...</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
+     <item row="1" column="2">
       <widget class="QLineEdit" name="leExcel"/>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="lExcel">
+     <item row="0" column="0">
+      <widget class="QLabel" name="lTargetFormat">
        <property name="text">
-        <string>Excel File:</string>
+        <string>Target Format:</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="3" column="2">
+      <widget class="QCheckBox" name="cbFilter">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QComboBox" name="comboBox">
@@ -102,6 +115,13 @@
         </spacer>
        </item>
       </layout>
+     </item>
+     <item row="4" column="2">
+      <widget class="QCheckBox" name="cbAttributes">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
