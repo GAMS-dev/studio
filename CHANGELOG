@@ -1,16 +1,16 @@
-Version 1.21.0 *
+Version 1.21.0
 ==================
-- Added profiler information to the editors when using the GAMS option 'profile'
-- Added support for temporary session checkout of network license 
-- Restore the last run mode in the toolbar on Studio start.
-- Upgraded to Qt 6.9.0 on all platforms.
-- Improved search result view is now using a tree view, which shows the files, containing results, first.
-- Fixed crash when open a file from the Welcome Page.
-- Fixed missing syntax highlighting for end-of-line comment when led by spaces.
-- Fixed the handling of network licenses, i.e. in some cases the solver license information was not correct.
-- Fixed disappeared command line parameter when switching from welcome page.
+- Added profiler information to the editors when using the GAMS option `profile`.
+- Added support for temporary session checkout of network licenses.
 - Added an option to exclude hidden attributes when exporting data using the GDX Viewer. This is the new default.
 - Added support for GAMS Engine job priority.
+- Fixed restore of the last run mode in the toolbar on Studio start.
+- Fixed crash when opening a file from the Welcome Page.
+- Fixed missing syntax highlighting for end-of-line comment when led by spaces.
+- Fixed the handling of network licenses, i.e. in some cases the solver license information was not correct.
+- Fixed disappearing command line parameter when switching between a project and the Welcome Page.
+- Improved search result view is now using a tree view, which shows the files, containing results, first.
+- Upgraded Studio to Qt 6.9.0 on all platforms.
 
 Version 1.20.6
 ==================
