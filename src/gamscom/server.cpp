@@ -268,6 +268,8 @@ Server::ParseResult Server::handleReply(const QString &replyData)
             }
             mProfiler->addIncludes(mIncludes);
         }
+        calcSourceMetrics();
+
         emit signalMapDone();
     }   break;
     case paused: {
@@ -338,9 +340,17 @@ void Server::parseLinesMap(const QString &breakData)
         QList<int> lines;
         QList<int> coLNs;
         QList<int> incLines;
-        if (getPair(mRemainData, lines, coLNs, incLines)) {
-            if (!incLines.isEmpty() && !mBreakLinesFile.isEmpty())
-                addInclude(mBreakLinesFile, incLines);
+        QList<int> firstLines;
+        QList<int> retLines;
+        if (getPair(mRemainData, lines, coLNs, incLines, firstLines, retLines)) {
+            if (!mBreakLinesFile.isEmpty()) {
+                if (!incLines.isEmpty())
+                    addInclude(mBreakLinesFile, incLines);
+                else if (!firstLines.isEmpty())
+                    addIncludeFrom(mBreakLinesFile, firstLines.last());
+                else if (!retLines.isEmpty())
+                    addIncludeEnd(mBreakLinesFile, retLines);
+            }
             if (!lines.isEmpty())
                 emit signalLinesMap(mBreakLinesFile, lines, coLNs);
         } else {
@@ -366,34 +376,36 @@ void Server::parseLinesMap(const QString &breakData)
         return;
     }
 
-    QString file = (data.first().isEmpty() ? mBreakLinesFile : QDir::fromNativeSeparators(data.first()));
+    if (!data.first().isEmpty())
+        mBreakLinesFile = QDir::fromNativeSeparators(data.first());
     QList<int> lines;
     QList<int> coLNs;
-    QList<int> incLines;
     for (int i = 1; i < data.size(); ++i) {
-        bool ok = getPair(data.at(i), lines, coLNs, incLines);
-        if (!incLines.isEmpty() && !mBreakLinesFile.isEmpty()) {
-            addInclude(mBreakLinesFile, incLines);
-            incLines.clear();
+        QList<int> incLines;
+        QList<int> firstLines;
+        QList<int> retLines;
+        bool ok = getPair(data.at(i), lines, coLNs, incLines, firstLines, retLines);
+        if (!mBreakLinesFile.isEmpty()) {
+            if (!incLines.isEmpty())
+                addInclude(mBreakLinesFile, incLines);
+            else if (!firstLines.isEmpty())
+                addIncludeFrom(mBreakLinesFile, firstLines.last());
+            else if (!retLines.isEmpty())
+                addIncludeEnd(mBreakLinesFile, retLines);
         }
+        incLines.clear();
         if (!ok) logMessage("GAMScom-Server: breakLines parse error: " + data.at(i));
     }
     if (!lines.isEmpty()) {
         if (mVerbose) {
-            QString list("DATA=> " + file + " : ");
+            QString list("DATA=> " + mBreakLinesFile + " : ");
             for (int i = 0; i < lines.size(); ++i) {
                 list += "|" + QString::number(lines.at(i)) + ":" + QString::number(coLNs.at(i));
             }
             logMessage(list);
         }
-        emit signalLinesMap(file, lines, coLNs);
+        emit signalLinesMap(mBreakLinesFile, lines, coLNs);
     }
-    int firstContLine = std::numeric_limits<int>::max();
-    if (!coLNs.isEmpty()) firstContLine = coLNs.first();
-    if (!incLines.isEmpty() && firstContLine > incLines.first())
-        firstContLine = incLines.first();
-    trackInclude(file, firstContLine);
-    mBreakLinesFile = file;
 }
 
 Server::ParseResult Server::parseProfileData(const QString &rawData)
@@ -417,10 +429,11 @@ Server::ParseResult Server::parseProfileData(const QString &rawData)
     return prOk;
 }
 
-bool Server::getPair(const QString &assignment, QList<int> &lines, QList<int> &coLNs, QList<int> &incLines)
+bool Server::getPair(const QString &assignment, QList<int> &lines, QList<int> &coLNs, QList<int> &incLines, QList<int> &firstLines, QList<int> &retLines)
 {
     bool isInc = assignment.startsWith('!');
-    QStringList linePair = (isInc ? assignment.last(assignment.length()-1) : assignment).split("=");
+    bool isRet = assignment.startsWith('?');
+    QStringList linePair = (isInc || isRet ? assignment.last(assignment.length()-1) : assignment).split("=");
     bool ok = (linePair.size() == 2 && !linePair.at(1).isEmpty());
     if (ok) {
         int line = linePair.at(0).toInt(&ok);
@@ -429,6 +442,10 @@ bool Server::getPair(const QString &assignment, QList<int> &lines, QList<int> &c
             if (ok) {
                 if (isInc) {
                     incLines << line << coLN;
+                } else if (isRet) {
+                    retLines << line << coLN;
+                } else if (!line) {
+                    firstLines << line << coLN;
                 } else {
                     lines << line;
                     coLNs << coLN;
@@ -444,36 +461,39 @@ void Server::addInclude(const QString &filename, QList<int> &incLine)
     if (incLine.length() != 2) FATAL() << "Error in Server::setLastInclude: wrong count of numbers";
     if (filename.isEmpty()) EXCEPT() << "Filename for include-line must not be empty";
 
-    trackInclude(filename, incLine.at(1)); // to cleanup mIncludeParents and possibly add outerContLine
     mIncludes << new IncludeLine(filename, incLine.at(0), incLine.at(1));
-    mIncludeParents << new IncludeLine(filename, incLine.at(0), incLine.at(1));
 }
 
-void Server::trackInclude(const QString &filename, int firstContLine)
+void Server::addIncludeFrom(const QString &filename, int contLine)
 {
-    bool needInclude = mIncludes.size() && mIncludes.last()->childFile.isEmpty();
-    if (firstContLine < std::numeric_limits<int>::max()) {
-        // reduce parent list if file found and update affected outerContLine
-        for (int i = 0; i < mIncludeParents.size(); ++i) {
-            if (filename.compare(mIncludeParents.at(i)->parentFile) == 0) {
-                // filename is a parent: clear children
-                while (mIncludeParents.size() > i) {
-                    for (int i = mIncludes.size()-1; i >= 0; --i) {
-                        IncludeLine *incData = mIncludes[i];
-                        if (incData->parentFile == mIncludeParents.last()->parentFile &&
-                            (firstContLine - 1 < incData->outerContLine)) {
-                            mIncludes[i]->outerContLine = firstContLine - 1;
-                            break;
-                        }
-                    }
-                    delete mIncludeParents.takeLast();
-                }
-                break;
-            }
-        }
+    if (!mIncludes.size() || !mIncludes.last()->childFile.isEmpty()) {
+        DEB() << "GamsCom warning: Unexpected include start for " << filename << ":0 [" << contLine << "]. Data ignored.";
+        return;
     }
-    if (needInclude) {
-        mIncludes.last()->childFile = filename;
+    if (mIncludes.last()->contLine != contLine) {
+        DEB() << "GamsCom warning: Include start at " << contLine << " doesn't match expected "
+              << mIncludes.last()->contLine << ". Data ignored.";
+        return;
+    }
+    mIncludes.last()->childFile = filename;
+}
+
+void Server::addIncludeEnd(const QString &filename, QList<int> &incLine)
+{
+    for (int i = mIncludes.size() - 1; i >= 0; --i) {
+        if (mIncludes[i]->line == incLine.first() && mIncludes[i]->parentFile.compare(filename) == 0) {
+            if (mIncludes[i]->outerContLine != std::numeric_limits<int>::max()) {
+                DEB() << "GamsCom warning: Include for " << mIncludes[i]->parentFile << ":" << mIncludes[i]->line
+                      << " already has a continuous line of " << mIncludes[i]->outerContLine
+                      << ". Replaced by "<< incLine.last() << ".";
+            }
+            mIncludes[i]->outerContLine = incLine.last();
+            break;
+        }
+        if (mIncludes[i]->line < incLine.first() && mIncludes[i]->parentFile.compare(filename) == 0) {
+            DEB() << "GamsCom warning: Missing Include for " << mIncludes[i]->parentFile << ":" << mIncludes[i]->line;
+            break;
+        }
     }
 }
 
@@ -483,6 +503,102 @@ void Server::setState(DebugState state)
         mState = state;
         emit stateChanged(state);
     }
+}
+
+QRegularExpression CRexLF("(\\r\\n)|(\\n\\r)|\\r|\\n");
+
+QStringList readFile(const QString &filename, int lines)
+{
+    // TODO(JM) temporary here -> move to SyntaxHighlighter or ContinuousLineData
+    QStringList res;
+    QFile file(filename);
+    if (file.open(QFile::ReadOnly)) {
+        QByteArray data = file.readAll();
+        file.close();
+
+        QString content = QString::fromUtf8(data); // TODO(JM) convert encoding as specified in Studio for this file by user
+
+        int pos = 0;
+        QRegularExpressionMatch match;
+        while (pos < content.length() && (lines < 0 ||  res.size() < lines)) {
+            int i = content.indexOf(CRexLF, pos, &match);
+            if (i < 0) i = content.length();
+            res << content.mid(pos, i - pos);
+            pos = i + match.capturedLength();
+        }
+    }
+    return res;
+}
+
+void Server::calcSourceMetrics()
+{
+    QMap<QString, QMap<int,QString>> incLines;
+    QMap<QString, int> lineCount;
+
+    // separate include positions and line counts
+    lineCount.insert(mMainFilename, -1);
+    for (const IncludeLine *incDat : std::as_const(mIncludes)) {
+        // if (mVerbose)
+        //     DEB() << "       from -> " << incDat->toString();
+        if (!incLines.contains(incDat->parentFile))
+            incLines.insert(incDat->parentFile, QMap<int, QString>());
+        incLines[incDat->parentFile].insert(incDat->line, incDat->childFile);
+        if (!lineCount.contains(incDat->childFile))
+            lineCount.insert(incDat->childFile, incDat->outerContLine - incDat->contLine);
+    }
+
+    // adjust line count from cumulative to raw count
+    QMap<QString, int> lineCountRaw;
+    for (auto itSize = lineCount.constBegin(); itSize != lineCount.constEnd(); ++itSize) {
+        lineCountRaw.insert(itSize.key(), itSize.value());
+        for (auto itInc = incLines.constBegin(); itInc != incLines.constEnd(); ++itInc) {
+            if (itSize.key() == itInc.key()) {
+                for (auto itLine = itInc.value().constBegin(); itLine != itInc.value().constEnd(); ++itLine) {
+                    lineCountRaw[itInc.key()] -= lineCount.value(itLine.value());
+                }
+            }
+        }
+    }
+
+    // TODO(JM) extend ContinuousLineData to generate source (all includes combined to one file)
+    // TODO(JM) pass mIncludes and lineCount to ContinuousLineData
+
+
+    if (mVerbose) {
+        DEB() << "\nINCLUDE:";
+        for (auto it = incLines.constBegin(); it != incLines.constEnd(); ++it) {
+            for (auto itLine = it.value().constBegin(); itLine != it.value().constEnd(); ++itLine) {
+                DEB() << "  - " << it.key() << ":" << itLine.key() << "  " << itLine.value();
+            }
+        }
+        DEB() << "\nSIZES:";
+        for (auto it = lineCountRaw.constBegin(); it != lineCountRaw.constEnd(); ++it) {
+            DEB() << "  - " << it.key() << ": " << it.value();
+        }
+
+        // Read files
+        QMap<QString, QStringList> contents;
+        QMap<QString, int> iLine;
+        for (auto itSize = lineCount.constBegin(); itSize != lineCount.constEnd(); ++itSize) {
+            contents.insert(itSize.key(), readFile(itSize.key(), itSize.value()));
+            iLine.insert(itSize.key(), 0);
+        }
+
+        // Create continuous line content
+        // QString main;
+        // for (int i = mIncludes.size()-1; i >= 0; --i) {
+        //     const IncludeLine *incDat = mIncludes.at(i);
+        //     for (int j = contents.value(incDat->childFile).size() - 1; j >= 0; --j)
+        //         contents[incDat->parentFile].insert(incDat->line, contents.value(incDat->childFile).at(j));
+        //     main = incDat->parentFile;
+        // }
+
+        // DEB() << "\n### CONTINUOUS LINES:\n";
+        // for (int i = 0; i < contents.value(main).size(); ++i) {
+        //     DEB() << (i<9?" ":"") << (i+1) << "   " << contents.value(main).at(i);
+        // }
+    }
+
 }
 
 DebugState Server::state() const
@@ -542,6 +658,11 @@ bool Server::isListening()
 quint16 Server::port()
 {
     return mServer ? mServer->serverPort() : -1;
+}
+
+void Server::setMain(const QString &mainFilename)
+{
+    mMainFilename = mainFilename;
 }
 
 void Server::logMessage(const QString &message)

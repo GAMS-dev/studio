@@ -71,7 +71,14 @@ enum CallReply {
                      //   (where contLN is the internal continous-line-number that CMEX is working with.)
                      //   (sends all lines known by CMEX, packages can be split before '|'. Until we haven't another
                      //    Reply with multiple lines, we omit the repeat of "breakLines" keyword)
-                     //   (Remark: If "line" is prepend by '!' this is no breakpoint, but an file-include)
+                     //  - Marker:
+                     //    - If "line" is prepend by '!' this is no possible breakpoint, but a file-include
+                     //    - Directly after a '!' marker CMEX needs to send includedFile 0=contLN to ensure
+                     //      that included files without breakpoints appear in the linesMap
+                     //    - After returning from an include file CMEX sends the immediate following line prepended
+                     //      by '?' to allow Studio to calculate the line count that needs to be included
+                     //    - if a marked line has an additional meaning (breakpoint or include) CMEX sends a second
+                     //      definition for the same contLN
     linesMapDone,    //  linesMapDone (when all breakLines have been sent)
 
     paused,          //  paused \n contLN
@@ -117,6 +124,7 @@ public:
     DebugState state() const;
     bool isListening();
     quint16 port();
+    void setMain(const QString &mainFilename);
     bool start(ComFeatures features);
     ComFeatures comFeatures();
     QString gdxTempFile() const;
@@ -124,13 +132,14 @@ public:
 
 signals:
     void connected();
+    void stateChanged(DebugState state);
+
     void addProcessLog(const QByteArray &data);
     void signalLinesMap(const QString &file, const QList<int> &fileLines, const QList<int> &continuousLines);
     void signalMapDone();
     void signalGdxReady(const QString &gdxFile);
     void signalPaused(int contLine);
     void signalStop();
-    void stateChanged(DebugState state);
     void signalProfiler(bool active);
 
 public slots:
@@ -161,10 +170,12 @@ private:
     QString toBpString(const QList<int> &lines);
     void parseLinesMap(const QString &breakData);
     ParseResult parseProfileData(const QString &rawData);
-    bool getPair(const QString &assignment, QList<int> &lines, QList<int> &coLNs, QList<int> &incLines);
+    bool getPair(const QString &assignment, QList<int> &lines, QList<int> &coLNs, QList<int> &incLines, QList<int> &firstLines, QList<int> &retLines);
     void addInclude(const QString &filename, QList<int> &incLine);
-    void trackInclude(const QString &filename, int firstContLine);
+    void addIncludeFrom(const QString &filename, int contLine);
+    void addIncludeEnd(const QString &filename, QList<int> &incLine);
     void setState(DebugState state);
+    void calcSourceMetrics();
 
     ComFeatures mComFeatures = cfNoCom;
     QString mPath;
@@ -178,9 +189,9 @@ private:
     QString mIncompletePacket;
     QString mRemainData;
     DebugState mState = None;
+    QString mMainFilename;
     bool mVerbose = false;
     int mDelayCounter = 0;
-    QList<IncludeLine*> mIncludeParents;
     QList<IncludeLine*> mIncludes;
 
     static QSet<int> mPortsInUse;

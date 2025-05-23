@@ -21,12 +21,8 @@
 #include "syntaxformats.h"
 #include "syntaxdeclaration.h"
 #include "syntaxidentifier.h"
-#include "textmark.h"
 #include "logger.h"
 #include "exception.h"
-#include "file.h"
-#include "common.h"
-#include "settings.h"
 
 #ifndef SYNTAXDEBUG
 //#define SYNTAXDEBUG

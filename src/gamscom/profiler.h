@@ -33,6 +33,9 @@ class ContinuousLineData;
 struct IncludeLine {
     IncludeLine(const QString &_file, int _line, int _contLine) : parentFile(_file), line(_line), contLine(_contLine) { }
     IncludeLine(const QString &_file) : parentFile(_file), line(1), contLine(1), outerContLine(1) { }
+    QString toString() const {
+        return QString("%1:%2 [%3,%4] INC %5").arg(parentFile).arg(line).arg(contLine).arg(outerContLine).arg(childFile);
+    }
     QString parentFile;
     int line;
     int contLine;

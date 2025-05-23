@@ -1363,6 +1363,7 @@ bool PExProjectNode::startComServer(gamscom::ComFeatures features)
         if (process())
             connect(process(), &AbstractProcess::interruptGenerated, mComServer, &gamscom::Server::sendStepLine);
     }
+    if (runnableGms()) mComServer->setMain(runnableGms()->location());
     bool res = mComServer->start(features);
     if (process()) {
         QStringList params = process()->parameters();
