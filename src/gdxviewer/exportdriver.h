@@ -21,6 +21,7 @@
 #define GAMS_STUDIO_GDXVIEWER_EXPORTDRIVER_H
 
 #include "exportmodel.h"
+#include "gdxsymbolviewstate.h"
 
 #include <QString>
 #include <process/connectprocess.h>
@@ -69,6 +70,7 @@ private:
     bool hasActiveValueFilterState(GdxSymbol *sym);
     bool hasActiveFilter(GdxSymbol *sym);
 
+    GdxSymbolViewState *getSymbolViewState(GdxSymbol *sym);
 };
 
 } // namespace gdxviewer

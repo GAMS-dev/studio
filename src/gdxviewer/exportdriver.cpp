@@ -288,11 +288,11 @@ QString ExportDriver::generateFilters()
                 if (symViewState) {
                     inst += "    labelFilters:\n";
                     for (int d=0; d<sym->dim(); d++) {
-                        if (symViewState->uncheckedLabels()[d].size() > 0) {
-                            QList<QString> labels = symViewState->uncheckedLabels()[d];
+                        if (symViewState->uncheckedLabels().at(d).size() > 0) {
+                            QList<QString> labels = symViewState->uncheckedLabels().at(d);
                             inst += "      - dimension: " + QString::number(d+1) + "\n";
                             inst += "        reject: [";
-                            for (QString label: labels)
+                            for (QString &label: labels)
                                 inst += "'" + label + "', ";
                             int pos = inst.lastIndexOf(QChar(','));
                             inst.remove(pos, 2);
@@ -348,7 +348,7 @@ QString ExportDriver::generateFilters()
                     inst += "    valueFilters:\n";
                     for (int d=sym->dim(); d<sym->filterColumnCount(); d++) {
                         int valColIndex = d-sym->dim();
-                        ValueFilterState vfs = symViewState->valueFilterState()[valColIndex];
+                        ValueFilterState vfs = symViewState->valueFilterState().at(valColIndex);
                         if (vfs.active) {
                             QStringList valColumns;
                             valColumns << "level" << "marginal" << "lower" << "upper" << "scale";
@@ -498,15 +498,11 @@ bool ExportDriver::hasActiveLabelFilter(GdxSymbol *sym)
 bool ExportDriver::hasActiveLabelFilterState(GdxSymbol *sym)
 {
     if (!sym->isLoaded()) {
-        GdxViewerState *state = mGdxViewer->state();
-        GdxSymbolViewState *symViewState = nullptr;
-        if (state) {
-            symViewState = state->symbolViewState(sym->name());
-            if (symViewState) {
-                for (int d=0; d<sym->dim(); d++) {
-                    if (symViewState->uncheckedLabels()[d].size() > 0)
-                        return true;
-                }
+        GdxSymbolViewState *symViewState = getSymbolViewState(sym);
+        if (symViewState) {
+            for (int d=0; d<sym->dim(); d++) {
+                if (symViewState->uncheckedLabels().at(d).size() > 0)
+                    return true;
             }
         }
     }
@@ -524,15 +520,11 @@ bool ExportDriver::hasActiveValueFilter(GdxSymbol *sym)
 bool ExportDriver::hasActiveValueFilterState(GdxSymbol *sym)
 {
     if (!sym->isLoaded()) {
-        GdxViewerState *state = mGdxViewer->state();
-        GdxSymbolViewState *symViewState = nullptr;
-        if (state) {
-            symViewState = state->symbolViewState(sym->name());
-            if (symViewState) {
-                for (ValueFilterState vfs : symViewState->valueFilterState()) {
-                    if (vfs.active)
-                        return true;
-                }
+        GdxSymbolViewState *symViewState = getSymbolViewState(sym);
+        if (symViewState) {
+            for (ValueFilterState &vfs : symViewState->valueFilterState()) {
+                if (vfs.active)
+                    return true;
             }
         }
     }
@@ -542,6 +534,14 @@ bool ExportDriver::hasActiveValueFilterState(GdxSymbol *sym)
 bool ExportDriver::hasActiveFilter(GdxSymbol *sym)
 {
     return hasActiveLabelFilter(sym) || hasActiveLabelFilterState(sym) || hasActiveValueFilter(sym) || hasActiveValueFilterState(sym);
+}
+
+GdxSymbolViewState *ExportDriver::getSymbolViewState(GdxSymbol *sym)
+{
+    GdxViewerState *state = mGdxViewer->state();
+    if (state)
+        return state->symbolViewState(sym->name());
+    return nullptr;
 }
 
 
