@@ -11,6 +11,8 @@ Version 1.21.0
 - Fixed disappearing command line parameter when switching between a project and the Welcome Page.
 - Improved search result view is now using a tree view, which shows the files, containing results, first.
 - Upgraded Studio to Qt 6.9.0 on all platforms.
+- Added options to the run menu for GDX, RF, and Profiler and combined run menu options for run and compile only.
+- Restore the state of the last used run option.
 
 Version 1.20.6
 ==================
