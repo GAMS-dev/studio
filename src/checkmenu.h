@@ -31,14 +31,23 @@ class CheckMenu : public QMenu
 public:
     CheckMenu(QWidget *parent = nullptr);
     virtual ~CheckMenu();
+    void addSubMenu(int actionDataValue, CheckMenu *subMenu);
 
 protected:
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
-
+    void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
 
+    void handleAction(QAction * action);
+    bool contains(QPointF globalPos);
+
+private:
+    QHash<int, CheckMenu*> mSubMenus;
+    CheckMenu* mVisibleSub = nullptr;
+    CheckMenu* mParentMenu = nullptr;
 };
 
 } // namespace studio

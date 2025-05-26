@@ -1066,20 +1066,39 @@ void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aCompile, QActi
 {
     mHasSSL = QSslSocket::supportsSsl();
     actionRunCompile = aRun;
+    actionCompile = aCompile;
     actionRunDebug = aRunDebug;
     actionStepDebug = aStepDebug;
     actionRunCompileWithSelected = aRunWith;
+    actionCompileWithSelected = aCompileWith;
     actionFlags = aActionFlags;
     actionRunNeos = aRunNeos;
     actionRunEngine = aRunEngine;
 
-    QMenu* runMenu = new CheckMenu(this);
+
+    CheckMenu* runMenu = new CheckMenu(this);
+    CheckMenu* opt1Menu = new CheckMenu(this);
+    opt1Menu->addActions(actionFlags);
+    runMenu->addSubMenu(1, opt1Menu);
+
+    QList<QAction*> actionFlags2 = aActionFlags;
+    actionFlags2.removeLast();
+    CheckMenu* opt2Menu = new CheckMenu(this);
+    opt2Menu->addActions(actionFlags2);
+    runMenu->addSubMenu(2, opt2Menu);
+
     runMenu->addAction(actionRunCompile);
+    runMenu->addAction(actionCompile);
     runMenu->addAction(actionRunDebug);
     runMenu->addAction(actionStepDebug);
     runMenu->addSeparator();
+
     runMenu->addAction(actionRunCompileWithSelected);
-    runMenu->addActions(actionFlags);
+    // actionRunCompileWithSelected->setMenu(opt1Menu);
+    actionRunCompileWithSelected->setData(1);
+    runMenu->addAction(actionCompileWithSelected);
+    // actionCompileWithSelected->setMenu(opt2Menu);
+    actionCompileWithSelected->setData(2);
 
     runMenu->addSeparator();
     runMenu->addAction(actionRunNeos);

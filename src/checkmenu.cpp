@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "checkmenu.h"
-
 #include <QKeyEvent>
 
 namespace gams {
@@ -29,6 +28,12 @@ CheckMenu::CheckMenu(QWidget *parent): QMenu(parent)
 
 CheckMenu::~CheckMenu()
 {}
+
+void CheckMenu::addSubMenu(int actionDataValue, CheckMenu *subMenu)
+{
+    mSubMenus.insert(actionDataValue, subMenu);
+    subMenu->mParentMenu = this;
+}
 
 void CheckMenu::showEvent(QShowEvent *event)
 {
@@ -54,6 +59,19 @@ void CheckMenu::hideEvent(QHideEvent *event)
     }
 }
 
+void CheckMenu::mousePressEvent(QMouseEvent *event)
+{
+    if (mParentMenu && mParentMenu->contains(event->globalPosition())) {
+        QPointF gloPos = event->globalPosition();
+        QPointF parPos = mParentMenu->mapFromGlobal(gloPos);
+        QMouseEvent *parEvent =  new QMouseEvent(event->type(), parPos, gloPos, event->button(), event->buttons(),
+                                                event->modifiers(), event->pointingDevice());
+        mParentMenu->mousePressEvent(parEvent);
+    } else {
+        QMenu::mousePressEvent(event);
+    }
+}
+
 void CheckMenu::mouseReleaseEvent(QMouseEvent *event) {
     QAction *action = activeAction();
     if (action && action->isCheckable()) {
@@ -61,9 +79,17 @@ void CheckMenu::mouseReleaseEvent(QMouseEvent *event) {
         QMenu::mouseReleaseEvent(event);
         action->setEnabled(true);
         action->trigger();
-    }
-    else
+    } else if (mParentMenu && mParentMenu->contains(event->globalPosition())) {
+        QPointF gloPos = event->globalPosition();
+        QPointF parPos = mParentMenu->mapFromGlobal(gloPos);
+        QMouseEvent *parEvent =  new QMouseEvent(event->type(), parPos, gloPos, event->button(), event->buttons(),
+                                                event->modifiers(), event->pointingDevice());
+        mParentMenu->mouseReleaseEvent(parEvent);
+        hide();
+        mParentMenu->hide();
+    } else {
         QMenu::mouseReleaseEvent(event);
+    }
 }
 
 void CheckMenu::keyPressEvent(QKeyEvent *event) {
@@ -86,6 +112,48 @@ void CheckMenu::keyPressEvent(QKeyEvent *event) {
     else
         QMenu::keyPressEvent(event);
 }
+
+void CheckMenu::mouseMoveEvent(QMouseEvent *event)
+{
+    QAction *act = actionAt(event->position().toPoint());
+    if (act) {
+        handleAction(act);
+    } else if (mVisibleSub) {
+        if (!mVisibleSub->contains(event->globalPosition()))
+            handleAction(act);
+    }
+    if (mParentMenu && mParentMenu->contains(event->globalPosition())) {
+        QPointF gloPos = event->globalPosition();
+        QPointF parPos = mParentMenu->mapFromGlobal(gloPos);
+        QMouseEvent *parEvent =  new QMouseEvent(event->type(), parPos, gloPos, event->button(), event->buttons(),
+                                                event->modifiers(), event->pointingDevice());
+        mParentMenu->mouseMoveEvent(parEvent);
+    }
+    QMenu::mouseMoveEvent(event);
+}
+
+void CheckMenu::handleAction(QAction *action)
+{
+    CheckMenu *newSub = nullptr;
+    if (action && action->data().isValid()) {
+        CheckMenu *sub = mSubMenus.value(action->data().toInt());
+        if (sub) newSub = sub;
+    }
+    if (newSub != mVisibleSub) {
+        if (mVisibleSub) mVisibleSub->hide();
+        if (newSub) {
+            QRect rect = actionGeometry(action);
+            newSub->popup(pos() + rect.topRight());
+        }
+        mVisibleSub = newSub;
+    }
+}
+
+bool CheckMenu::contains(QPointF globalPos)
+{
+    return geometry().contains(globalPos.toPoint());
+}
+
 
 
 } // namespace studio
