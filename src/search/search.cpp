@@ -629,7 +629,7 @@ void Search::replaceAll(SearchParameters parameters)
 
     int matchedFiles = 0;
 
-    for (const SearchFile &file : files) {
+    for (const SearchFile &file : std::as_const(files)) {
         FileMeta* fm = file.fileMeta;
 
         if (!fm)

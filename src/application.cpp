@@ -259,7 +259,7 @@ void Application::parseCmdArgs()
     case gams::studio::CommandLineOk:
         break;
     case gams::studio::CommandLineError:
-        std::cerr << mCmdParser.errorText().toStdString() << std::endl;
+        std::cerr << mCmdParser.errorText().toStdString() << "\n";
         mCmdParser.showHelp();
         break;
     case gams::studio::CommandLineVersionRequested:

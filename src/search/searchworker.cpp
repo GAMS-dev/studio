@@ -69,7 +69,7 @@ void SearchWorker::findInFiles()
     int filecounter = 0;
     emit update(0); // initial update to set label to "Searching"
 
-    for (const SearchFile &sf : mFiles) {
+    for (const SearchFile &sf : std::as_const(mFiles)) {
         if (cacheFull || thread()->isInterruptionRequested()) break;
 
         if (sf.fileMeta)

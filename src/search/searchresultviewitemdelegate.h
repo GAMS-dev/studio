@@ -34,7 +34,7 @@ class SearchResultViewItemDelegate
 public:
     explicit SearchResultViewItemDelegate(QObject *parent = nullptr);
 
-    void setFont(QFont font);
+    void setFont(const QFont &font);
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const override;

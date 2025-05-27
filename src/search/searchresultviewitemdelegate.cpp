@@ -37,7 +37,7 @@ SearchResultViewItemDelegate::SearchResultViewItemDelegate(QObject *parent)
     setFont(static_cast<QWidget*>(parent)->font());
 }
 
-void SearchResultViewItemDelegate::setFont(QFont font)
+void SearchResultViewItemDelegate::setFont(const QFont &font)
 {
     mFont = font;
     mFontMetrics = QFontMetrics(mFont);

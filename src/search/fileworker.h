@@ -48,7 +48,7 @@ public:
     QList<SearchFile> filterFiles(QList<SearchFile> files, SearchParameters params);
 
 signals:
-    void filesCollected(QList<SearchFile> files);
+    void filesCollected(QList<gams::studio::search::SearchFile> files);
 
 private:
     SearchParameters mParameters;

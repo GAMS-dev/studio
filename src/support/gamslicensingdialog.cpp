@@ -115,7 +115,7 @@ void GamsLicensingDialog::setSolverLines(QStringList& about)
     GamsLicenseInfo liceInfo;
     QHash<QString, QStringList> groups;
     auto solverNames = liceInfo.solverNames().values();
-    for (const auto& name : solverNames) {
+    for (const auto& name : std::as_const(solverNames)) {
         auto id = liceInfo.solverId(name);
         auto group = liceInfo.solverLicense(name, id);
         if (groups.contains(group)) {
