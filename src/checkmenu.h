@@ -36,7 +36,7 @@ public:
 protected:
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
-    void mousePressEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
@@ -44,10 +44,14 @@ protected:
     void handleAction(QAction * action);
     bool contains(QPointF globalPos);
 
+protected slots:
+    void onHovered(QAction * action);
+
 private:
     QHash<int, CheckMenu*> mSubMenus;
     CheckMenu* mVisibleSub = nullptr;
     CheckMenu* mParentMenu = nullptr;
+    bool mParentFocus = true;
 };
 
 } // namespace studio

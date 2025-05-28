@@ -24,7 +24,9 @@ namespace gams {
 namespace studio {
 
 CheckMenu::CheckMenu(QWidget *parent): QMenu(parent)
-{}
+{
+    connect(this, &CheckMenu::hovered, this, &CheckMenu::onHovered);
+}
 
 CheckMenu::~CheckMenu()
 {}
@@ -93,35 +95,63 @@ void CheckMenu::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 void CheckMenu::keyPressEvent(QKeyEvent *event) {
-    QAction *action = activeAction();
-    QChar c = event->text().isNull() ? '\0' : event->text().at(0).toUpper();
-    QList<int> keepOpenKeys;
-    const auto acts = actions();
-    for (QAction *act : acts) {
-        QKeySequence sequence = QKeySequence::mnemonic(act->text());
-        int key = sequence[0].toCombined() & 0xffff; // suspicious
-        if (act->isCheckable()) keepOpenKeys << key;
-        if (key == c.unicode()) {
-            action = act;
-            break;
+    // The additional subMenu shown to the right of the linked action of the runMenu claims the keyboard focus.
+    // To tell which menu should process the keyboard mParentFocus is introduced.
+
+    // This is a subMenu and it has the virtual focus
+    if (mParentMenu && !mParentFocus) {
+        QAction *action = activeAction();
+        QChar c = event->text().isNull() ? '\0' : event->text().at(0).toUpper();
+        QList<int> keepOpenKeys;
+        const auto acts = actions();
+        for (QAction *act : acts) {
+            QKeySequence sequence = QKeySequence::mnemonic(act->text());
+            int key = sequence[0].toCombined() & 0xffff; // suspicious
+            if (act->isCheckable()) keepOpenKeys << key;
+            if (key == c.unicode()) {
+                action = act;
+                break;
+            }
         }
-    }
-    keepOpenKeys << Qt::Key_Return << Qt::Key_Enter;
-    if (action && action->isCheckable() && keepOpenKeys.contains(event->key()))
-        action->trigger();
-    else
+        keepOpenKeys << Qt::Key_Return << Qt::Key_Enter;
+        if (event->key() == Qt::Key_Left || event->key() == Qt::Key_Escape) {
+            mParentFocus = true;
+            setActiveAction(nullptr);
+        } else if (action && action->isCheckable() && keepOpenKeys.contains(event->key())) {
+            action->trigger();
+        } else {
+            QMenu::keyPressEvent(event);
+        }
+
+        // This is the subMenu and it hasn't the virtual focus -> send selected keys to parent
+    } else if (mParentMenu && mParentFocus) {
+        QList<int> keysForParent;
+        keysForParent << Qt::Key_Up  << Qt::Key_Down;
+        if (event->key() == Qt::Key_Right) {
+            mParentFocus = false;
+            if (!activeAction() && actions().size())
+                setActiveAction(actions().at(0));
+        } else if (keysForParent.contains(event->key())) {
+            mParentMenu->keyPressEvent(event);
+        } else if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
+            if (mParentMenu->activeAction()) mParentMenu->activeAction()->trigger();
+            hide();
+            mParentMenu->hide();
+        }
+    } else {
         QMenu::keyPressEvent(event);
+    }
 }
 
 void CheckMenu::mouseMoveEvent(QMouseEvent *event)
 {
-    QAction *act = actionAt(event->position().toPoint());
-    if (act) {
-        handleAction(act);
-    } else if (mVisibleSub) {
-        if (!mVisibleSub->contains(event->globalPosition()))
-            handleAction(act);
-    }
+    // QAction *act = actionAt(event->position().toPoint());
+    // if (act) {
+    //     handleAction(act);
+    // } else if (mVisibleSub) {
+    //     if (!mVisibleSub->contains(event->globalPosition()))
+    //         handleAction(act);
+    // }
     if (mParentMenu && mParentMenu->contains(event->globalPosition())) {
         QPointF gloPos = event->globalPosition();
         QPointF parPos = mParentMenu->mapFromGlobal(gloPos);
@@ -130,6 +160,11 @@ void CheckMenu::mouseMoveEvent(QMouseEvent *event)
         mParentMenu->mouseMoveEvent(parEvent);
     }
     QMenu::mouseMoveEvent(event);
+}
+
+void CheckMenu::onHovered(QAction *action)
+{
+    handleAction(action);
 }
 
 void CheckMenu::handleAction(QAction *action)
@@ -144,6 +179,7 @@ void CheckMenu::handleAction(QAction *action)
         if (newSub) {
             QRect rect = actionGeometry(action);
             newSub->popup(pos() + rect.topRight());
+            setFocus();
         }
         mVisibleSub = newSub;
     }
