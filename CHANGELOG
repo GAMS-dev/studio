@@ -1,3 +1,7 @@
+Version 1.21.1  *
+==================
+- Added ctrl-click to the code editor to open 'yamlFile' or 'yamlFileEnd' defined in $onEmbeddedCode.
+
 Version 1.21.0
 ==================
 - Added profiler information to the editors when using the GAMS option `profile`.

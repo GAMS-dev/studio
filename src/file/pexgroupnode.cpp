@@ -375,6 +375,7 @@ QString PExProjectNode::resolveHRef(const QString &href, PExFileNode *&node, int
 {
     const QStringList tags {"LST","LS2","INC","LIB","SYS","DIR"};
     QString res;
+    mCheckedPaths.clear();
 
     bool exist = false;
     node = nullptr;
@@ -459,6 +460,7 @@ QString PExProjectNode::resolveHRef(const QString &href, PExFileNode *&node, int
                 for (QString &path: CommonPaths::gamsStandardPaths(CommonPaths::StandardDataPath))
                     locations << path + "/inclib";
             }
+
             QString rawName = fName;
             for (QString loc : std::as_const(locations)) {
                 if (!QDir::isAbsolutePath(loc))
@@ -467,6 +469,7 @@ QString PExProjectNode::resolveHRef(const QString &href, PExFileNode *&node, int
                 QFileInfo file(fName);
                 exist = file.exists() && file.isFile();
                 if (!exist) {
+                    mCheckedPaths << file.absoluteFilePath();
                     file.setFile(file.filePath()+".gms");
                     exist = file.exists() && file.isFile();
                     if (exist) fName += ".gms";
@@ -1476,6 +1479,12 @@ void PExProjectNode::terminate()
 void PExProjectNode::processState(QProcess::ProcessState &state)
 {
     state = gamsProcessState();
+}
+
+void PExProjectNode::takeCheckedPaths(QStringList &filePaths)
+{
+    filePaths = mCheckedPaths;
+    mCheckedPaths.clear();
 }
 
 void PExProjectNode::addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &continuousLines)

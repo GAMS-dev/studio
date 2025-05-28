@@ -1306,6 +1306,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         } else {
             connect(codeEdit, &CodeEdit::hasHRef, project, &PExProjectNode::hasHRef);
+            connect(codeEdit, &CodeEdit::takeCheckedPaths, project, &PExProjectNode::takeCheckedPaths);
             connect(codeEdit, &CodeEdit::jumpToHRef, project, &PExProjectNode::jumpToHRef);
             connect(codeEdit, &CodeEdit::addBreakpoint, this, [this](int line) {
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);

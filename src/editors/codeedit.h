@@ -171,7 +171,7 @@ protected:
     QString getToolTipText(const QPoint &pos) override;
     bool ensureUnfolded(int line) override;
     QString resolveHRef(const QString &href);
-    QString getIncludeFile(int line, qsizetype &fileStart, QString &code);
+    QString getIncludeFile(int line, int col, qsizetype &fileStart, QString &code);
     TextLinkType checkLinks(const QPoint &mousePos, bool greedy, QString *fName = nullptr) override;
     void jumpToCurrentLink(const QPoint &mousePos) override;
 
@@ -203,6 +203,7 @@ signals:
     void getProfilerMaxCompoundValues(qreal &timeSec, size_t &memory, size_t &rows, size_t &steps);
     void getProfilerMaxData(QList<QPair<int, qreal>> &maxTimeContLine, QList<QPair<int,int>> &maxStepsContLine);
     void jumpToContinuousLine(int contLine);
+    void takeCheckedPaths(QStringList &filePaths);
 
 public slots:
     void clearSelection();
@@ -364,7 +365,7 @@ private:
     bool mAllowBlockEdit = true;
     int mLnAreaWidth = 0;
     LinePair mFoldMark;
-    int mIncludeLinkLine = -1;
+    QPoint mIncludeLinkLine = QPoint(-1, -1);
     bool mLinkActive = false;
     BlockSelectState mBlockSelectState = bsNone;
     SortedIntMap mBreakpoints;
@@ -378,7 +379,10 @@ private:
 
     static QRegularExpression mRex0LeadingSpaces;
     static QRegularExpression mRex1LeadingSpaces;
-    static QRegularExpression mRexIncFile;
+    static QRegularExpression mRex2LeadingSpaces;
+    static QRegularExpression mRexIncDcoFile;
+    static QRegularExpression mRexEmbedConnectFile;
+    static QRegularExpression mRexYamlFile;
     static QRegularExpression mRexTruncate;
     static QRegularExpression mRexIndent;
     static QRegularExpression mRexIndentPre;

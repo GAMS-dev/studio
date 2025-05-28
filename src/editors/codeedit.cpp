@@ -45,7 +45,12 @@ using namespace search;
 
 QRegularExpression CodeEdit::mRex0LeadingSpaces("^(\\s*)");
 QRegularExpression CodeEdit::mRex1LeadingSpaces("^(\\s+)");
-QRegularExpression CodeEdit::mRexIncFile(QString("(^%1|%1%1)\\s*([\\w]+)\\s*").arg(QRegularExpression::escape("$")));
+QRegularExpression CodeEdit::mRex2LeadingSpaces("\\s*");
+QRegularExpression CodeEdit::mRexIncDcoFile(QString("(^%1|%1%1)\\s*([\\w]+)(\\s*)").arg(QRegularExpression::escape("$")));
+QRegularExpression CodeEdit::mRexEmbedConnectFile(QString("(.*)(embeddedcode(|v|s))(\\s*)connect:\\s*")
+                                                  , QRegularExpression::CaseInsensitiveOption);
+QRegularExpression CodeEdit::mRexYamlFile(QString("(yamlfile(end|)=((\\\"[^\\\"]*\\\")|('[^']*')|[^\\s\\\"']*))")
+                                          , QRegularExpression::CaseInsensitiveOption);
 QRegularExpression CodeEdit::mRexIndent("^(\\s*).*$");
 QRegularExpression CodeEdit::mRexIndentPre("^((\\s+)|([^\\s]+))");
 QRegularExpression CodeEdit::mRexTruncate("(^.*[^\\s]|^)(\\s+)$");
@@ -934,21 +939,25 @@ QString CodeEdit::resolveHRef(const QString &href)
     return fileName;
 }
 
-QString CodeEdit::getIncludeFile(int line, qsizetype &fileStart, QString &code)
+QString CodeEdit::getIncludeFile(int line, int col, qsizetype &fileStart, QString &code)
 {
     QString res;
     code = "INC";
     QTextBlock block = document()->findBlockByNumber(line);
     fileStart = block.length();
     if (block.isValid()) {
-        QRegularExpressionMatch match = mRexIncFile.match(block.text());
-        if (match.captured(2).length() < block.length()) {
+        QRegularExpressionMatch match = mRexIncDcoFile.match(block.text());
+        if (match.capturedLength() == 0)
+            match = mRexEmbedConnectFile.match(block.text());
+        if (match.capturedEnd(2) < block.length()) {
+            bool postCheck = true;
             QChar endChar(' ');
             QString command = match.captured(2).toUpper();
             if (command == "INCLUDE") {
                 fileStart = match.capturedEnd();
                 qsizetype fileEnd = block.text().length();
                 while (fileEnd >= fileStart) {
+                    // skip commented out code at the end
                     int kind;
                     int flavor;
                     emit requestSyntaxKind(block.position() + int(fileEnd), kind, flavor);
@@ -961,8 +970,49 @@ QString CodeEdit::getIncludeFile(int line, qsizetype &fileStart, QString &code)
                 if (command.at(0) != 'B') code = command.left(3);
                 fileStart = match.capturedEnd();
                 res = block.text().mid(fileStart, block.text().length()).trimmed();
+            } else if (command.startsWith("ONEMBEDDEDCODE") || command.startsWith("EMBEDDEDCODE")) {
+                qsizetype parStart = match.capturedEnd();
+                qsizetype parEnd = block.text().length();
+                while (parEnd >= parStart) {
+                    // skip commented out code at the end
+                    int kind;
+                    int flavor;
+                    emit requestSyntaxKind(block.position() + int(parEnd), kind, flavor);
+                    if (kind == int(syntax::SyntaxKind::EmbeddedBody)) break;
+                    --parEnd;
+                }
+                while (parStart < parEnd) {
+                    QRegularExpressionMatch match2 = mRexYamlFile.match(block.text(), parStart);
+                    if (match2.captured(3).length() && match2.capturedStart(3) <= col && match2.capturedEnd(3) >= col) {
+                        fileStart = match2.capturedStart(3);
+                        QString file = match2.captured(3);
+                        if (file.startsWith('\"')) {
+                            if (file.endsWith('\"')) {
+                                res = file.mid(1, file.length() - 2);
+                                ++fileStart;
+                            }
+                        } else if (file.startsWith('\'')) {
+                            if (file.endsWith('\'')) {
+                                res = file.mid(1, file.length() - 2);
+                                ++fileStart;
+                            }
+                        } else if (!file.endsWith('\"') && !file.endsWith('\'')) {
+                            res = file;
+                        }
+                        postCheck = false;
+                        break;
+                    }
+                    if (match2.capturedEnd(3) > parStart)
+                        parStart = match2.capturedEnd(3);
+                    else {
+                        QRegularExpressionMatch match3 = mRex2LeadingSpaces.match(block.text(), parStart);
+                        if (match3.capturedEnd() > parStart)
+                            parStart = match3.capturedEnd();
+                    }
+                    ++parStart;
+                }
             }
-            if (!res.isEmpty()) {
+            if (!res.isEmpty() && postCheck) {
                 if (block.text().at(fileStart) == '\"') endChar = '\"';
                 if (block.text().at(fileStart) == '\'') endChar = '\'';
                 if (endChar != QChar()) {
@@ -976,7 +1026,6 @@ QString CodeEdit::getIncludeFile(int line, qsizetype &fileStart, QString &code)
             }
         }
     }
-//    DEB() << "FILE: " << res;
     return res;
 }
 
@@ -991,7 +1040,7 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *
         if (cur.isNull()) return linkType;
         qsizetype fileStart;
         QString command;
-        QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
+        QString file = getIncludeFile(cur.blockNumber(), cur.positionInBlock(), fileStart, command);
         if (!file.isEmpty()) {
             qsizetype boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
             if (cur.positionInBlock() == boundPos) {
@@ -1027,11 +1076,11 @@ void CodeEdit::jumpToCurrentLink(const QPoint &mousePos)
         QTextCursor cur = cursorForPosition(mousePos);
         qsizetype fileStart;
         QString command;
-        QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
+        QString file = getIncludeFile(cur.blockNumber(), cur.positionInBlock(), fileStart, command);
         if (!file.isEmpty()) {
             qsizetype boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
             if (cur.positionInBlock() == boundPos) {
-                mIncludeLinkLine = cursorForPosition(mousePos).blockNumber();
+                mIncludeLinkLine = QPoint(cur.positionInBlock(), cur.blockNumber());
                 cur.clearSelection();
                 setTextCursor(cur);
                 emit jumpToHRef(command+" "+file);
@@ -1519,14 +1568,22 @@ void CodeEdit::showLineNrContextMenu(const QPoint &pos)
 void CodeEdit::updateLinkAppearance(QPoint pos, bool active)
 {
     QTextCursor cur = cursorForPosition(pos);
-    int old = mIncludeLinkLine;
+    QPoint old = mIncludeLinkLine;
     if (active) {
         QString file;
         if (checkLinks(pos, active, &file) == linkDirect)
-            mIncludeLinkLine = cur.blockNumber();
-        else
-            mIncludeLinkLine = -1;
-    } else mIncludeLinkLine = -1;
+            mIncludeLinkLine = QPoint(cur.positionInBlock(), cur.blockNumber());
+        else {
+            mIncludeLinkLine = QPoint(-1, -1);
+            QStringList paths;
+            emit takeCheckedPaths(paths);
+            if (!paths.isEmpty()) {
+                QString text = paths.size() == 1 ? "File not found: " + paths.first()
+                                                 : "File not found. Checked these locations:\n- " + paths.join("\n- ");
+                QToolTip::showText(mapToGlobal(pos), text);
+            }
+        }
+    } else mIncludeLinkLine = QPoint(-1, -1);
     if (old != mIncludeLinkLine || mLinkActive != active) {
         updateExtraSelections();
     }
@@ -2587,14 +2644,14 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 
 void CodeEdit::extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections)
 {
-    if (mIncludeLinkLine < 0) return;
-    QTextBlock block = document()->findBlockByNumber(mIncludeLinkLine);
+    if (mIncludeLinkLine.x() < 0) return;
+    QTextBlock block = document()->findBlockByNumber(mIncludeLinkLine.y());
     if (!block.isValid()) return;
     QTextEdit::ExtraSelection selection;
     QTextCursor cur(document());
     QString command;
     qsizetype fileStart;
-    QString file = getIncludeFile(mIncludeLinkLine, fileStart, command);
+    QString file = getIncludeFile(mIncludeLinkLine.y(), mIncludeLinkLine.x(), fileStart, command);
     cur.setPosition(block.position() + int(fileStart));
     cur.setPosition(cur.position() + int(file.length()), QTextCursor::KeepAnchor);
     selection.cursor = cur;

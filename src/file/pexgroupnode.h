@@ -192,6 +192,7 @@ public slots:
     void gotoPaused(int contLine);
     void terminate();
     void processState(QProcess::ProcessState &state);
+    void takeCheckedPaths(QStringList &filePaths);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
@@ -238,6 +239,7 @@ private:
     bool mVerbose = false;
     gamscom::ContinuousLineData *mContLineData;
     PExFileNode *mPausedInFile = nullptr;
+    QStringList mCheckedPaths;
 
 private:
     QString cleanPath(QString path, QString file);
