@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "filereferencewidget.h"
+#include "fileusedfilterproxymodel.h"
 #include "ui_filereferencewidget.h"
 
 namespace gams {
@@ -30,18 +31,33 @@ FileReferenceWidget::FileReferenceWidget(Reference* ref, ReferenceViewer *parent
     mReferenceViewer(parent)
 {
     ui->setupUi(this);
-    mFileUsedModel = new FileUsedTreeModel(this);
-    ui->fileReferenceTreeView->setModel( mFileUsedModel );
 
+    FileUsedFilterProxyModel* proxymodel = new FileUsedFilterProxyModel(this);
+    mFileUsedModel = new FileUsedTreeModel(this);
+    proxymodel->setFilterKeyColumn(-1);
+    proxymodel->setSourceModel( mFileUsedModel );
+    proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
+
+    ui->fileReferenceTreeView->setModel( proxymodel );
     ui->fileReferenceTreeView->expandAll();
 
     ui->fileReferenceTreeView->resizeColumnToContents( (int)FileReferenceItemColumn::Location );
     ui->fileReferenceTreeView->resizeColumnToContents( (int)FileReferenceItemColumn::Type );
-    ui->fileReferenceTreeView->setColumnHidden( (int)FileReferenceItemColumn::GlobalLineNumber, true );
+    ui->fileReferenceTreeView->setColumnHidden( (int)FileReferenceItemColumn::GlobalLineNumber, true);
     ui->fileReferenceTreeView->setColumnHidden( (int)FileReferenceItemColumn::Id, true);
+    ui->fileReferenceTreeView->setColumnHidden( (int)FileReferenceItemColumn::FirstEntry, true);
+
+    ui->showFileOnceCheckBox->setCheckState(Qt::Checked);
 
     connect(ui->fileReferenceTreeView, &QAbstractItemView::doubleClicked, this, &FileReferenceWidget::jumpToReferenceItem);
     connect( mFileUsedModel, &FileUsedTreeModel::modelReset, this, &FileReferenceWidget::expandResetModel);
+
+    connect(ui->showFileOnceCheckBox, static_cast<void(QCheckBox::*)(Qt::CheckState)>(&QCheckBox::checkStateChanged), this, [=](Qt::CheckState state) {
+        proxymodel->showFileOnceChanged(state==Qt::Checked);
+        mFileUsedModel->resetModel();
+    });
+
 }
 
 FileReferenceWidget::~FileReferenceWidget()

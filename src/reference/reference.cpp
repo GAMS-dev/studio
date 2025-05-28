@@ -96,7 +96,7 @@ FileReferenceItem* Reference::getFileUsedReference(FileReferenceId id)
 
 int Reference::getNumberOfFileUsed() const
 {
-    return (mFileUsedReference.size()<=0 ? mFileUsed.size() : mFileUsedReference.size()-1);
+    return mFileUsedReferenceCount;
 }
 
 bool Reference::contains(SymbolId id) const
@@ -193,6 +193,8 @@ void Reference::loadReferenceFile(const QString &encodingName, bool triggerReloa
 
 qint64 Reference::parseFile(const QString &referenceFile, const QString &encodingName)
 {
+    mFileUsedReferenceCount = 0;
+
     QFile file(referenceFile);
     int lineread = 0;
     if(!file.open(QFile::ReadOnly)) {
@@ -336,7 +338,7 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
         }
         QList<QVariant> rootdata;
         rootdata << QVariant(id) << QVariant() << QVariant()
-                 << QVariant()   << QVariant();
+                 << QVariant()   << QVariant() << QVariant();
         FileReferenceItem* item = new FileReferenceItem(rootdata);
         mFileUsedReference[id] = item;
 
@@ -370,14 +372,33 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
             }
             QList<QVariant> data;
             data << QVariant( location )   << QVariant(referenceType)
-                 << QVariant(globalLineno) << QVariant(localLineumber) << QVariant(id);
+                 << QVariant(globalLineno) << QVariant(localLineumber) << QVariant(id) << QVariant(true);
+            QFile ff(location);
+            QFileInfo fileInfo(ff);
+            bool isFile= (fileInfo.exists() && fileInfo.isFile());
+
             int parentId = parentIdx.toInt();
             if (!mFileUsedReference.contains(parentId))
                 break;
-            FileReferenceItem* parentItem = mFileUsedReference[parentId];
-            item = new FileReferenceItem(data, parentItem);
-            parentItem->appendChild( item );
-            mFileUsedReference[id]  = item;
+            if (isFile) {
+                FileReferenceItem* parentItem = mFileUsedReference[parentId];
+                item = new FileReferenceItem(data, parentItem);
+                parentItem->appendChild( item );
+
+                ++mFileUsedReferenceCount;
+                QString thisLocation = fileInfo.absoluteFilePath();
+                for(FileReferenceItem* refitem : mFileUsedReference.values()){
+                    if (item->data(static_cast<int>(FileReferenceItemColumn::Id)).toInt() == refitem->data(static_cast<int>(FileReferenceItemColumn::Id)).toInt())
+                        continue;
+                    QFile otherLocation(refitem->data(static_cast<int>(FileReferenceItemColumn::Location)).toString());
+                    if (thisLocation.compare(QFileInfo(otherLocation).absoluteFilePath())==0) {
+                        item->setData(static_cast<int>(FileReferenceItemColumn::FirstEntry), QVariant(false));
+                        --mFileUsedReferenceCount;
+                        break;
+                    }
+                }
+                mFileUsedReference[id]  = item;
+            }
             lineread++;
         }
      }
@@ -385,17 +406,19 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
          int id = 0;
          QList<QVariant> rootdata;
          rootdata << QVariant(id) << QVariant() << QVariant()
-                  << QVariant()   << QVariant();
-         FileReferenceItem* rootitem = new FileReferenceItem(rootdata);
+                  << QVariant()   << QVariant() << QVariant();
+         FileReferenceItem* rootitem = new FileReferenceItem(rootdata) ;
          mFileUsedReference[id] = rootitem;
+         mFileUsedReferenceCount = 0;
          for(int i=0; i<mFileUsed.size(); ++i) {
              id = i+1;
              QList<QVariant> data;
              data << QVariant( mFileUsed.at(i) ) << QVariant()
-                  << QVariant() << QVariant() << QVariant(id);
+                  << QVariant() << QVariant() << QVariant(id) << QVariant(true);
              FileReferenceItem* item = new FileReferenceItem(data, rootitem);
              rootitem->appendChild( item );
              mFileUsedReference[id]  = item;
+             ++mFileUsedReferenceCount;
          }
      }
      if (lineread <= expectedLineread) {

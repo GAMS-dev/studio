@@ -200,6 +200,8 @@ private:
     qint64 mLastReadFileSize = 0;
     bool mPendingReload = false;
 
+    int mFileUsedReferenceCount = 0;
+
     QStringList mFileUsed;
 
     QList<SymbolReferenceItem *> mSetReference;

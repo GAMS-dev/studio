@@ -62,10 +62,10 @@ protected:
     static QList<QVariant> header() {
         QList<QVariant> header;
         header << QVariant("Location")    << QVariant("Type")
-               << QVariant("Global Line") << QVariant("Reference Line") << QVariant("ID");
+               << QVariant("Global Line") << QVariant("Reference Line")
+               << QVariant("ID")          << QVariant("First");
         return header;
     }
-
     Reference*         mReference;
     FileReferenceItem* mRootItem;
 };

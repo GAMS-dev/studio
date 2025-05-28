@@ -17,31 +17,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef OPTIONSORTFILTERPROXYMODEL_H
-#define OPTIONSORTFILTERPROXYMODEL_H
+#ifndef FILEUSEDFILTERPROXYMODEL_H
+#define FILEUSEDFILTERPROXYMODEL_H
 
 #include <QSortFilterProxyModel>
 
 namespace gams {
 namespace studio {
-namespace option {
+namespace reference {
 
-class OptionSortFilterProxyModel : public QSortFilterProxyModel
+class FileUsedFilterProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    OptionSortFilterProxyModel(QObject *parent = nullptr);
+    explicit FileUsedFilterProxyModel(QObject *parent = nullptr);
+
+public slots:
+    void showFileOnceChanged(bool showOnce);
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const;
-    bool filterAcceptsSelfRow(int sourceRow, const QModelIndex& sourceParent) const;
+    bool filterAcceptsSelfRow(int sourceRrow, const QModelIndex& sourceParent) const;
     bool hasAcceptedChildren(int sourceRow, const QModelIndex& sourceParent) const;
-    bool lessThan(const QModelIndex& left, const QModelIndex& right) const;
 
+    bool mShowFileOnce;
 };
 
-} // namespace option
+} // namespace reference
 } // namespace studio
 } // namespace gams
 
-#endif // OPTIONSORTFILTERPROXYMODEL_H
+#endif // FILEUSEDFILTERPROXYMODEL_H

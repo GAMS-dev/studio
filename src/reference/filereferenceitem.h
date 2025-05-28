@@ -33,7 +33,8 @@ enum class FileReferenceItemColumn {
     Type             = 1,
     GlobalLineNumber = 2,
     LocalLineNumber  = 3,
-    Id               = 4
+    Id               = 4,
+    FirstEntry       = 5
 };
 
 class FileReferenceItem

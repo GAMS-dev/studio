@@ -233,6 +233,7 @@ SOURCES += \
     process/gmszipprocess.cpp \
     reference/filereferenceitem.cpp \
     reference/filereferencewidget.cpp \
+    reference/fileusedfilterproxymodel.cpp \
     reference/fileusedtreemodel.cpp \
     reference/reference.cpp \
     reference/referencedatatype.cpp \
@@ -467,6 +468,7 @@ HEADERS += \
     process/gmszipprocess.h \
     reference/filereferenceitem.h \
     reference/filereferencewidget.h \
+    reference/fileusedfilterproxymodel.h \
     reference/fileusedtreemodel.h \
     reference/reference.h \
     reference/referencedatatype.h \
