@@ -175,7 +175,7 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
 
     connect(ui->paramCfgTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &ParamConfigEditor::on_selectRow, Qt::UniqueConnection);
     connect(ui->paramCfgTableView, &QTableView::customContextMenuRequested,this, &ParamConfigEditor::showParameterContextMenu, Qt::UniqueConnection);
-    connect(ui->paramCfgTableView->selectionModel(), &QItemSelectionModel::currentChanged, this, &ParamConfigEditor::currentTableSelectionChanged);
+    connect(ui->paramCfgTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ParamConfigEditor::selectionChanged);
     connect(mParameterTableModel, &ConfigParamTableModel::newTableRowDropped, this, &ParamConfigEditor::on_newTableRowDropped, Qt::UniqueConnection);
 
     connect(ui->paramCfgDefTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -273,29 +273,52 @@ QString ParamConfigEditor::getSelectedParameterName(QWidget *widget) const
 
 }
 
-void ParamConfigEditor::currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous)
+void ParamConfigEditor::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    Q_UNUSED(previous)
-    if (ui->paramCfgTableView->selectionModel()->selectedRows().isEmpty()) {
-        updateActionsState(current);
-    } else {
-        if (ui->paramCfgTableView->selectionModel()->isRowSelected(current.row(), current.parent()) )
-            updateActionsState();
-        else
-            updateActionsState(current);
+    Q_UNUSED(deselected)
+    if (selected.isEmpty()) {
+        updateActionsState();
+        return;
     }
+
+    updateActionsState(selected.indexes().first());
 }
 
 void ParamConfigEditor::updateActionsState(const QModelIndex &index)
 {
+    if (!index.isValid())
+        return;
+
+    QModelIndexList idxSelection = ui->paramCfgTableView->selectionModel()->selectedIndexes();
+    bool thereIsSelection = (isThereARow() && !idxSelection.isEmpty());
+
+    bool singleSelection = (idxSelection.size() ==1);
+    bool singleSelectionIsRow = (singleSelection && ui->paramCfgTableView->selectionModel()->isRowSelected(idxSelection.first().row()));
+    bool multiSelectionIsRow = false;
+    bool multiSelectionIsCell_sameRow = multiSelectionIsRow;
+    if (!singleSelection) {
+         QList<int> rowList;
+         for (QModelIndex& idx :idxSelection) {
+             if (ui->paramCfgTableView->selectionModel()->isRowSelected(idx.row())) {
+                 multiSelectionIsRow = true;
+                 break;
+             }
+             if (rowList.contains(idx.row())) {
+                 continue;
+             }
+             rowList.append(idx.row());
+         }
+         multiSelectionIsCell_sameRow = (rowList.size() == 1);
+    }
+
     ui->actionInsert->setEnabled( true );
-    ui->actionDelete->setEnabled( false );
-    ui->actionMoveUp->setEnabled( false );
-    ui->actionMoveDown->setEnabled( false );
-    ui->actionSelect_Current_Row->setEnabled( isThereAnIndexSelection() );
-    ui->actionSelectAll->setEnabled( isThereARow() );
-    ui->actionShow_Option_Definition->setEnabled( index.row() < mParameterTableModel->rowCount() );
-    ui->actionResize_Columns_To_Contents->setEnabled( index.row() < mParameterTableModel->rowCount() );
+    ui->actionDelete->setEnabled( thereIsSelection && idxSelection.first().row() < mParameterTableModel->rowCount() );
+    ui->actionMoveUp->setEnabled(   (singleSelection || singleSelectionIsRow || multiSelectionIsRow || multiSelectionIsCell_sameRow) && idxSelection.first().row() > 0 );
+    ui->actionMoveDown->setEnabled( (singleSelection || singleSelectionIsRow || multiSelectionIsRow || multiSelectionIsCell_sameRow) && idxSelection.last().row() < mParameterTableModel->rowCount()-1 );
+    ui->actionSelect_Current_Row->setEnabled( thereIsSelection );
+    ui->actionSelectAll->setEnabled( thereIsSelection );
+    ui->actionShow_Option_Definition->setEnabled( thereIsSelection && index.row() < mParameterTableModel->rowCount() );
+    ui->actionResize_Columns_To_Contents->setEnabled( thereIsSelection );
     ui->actionShowRecurrence->setEnabled( false );
 
     ui->actionInsert->icon().pixmap( QSize(16, 16), ui->actionInsert->isEnabled() ? QIcon::Selected : QIcon::Disabled,
@@ -315,23 +338,23 @@ void ParamConfigEditor::updateActionsState()
                                          ? ui->paramCfgTableView->selectionModel()->selectedIndexes()
                                          : ui->paramCfgTableView->selectionModel()->selectedRows() );
 
-    if (idxSelection.isEmpty())
-        return;
+    bool thereIsSelection = (isThereARow() && !idxSelection.isEmpty());
+
     std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() < b.row(); });
 
-    ui->actionInsert->setEnabled( isThereARow() );
-    ui->actionDelete->setEnabled( idxSelection.first().row() < mParameterTableModel->rowCount() );
+    ui->actionInsert->setEnabled( true );
+    ui->actionDelete->setEnabled(  thereIsSelection ? idxSelection.first().row() < mParameterTableModel->rowCount() : false );
 
-    ui->actionMoveUp->setEnabled( idxSelection.first().row() > 0 );
-    ui->actionMoveDown->setEnabled( idxSelection.last().row() < mParameterTableModel->rowCount()-1 );
+    ui->actionMoveUp->setEnabled( thereIsSelection ? idxSelection.first().row() > 0 : false );
+    ui->actionMoveDown->setEnabled( thereIsSelection ? idxSelection.last().row() < mParameterTableModel->rowCount()-1 : false );
 
-    ui->actionSelect_Current_Row->setEnabled( isThereAnIndexSelection() );
-    ui->actionSelectAll->setEnabled( isThereARow( ));
+    ui->actionSelect_Current_Row->setEnabled( thereIsSelection );
+    ui->actionSelectAll->setEnabled( thereIsSelection );
 
-    ui->actionShow_Option_Definition->setEnabled( idxSelection.first().row() < mParameterTableModel->rowCount() );
-    ui->actionResize_Columns_To_Contents->setEnabled( idxSelection.first().row() < mParameterTableModel->rowCount() );
-    ui->actionShowRecurrence->setEnabled( idxSelection.first().row() < mParameterTableModel->rowCount()
-                                          && getRecurrentOption(idxSelection.first()).size() >0 );
+    ui->actionShow_Option_Definition->setEnabled( thereIsSelection ? idxSelection.first().row() < mParameterTableModel->rowCount() : false );
+    ui->actionResize_Columns_To_Contents->setEnabled( thereIsSelection ? idxSelection.first().row() < mParameterTableModel->rowCount() : false);
+    ui->actionShowRecurrence->setEnabled( thereIsSelection ? idxSelection.first().row() < mParameterTableModel->rowCount()
+                                          && getRecurrentOption(idxSelection.first()).size() >0 : false );
     ui->actionInsert->icon().pixmap( QSize(16, 16), ui->actionInsert->isEnabled() ? QIcon::Selected : QIcon::Disabled,
                                                     QIcon::Off);
     ui->actionDelete->icon().pixmap( QSize(16, 16), ui->actionDelete->isEnabled() ? QIcon::Selected : QIcon::Disabled,
@@ -1031,28 +1054,37 @@ void ParamConfigEditor::on_actionInsert_triggered()
 
     disconnect(mParameterTableModel, &QAbstractTableModel::dataChanged, mParameterTableModel, &ConfigParamTableModel::on_updateConfigParamItem);
     int rowToBeInserted = -1;
-    if (isThereARowSelection()) {
+    if (isThereAnIndexSelection()) {
         QList<int> rows;
-        const auto indexes = ui->paramCfgTableView->selectionModel()->selectedRows();
+        const auto indexes = ui->paramCfgTableView->selectionModel()->selectedIndexes();
         for(const QModelIndex idx : indexes) {
             rows.append( idx.row() );
         }
         std::sort(rows.begin(), rows.end());
         rowToBeInserted = rows.at(0);
-        ui->paramCfgTableView->model()->insertRows(rowToBeInserted, 1, QModelIndex());
+        if (rowToBeInserted < ui->paramCfgTableView->model()->rowCount()) {
+             QVariant header = ui->paramCfgTableView->model()->headerData(rowToBeInserted, Qt::Vertical, Qt::CheckStateRole);
+             ui->paramCfgTableView->model()->insertRows(rowToBeInserted, 1, QModelIndex());
+             ui->paramCfgTableView->model()->setHeaderData(rowToBeInserted+1, Qt::Vertical,
+                                                           header,
+                                                           Qt::CheckStateRole );
+        } else {
+            ui->paramCfgTableView->model()->insertRows(rowToBeInserted, 1, QModelIndex());
+        }
     } else {
         ui->paramCfgTableView->model()->insertRows(ui->paramCfgTableView->model()->rowCount(), 1, QModelIndex());
         rowToBeInserted = mParameterTableModel->rowCount()-1;
     }
+
     const QModelIndex insertKeyIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_PARAM_KEY);
     const QModelIndex insertValueIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_PARAM_VALUE);
     const QModelIndex insertNumberIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_ENTRY_NUMBER);
     const QModelIndex minVersionIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_MIN_VERSION);
     const QModelIndex maxVersionIndex = ui->paramCfgTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_MIN_VERSION);
 
-    ui->paramCfgTableView->model()->setHeaderData(ui->paramCfgTableView->model()->rowCount()-1, Qt::Vertical,
-                                                      Qt::CheckState(Qt::Checked),
-                                                      Qt::CheckStateRole );
+    ui->paramCfgTableView->model()->setHeaderData(rowToBeInserted, Qt::Vertical,
+                                                  Qt::CheckState(Qt::Checked),
+                                                  Qt::CheckStateRole );
 
     ui->paramCfgTableView->model()->setData( insertKeyIndex, OptionTokenizer::keyGeneratedStr, Qt::EditRole);
     ui->paramCfgTableView->model()->setData( insertValueIndex, OptionTokenizer::valueGeneratedStr, Qt::EditRole);
@@ -1066,8 +1098,7 @@ void ParamConfigEditor::on_actionInsert_triggered()
 
     emit modificationChanged(true);
 
-    ui->paramCfgTableView->clearSelection();
-    ui->paramCfgTableView->selectRow(rowToBeInserted);
+    ui->paramCfgTableView->selectionModel()->select(insertKeyIndex, QItemSelectionModel::ClearAndSelect );
 
     const QModelIndex index = mParameterTableModel->index(rowToBeInserted, ConfigParamTableModel::COLUMN_PARAM_KEY);
     ui->paramCfgTableView->edit( index );
