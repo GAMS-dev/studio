@@ -345,6 +345,7 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
         recordList.removeFirst();
         size = recordList.first().toInt();
         expectedLineread += size;
+        QList<QString> fileLocationList;
         while (!file.atEnd()) {
             if (lineread > expectedLineread)
                 break;
@@ -373,29 +374,25 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
             QList<QVariant> data;
             data << QVariant( location )   << QVariant(referenceType)
                  << QVariant(globalLineno) << QVariant(localLineumber) << QVariant(id) << QVariant(true);
-            QFile ff(location);
-            QFileInfo fileInfo(ff);
-            bool isFile= (fileInfo.exists() && fileInfo.isFile());
 
             int parentId = parentIdx.toInt();
             if (!mFileUsedReference.contains(parentId))
                 break;
-            if (isFile) {
+            if ( referenceType.compare("INCLUDE", Qt::CaseInsensitive) == 0    ||
+                 referenceType.compare("GDXIN", Qt::CaseInsensitive) == 0      ||
+                 referenceType.compare("BATINCLUDE", Qt::CaseInsensitive) == 0 ||
+                 referenceType.compare("INPUT", Qt::CaseInsensitive) == 0         ) {
                 FileReferenceItem* parentItem = mFileUsedReference[parentId];
                 item = new FileReferenceItem(data, parentItem);
                 parentItem->appendChild( item );
 
                 ++mFileUsedReferenceCount;
-                QString thisLocation = fileInfo.absoluteFilePath();
-                for(FileReferenceItem* refitem : mFileUsedReference.values()){
-                    if (item->data(static_cast<int>(FileReferenceItemColumn::Id)).toInt() == refitem->data(static_cast<int>(FileReferenceItemColumn::Id)).toInt())
-                        continue;
-                    QFile otherLocation(refitem->data(static_cast<int>(FileReferenceItemColumn::Location)).toString());
-                    if (thisLocation.compare(QFileInfo(otherLocation).absoluteFilePath())==0) {
-                        item->setData(static_cast<int>(FileReferenceItemColumn::FirstEntry), QVariant(false));
-                        --mFileUsedReferenceCount;
-                        break;
-                    }
+                QString thisLocation = QFileInfo(QFile(location)).absoluteFilePath();
+                if (fileLocationList.contains(thisLocation)) {
+                    item->setData(static_cast<int>(FileReferenceItemColumn::FirstEntry), QVariant(false));
+                    --mFileUsedReferenceCount;
+                } else {
+                    fileLocationList.append(thisLocation);
                 }
                 mFileUsedReference[id]  = item;
             }
