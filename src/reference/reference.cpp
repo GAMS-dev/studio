@@ -378,10 +378,13 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
             int parentId = parentIdx.toInt();
             if (!mFileUsedReference.contains(parentId))
                 break;
-            if ( referenceType.compare("INCLUDE", Qt::CaseInsensitive) == 0    ||
-                 referenceType.compare("GDXIN", Qt::CaseInsensitive) == 0      ||
-                 referenceType.compare("BATINCLUDE", Qt::CaseInsensitive) == 0 ||
-                 referenceType.compare("INPUT", Qt::CaseInsensitive) == 0         ) {
+            if ( referenceType.compare("INCLUDE") == 0    ||
+                 referenceType.compare("INPUT") == 0      ||
+                 referenceType.compare("GDXIN") == 0      ||
+                 referenceType.compare("GDXOUT") == 0     ||
+                 referenceType.compare("BATINCLUDE") == 0 ||
+                 referenceType.compare("SYSINCLUDE") == 0 ||
+                 referenceType.compare("LIBINCLUDE") == 0    ) {
                 FileReferenceItem* parentItem = mFileUsedReference[parentId];
                 item = new FileReferenceItem(data, parentItem);
                 parentItem->appendChild( item );
