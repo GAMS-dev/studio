@@ -151,7 +151,7 @@ QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFi
     inst += "    symbols:\n";
     for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
         GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
-        QString name = hasActiveFilter(sym) && applyFilters ? sym->name() + FILTER_SUFFIX : sym->name();
+        QString name = hasActiveFilter(sym->aliasedSymbol()) && applyFilters ? sym->name() + FILTER_SUFFIX : sym->name();
         int columnDimension = 0;
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
             name = sym->name() + PROJ_SUFFIX;
@@ -237,7 +237,7 @@ QString ExportDriver::generateProjections(bool applyFilters, bool hiddenAttribut
             }
         }
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU || domOrderChanged) {
-            if (hasActiveFilter(sym) && applyFilters)
+            if (hasActiveFilter(sym->aliasedSymbol()) && applyFilters)
                 name = sym->name() + FILTER_SUFFIX + suffix + dom;
             else
                 name = sym->name() + suffix + dom;
@@ -266,9 +266,10 @@ QString ExportDriver::generateFilters()
     QString inst;
     for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
         GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
-        if (hasActiveFilter(sym)) {
-            QString name = sym->name();
-            QString newName = name + FILTER_SUFFIX;
+        QString name = sym->name();
+        QString newName = name + FILTER_SUFFIX;
+        sym = sym->aliasedSymbol();
+        if (hasActiveFilter(sym->aliasedSymbol())) {
             inst += "- Filter:\n";
             inst += "    name: " + name + "\n";
             inst += "    newName: " + newName + "\n";
