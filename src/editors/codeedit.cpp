@@ -43,6 +43,8 @@ namespace studio {
 
 using namespace search;
 
+QHash<ProfilerColumn, QString> CodeEdit::mProfilerHeaderToolTip
+    {{pcTime, "Elapsed Time"}, {pcMemory, "Memory Usage"}, {pcRows, "Number of Assignments"}, {pcSteps, "Execution Steps"}};
 QRegularExpression CodeEdit::mRex0LeadingSpaces("^(\\s*)");
 QRegularExpression CodeEdit::mRex1LeadingSpaces("^(\\s+)");
 QRegularExpression CodeEdit::mRex2LeadingSpaces("\\s*");
@@ -1431,13 +1433,13 @@ void CodeEdit::profilerContextMenuEvent(QContextMenuEvent *e)
     QList<QPair<int, qreal>> countTime;
     QList<QPair<int, int>> maxSteps;
     emit getProfilerMaxData(countTime, maxSteps);
-    menu.addSection("highest time");
+    menu.addSection("Elapsed Time max");
     for (int i = 0; i < countTime.size(); ++i) {
         menu.addAction(QString("%1: %2 s").arg(i+1).arg(countTime.at(i).second, 0, 'f', 3), this, [this, countTime, i]() {
             emit jumpToContinuousLine(countTime.at(i).first);
         });
     }
-    menu.addSection("max steps");
+    menu.addSection("Executed Steps max");
     for (int i = 0; i < maxSteps.size(); ++i) {
         menu.addAction(QString("%1: %2 ↻").arg(i+1).arg(maxSteps.at(i).second), this, [this, maxSteps, i]() {
             emit jumpToContinuousLine(maxSteps.at(i).first);
@@ -1467,28 +1469,28 @@ void CodeEdit::profilerHeaderContextMenuEvent(QContextMenuEvent *e)
     QActionGroup group(&menu);
     if (mProfilerHeaderContext == pcNone) {
         int visibleCols = mSettings->toInt(skEdProfilerCols);
-        menu.addAction("Show &time", this, [this, visibleCols]() {
+        menu.addAction("Elapsed &Time", this, [this, visibleCols]() {
             mSettings->setInt(skEdProfilerCols, visibleCols & 1 ? visibleCols - 1 : visibleCols + 1);
             emit profilerSettingsChanged();
         });
         menu.actions().last()->setCheckable(true);
         menu.actions().last()->setChecked(visibleCols & 1);
 
-        menu.addAction("Show &memory", this, [this, visibleCols]() {
+        menu.addAction("&Memory Usage", this, [this, visibleCols]() {
             mSettings->setInt(skEdProfilerCols, visibleCols & 2 ? visibleCols - 2 : visibleCols + 2);
             emit profilerSettingsChanged();
         });
         menu.actions().last()->setCheckable(true);
         menu.actions().last()->setChecked(visibleCols & 2);
 
-        menu.addAction("Show &rows", this, [this, visibleCols]() {
+        menu.addAction("Number of &Assignments", this, [this, visibleCols]() {
             mSettings->setInt(skEdProfilerCols, visibleCols & 4 ? visibleCols - 4 : visibleCols + 4);
             emit profilerSettingsChanged();
         });
         menu.actions().last()->setCheckable(true);
         menu.actions().last()->setChecked(visibleCols & 4);
 
-        menu.addAction("Show &steps", this, [this, visibleCols]() {
+        menu.addAction("Execution &Steps", this, [this, visibleCols]() {
             mSettings->setInt(skEdProfilerCols, visibleCols & 8 ? visibleCols - 8 : visibleCols + 8);
             emit profilerSettingsChanged();
         });
@@ -2675,7 +2677,9 @@ void CodeEdit::extraSelSearchSelection(QList<QTextEdit::ExtraSelection> &selecti
 QPoint CodeEdit::toolTipPos(const QPoint &mousePos)
 {
     QPoint pos = AbstractEdit::toolTipPos(mousePos);
-    if (mousePos.x() < mLineNumberArea->width())
+    if (mousePos.y() < 0)
+        pos = mProfilerHeader->geometry().topRight() - QPoint(-10, mProfilerHeader->height()-2);
+    else if (mousePos.x() < mLineNumberArea->width())
         pos.setX(mLineNumberArea->width()+6);
     else
         pos.setX(pos.x() + mLineNumberArea->width()+2);
@@ -2697,10 +2701,13 @@ QString CodeEdit::getToolTipText(const QPoint &pos)
             return QString("Breakpoint moved to line %1").arg(mAimedBreakpoints.value(cursor.blockNumber()+1));
         }
     }
-    if (pos.x() < 0 || pos.x() > viewport()->width()) {
+    if (pos.x() < 0 || pos.y() < 0) {
         QTextCursor cursor = cursorForPosition(pos);
         QStringList profileText;
-        emit getProfileLong(cursor.blockNumber() + 1, profileText);
+        if (pos.y() < 0)
+            profileText << mProfilerHeaderToolTip.value(mProfilerHeaderContext);
+        else
+            emit getProfileLong(cursor.blockNumber() + 1, profileText);
         return profileText.join('\n');
     }
     checkLinks(pos, true, &fileName);
@@ -2990,12 +2997,20 @@ void CodeEdit::profilerPaintHeaderEvent(QPaintEvent *event)
     if (mColumnFlags.testFlag(pcRows) && mProfilerCol.size() > iRect) {
         int wid = mProfilerCol.at(iRect) - mProfilerCol.at(iRect-1) - gap;
         QRect rect(mProfilerCol.at(iRect-1) + gap, top, wid, height-1);
+        if (mProfilerHeaderContext == pcRows)
+            painter.fillRect(rect, highlight);
+        else
+            rect.moveTopLeft(rect.topLeft() + QPoint(1,1));
         painter.drawText(rect, "#", optC); // symbols ☷ ∑ #
         ++iRect;
     }
 
     if (mColumnFlags.testFlag(pcSteps) && mProfilerCol.size() > iRect) {
         QRect rect(mProfilerCol.at(iRect-1) + gap, top, mProfilerCol.at(iRect) - mProfilerCol.at(iRect-1) - gap, height);
+        if (mProfilerHeaderContext == pcSteps)
+            painter.fillRect(rect, highlight);
+        else
+            rect.moveTopLeft(rect.topLeft() + QPoint(1,1));
         painter.drawText(rect, "↻", optC);
     }
 
@@ -3803,6 +3818,7 @@ void ProfilerHeader::mousePressEvent(QMouseEvent *event)
 void ProfilerHeader::mouseMoveEvent(QMouseEvent *event)
 {
     mCodeEditor->setProfilerHeaderContext(event->pos());
+    mCodeEditor->updateToolTip(event->pos() - QPoint(mCodeEditor->profilerWidth(), mCodeEditor->profilerHeaderHeight()));
     repaint();
 }
 

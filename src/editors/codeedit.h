@@ -377,6 +377,7 @@ private:
     int mProfilerStepsDigits = 0;
     QTextCursor mPreDebugCursor;
 
+    static QHash<ProfilerColumn, QString> mProfilerHeaderToolTip;
     static QRegularExpression mRex0LeadingSpaces;
     static QRegularExpression mRex1LeadingSpaces;
     static QRegularExpression mRex2LeadingSpaces;
