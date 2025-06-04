@@ -27,6 +27,7 @@ namespace reference {
 
 FileReferenceWidget::FileReferenceWidget(Reference* ref, ReferenceViewer *parent) :
     ui(new Ui::FileReferenceWidget),
+    mFilterActivated(false),
     mReference(ref),
     mReferenceViewer(parent)
 {
@@ -46,6 +47,7 @@ FileReferenceWidget::FileReferenceWidget(Reference* ref, ReferenceViewer *parent
     ui->fileReferenceTreeView->resizeColumnToContents( (int)FileReferenceItemColumn::Type );
     ui->fileReferenceTreeView->setColumnHidden( (int)FileReferenceItemColumn::GlobalLineNumber, true);
     ui->fileReferenceTreeView->setColumnHidden( (int)FileReferenceItemColumn::Id, true);
+    ui->fileReferenceTreeView->setColumnHidden( (int)FileReferenceItemColumn::ParentId, true);
     ui->fileReferenceTreeView->setColumnHidden( (int)FileReferenceItemColumn::FirstEntry, true);
 
     ui->showFileOnceCheckBox->setCheckState(Qt::Checked);
@@ -56,6 +58,7 @@ FileReferenceWidget::FileReferenceWidget(Reference* ref, ReferenceViewer *parent
     connect(ui->showFileOnceCheckBox, static_cast<void(QCheckBox::*)(Qt::CheckState)>(&QCheckBox::checkStateChanged), this, [=](Qt::CheckState state) {
         proxymodel->showFileOnceChanged(state==Qt::Checked);
         mFileUsedModel->resetModel();
+        emit mReference->reloadFiledUsedTabFinished(state==Qt::Checked);
     });
 
 }
@@ -75,6 +78,21 @@ QList<QHeaderView *> FileReferenceWidget::headers()
 bool FileReferenceWidget::isModelLoaded() const
 {
     return mFileUsedModel->isModelLoaded();
+}
+
+void FileReferenceWidget::activateFilter()
+{
+    // not the first time or model not loaded
+    if (mFilterActivated || !mReference)
+        return;
+
+    mFilterActivated = true;
+    mReference->filterFileUsedReference();
+}
+
+void FileReferenceWidget::deActivateFilter()
+{
+    mFilterActivated = false;
 }
 
 void FileReferenceWidget::resetModel()

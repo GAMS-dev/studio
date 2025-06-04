@@ -94,9 +94,12 @@ FileReferenceItem* Reference::getFileUsedReference(FileReferenceId id)
     return mFileUsedReference[id];
 }
 
-int Reference::getNumberOfFileUsed() const
+int Reference::getNumberOfFileUsed(bool compactView) const
 {
-    return mFileUsedReferenceCount;
+    if (compactView)
+        return mFileUsedReferenceCount;
+    else
+        return (mFileUsedReference.size()<=0 ? mFileUsed.size() : mFileUsedReference.size()-1);
 }
 
 bool Reference::contains(SymbolId id) const
@@ -153,6 +156,44 @@ Reference::ReferenceState Reference::state() const
 int Reference::errorLine() const
 {
     return  mLastErrorLine;
+}
+
+void Reference::filterFileUsedReference()
+{
+    mFileUsedReferenceCount = 0;
+    QList<QString> fileLocationList;
+    for (auto &item : mFileUsedReferenceList) {
+        int id = item->data(static_cast<int>(FileReferenceItemColumn::Id)).toInt();
+        if (id == 0)
+            continue;
+
+        int parentId = item->data(static_cast<int>(FileReferenceItemColumn::ParentId)).toInt();
+
+        const QString referenceType = item->data(static_cast<int>(FileReferenceItemColumn::Type)).toString();
+        if ( referenceType.compare("INCLUDE") == 0    ||
+             referenceType.compare("INPUT") == 0      ||
+             referenceType.compare("GDXIN") == 0      ||
+             referenceType.compare("GDXOUT") == 0     ||
+             referenceType.compare("BATINCLUDE") == 0 ||
+             referenceType.compare("SYSINCLUDE") == 0 ||
+             referenceType.compare("LIBINCLUDE") == 0    ) {
+
+            FileReferenceItem* parentItem = mFileUsedReference[parentId];
+            item->setParent( parentItem );
+            parentItem->appendChild( item );
+
+            QString thisLocation = item->data(static_cast<int>(FileReferenceItemColumn::Location)).toString();
+            if (fileLocationList.contains(thisLocation)) {
+                item->setData(static_cast<int>(FileReferenceItemColumn::FirstEntry), QVariant(false));
+            } else {
+                item->setData(static_cast<int>(FileReferenceItemColumn::FirstEntry), QVariant(true));
+                fileLocationList.append(thisLocation);
+                ++mFileUsedReferenceCount;
+            }
+            mFileUsedReference[id]  = item;
+        }
+    }
+    emit reloadFiledUsedTabFinished(true);
 }
 
 void Reference::loadReferenceFile(const QString &encodingName, bool triggerReload)
@@ -338,14 +379,14 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
         }
         QList<QVariant> rootdata;
         rootdata << QVariant(id) << QVariant() << QVariant()
-                 << QVariant()   << QVariant() << QVariant();
-        FileReferenceItem* item = new FileReferenceItem(rootdata);
-        mFileUsedReference[id] = item;
+                 << QVariant()   << QVariant() << QVariant() << QVariant();
+        FileReferenceItem* rootitem = new FileReferenceItem(rootdata);
+        mFileUsedReference[id] = rootitem;
+        mFileUsedReferenceList.append(rootitem);
 
         recordList.removeFirst();
         size = recordList.first().toInt();
         expectedLineread += size;
-        QList<QString> fileLocationList;
         while (!file.atEnd()) {
             if (lineread > expectedLineread)
                 break;
@@ -364,7 +405,7 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
             id = recordList.first().toInt();
             const QString &globalLineno   = recordList.at(1);
             const QString &referenceType  = recordList.at(2);
-            const QString &parentIdx      = recordList.at(3);
+            const QString &parentid       = recordList.at(3);
             const QString &localLineumber = recordList.at(4);
             QString location       = recordList.at(5);
             for (int i=6; i<recordList.size(); ++i) {
@@ -372,33 +413,12 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
                 location += recordList.at(i);
             }
             QList<QVariant> data;
-            data << QVariant( location )   << QVariant(referenceType)
-                 << QVariant(globalLineno) << QVariant(localLineumber) << QVariant(id) << QVariant(true);
+            data << QVariant( location )     << QVariant(referenceType) << QVariant(globalLineno)
+                 << QVariant(localLineumber) << QVariant(id)            << QVariant(parentid)     << QVariant(false);
 
-            int parentId = parentIdx.toInt();
-            if (!mFileUsedReference.contains(parentId))
-                break;
-            if ( referenceType.compare("INCLUDE") == 0    ||
-                 referenceType.compare("INPUT") == 0      ||
-                 referenceType.compare("GDXIN") == 0      ||
-                 referenceType.compare("GDXOUT") == 0     ||
-                 referenceType.compare("BATINCLUDE") == 0 ||
-                 referenceType.compare("SYSINCLUDE") == 0 ||
-                 referenceType.compare("LIBINCLUDE") == 0    ) {
-                FileReferenceItem* parentItem = mFileUsedReference[parentId];
-                item = new FileReferenceItem(data, parentItem);
-                parentItem->appendChild( item );
-
-                ++mFileUsedReferenceCount;
-                QString thisLocation = QFileInfo(QFile(location)).absoluteFilePath();
-                if (fileLocationList.contains(thisLocation)) {
-                    item->setData(static_cast<int>(FileReferenceItemColumn::FirstEntry), QVariant(false));
-                    --mFileUsedReferenceCount;
-                } else {
-                    fileLocationList.append(thisLocation);
-                }
-                mFileUsedReference[id]  = item;
-            }
+            FileReferenceItem*  item = new FileReferenceItem(data);
+            mFileUsedReferenceList.append(item);
+            ++mFileUsedReferenceCount;
             lineread++;
         }
      }
@@ -406,7 +426,7 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
          int id = 0;
          QList<QVariant> rootdata;
          rootdata << QVariant(id) << QVariant() << QVariant()
-                  << QVariant()   << QVariant() << QVariant();
+                  << QVariant()   << QVariant() << QVariant() << QVariant();
          FileReferenceItem* rootitem = new FileReferenceItem(rootdata) ;
          mFileUsedReference[id] = rootitem;
          mFileUsedReferenceCount = 0;
@@ -414,7 +434,7 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
              id = i+1;
              QList<QVariant> data;
              data << QVariant( mFileUsed.at(i) ) << QVariant()
-                  << QVariant() << QVariant() << QVariant(id) << QVariant(true);
+                  << QVariant() << QVariant() << QVariant(id) << QVariant(0) << QVariant(true);
              FileReferenceItem* item = new FileReferenceItem(data, rootitem);
              rootitem->appendChild( item );
              mFileUsedReference[id]  = item;

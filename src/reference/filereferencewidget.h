@@ -46,6 +46,9 @@ public:
     QList<QHeaderView*> headers();
     bool isModelLoaded() const;
 
+    void activateFilter();
+    void deActivateFilter();
+
 public slots:
     void resetModel();
     void initModel();
@@ -59,6 +62,7 @@ private:
     Ui::FileReferenceWidget *ui;
     FileUsedTreeModel* mFileUsedModel;
 
+    bool mFilterActivated;
     Reference* mReference;
     ReferenceViewer* mReferenceViewer;
 

@@ -63,7 +63,7 @@ protected:
         QList<QVariant> header;
         header << QVariant("Location")    << QVariant("Type")
                << QVariant("Global Line") << QVariant("Reference Line")
-               << QVariant("ID")          << QVariant("First");
+               << QVariant("ID")          << QVariant("Parent ID")       << QVariant("First");
         return header;
     }
     Reference*         mReference;

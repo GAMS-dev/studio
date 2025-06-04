@@ -65,6 +65,7 @@ public slots:
     void reloadFile(const QString &encodingName);
     void on_tabBarClicked(int index);
     void updateView(bool loadStatus, bool pendingReload);
+    void updateFileUsedTabText(bool compactView);
 
 private:
     Ui::ReferenceViewer *ui;

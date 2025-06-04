@@ -37,7 +37,7 @@ public slots:
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const;
-    bool filterAcceptsSelfRow(int sourceRrow, const QModelIndex& sourceParent) const;
+    bool filterAcceptsSelfRow(int sourceRow, const QModelIndex& sourceParent) const;
     bool hasAcceptedChildren(int sourceRow, const QModelIndex& sourceParent) const;
 
     bool mShowFileOnce;

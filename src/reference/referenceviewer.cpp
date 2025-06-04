@@ -134,6 +134,7 @@ ReferenceViewer::ReferenceViewer(const QString &referenceFile, const QString &en
     }
 
     connect(ui->tabWidget, &QTabWidget::tabBarClicked, this, &ReferenceViewer::on_tabBarClicked);
+    connect(mReference.data(), &Reference::reloadFiledUsedTabFinished, this, &ReferenceViewer::updateFileUsedTabText);
     connect(mReference.data(), &Reference::loadFinished, this, &ReferenceViewer::updateView);
     if (problemLoaded) {
         // call loadReferenceFile() again every 500 ms
@@ -163,6 +164,10 @@ void ReferenceViewer::reloadFile(const QString &encodingName)
 {
     mEncodingName = encodingName;
     mReference->loadReferenceFile(mEncodingName);
+    FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(11));
+    if (fileUsedWidget) {
+        fileUsedWidget->deActivateFilter();
+    }
 }
 
 void ReferenceViewer::on_tabBarClicked(int index)
@@ -173,6 +178,7 @@ void ReferenceViewer::on_tabBarClicked(int index)
     } else {
         FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(index));
         if (fileUsedWidget && !fileUsedWidget->isModelLoaded()) {
+            fileUsedWidget->activateFilter();
             fileUsedWidget->initModel();
         }
     }
@@ -248,6 +254,11 @@ void ReferenceViewer::updateView(bool loadStatus, bool pendingReload)
             }
         }
     }
+}
+
+void ReferenceViewer::updateFileUsedTabText(bool compactview)
+{
+    ui->tabWidget->setTabText(11, QString("File Used (%1)").arg(mReference->getNumberOfFileUsed(compactview)));
 }
 
 } // namespace reference

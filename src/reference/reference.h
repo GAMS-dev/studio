@@ -94,8 +94,9 @@ public:
 
     ///
     /// \brief Get the number of file reference in the reference object.
+    /// \param compactView compact view of FileUsed tab
     /// \return Returns the number of file references.
-    int getNumberOfFileUsed() const;
+    int getNumberOfFileUsed(bool compactView=false) const;
 
     ///
     /// \brief Checks if symbol of the given id exists in the reference object.
@@ -166,6 +167,11 @@ public:
     ///
     int errorLine() const;
 
+    ///
+    /// \brief Filter FiledUsed Reference model
+    ///
+    void filterFileUsedReference();
+
 signals:
     ///
     /// \brief Signal emitted when loading the reference file has just been started.
@@ -179,6 +185,11 @@ signals:
     /// \see ::LoadStatus
     ///
     void loadFinished(bool loadStatus, bool pendignReload);
+
+    ///
+    /// \brief Signal emitted when FileUsed Tab data has been reloaded
+    /// \param compactView compact view of FileUsed tab
+    void reloadFiledUsedTabFinished(bool compactView);
 
 public slots:
     ///
@@ -215,6 +226,7 @@ private:
     QList<SymbolReferenceItem *> mMacroReference;
     QList<SymbolReferenceItem *> mUnusedReference;
 
+    QList<FileReferenceItem*> mFileUsedReferenceList;
     QMap<QString, SymbolId> mSymbolNameMap;
     QMap<FileReferenceId, FileReferenceItem*> mFileUsedReference;
     QMap<SymbolId, SymbolReferenceItem*> mReference;
