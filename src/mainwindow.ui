@@ -288,21 +288,20 @@
     <addaction name="separator"/>
     <addaction name="actionUpdate"/>
    </widget>
-   <widget class="gams::studio::CheckMenu" name="menu_GAMs">
+   <widget class="gams::studio::CheckParentMenu" name="menu_GAMs">
     <property name="title">
      <string>&amp;GAMS</string>
     </property>
     <property name="toolTipsVisible">
      <bool>true</bool>
     </property>
-    <addaction name="actionRunCompile"/>
+    <addaction name="actionRun"/>
+    <addaction name="actionCompile"/>
     <addaction name="actionRunDebugger"/>
     <addaction name="actionStepDebugger"/>
     <addaction name="separator"/>
-    <addaction name="actionRunCompileWithSelected"/>
-    <addaction name="action1_Create_GDX"/>
-    <addaction name="action2_Create_RF"/>
-    <addaction name="action3_Profiling"/>
+    <addaction name="actionRunWithSelected"/>
+    <addaction name="actionCompileWithSelected"/>
     <addaction name="separator"/>
     <addaction name="actionRunNeos"/>
     <addaction name="actionRunEngine"/>
@@ -822,16 +821,16 @@
     <string>F6</string>
    </property>
   </action>
-  <action name="actionRunCompile">
+  <action name="actionRun">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
      <normaloff>:/solid/play</normaloff>:/solid/play</iconset>
    </property>
    <property name="text">
-    <string>&amp;Run, Compile</string>
+    <string>&amp;Run</string>
    </property>
    <property name="toolTip">
-    <string>Run (Click), Compile (Shift+Click)</string>
+    <string>Run Main File</string>
    </property>
    <property name="shortcut">
     <string>F9</string>
@@ -848,20 +847,38 @@
    <property name="toolTip">
     <string>Compile</string>
    </property>
+   <property name="shortcut">
+    <string>Shift+F9</string>
+   </property>
   </action>
-  <action name="actionRunCompileWithSelected">
+  <action name="actionRunWithSelected">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
      <normaloff>:/solid/run-gdx</normaloff>:/solid/run-gdx</iconset>
    </property>
    <property name="text">
-    <string>Run, Compile &amp;with ...</string>
+    <string>Run &amp;with ...</string>
    </property>
    <property name="toolTip">
-    <string>Run (Click), Compile (Shift+Click)  with the selected options</string>
+    <string>Run with the selected options</string>
    </property>
    <property name="shortcut">
     <string>F10</string>
+   </property>
+  </action>
+  <action name="actionCompileWithSelected">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/code-gdx</normaloff>:/solid/code-gdx</iconset>
+   </property>
+   <property name="text">
+    <string>Compile with ...</string>
+   </property>
+   <property name="toolTip">
+    <string>Compile and create both, a GDX and reference file with default names.</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F10</string>
    </property>
   </action>
   <action name="actionRunDebugger">
@@ -892,18 +909,6 @@
    </property>
    <property name="shortcut">
     <string>Shift+F11</string>
-   </property>
-  </action>
-  <action name="actionCompileWithSelected">
-   <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/solid/code-gdx</normaloff>:/solid/code-gdx</iconset>
-   </property>
-   <property name="text">
-    <string>Compile with ...</string>
-   </property>
-   <property name="toolTip">
-    <string>Compile and create both, a GDX and reference file with default names.</string>
    </property>
   </action>
   <action name="actionRunNeos">
@@ -1805,7 +1810,7 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>gams::studio::CheckMenu</class>
+   <class>gams::studio::CheckParentMenu</class>
    <extends>QMenu</extends>
    <header>checkmenu.h</header>
   </customwidget>

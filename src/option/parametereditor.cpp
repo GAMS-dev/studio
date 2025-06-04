@@ -43,8 +43,8 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aCompile, QAction *aRun
                                  QAction *aRunDebug, QAction *aStepDebug, QList<QAction*> aActionFlags,
                                  QAction *aRunNeos, QAction *aRunEngine, QAction *aInterrupt, QAction *aStop,
                                  MainWindow *parent):
-    QWidget(parent), ui(new Ui::ParameterEditor), actionRunCompile(aRun), actionCompile(aCompile),
-    actionRunDebug(aRunDebug), actionStepDebug(aStepDebug), actionRunCompileWithSelected(aRunWith),
+    QWidget(parent), ui(new Ui::ParameterEditor), actionRun(aRun), actionCompile(aCompile),
+    actionRunDebug(aRunDebug), actionStepDebug(aStepDebug), actionRunWithSelected(aRunWith),
     actionCompileWithSelected(aCompileWith), actionFlags(aActionFlags), actionRunNeos(aRunNeos),
     actionRunEngine(aRunEngine), actionInterrupt(aInterrupt), actionStop(aStop), main(parent)
 {
@@ -52,9 +52,8 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aCompile, QAction *aRun
     addActions();
     mOptionTokenizer = new OptionTokenizer(QString("optgams.def"));
 
-    setRunsActionGroup(actionRunCompile, actionCompile, actionRunCompileWithSelected, actionCompileWithSelected,
-                       actionRunDebug, actionStepDebug, actionFlags, actionRunNeos, actionRunEngine);
-    setInterruptActionGroup(actionInterrupt, actionStop);
+    setRunsActionGroup();
+    setInterruptActionGroup();
 
     setFocusPolicy(Qt::StrongFocus);
 
@@ -246,7 +245,7 @@ QString ParameterEditor::on_runAction(RunActionState state)
         if (!gdxParam && actionFlags.size() && actionFlags.at(0)->isChecked()) commandLineStr.append("GDX=default ");
         if (!refParam && actionFlags.size() > 1 && actionFlags.at(1)->isChecked()) commandLineStr.append("RF=default ");
         if (!profParam && actionFlags.size() > 2 && actionFlags.at(2)->isChecked()) commandLineStr.append("Profile=300 ");
-        ui->gamsRunToolButton->setDefaultAction( actionRunCompileWithSelected );
+        ui->gamsRunToolButton->setDefaultAction( actionRunWithSelected );
 
     } else if (state == RunActionState::RunDebug) {
         ui->gamsRunToolButton->setDefaultAction( actionRunDebug );
@@ -272,7 +271,7 @@ QString ParameterEditor::on_runAction(RunActionState state)
         ui->gamsRunToolButton->setDefaultAction( actionRunEngine );
 
     } else {
-        ui->gamsRunToolButton->setDefaultAction( actionRunCompile );
+        ui->gamsRunToolButton->setDefaultAction( actionRun );
     }
 
     return commandLineStr.simplified();
@@ -1060,42 +1059,25 @@ void ParameterEditor::resizeColumnsToContents()
     }
 }
 
-void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aCompile, QAction *aRunWith, QAction *aCompileWith,
-                                         QAction *aRunDebug, QAction *aStepDebug, QList<QAction*> aActionFlags,
-                                         QAction *aRunNeos, QAction *aRunEngine)
+void ParameterEditor::setRunsActionGroup()
 {
     mHasSSL = QSslSocket::supportsSsl();
-    actionRunCompile = aRun;
-    actionCompile = aCompile;
-    actionRunDebug = aRunDebug;
-    actionStepDebug = aStepDebug;
-    actionRunCompileWithSelected = aRunWith;
-    actionCompileWithSelected = aCompileWith;
-    actionFlags = aActionFlags;
-    actionRunNeos = aRunNeos;
-    actionRunEngine = aRunEngine;
 
-
-    CheckMenu* runMenu = new CheckMenu(this);
-    CheckMenu* opt1Menu = new CheckMenu(this);
-    opt1Menu->addActions(actionFlags);
-    runMenu->addSubMenu(1, opt1Menu);
-
-    QList<QAction*> actionFlags2 = aActionFlags;
+    CheckParentMenu* runMenu = new CheckParentMenu(this);
+    runMenu->addCheckActions(1, actionFlags);
+    QList<QAction*> actionFlags2 = actionFlags;
     actionFlags2.removeLast();
-    CheckMenu* opt2Menu = new CheckMenu(this);
-    opt2Menu->addActions(actionFlags2);
-    runMenu->addSubMenu(2, opt2Menu);
+    runMenu->addCheckActions(2, actionFlags2);
 
-    runMenu->addAction(actionRunCompile);
+    runMenu->addAction(actionRun);
     runMenu->addAction(actionCompile);
     runMenu->addAction(actionRunDebug);
     runMenu->addAction(actionStepDebug);
     runMenu->addSeparator();
 
-    runMenu->addAction(actionRunCompileWithSelected);
+    runMenu->addAction(actionRunWithSelected);
     // actionRunCompileWithSelected->setMenu(opt1Menu);
-    actionRunCompileWithSelected->setData(1);
+    actionRunWithSelected->setData(1);
     runMenu->addAction(actionCompileWithSelected);
     // actionCompileWithSelected->setMenu(opt2Menu);
     actionCompileWithSelected->setData(2);
@@ -1104,24 +1086,22 @@ void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aCompile, QActi
     runMenu->addAction(actionRunNeos);
     runMenu->addAction(actionRunEngine);
 
-    actionRunCompile->setShortcutVisibleInContextMenu(true);
-    actionRunCompileWithSelected->setShortcutVisibleInContextMenu(true);
+    actionRun->setShortcutVisibleInContextMenu(true);
+    actionRunWithSelected->setShortcutVisibleInContextMenu(true);
     actionRunDebug->setShortcutVisibleInContextMenu(true);
     actionStepDebug->setShortcutVisibleInContextMenu(true);
     actionRunNeos->setShortcutVisibleInContextMenu(true);
     actionRunEngine->setShortcutVisibleInContextMenu(true);
 
     ui->gamsRunToolButton->setMenu(runMenu);
-    ui->gamsRunToolButton->setDefaultAction(actionRunCompile);
+    ui->gamsRunToolButton->setDefaultAction(actionRun);
     RunActionState state = RunActionState(Settings::settings()->toInt(skLastRun));
     on_runAction(state);
 }
 
-void ParameterEditor::setInterruptActionGroup(QAction *aInterrupt, QAction *aStop)
+void ParameterEditor::setInterruptActionGroup()
 {
-    actionInterrupt = aInterrupt;
     actionInterrupt->setShortcutVisibleInContextMenu(true);
-    actionStop = aStop;
     actionStop->setShortcutVisibleInContextMenu(true);
 
     QMenu* interruptMenu = new QMenu(this);
@@ -1134,8 +1114,8 @@ void ParameterEditor::setInterruptActionGroup(QAction *aInterrupt, QAction *aSto
 
 void ParameterEditor::setRunActionsEnabled(bool enable)
 {
-    actionRunCompile->setEnabled(enable);
-    actionRunCompileWithSelected->setEnabled(enable);
+    actionRun->setEnabled(enable);
+    actionRunWithSelected->setEnabled(enable);
     actionRunDebug->setEnabled(enable);
     actionStepDebug->setEnabled(enable);
     actionRunNeos->setEnabled(enable && mHasSSL);

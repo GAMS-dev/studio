@@ -156,6 +156,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionGoForward->setShortcuts(QList<QKeySequence>() << QKeySequence(QKeySequence::Forward) << QKeySequence(Qt::ForwardButton));
     ui->actionGoBack->setShortcuts(QList<QKeySequence>() << QKeySequence(QKeySequence::Back) << QKeySequence(Qt::BackButton));
 
+    // Assign CheckMenu
+    QList<QAction*> actionFlags;
+    actionFlags << ui->action1_Create_GDX << ui->action2_Create_RF;
+    ui->menu_GAMs->addCheckActions(2, actionFlags);
+    actionFlags << ui->action3_Profiling;
+    ui->menu_GAMs->addCheckActions(1, actionFlags);
+
     // PinView
     ui->splitter->setCollapsible(0, false);
     connect(&mMainTabContextMenu, &MainTabContextMenu::openPinView, this, [this](int tabIndex, Qt::Orientation orientation) {
@@ -818,8 +825,8 @@ void MainWindow::initIcons()
     ui->actionProject_View->setIcon(Theme::icon(":/%1/project"));
     ui->actionRedo->setIcon(Theme::icon(":/%1/redo"));
     ui->actionReset_Zoom->setIcon(Theme::icon(":/%1/search-off"));
-    ui->actionRunCompile->setIcon(Theme::icon(":/%1/play"));
-    ui->actionRunCompileWithSelected->setIcon(Theme::icon(":/%1/run-gdx"));
+    ui->actionRun->setIcon(Theme::icon(":/%1/play"));
+    ui->actionRunWithSelected->setIcon(Theme::icon(":/%1/run-gdx"));
     ui->actionRunDebugger->setIcon(Theme::icon(":/%1/run-debug"));
     ui->actionStepDebugger->setIcon(Theme::icon(":/%1/step-debug"));
     ui->actionRunNeos->setIcon(Theme::icon(":/img/neos", false, ":/img/neos-g"));
@@ -884,8 +891,8 @@ void MainWindow::initToolBar()
     ui->action1_Create_GDX->setChecked(runOptions & 1);
     ui->action2_Create_RF->setChecked(runOptions & 2);
     ui->action3_Profiling->setChecked(runOptions & 4);
-    mGamsParameterEditor = new option::ParameterEditor(ui->actionRunCompile, ui->actionCompile,
-                ui->actionRunCompileWithSelected, ui->actionCompileWithSelected, ui->actionRunDebugger, ui->actionStepDebugger,
+    mGamsParameterEditor = new option::ParameterEditor(ui->actionRun, ui->actionCompile,
+                ui->actionRunWithSelected, ui->actionCompileWithSelected, ui->actionRunDebugger, ui->actionStepDebugger,
                 actionFlags, ui->actionRunNeos, ui->actionRunEngine,  ui->actionInterrupt, ui->actionStop, this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
@@ -4649,7 +4656,7 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
     }
 }
 
-void MainWindow::on_actionRunCompile_triggered()
+void MainWindow::on_actionRun_triggered()
 {
     option::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
             ? option::RunActionState::Compile
@@ -4657,7 +4664,7 @@ void MainWindow::on_actionRunCompile_triggered()
     execute(mGamsParameterEditor->on_runAction(state), nullptr);
 }
 
-void MainWindow::on_actionRunCompileWithSelected_triggered()
+void MainWindow::on_actionRunWithSelected_triggered()
 {
     option::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
             ? option::RunActionState::CompileWithSelected
@@ -5355,7 +5362,7 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
         connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
         connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
-        ce->addAction(ui->actionRunCompile);
+        ce->addAction(ui->actionRun);
     }
     if (TextView *tv = ViewHelper::toTextView(edit)) {
         connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);

@@ -295,8 +295,8 @@ private slots:
     // Edit
 
     // GAMS
-    void on_actionRunCompile_triggered();
-    void on_actionRunCompileWithSelected_triggered();
+    void on_actionRun_triggered();
+    void on_actionRunWithSelected_triggered();
     void on_actionCompile_triggered();
     void on_actionCompileWithSelected_triggered();
     void on_actionInterrupt_triggered();

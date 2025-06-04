@@ -18,47 +18,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "checkmenu.h"
+#include "logger.h"
 #include <QKeyEvent>
 
 namespace gams {
 namespace studio {
 
-CheckMenu::CheckMenu(QWidget *parent): QMenu(parent)
-{
-    connect(this, &CheckMenu::hovered, this, &CheckMenu::onHovered);
-}
 
-CheckMenu::~CheckMenu()
-{}
-
-void CheckMenu::addSubMenu(int actionDataValue, CheckMenu *subMenu)
+CheckMenu::CheckMenu(QWidget *parent) : QMenu(parent)
 {
-    mSubMenus.insert(actionDataValue, subMenu);
-    subMenu->mParentMenu = this;
-}
-
-void CheckMenu::showEvent(QShowEvent *event)
-{
-    QMenu::showEvent(event);
-    const auto acts = actions();
-    for (QAction *act : acts) {
-        if (act->shortcut().toString().endsWith("F9"))
-            act->setShortcut(QKeySequence("F9,Shift+F9"));
-        if (act->shortcut().toString().endsWith("F10"))
-            act->setShortcut(QKeySequence("F10,Shift+F10"));
-    }
-}
-
-void CheckMenu::hideEvent(QHideEvent *event)
-{
-    QMenu::hideEvent(event);
-    const auto acts = actions();
-    for (QAction *act : acts) {
-        if (act->shortcut().toString().endsWith("F9"))
-            act->setShortcut(QKeySequence("F9"));
-        if (act->shortcut().toString().endsWith("F10"))
-            act->setShortcut(QKeySequence("F10"));
-    }
+    mParentMenu = qobject_cast<CheckParentMenu*>(parent);
+    if (!mParentMenu) DEB() << "CheckMenu Warning: Parent must be of class CheckParentMenu for proper function.";
 }
 
 void CheckMenu::mousePressEvent(QMouseEvent *event)
@@ -66,15 +36,31 @@ void CheckMenu::mousePressEvent(QMouseEvent *event)
     if (mParentMenu && mParentMenu->contains(event->globalPosition())) {
         QPointF gloPos = event->globalPosition();
         QPointF parPos = mParentMenu->mapFromGlobal(gloPos);
-        QMouseEvent *parEvent =  new QMouseEvent(event->type(), parPos, gloPos, event->button(), event->buttons(),
-                                                event->modifiers(), event->pointingDevice());
+        QMouseEvent *parEvent = new QMouseEvent(event->type(), parPos, gloPos, event->button(),
+                                                event->buttons(), event->modifiers(), event->pointingDevice());
         mParentMenu->mousePressEvent(parEvent);
+    } else if (mParentMenu && !geometry().contains(event->globalPosition().toPoint())) {
+        mParentMenu->hide();
     } else {
         QMenu::mousePressEvent(event);
     }
 }
 
-void CheckMenu::mouseReleaseEvent(QMouseEvent *event) {
+void CheckMenu::mouseMoveEvent(QMouseEvent *event)
+{
+    if (mParentMenu && mParentMenu->contains(event->globalPosition())) {
+        QPointF gloPos = event->globalPosition();
+        QPointF parPos = mParentMenu->mapFromGlobal(gloPos);
+        QMouseEvent *parEvent = new QMouseEvent(event->type(), parPos, gloPos, event->button(),
+                                                event->buttons(), event->modifiers(), event->pointingDevice());
+        mParentMenu->mouseMoveEvent(parEvent);
+    } else {
+        QMenu::mouseMoveEvent(event);
+    }
+}
+
+void CheckMenu::mouseReleaseEvent(QMouseEvent *event)
+{
     QAction *action = activeAction();
     if (action && action->isCheckable()) {
         action->setEnabled(false);
@@ -84,112 +70,143 @@ void CheckMenu::mouseReleaseEvent(QMouseEvent *event) {
     } else if (mParentMenu && mParentMenu->contains(event->globalPosition())) {
         QPointF gloPos = event->globalPosition();
         QPointF parPos = mParentMenu->mapFromGlobal(gloPos);
-        QMouseEvent *parEvent =  new QMouseEvent(event->type(), parPos, gloPos, event->button(), event->buttons(),
-                                                event->modifiers(), event->pointingDevice());
+        QMouseEvent *parEvent = new QMouseEvent(event->type(), parPos, gloPos, event->button(),
+                                                event->buttons(), event->modifiers(), event->pointingDevice());
         mParentMenu->mouseReleaseEvent(parEvent);
         hide();
         mParentMenu->hide();
     } else {
         QMenu::mouseReleaseEvent(event);
     }
+
 }
 
-void CheckMenu::keyPressEvent(QKeyEvent *event) {
-    // The additional subMenu shown to the right of the linked action of the runMenu claims the keyboard focus.
+void CheckMenu::keyPressEvent(QKeyEvent *event)
+{
+    // The CheckMenu shown to the right of the linked action of the CheckParentMenu claims the keyboard focus.
     // To tell which menu should process the keyboard mParentFocus is introduced.
 
-    // This is a subMenu and it has the virtual focus
-    if (mParentMenu && !mParentFocus) {
+    if (!mParentMenu)
+        QMenu::keyPressEvent(event);
+
+    if (event->key() == Qt::Key_Escape) {
+        mParentMenu->hide();
+    } else {
         QAction *action = activeAction();
         QChar c = event->text().isNull() ? '\0' : event->text().at(0).toUpper();
         QList<int> keepOpenKeys;
         const auto acts = actions();
         for (QAction *act : acts) {
             QKeySequence sequence = QKeySequence::mnemonic(act->text());
-            int key = sequence[0].toCombined() & 0xffff; // suspicious
-            if (act->isCheckable()) keepOpenKeys << key;
+            int key = sequence[0].toCombined() & 0xffff;
+            if (act->isCheckable())
+                keepOpenKeys << key;
             if (key == c.unicode()) {
                 action = act;
                 break;
             }
         }
-        keepOpenKeys << Qt::Key_Return << Qt::Key_Enter;
-        if (event->key() == Qt::Key_Left || event->key() == Qt::Key_Escape) {
-            mParentFocus = true;
-            setActiveAction(nullptr);
-        } else if (action && action->isCheckable() && keepOpenKeys.contains(event->key())) {
-            action->trigger();
+        if (mParentFocus) {
+            QList<int> keysForParent;
+            keysForParent << Qt::Key_Up  << Qt::Key_Down;
+            if (event->key() == Qt::Key_Right) {
+                mParentFocus = false;
+                if (!activeAction() && actions().size())
+                    setActiveAction(actions().at(0));
+            } else if (keysForParent.contains(event->key())) {
+                mParentMenu->keyPressEvent(event);
+            } else if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
+                if (mParentMenu->activeAction())
+                    mParentMenu->activeAction()->trigger();
+                mParentMenu->hide();
+            } else if (keepOpenKeys.contains(event->key())) {
+                action->trigger();
+            }
         } else {
-            QMenu::keyPressEvent(event);
+            keepOpenKeys << Qt::Key_Return << Qt::Key_Enter << Qt::Key_Space;
+            if (event->key() == Qt::Key_Left) {
+                mParentFocus = true;
+                setActiveAction(nullptr);
+            } else if (action && action->isCheckable() && keepOpenKeys.contains(event->key())) {
+                action->trigger();
+            } else {
+                QMenu::keyPressEvent(event);
+            }
         }
-
-        // This is the subMenu and it hasn't the virtual focus -> send selected keys to parent
-    } else if (mParentMenu && mParentFocus) {
-        QList<int> keysForParent;
-        keysForParent << Qt::Key_Up  << Qt::Key_Down;
-        if (event->key() == Qt::Key_Right) {
-            mParentFocus = false;
-            if (!activeAction() && actions().size())
-                setActiveAction(actions().at(0));
-        } else if (keysForParent.contains(event->key())) {
-            mParentMenu->keyPressEvent(event);
-        } else if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
-            if (mParentMenu->activeAction()) mParentMenu->activeAction()->trigger();
-            hide();
-            mParentMenu->hide();
-        }
-    } else {
-        QMenu::keyPressEvent(event);
     }
 }
 
-void CheckMenu::mouseMoveEvent(QMouseEvent *event)
+
+// -------------------------------------------------------
+
+
+CheckParentMenu::CheckParentMenu(QWidget *parent): QMenu(parent)
 {
-    // QAction *act = actionAt(event->position().toPoint());
-    // if (act) {
-    //     handleAction(act);
-    // } else if (mVisibleSub) {
-    //     if (!mVisibleSub->contains(event->globalPosition()))
-    //         handleAction(act);
-    // }
-    if (mParentMenu && mParentMenu->contains(event->globalPosition())) {
-        QPointF gloPos = event->globalPosition();
-        QPointF parPos = mParentMenu->mapFromGlobal(gloPos);
-        QMouseEvent *parEvent =  new QMouseEvent(event->type(), parPos, gloPos, event->button(), event->buttons(),
-                                                event->modifiers(), event->pointingDevice());
-        mParentMenu->mouseMoveEvent(parEvent);
+    connect(this, &CheckParentMenu::hovered, this, &CheckParentMenu::onHovered);
+}
+
+void CheckParentMenu::addCheckActions(int actionDataValue, QList<QAction*> checkActions)
+{
+    mCheckActions.insert(actionDataValue, checkActions);
+}
+
+void CheckParentMenu::hideEvent(QHideEvent *event)
+{
+    closeSub();
+    QMenu::hideEvent(event);
+}
+
+void CheckParentMenu::mouseMoveEvent(QMouseEvent *event)
+{
+    if (mCheckMenu && !mCheckMenu->geometry().contains(event->globalPosition().toPoint())) {
+        QAction *action = actionAt(event->position().toPoint());
+        if (action != activeAction()) {
+            closeSub();
+            setActiveAction(action);
+        }
     }
     QMenu::mouseMoveEvent(event);
 }
 
-void CheckMenu::onHovered(QAction *action)
+void CheckParentMenu::onHovered(QAction *action)
 {
     handleAction(action);
 }
 
-void CheckMenu::handleAction(QAction *action)
+void CheckParentMenu::closeSub()
 {
+    if (mCheckMenu) {
+        mCheckMenu->deleteLater();
+        mCheckMenu = nullptr;
+    }
+}
+
+void CheckParentMenu::handleAction(QAction *action)
+{
+    if (!isVisible()) return;
     CheckMenu *newSub = nullptr;
     if (action && action->data().isValid()) {
-        CheckMenu *sub = mSubMenus.value(action->data().toInt());
-        if (sub) newSub = sub;
+        if (mActionKind != action->data().toInt() && mCheckActions.contains(action->data().toInt())) {
+            newSub = new CheckMenu(this);
+            newSub->addActions(mCheckActions.value(action->data().toInt()));
+        }
     }
-    if (newSub != mVisibleSub) {
-        if (mVisibleSub) mVisibleSub->hide();
+    int kind = action ? action->data().toInt() : 0;
+    if (mActionKind != kind) {
+        closeSub();
         if (newSub) {
             QRect rect = actionGeometry(action);
             newSub->popup(pos() + rect.topRight());
-            setFocus();
         }
-        mVisibleSub = newSub;
+        mCheckMenu = newSub;
     }
+    mActionKind = action ? action->data().toInt() : 0;
 }
 
-bool CheckMenu::contains(QPointF globalPos)
+bool CheckParentMenu::contains(QPointF globalPos)
 {
     return geometry().contains(globalPos.toPoint());
 }
-
 
 
 } // namespace studio

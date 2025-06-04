@@ -125,10 +125,8 @@ private slots:
     void resizeColumnsToContents();
 
 private:
-    void setRunsActionGroup(QAction *aRun, QAction *aCompile, QAction *aRunWith, QAction *aCompileWith,
-                            QAction *aRunDebug, QAction *aStepDebug, QList<QAction *> aActionFlags,
-                            QAction *aRunNeos, QAction *aRunEngine);
-    void setInterruptActionGroup(QAction* aInterrupt, QAction* aStop);
+    void setRunsActionGroup();
+    void setInterruptActionGroup();
     void setRunActionsEnabled(bool enable);
     void setInterruptActionsEnabled(bool enable);
 
@@ -142,11 +140,11 @@ private:
     AbstractView *mDockChild = nullptr;
     bool mHasSSL = false;
 
-    QAction* actionRunCompile;
+    QAction* actionRun;
     QAction* actionCompile;
     QAction* actionRunDebug;
     QAction* actionStepDebug;
-    QAction *actionRunCompileWithSelected;
+    QAction *actionRunWithSelected;
     QAction *actionCompileWithSelected;
     QList<QAction*> actionFlags;
     QAction* actionRunNeos;
