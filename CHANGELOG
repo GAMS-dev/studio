@@ -1,6 +1,8 @@
 Version 1.21.1  *
 ==================
 - Added ctrl-click to the code editor to open 'yamlFile' or 'yamlFileEnd' defined in $onEmbeddedCode.
+- Fixed a bug where the filter state of an unloaded symbol would not be considered in the GDX Viewer Export facility.
+- Fixed a bug where the filter of an alias would not be considered in the GDX Viewer Export facility.
 
 Version 1.21.0
 ==================
