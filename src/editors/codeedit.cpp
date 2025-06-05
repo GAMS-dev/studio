@@ -1433,13 +1433,17 @@ void CodeEdit::profilerContextMenuEvent(QContextMenuEvent *e)
     QList<QPair<int, qreal>> countTime;
     QList<QPair<int, int>> maxSteps;
     emit getProfilerMaxData(countTime, maxSteps);
-    menu.addSection("Elapsed Time max");
+    QAction act1("Elapsed Time max");
+    act1.setDisabled(true);
+    menu.addAction(&act1);
     for (int i = 0; i < countTime.size(); ++i) {
         menu.addAction(QString("%1: %2 s").arg(i+1).arg(countTime.at(i).second, 0, 'f', 3), this, [this, countTime, i]() {
             emit jumpToContinuousLine(countTime.at(i).first);
         });
     }
-    menu.addSection("Execution Steps max");
+    QAction act2("Execution Steps max");
+    act2.setDisabled(true);
+    menu.addAction(&act2);
     for (int i = 0; i < maxSteps.size(); ++i) {
         menu.addAction(QString("%1: %2 ↻").arg(i+1).arg(maxSteps.at(i).second), this, [this, maxSteps, i]() {
             emit jumpToContinuousLine(maxSteps.at(i).first);
