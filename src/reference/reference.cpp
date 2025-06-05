@@ -204,7 +204,6 @@ void Reference::loadReferenceFile(const QString &encodingName, bool triggerReloa
         clear();
     }
     emit loadStarted();
-
     mState = ReferenceState::Loading;
     qint64 lastReadFileSize = parseFile(mReferenceFile, encodingName);
     if (mLastReadFileSize == 0)
@@ -441,6 +440,7 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
              ++mFileUsedReferenceCount;
          }
      }
+
      if (lineread <= expectedLineread) {
          addSymbolReferenceItem();
          mLastErrorLine=lineread;
@@ -449,7 +449,6 @@ qint64 Reference::parseFile(const QString &referenceFile, const QString &encodin
      addSymbolReferenceItem();
      mLastErrorLine=-1;
      return file.size();
-;
 }
 
 void Reference::addReferenceInfo(SymbolReferenceItem* ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location)
@@ -543,6 +542,7 @@ void Reference::clear()
 
     mSymbolNameMap.clear();
 
+    mFileUsedReferenceList.clear();
     qDeleteAll(mFileUsedReference);
     mFileUsedReference.clear();
 

@@ -162,12 +162,12 @@ void ReferenceViewer::selectSearchField() const
 
 void ReferenceViewer::reloadFile(const QString &encodingName)
 {
-    mEncodingName = encodingName;
-    mReference->loadReferenceFile(mEncodingName);
     FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(11));
     if (fileUsedWidget) {
         fileUsedWidget->deActivateFilter();
     }
+    mEncodingName = encodingName;
+    mReference->loadReferenceFile(mEncodingName, true);
 }
 
 void ReferenceViewer::on_tabBarClicked(int index)
@@ -195,6 +195,7 @@ void ReferenceViewer::updateView(bool loadStatus, bool pendingReload)
             } else {
                 FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(i));
                 if (fileUsedWidget) {
+                    fileUsedWidget->activateFilter();
                     fileUsedWidget->initModel(mReference.data());
                     fileUsedWidget->resetModel();
                 }

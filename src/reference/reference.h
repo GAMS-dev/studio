@@ -96,7 +96,7 @@ public:
     /// \brief Get the number of file reference in the reference object.
     /// \param compactView compact view of FileUsed tab
     /// \return Returns the number of file references.
-    int getNumberOfFileUsed(bool compactView=false) const;
+    int getNumberOfFileUsed(bool compactView=true) const;
 
     ///
     /// \brief Checks if symbol of the given id exists in the reference object.
