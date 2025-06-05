@@ -1439,7 +1439,7 @@ void CodeEdit::profilerContextMenuEvent(QContextMenuEvent *e)
             emit jumpToContinuousLine(countTime.at(i).first);
         });
     }
-    menu.addSection("Executed Steps max");
+    menu.addSection("Execution Steps max");
     for (int i = 0; i < maxSteps.size(); ++i) {
         menu.addAction(QString("%1: %2 ↻").arg(i+1).arg(maxSteps.at(i).second), this, [this, maxSteps, i]() {
             emit jumpToContinuousLine(maxSteps.at(i).first);
