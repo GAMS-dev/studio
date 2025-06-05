@@ -153,6 +153,7 @@ void CheckParentMenu::addCheckActions(int actionDataValue, QList<QAction*> check
 void CheckParentMenu::hideEvent(QHideEvent *event)
 {
     closeSub();
+    mLastAction = nullptr;
     QMenu::hideEvent(event);
 }
 
@@ -160,7 +161,7 @@ void CheckParentMenu::mouseMoveEvent(QMouseEvent *event)
 {
     if (mCheckMenu && !mCheckMenu->geometry().contains(event->globalPosition().toPoint())) {
         QAction *action = actionAt(event->position().toPoint());
-        if (action != activeAction()) {
+        if (action != mLastAction) {
             closeSub();
             setActiveAction(action);
         }
@@ -178,6 +179,7 @@ void CheckParentMenu::closeSub()
     if (mCheckMenu) {
         mCheckMenu->deleteLater();
         mCheckMenu = nullptr;
+        mActionKind = 0;
     }
 }
 
@@ -198,6 +200,7 @@ void CheckParentMenu::handleAction(QAction *action)
             QRect rect = actionGeometry(action);
             newSub->popup(pos() + rect.topRight());
         }
+        mLastAction = action;
         mCheckMenu = newSub;
     }
     mActionKind = action ? action->data().toInt() : 0;

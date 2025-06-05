@@ -70,6 +70,7 @@ private:
     QHash<int, QList<QAction*>> mCheckActions;
     CheckMenu* mCheckMenu = nullptr;
     int mActionKind = 0;
+    QAction *mLastAction = nullptr;
 
 };
 
