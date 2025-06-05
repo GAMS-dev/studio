@@ -71,7 +71,7 @@ private:
     CheckMenu* mCheckMenu = nullptr;
     int mActionKind = 0;
     QAction *mLastAction = nullptr;
-
+    bool mBlockHandleAction = false;
 };
 
 

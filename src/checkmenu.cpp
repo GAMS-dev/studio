@@ -185,7 +185,9 @@ void CheckParentMenu::closeSub()
 
 void CheckParentMenu::handleAction(QAction *action)
 {
-    if (!isVisible()) return;
+    if (!isVisible() || mBlockHandleAction) return;
+    mBlockHandleAction = true;
+
     CheckMenu *newSub = nullptr;
     if (action && action->data().isValid()) {
         if (mActionKind != action->data().toInt() && mCheckActions.contains(action->data().toInt())) {
@@ -199,11 +201,13 @@ void CheckParentMenu::handleAction(QAction *action)
         if (newSub) {
             QRect rect = actionGeometry(action);
             newSub->popup(pos() + rect.topRight());
+            setActiveAction(action);
         }
         mLastAction = action;
         mCheckMenu = newSub;
     }
     mActionKind = action ? action->data().toInt() : 0;
+    mBlockHandleAction = false;
 }
 
 bool CheckParentMenu::contains(QPointF globalPos)
