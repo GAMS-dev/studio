@@ -4,6 +4,7 @@ Version 1.21.1  *
 - Fixed a bug where the filter state of an unloaded symbol would not be considered in the GDX Viewer Export facility.
 - Fixed a bug where the filter of an alias would not be considered in the GDX Viewer Export facility.
 - Added missing menu icons on macOS.
+- Renamed profiler columns to match the documentation.
 
 Version 1.21.0
 ==================
