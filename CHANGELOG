@@ -5,6 +5,7 @@ Version 1.21.1  *
 - Fixed a bug where the filter of an alias would not be considered in the GDX Viewer Export facility.
 - Added missing menu icons on macOS.
 - Renamed profiler columns to match the documentation.
+- Improved the handling of run and compile menu with separated options submenu.
 
 Version 1.21.0
 ==================
