@@ -46,6 +46,8 @@ public:
     QList<QHeaderView*> headers();
     bool isModelLoaded() const;
 
+    bool isViewCompact();
+
     void activateFilter();
     void deActivateFilter();
 

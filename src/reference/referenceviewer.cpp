@@ -121,7 +121,7 @@ ReferenceViewer::ReferenceViewer(const QString &referenceFile, const QString &en
     headers << unusedRefWidget->headers();
 
     FileReferenceWidget* fileusedRefWidget = initViewerType(new FileReferenceWidget(mReference.data(), this));
-    ui->tabWidget->addTab(fileusedRefWidget, QString("File Used (%1)").arg( problemLoaded ? "?" : QString::number(mReference->getNumberOfFileUsed())) );
+    ui->tabWidget->addTab(fileusedRefWidget, QString("File Used (%1)").arg( problemLoaded ? "?" : "..."));
     headers << fileusedRefWidget->headers();
 
     ui->tabWidget->setCurrentIndex(0);
@@ -214,7 +214,11 @@ void ReferenceViewer::updateView(bool loadStatus, bool pendingReload)
         ui->tabWidget->setTabText(8, QString("Macro (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Macro).size()));
         ui->tabWidget->setTabText(9, QString("Function (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Funct).size()));
         ui->tabWidget->setTabText(10, QString("Unused (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Unused).size()));
-        ui->tabWidget->setTabText(11, QString("File Used (%1)").arg(mReference->getNumberOfFileUsed()));
+        FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(11));
+        if (fileUsedWidget)
+            ui->tabWidget->setTabText(11, QString("File Used (%1)").arg(mReference->getNumberOfFileUsed(fileUsedWidget->isViewCompact())));
+        else
+            ui->tabWidget->setTabText(11, QString("File Used (...)"));
         ui->tabWidget->setEnabled(true);
     } else {
         QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");

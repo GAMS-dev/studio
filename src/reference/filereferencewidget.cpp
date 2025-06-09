@@ -80,6 +80,11 @@ bool FileReferenceWidget::isModelLoaded() const
     return mFileUsedModel->isModelLoaded();
 }
 
+bool FileReferenceWidget::isViewCompact()
+{
+    return (ui->showFileOnceCheckBox->checkState()==Qt::Checked);
+}
+
 void FileReferenceWidget::activateFilter()
 {
     // not the first time or model not loaded
@@ -88,6 +93,7 @@ void FileReferenceWidget::activateFilter()
 
     mFilterActivated = true;
     mReference->filterFileUsedReference();
+    emit mReference->reloadFiledUsedTabFinished(ui->showFileOnceCheckBox->checkState()==Qt::Checked);
 }
 
 void FileReferenceWidget::deActivateFilter()

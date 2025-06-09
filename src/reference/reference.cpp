@@ -193,7 +193,6 @@ void Reference::filterFileUsedReference()
             mFileUsedReference[id]  = item;
         }
     }
-    emit reloadFiledUsedTabFinished(true);
 }
 
 void Reference::loadReferenceFile(const QString &encodingName, bool triggerReload)
