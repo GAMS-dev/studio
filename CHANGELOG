@@ -6,6 +6,7 @@ Version 1.21.1  *
 - Added missing menu icons on macOS.
 - Renamed profiler columns to match the documentation.
 - Improved the handling of run and compile menu with separated options submenu.
+- Improved the display of `File Used` location in Reference File Viewer.
 
 Version 1.21.0
 ==================
