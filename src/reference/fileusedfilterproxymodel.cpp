@@ -47,8 +47,8 @@ bool FileUsedFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex
     // accept if any of its children matches
     if (hasAcceptedChildren(sourceRow, sourceParent))
         return true;
-    else
-        return false;
+
+    return false;
 }
 
 bool FileUsedFilterProxyModel::filterAcceptsSelfRow(int sourceRow, const QModelIndex &sourceParent) const
