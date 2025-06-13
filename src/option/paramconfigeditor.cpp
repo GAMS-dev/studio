@@ -923,12 +923,16 @@ void ParamConfigEditor::on_newTableRowDropped(const QModelIndex &index)
         ui->paramCfgDefTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
     }
 
+    ui->paramCfgTableView->selectionModel()->clearSelection();
     if (mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumStr &&
         mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumInt &&
         mOptionTokenizer->getOption()->getOptionSubType(optionName) != optsubNoValue)
         ui->paramCfgTableView->edit( mParameterTableModel->index(index.row(), ConfigParamTableModel::COLUMN_PARAM_VALUE));
+    else
+        ui->paramCfgTableView->edit( mParameterTableModel->index(index.row(), ConfigParamTableModel::COLUMN_MIN_VERSION));
 
-    showOptionDefinition(true);
+    showOptionDefinition(false);
+
     connect(ui->paramCfgDefTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &ParamConfigEditor::findAndSelectionParameterFromDefinition, Qt::UniqueConnection);
 }
