@@ -1137,6 +1137,7 @@ void ParamConfigEditor::on_actionDelete_triggered()
             }
         }
         emit modificationChanged(true);
+        updateActionsState();
     }
 }
 
