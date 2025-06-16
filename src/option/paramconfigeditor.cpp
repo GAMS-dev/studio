@@ -924,12 +924,7 @@ void ParamConfigEditor::on_newTableRowDropped(const QModelIndex &index)
     }
 
     ui->paramCfgTableView->selectionModel()->clearSelection();
-    if (mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumStr &&
-        mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumInt &&
-        mOptionTokenizer->getOption()->getOptionSubType(optionName) != optsubNoValue)
-        ui->paramCfgTableView->edit( mParameterTableModel->index(index.row(), ConfigParamTableModel::COLUMN_PARAM_VALUE));
-    else
-        ui->paramCfgTableView->edit( mParameterTableModel->index(index.row(), ConfigParamTableModel::COLUMN_MIN_VERSION));
+    ui->paramCfgTableView->edit( mParameterTableModel->index(index.row(), ConfigParamTableModel::COLUMN_PARAM_VALUE));
 
     showOptionDefinition(false);
 
