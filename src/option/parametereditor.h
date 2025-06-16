@@ -107,7 +107,7 @@ public slots:
 private slots:
     void findAndSelectionParameterFromDefinition();
 
-    void showParameterDefinition();
+    void showParameterDefinition(bool selectRow = true);
     void showParameterRecurrence();
     void deleteParameter();
     void deleteAllParameters();
