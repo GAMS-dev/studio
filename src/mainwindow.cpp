@@ -220,12 +220,6 @@ MainWindow::MainWindow(QWidget *parent)
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
 
-#ifdef QWEBENGINE
-    mHelpWidget = new help::HelpWidget(this);
-    ui->dockHelpView->setWidget(mHelpWidget);
-    ui->dockHelpView->hide();
-#endif
-
     mRecent.init(this);
     initToolBar();
     HeaderViewProxy *hProxy = HeaderViewProxy::instance();
@@ -1167,6 +1161,7 @@ void MainWindow::setToolbarVisibility(bool visibility)
 void MainWindow::setHelpViewVisibility(bool visibility)
 {
 #ifdef QWEBENGINE
+    if (!webEnginePermitted()) return;
     if (!visibility)
         mHelpWidget->clearStatusBar();
     else
@@ -1427,7 +1422,8 @@ void MainWindow::receiveOpenDoc(const QString &doc, const QString &anchor)
     if (!anchor.isEmpty())
         result = QUrl(result.toString() + "#" + anchor);
 #ifdef QWEBENGINE
-    helpWidget()->on_urlOpened(result);
+    if (mHelpWidget)
+        mHelpWidget->on_urlOpened(result);
 #endif
 
     on_actionHelp_View_triggered(true);
@@ -2573,17 +2569,20 @@ void MainWindow::processFileEvents()
 
 void MainWindow::appendSystemLogInfo(const QString &text) const
 {
-    mSyslog->append(text, LogMsgType::Info);
+    if (mSyslog) mSyslog->append(text, LogMsgType::Info);
+    else DEB() << "SysLog not ready. Retrieved INFO: " << text;
 }
 
 void MainWindow::appendSystemLogError(const QString &text) const
 {
-    mSyslog->append(text, LogMsgType::Error);
+    if (mSyslog) mSyslog->append(text, LogMsgType::Error);
+    else DEB() << "SysLog not ready. Retrieved ERROR: " << text;
 }
 
 void MainWindow::appendSystemLogWarning(const QString &text) const
 {
-    mSyslog->append(text, LogMsgType::Warning);
+    if (mSyslog) mSyslog->append(text, LogMsgType::Warning);
+    else DEB() << "SysLog not ready. Retrieved WARNING: " << text;
 }
 
 void MainWindow::stopDebugServer(PExProjectNode* project, bool stateChecked)
@@ -2728,6 +2727,7 @@ void MainWindow::on_actionExit_Application_triggered()
 void MainWindow::on_actionGamsHelp_triggered()
 {
 #ifdef QWEBENGINE
+    if (!mHelpWidget) return;
     QWidget* widget = focusWidget();
     if (mGamsParameterEditor->isAParameterEditorFocused(widget)) {
         QString optionName = mGamsParameterEditor->getSelectedParameterName(widget);
@@ -2833,6 +2833,7 @@ void MainWindow::on_actionGamsHelp_triggered()
 void MainWindow::on_actionStudioHelp_triggered()
 {
 #ifdef QWEBENGINE
+    if (!mHelpWidget) return;
     mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain,
                                           QString(),
                                           QString());
@@ -3255,19 +3256,22 @@ void MainWindow::updateAndSaveSettings()
                      (ui->action3_Profiling->isChecked() ? 4 : 0);
     Settings::settings()->setInt(skRunOptions, runOptions);
 
+    Settings::settings()->setBool(skSupressWebEngine, mSupressWebEngine);
 #ifdef QWEBENGINE
-    QVariantList joBookmarks;
-    QMap<QString, QString> bookmarkMap(helpWidget()->getBookmarkMap());
-    QMap<QString, QString>::const_iterator it = bookmarkMap.constBegin();
-    while (it != bookmarkMap.constEnd()) {
-        QVariantMap joBookmark;
-        joBookmark.insert("location", it.key());
-        joBookmark.insert("name", it.value());
-        joBookmarks << joBookmark;
-        ++it;
+    if (mHelpWidget) {
+        QVariantList joBookmarks;
+        QMap<QString, QString> bookmarkMap(mHelpWidget->getBookmarkMap());
+        QMap<QString, QString>::const_iterator it = bookmarkMap.constBegin();
+        while (it != bookmarkMap.constEnd()) {
+            QVariantMap joBookmark;
+            joBookmark.insert("location", it.key());
+            joBookmark.insert("name", it.value());
+            joBookmarks << joBookmark;
+            ++it;
+        }
+        settings->setList(skHelpBookmarks, joBookmarks);
+        settings->setDouble(skHelpZoomFactor, mHelpWidget->getZoomFactor());
     }
-    settings->setList(skHelpBookmarks, joBookmarks);
-    settings->setDouble(skHelpZoomFactor, helpWidget()->getZoomFactor());
 #endif
 
     QVariantList projects;
@@ -3329,6 +3333,24 @@ void MainWindow::restoreFromSettings()
     restoreState(settings->toByteArray(skWinState));
     ui->actionOpenAlternative->setText(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
     ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
+
+    // help
+    mSupressWebEngine = Settings::settings()->toBool(skSupressWebEngine);
+#ifdef QWEBENGINE
+    if (mHelpWidget) {
+        const QVariantList joHelp = settings->toList(skHelpBookmarks);
+        QMap<QString, QString> bookmarkMap;
+        for (const QVariant &joVal: joHelp) {
+            if (!joVal.canConvert(QMetaType(QMetaType::QVariantMap))) continue;
+            QVariantMap entry = joVal.toMap();
+            bookmarkMap.insert(entry.value("location").toString(), entry.value("name").toString());
+        }
+        mHelpWidget->setBookmarkMap(bookmarkMap);
+        double hZoom = settings->toDouble(skHelpZoomFactor);
+        mHelpWidget->setZoomFactor(hZoom > 0.0 ? hZoom : 1.0);
+    }
+#endif
+
     // tool-/menubar
     setProjectViewVisibility(settings->toBool(skViewProject));
     setOutputViewVisibility(settings->toBool(skViewOutput));
@@ -3362,20 +3384,6 @@ void MainWindow::restoreFromSettings()
     if (!invalidSuffix.isEmpty()) {
         settings->setString(skUserGamsTypes, suffixes.join(","));
     }
-
-    // help
-#ifdef QWEBENGINE
-    const QVariantList joHelp = settings->toList(skHelpBookmarks);
-    QMap<QString, QString> bookmarkMap;
-    for (const QVariant &joVal: joHelp) {
-        if (!joVal.canConvert(QMetaType(QMetaType::QVariantMap))) continue;
-        QVariantMap entry = joVal.toMap();
-        bookmarkMap.insert(entry.value("location").toString(), entry.value("name").toString());
-    }
-    helpWidget()->setBookmarkMap(bookmarkMap);
-    double hZoom = settings->toDouble(skHelpZoomFactor);
-    helpWidget()->setZoomFactor(hZoom > 0.0 ? hZoom : 1.0);
-#endif
 
     Theme::instance()->readUserThemes(settings->toList(SettingsKey::skUserThemes));
     Encoding::setDefaultEncoding(settings->toString(skDefaultEncoding));
@@ -3929,7 +3937,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
 #ifdef QWEBENGINE
         // help widget
-        if (mHelpWidget->isVisible()) {
+        if (webEnginePermitted() && mHelpWidget->isVisible()) {
             closeHelpView();
             e->accept(); return;
         }
@@ -5772,7 +5780,7 @@ void MainWindow::toggleSearchDialog()
     if (ui->dockHelpView->isAncestorOf(QApplication::focusWidget()) ||
         ui->dockHelpView->isAncestorOf(QApplication::activeWindow())) {
 #ifdef QWEBENGINE
-        mHelpWidget->on_searchHelp();
+        if (mHelpWidget) mHelpWidget->on_searchHelp();
 #endif
     // parameter editor
     } else if (mGamsParameterEditor->isAParameterEditorFocused(QApplication::focusWidget()) ||
@@ -6007,6 +6015,32 @@ void MainWindow::extraSelectionsUpdated()
         tv->updateExtraSelections();
 }
 
+#ifdef QWEBENGINE
+bool MainWindow::webEnginePermitted()
+{
+    if (mSupressWebEngine) return false;
+    if (mHelpWidget) return true;
+    bool createHelp = true;
+    if (QSysInfo::productType().compare("windows") == 0 && QSysInfo::productVersion().startsWith("10")) {
+        QMessageBox::StandardButton button =
+            QMessageBox::question(this, "Integrated Help on Windows 10",
+                                  "On Windows 10 the integrated help might crash Studio. Supress showing Help?\n"
+                                  "(Restore with command line parameter --restore-help-view)");
+        if (button == QMessageBox::StandardButton::Yes) {
+            createHelp = false;
+            mSupressWebEngine = true;
+            Settings::settings()->setBool(skSupressWebEngine, true);
+        }
+    }
+    if (createHelp) {
+        mHelpWidget = new help::HelpWidget(this);
+        ui->dockHelpView->setWidget(mHelpWidget);
+        ui->dockHelpView->hide();
+    }
+    return mHelpWidget;
+}
+#endif
+
 void MainWindow::updateFonts(qreal fontSize, const QString &fontFamily)
 {
 #ifdef _WIN64
@@ -6215,12 +6249,14 @@ void MainWindow::on_actionCopy_triggered()
 
 #ifdef QWEBENGINE
     // Check if focusWidget is inside mHelpWidget (can be nested)
-    QWidget *wid = focusWidget();
-    while (wid && wid != mHelpWidget)
-        wid = wid->parentWidget();
-    if (mHelpWidget && wid == mHelpWidget) {
-        mHelpWidget->copySelection();
-        return;
+    if (mHelpWidget) {
+        QWidget *wid = focusWidget();
+        while (wid && wid != mHelpWidget)
+            wid = wid->parentWidget();
+        if (mHelpWidget && wid == mHelpWidget) {
+            mHelpWidget->copySelection();
+            return;
+        }
     }
 #endif
 
@@ -6302,9 +6338,9 @@ void MainWindow::on_actionCut_triggered()
 void MainWindow::on_actionReset_Zoom_triggered()
 {
 #ifdef QWEBENGINE
-    if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
-        helpWidget()->isAncestorOf(QApplication::activeWindow())) {
-        helpWidget()->resetZoom(); // reset help view
+    if (webEnginePermitted() && (mHelpWidget->isAncestorOf(QApplication::focusWidget()) ||
+                                 mHelpWidget->isAncestorOf(QApplication::activeWindow()))) {
+        mHelpWidget->resetZoom(); // reset help view
     } else
 #endif
     {
@@ -6316,9 +6352,9 @@ void MainWindow::on_actionReset_Zoom_triggered()
 void MainWindow::on_actionZoom_Out_triggered()
 {
 #ifdef QWEBENGINE
-    if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
-        helpWidget()->isAncestorOf(QApplication::activeWindow())) {
-        helpWidget()->zoomOut();
+    if (webEnginePermitted() && (mHelpWidget->isAncestorOf(QApplication::focusWidget()) ||
+                                 mHelpWidget->isAncestorOf(QApplication::activeWindow()))) {
+        mHelpWidget->zoomOut();
     } else
 #endif
     {
@@ -6329,9 +6365,9 @@ void MainWindow::on_actionZoom_Out_triggered()
 void MainWindow::on_actionZoom_In_triggered()
 {
 #ifdef QWEBENGINE
-    if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
-        helpWidget()->isAncestorOf(QApplication::activeWindow())) {
-        helpWidget()->zoomIn();
+    if (webEnginePermitted() && (mHelpWidget->isAncestorOf(QApplication::focusWidget()) ||
+                                 mHelpWidget->isAncestorOf(QApplication::activeWindow()))) {
+        mHelpWidget->zoomIn();
     } else
 #endif
     {

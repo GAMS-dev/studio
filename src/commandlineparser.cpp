@@ -49,6 +49,7 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
     addOption({"no-log", "Turns off Studio system log"});
     addOption({"log-file", "Set a log file for Studio system log", "file"});
     addOption({"skip-check-for-update", "Skip all online check for update actions"});
+    addOption({"restore-help-view", "Restores the help view if it has been supressed"});
     addOption({"dump-c4u-data", "Dump the C4U respone and additional information if available", "log file path"});
 
     if (!parse(QCoreApplication::arguments()))
@@ -73,6 +74,8 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
         mLogFile = this->value("log-file");
     if (isSet("skip-check-for-update"))
         mSkipCheckForUpdate = true;
+    if (isSet("restore-help-view"))
+        mRestoreHelpView = true;
     if (isSet("dump-c4u-data"))
         C4ULog = this->value("dump-c4u-data");
     mFiles = getFileArgs();
@@ -108,6 +111,12 @@ bool CommandLineParser::skipCheckForUpdate() const
 QString CommandLineParser::gamsDir() const
 {
     return mGamsDir;
+}
+
+bool CommandLineParser::restoreHelpView()
+{
+    // Restore using the HelpView (QWebEngine) if it has been supressed.
+    return mRestoreHelpView;
 }
 
 QString CommandLineParser::logFile() const

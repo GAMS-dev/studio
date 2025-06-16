@@ -44,7 +44,7 @@ public:
     bool resetView() const;
     bool skipCheckForUpdate() const;
     QString gamsDir() const;
-
+    bool restoreHelpView();
     QString logFile() const;
 
     static QString c4uLog();
@@ -58,6 +58,7 @@ private:
     bool mResetSettings = false;
     bool mResetView = false;
     bool mSkipCheckForUpdate = false;
+    bool mRestoreHelpView = false;
     QString mGamsDir = QString();
     QString mLogFile = QString();
     static QString C4ULog;
