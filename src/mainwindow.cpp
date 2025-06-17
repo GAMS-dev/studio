@@ -4622,8 +4622,12 @@ void MainWindow::initDelayedElements()
 
     if (QStringConverter::availableCodecs().count() < 16)
         appendSystemLogInfo("ICU inactive: Studio will provide a reduced number of supported encodings.");
-    if (mSupressWebEngine)
+    if (mSupressWebEngine) {
+        ui->actionGamsHelp->setEnabled(false);
+        ui->actionStudioHelp->setEnabled(false);
+        mWp->setDocEnabled(false);
         appendSystemLogInfo("Integrated help inactive (to turn it on start Studio with '--integrated-help on')");
+    }
 }
 
 void MainWindow::openDelayedFiles()
