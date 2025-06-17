@@ -445,13 +445,11 @@ MainWindow::MainWindow(QWidget *parent)
     }
     ui->menuMIRO->setEnabled(isMiroAvailable());
 
-    connect(ui->actionUpdate, &QAction::triggered,
-            this, [this]{
+    connect(ui->actionUpdate, &QAction::triggered, this, [this] {
         on_actionSettings_triggered();
         mSettingsDialog->focusUpdateTab();
     });
-    connect(ui->updateWidget, &support::UpdateWidget::openSettings,
-            this, [this]{
+    connect(ui->updateWidget, &support::UpdateWidget::openSettings, this, [this] {
         on_actionSettings_triggered();
         mSettingsDialog->focusUpdateTab();
     });
@@ -468,8 +466,9 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
     if (mC4U) {
-        connect(mC4U.get(), &support::CheckForUpdate::versionInformationAvailable,
-                this, [this]{ checkForUpdates(mC4U->versionInformationShort()); });
+        connect(mC4U.get(), &support::CheckForUpdate::versionInformationAvailable, this, [this] {
+            checkForUpdates(mC4U->versionInformationShort());
+        });
     }
 
     // Themes
@@ -4623,6 +4622,8 @@ void MainWindow::initDelayedElements()
 
     if (QStringConverter::availableCodecs().count() < 16)
         appendSystemLogInfo("ICU inactive: Studio will provide a reduced number of supported encodings.");
+    if (mSupressWebEngine)
+        appendSystemLogInfo("Integrated help inactive (to turn it on start Studio with '--integrated-help on')");
 }
 
 void MainWindow::openDelayedFiles()
