@@ -219,6 +219,9 @@ public slots:
     void setGroupFontSize(gams::studio::FontGroup fontGroup, qreal fontSize, const QString &fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
     void extraSelectionsUpdated();
+#ifdef QWEBENGINE
+    bool webEnginePermitted();
+#endif
 
 private slots:
     void initDelayedElements();
@@ -544,6 +547,7 @@ private:
 #ifdef QWEBENGINE
     help::HelpWidget *mHelpWidget = nullptr;
 #endif
+    bool mSupressWebEngine = false;
     option::ParameterEditor *mGamsParameterEditor = nullptr;
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;

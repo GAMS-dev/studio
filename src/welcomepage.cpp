@@ -119,6 +119,13 @@ void WelcomePage::zoomReset()
     setFont(parentWidget()->font());
 }
 
+void WelcomePage::setDocEnabled(bool enabled)
+{
+    ui->label_doc_studio->setEnabled(enabled);
+    ui->label_doc_tut->setEnabled(enabled);
+    ui->label_doc_release->setEnabled(enabled);
+}
+
 bool WelcomePage::event(QEvent *event)
 {
     if (event->type() == QEvent::PaletteChange) {

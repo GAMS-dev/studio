@@ -313,6 +313,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skHistory, scSys, {"history"}, QJsonArray());
     safelyAdd(res, skLastRun, scSys, {"lastRun"}, 0);
     safelyAdd(res, skRunOptions, scSys, {"runOptions"}, 3);
+    safelyAdd(res, skSupressWebEngine, scSys, {"supressWebEngine"}, false);
 
     // user model library directory
     safelyAdd(res, skUserModelLibraryDir, scUser, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir());

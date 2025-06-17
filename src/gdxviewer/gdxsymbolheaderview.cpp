@@ -52,7 +52,7 @@ GdxSymbolHeaderView::~GdxSymbolHeaderView()
 void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
 {
     painter->save();
-    GdxSymbolHeaderView::QHeaderView::paintSection(painter, rect, logicalIndex);
+    QHeaderView::paintSection(painter, rect, logicalIndex);
     painter->restore();
     TableViewModel* tvModel = nullptr;
     GdxSymbol* symbol = nullptr;

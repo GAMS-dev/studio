@@ -54,7 +54,7 @@ void HelpView::setCurrentHoveredLink(const QString &url)
 QWebEngineView *HelpView::createWindow(QWebEnginePage::WebWindowType type)
 {
     MainWindow *mainWindow = qobject_cast<MainWindow*>(window());
-    if (!mainWindow)
+    if (!mainWindow || !mainWindow->helpWidget())
         return nullptr;
 
    switch (type) {

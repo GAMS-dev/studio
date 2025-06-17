@@ -41,6 +41,7 @@ public:
     explicit WelcomePage(MainWindow *parent = nullptr);
     ~WelcomePage() override;
     void zoomReset();
+    void setDocEnabled(bool enabled);
 
 signals:
     void openFilePath(const QString &filePath);

@@ -71,6 +71,7 @@ enum SettingsKey {
     skPinScollLock,
     skLastRun,
     skRunOptions,
+    skSupressWebEngine,
 
     // settings of help page
     skHelpBookmarks,
