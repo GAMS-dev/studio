@@ -6025,8 +6025,8 @@ bool MainWindow::webEnginePermitted()
     if (QSysInfo::productType().compare("windows") == 0 && QSysInfo::productVersion().startsWith("10")) {
         QMessageBox::StandardButton button =
             QMessageBox::question(this, "Integrated Help on Windows 10",
-                                  "On Windows 10 the integrated help might crash Studio. Supress showing Help?\n"
-                                  "(Restore with command line parameter --restore-help-view)");
+                                  "On Windows 10 the integrated help might crash Studio. Turn off integrated help?\n"
+                                  "(Restore with command line parameter '--integrated-help on')");
         if (button == QMessageBox::StandardButton::Yes) {
             createHelp = false;
             mSupressWebEngine = true;
