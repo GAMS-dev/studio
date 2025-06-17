@@ -68,10 +68,10 @@ QVariant EnvVarTableModel::headerData(int index, Qt::Orientation orientation, in
         if (mEnvVarItem.at(index)->value.simplified().isEmpty())
            tooltipText.append( QString("%1Empty environment variable Value.").arg( tooltipText.isEmpty() ? "" : "\n") );
         if (!mEnvVarItem.at(index)->minVersion.simplified().isEmpty() && !isConformatVersion(mEnvVarItem.at(index)->minVersion))
-           tooltipText.append( QString("%1minVersion '%2' must be a version number that is conformed to [x[.y[.z]]] format.")
+           tooltipText.append( QString("%1minVersion '%2' must be a version number that is conformed to [xx[.y[.z]]] format.")
                                .arg(tooltipText.isEmpty() ? "" : "\n", mEnvVarItem.at(index)->minVersion));
         if (!mEnvVarItem.at(index)->maxVersion.simplified().isEmpty() && !isConformatVersion(mEnvVarItem.at(index)->maxVersion))
-           tooltipText.append( QString("%1maxVersion '%2' must be a version number that is conformed to [x[.y[.z]]] format.")
+           tooltipText.append( QString("%1maxVersion '%2' must be a version number that is conformed to [xx[.y[.z]]] format.")
                                .arg(tooltipText.isEmpty() ? "" : "\n", mEnvVarItem.at(index)->maxVersion));
         return tooltipText;
     }
@@ -135,10 +135,10 @@ QVariant EnvVarTableModel::data(const QModelIndex &index, int role) const
             tooltipText.append( QString("Missing value for '%1'").arg(mEnvVarItem.at(row)->key) );
         } else if (!mEnvVarItem.at(row)->minVersion.simplified().isEmpty() &&
             !isConformatVersion(mEnvVarItem.at(row)->minVersion)) {
-            tooltipText = QString("Invalid minVersion '%1', must be conformed to [x[.y[.z]]] format").arg(mEnvVarItem.at(row)->minVersion);
+            tooltipText = QString("Invalid minVersion '%1', must be conformed to [xx[.y[.z]]] format").arg(mEnvVarItem.at(row)->minVersion);
         } else if (!mEnvVarItem.at(row)->maxVersion.simplified().isEmpty() &&
                    !isConformatVersion(mEnvVarItem.at(row)->maxVersion)) {
-                   tooltipText = QString("Invalid maxVersion '%1', must be conformed to [x[.y[.z]]] format").arg(mEnvVarItem.at(row)->maxVersion);
+                   tooltipText = QString("Invalid maxVersion '%1', must be conformed to [xx[.y[.z]]] format").arg(mEnvVarItem.at(row)->maxVersion);
         }
         return tooltipText;
     }
