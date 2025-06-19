@@ -30,9 +30,6 @@
 
 namespace gams {
 namespace studio {
-
-class MainWindow;
-
 namespace option {
 
 namespace Ui {

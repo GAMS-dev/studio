@@ -126,49 +126,13 @@ void ChunkTextMapper::invalidateLineOffsets(Chunk *chunk, bool cutRemain) const
     }
 }
 
-void ChunkTextMapper::updateLineOffsets(Chunk *chunk) const
-{
-    // TODO(JM) only called from FileMapper -> may be moved there OR joined with invalidateLineOffsets(..)
-    if (!chunk) return;
-    ChunkMetrics *cm = chunkMetrics(chunk->nr);
-    if (cm->lineCount < 0) { // init ChunkLines on first visit
-        cm->lineCount = chunk->lineCount();
-        cm->linesStartPos = chunk->bStart + chunk->lineBytes.first();
-        cm->linesByteSize = chunk->lineBytes.last() - chunk->lineBytes.first();
-        if (cm->chunkNr == 0) { // only for chunk0
-            cm->startLineNr = 0;
-            if (mLastChunkWithLineNr < 0) {
-                mLastChunkWithLineNr = 0;
-                updateBytesPerLine(*cm);
-            }
-        }
-    }
-    if (cm->chunkNr > 0) {
-        ChunkMetrics *prevCm = chunkMetrics(chunk->nr-1);
-        // extend counting as far as known
-        while (cm->chunkNr > mLastChunkWithLineNr) {
-            // skip if current chunk is unknown or previous chunk has no line-numbers
-            if (!cm->isKnown() || !prevCm->hasLineNrs()) break;
-            cm->startLineNr = prevCm->startLineNr + prevCm->lineCount;
-            if (mLastChunkWithLineNr < cm->chunkNr) {
-                mLastChunkWithLineNr = cm->chunkNr;
-                updateBytesPerLine(*cm);
-            }
-
-            if (cm->chunkNr == mChunkMetrics.size()-1) break;
-            prevCm = cm;
-            cm = chunkMetrics(cm->chunkNr+1);
-        }
-    }
-}
-
 bool ChunkTextMapper::setMappingSizes(int visibleLines, int chunkSizeInBytes, int chunkOverlap)
 {
     // check constraints
     mVisibleLineCount = qMax(1, visibleLines);
     mMaxLineWidth = qBound(100, chunkOverlap, 10000);
     mChunkSize = qMax(chunkOverlap *8, chunkSizeInBytes);
-    updateMaxTop();
+    ChunkTextMapper::updateMaxTop();
     return (mVisibleLineCount != visibleLines || mMaxLineWidth != chunkOverlap || mChunkSize != chunkSizeInBytes);
 }
 

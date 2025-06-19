@@ -14,7 +14,6 @@ SOURCES += \
     $$SRCPATH/editors/chunktextmapper.cpp \
     $$SRCPATH/editors/defaultsystemlogger.cpp \
     $$SRCPATH/editors/editorhelper.cpp \
-    $$SRCPATH/editors/filemapper.cpp \
     $$SRCPATH/editors/logparser.cpp \
     $$SRCPATH/editors/sysloglocator.cpp \
     $$SRCPATH/exception.cpp \
@@ -63,7 +62,6 @@ HEADERS += \
     $$SRCPATH/editors/chunktextmapper.h \
     $$SRCPATH/editors/defaultsystemlogger.h \
     $$SRCPATH/editors/editorhelper.h \
-    $$SRCPATH/editors/filemapper.h \
     $$SRCPATH/editors/logparser.h \
     $$SRCPATH/editors/sysloglocator.h \
     $$SRCPATH/exception.h \

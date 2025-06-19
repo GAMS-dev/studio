@@ -167,7 +167,6 @@ protected:
     bool updateMaxTop() override;
     qint64 lastTopAbsPos();
     void invalidateLineOffsets(Chunk *chunk, bool cutRemain = false) const;
-    void updateLineOffsets(Chunk *chunk) const;
     int chunkSize() const;
     int maxLineWidth() const;
     void initChunkCount(qsizetype count) const;

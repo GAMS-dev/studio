@@ -25,7 +25,6 @@
 
 #include "abstractview.h"
 #include "option.h"
-#include "commandline.h"
 #include "optiontokenizer.h"
 #include "gamsparametertablemodel.h"
 #include "optioncompleterdelegate.h"
