@@ -1,3 +1,7 @@
+Version 1.21.3
+==================
+- Fixed a crash when renaming a project and a GDX viewer is open.
+
 Version 1.21.2
 ==================
 - Fixed crash on Windows 10 by allowing to disable the integrated Help View.
