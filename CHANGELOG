@@ -1,6 +1,7 @@
 Version 1.21.3
 ==================
 - Fixed a crash when renaming a project and a GDX viewer is open.
+- Fixed missing DCO $onEmbeddedCode in completer.
 
 Version 1.21.2
 ==================
