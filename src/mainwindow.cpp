@@ -3317,10 +3317,10 @@ void MainWindow::restoreFromSettings()
     Settings *settings = Settings::settings();
 
     // main window
-    resize(settings->toSize(skWinSize));
+    mWindowSize = settings->toSize(skWinSize);
     move(settings->toPoint(skWinPos));
-    ensureInScreen();
-    QTimer::singleShot(0, this, &MainWindow::ensureInScreen);
+    ensureSizeAndInScreen();
+    QTimer::singleShot(0, this, &MainWindow::ensureSizeAndInScreen);
 
     mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
     if (settings->toBool(skWinFullScreen)) {
@@ -5182,9 +5182,10 @@ void MainWindow::rehighlightOpenFiles()
     }
 }
 
-void MainWindow::ensureInScreen()
+void MainWindow::ensureSizeAndInScreen()
 {
     QRect appGeo = geometry();
+    appGeo.setSize(mWindowSize);
     QRect appFGeo = frameGeometry();
     QMargins margins(appGeo.left() - appFGeo.left(), appGeo.top() - appFGeo.top(),
                      appFGeo.right() - appGeo.right(), appFGeo.bottom() - appGeo.bottom());
