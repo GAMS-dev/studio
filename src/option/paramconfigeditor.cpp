@@ -102,20 +102,18 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
     ui->paramCfgTableView->setDragDropOverwriteMode(true);
     ui->paramCfgTableView->setDefaultDropAction(Qt::CopyAction);
 
+    ui->paramCfgTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     ui->paramCfgTableView->setColumnHidden(ConfigParamTableModel::COLUMN_ENTRY_NUMBER, true);
     ui->paramCfgTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->paramCfgTableView->verticalHeader()->setDefaultSectionSize(static_cast<int>(fontMetrics().height()*TABLE_ROW_HEIGHT));
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->paramCfgTableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
 
-    ui->paramCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_KEY, QHeaderView::Stretch);
-    ui->paramCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_VALUE, QHeaderView::Stretch);
-    ui->paramCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_MAX_VERSION, QHeaderView::Stretch);
-
-    ui->paramCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_PARAM_KEY);
-    ui->paramCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_PARAM_VALUE);
-    ui->paramCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_MIN_VERSION);
-    ui->paramCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_MAX_VERSION);
+    if (ui->paramCfgTableView->model()->rowCount()>0) {
+        ui->paramCfgTableView->resizeColumnsToContents();
+    }
+    ui->paramCfgTableView->horizontalHeader()->setStretchLastSection(true);
+    ui->paramCfgTableView->horizontalHeader()->setHighlightSections(false);
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
@@ -924,6 +922,7 @@ void ParamConfigEditor::on_newTableRowDropped(const QModelIndex &index)
     }
 
     ui->paramCfgTableView->selectionModel()->clearSelection();
+    ui->paramCfgTableView->resizeColumnToContents(index.column());
     ui->paramCfgTableView->edit( mParameterTableModel->index(index.row(), ConfigParamTableModel::COLUMN_PARAM_VALUE));
 
     showOptionDefinition(false);
@@ -1097,6 +1096,7 @@ void ParamConfigEditor::on_actionInsert_triggered()
 
     emit modificationChanged(true);
 
+    ui->paramCfgTableView->selectionModel()->clearSelection();
     ui->paramCfgTableView->selectionModel()->select(insertKeyIndex, QItemSelectionModel::ClearAndSelect );
 
     const QModelIndex index = mParameterTableModel->index(rowToBeInserted, ConfigParamTableModel::COLUMN_PARAM_KEY);

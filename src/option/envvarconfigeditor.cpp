@@ -257,18 +257,16 @@ void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)
     ui->EnvVarConfigTableView->setDragDropOverwriteMode(true);
     ui->EnvVarConfigTableView->setDefaultDropAction(Qt::CopyAction);
 
+    ui->EnvVarConfigTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     ui->EnvVarConfigTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->EnvVarConfigTableView->verticalHeader()->setDefaultSectionSize(static_cast<int>(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->EnvVarConfigTableView->horizontalHeader()->setSectionResizeMode(EnvVarTableModel::COLUMN_PARAM_KEY, QHeaderView::Stretch);
     ui->EnvVarConfigTableView->horizontalHeader()->setSectionResizeMode(EnvVarTableModel::COLUMN_PARAM_VALUE, QHeaderView::Stretch);
+
+    if (ui->EnvVarConfigTableView->model()->rowCount()>0) {
+        ui->EnvVarConfigTableView->resizeColumnsToContents();
+    }
     ui->EnvVarConfigTableView->horizontalHeader()->setStretchLastSection(true);
-
-    ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_PARAM_KEY);
-    ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_PARAM_VALUE);
-    ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_MIN_VERSION);
-    ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_MAX_VERSION);
-    ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_PATH_VAR);
-
     ui->EnvVarConfigTableView->setTabKeyNavigation(true);
 
     connect(ui->EnvVarConfigTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &EnvVarConfigEditor::on_selectRow, Qt::UniqueConnection);
@@ -390,7 +388,7 @@ void EnvVarConfigEditor::on_actionInsert_triggered()
 
     emit modificationChanged(true);
 
-
+    ui->EnvVarConfigTableView->selectionModel()->clearSelection();
     ui->EnvVarConfigTableView->selectionModel()->select(insertKeyIndex, QItemSelectionModel::ClearAndSelect );
 
     const QModelIndex index = mEnvVarTableModel->index(rowToBeInserted, EnvVarTableModel::COLUMN_PARAM_KEY);
