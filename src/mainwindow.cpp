@@ -3317,8 +3317,8 @@ void MainWindow::restoreFromSettings()
     Settings *settings = Settings::settings();
 
     // main window
-    mWindowSize = settings->toSize(skWinSize);
     move(settings->toPoint(skWinPos));
+    mWindowSize = settings->toSize(skWinSize);
     ensureSizeAndInScreen();
     QTimer::singleShot(0, this, &MainWindow::ensureSizeAndInScreen);
 
