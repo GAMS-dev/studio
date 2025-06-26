@@ -65,6 +65,7 @@ enum SettingsKey {
     skOptionsPerMainFile,
     skTabs,
     skHistory,
+    skBookmarks,
     skPinViewTabIndex,
     skPinViewSize,
     skPinOrientation,

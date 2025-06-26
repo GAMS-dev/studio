@@ -3286,6 +3286,10 @@ void MainWindow::updateAndSaveSettings()
     settings->setMap(skTabs, tabData);
     settings->setInt(skPinViewTabIndex, pinViewTabIndex());
 
+    QVariantList bookmarks;
+    mTextMarkRepo.writeBookmarks(bookmarks);
+    settings->setList(skBookmarks, bookmarks);
+
     historyChanged();
 
     settings->setList(SettingsKey::skUserThemes, Theme::instance()->writeUserThemes());
@@ -4594,6 +4598,7 @@ void MainWindow::initDelayedElements()
     }
     openDelayedFiles();
     watchProjectTree();
+    mTextMarkRepo.readBookmarks(settings->toList(skBookmarks));
     int fp = settings->toInt(skCurrentFocusProject);
     QAction *action = mActFocusProject->actions().first();
     for (QAction *act : mActFocusProject->actions()) {

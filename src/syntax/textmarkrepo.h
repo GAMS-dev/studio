@@ -66,6 +66,8 @@ public:
     bool hasBookmarks(const FileId &fileId);
     TextMark* findBookmark(const FileId &fileId, int currentLine, bool back);
     void removeBookmarks();
+    void writeBookmarks(QVariantList &bookmarks);
+    void readBookmarks(const QVariantList &bookmarks);
     QTextDocument* document(const FileId &fileId) const;
 
     FileMetaRepo *fileRepo() const { return mFileRepo; }
@@ -84,7 +86,7 @@ private:
     FileMetaRepo* mFileRepo = nullptr;
     ProjectRepo* mProjectRepo = nullptr;
     QHash<FileId, LineMarks*> mMarks;
-    QVector<FileId> mBookmarkedFiles;
+    QList<FileId> mBookmarkedFiles;
     bool mDebug = false;
 
 private:

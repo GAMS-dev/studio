@@ -173,6 +173,40 @@ void TextMarkRepo::removeBookmarks()
     }
 }
 
+void TextMarkRepo::writeBookmarks(QVariantList &bookmarks)
+{
+    for (const FileId &id : mBookmarkedFiles) {
+        QString bmString;
+        const LineMarks *all = marks(id);
+        for (auto it = all->constBegin(); it != all->constEnd(); ++it) {
+            if (it.value()->type() == TextMark::bookmark)
+                bmString += '|' + QString::number(it.key()) + ',' + QString::number(it.value()->column());
+        }
+        if (bmString.isEmpty() || !mFileRepo->fileMeta(id))
+            continue;
+        bookmarks.append(mFileRepo->fileMeta(id)->location() + bmString);
+    }
+}
+
+void TextMarkRepo::readBookmarks(const QVariantList &bookmarks)
+{
+    for (QVariant raw : bookmarks) {
+        QStringList list = raw.toString().split('|');
+        FileMeta *meta = mFileRepo->fileMeta(list.first());
+        if (!meta) continue;
+
+        for (int i = 1; i < list.count(); ++i) {
+            QStringList vals = list.at(i).split(',');
+            if (vals.size() != 2) continue;
+            bool ok = false;
+            int line = vals.first().toInt(&ok);
+            if (!ok) continue;
+            int column = vals.last().toInt(&ok);
+            if (ok) createMark(meta->id(), TextMark::bookmark, line, column);
+        }
+    }
+}
+
 QTextDocument *TextMarkRepo::document(const FileId &fileId) const
 {
     FileMeta* fm = mFileRepo->fileMeta(fileId);
