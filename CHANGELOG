@@ -1,9 +1,9 @@
 Version 1.21.3
 ==================
-- Added functionality to store and restore the bookmarks.
-- Fixed a crash when renaming a project and a GDX viewer is open.
+- Added functionality to store and restore bookmarks.
+- Fixed a crash when renaming a project, while a GDX viewer is open.
 - Fixed that Studio window size isn't restored on macOS.
-- Fixed missing DCO $onEmbeddedCode in completer.
+- Fixed missing DCO `$onEmbeddedCode` in completer.
 - Improved edit function in GAMS User Config Editor, actions are now enabled/disabled based on single cell selection.
 
 Version 1.21.2
