@@ -69,7 +69,8 @@ void CodeCompleterModel::initData()
     QList<QPair<QString, QString>> src = syntax::SyntaxData::directives();
     QList<QPair<QString, QString>>::ConstIterator it = src.constBegin();
     while (it != src.constEnd()) {
-        if (!it->first.endsWith("mbeddedCode") && !it->first.endsWith("mbeddedCodeS") && !it->first.endsWith("mbeddedCodeV")) {
+        if ((!it->first.endsWith("mbeddedCode") && !it->first.endsWith("mbeddedCodeS")
+             && !it->first.endsWith("mbeddedCodeV")) || it->first.startsWith('o')) {
             if (it->first == "offText" || it->first == "offEcho" || it->first == "offPut") {
                 mData << '$' + it->first;
                 mDescription << it->second;

@@ -3286,6 +3286,10 @@ void MainWindow::updateAndSaveSettings()
     settings->setMap(skTabs, tabData);
     settings->setInt(skPinViewTabIndex, pinViewTabIndex());
 
+    QVariantList bookmarks;
+    mTextMarkRepo.writeBookmarks(bookmarks);
+    settings->setList(skBookmarks, bookmarks);
+
     historyChanged();
 
     settings->setList(SettingsKey::skUserThemes, Theme::instance()->writeUserThemes());
@@ -3317,10 +3321,10 @@ void MainWindow::restoreFromSettings()
     Settings *settings = Settings::settings();
 
     // main window
-    resize(settings->toSize(skWinSize));
     move(settings->toPoint(skWinPos));
-    ensureInScreen();
-    QTimer::singleShot(0, this, &MainWindow::ensureInScreen);
+    mWindowSize = settings->toSize(skWinSize);
+    ensureSizeAndInScreen();
+    QTimer::singleShot(0, this, &MainWindow::ensureSizeAndInScreen);
 
     mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
     if (settings->toBool(skWinFullScreen)) {
@@ -4594,6 +4598,7 @@ void MainWindow::initDelayedElements()
     }
     openDelayedFiles();
     watchProjectTree();
+    mTextMarkRepo.readBookmarks(settings->toList(skBookmarks));
     int fp = settings->toInt(skCurrentFocusProject);
     QAction *action = mActFocusProject->actions().first();
     for (QAction *act : mActFocusProject->actions()) {
@@ -5182,9 +5187,10 @@ void MainWindow::rehighlightOpenFiles()
     }
 }
 
-void MainWindow::ensureInScreen()
+void MainWindow::ensureSizeAndInScreen()
 {
     QRect appGeo = geometry();
+    appGeo.setSize(mWindowSize);
     QRect appFGeo = frameGeometry();
     QMargins margins(appGeo.left() - appFGeo.left(), appGeo.top() - appFGeo.top(),
                      appFGeo.right() - appGeo.right(), appFGeo.bottom() - appGeo.bottom());

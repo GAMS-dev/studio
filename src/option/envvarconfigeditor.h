@@ -68,7 +68,7 @@ private slots:
     void updateActionsState(const QModelIndex &index);
     void updateActionsState();
 
-    void currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void showContextMenu(const QPoint &pos);
 
     void on_selectRow(int logicalIndex);

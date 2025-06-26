@@ -539,6 +539,7 @@ void GdxSymbolView::autoResizeListViewColumns()
 
 void GdxSymbolView::adjustDomainScrollbar()
 {
+    if (!ui->tvTableViewFilter->model()) return;
     int colCount = ui->tvTableViewFilter->model()->columnCount();
     QVector<int> accSecWidth(colCount);
     int tableWidth = ui->tvTableViewFilter->horizontalHeader()->width();

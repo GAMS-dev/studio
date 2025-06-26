@@ -376,13 +376,14 @@ void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
     cursor.setPosition(from+charsAdded);
     int toLine = cursor.blockNumber();
     int removedLines = mLineCount-mDocument->lineCount() + toLine-fromLine;
-    mChangedLine = fromLine;
+    mChangedLine = fromLine+1;
     edit->ensureUnfolded(toLine);
-//    if (charsAdded) --mChangedLine;
-//    if (!column) --mChangedLine;
-    if (removedLines > 0)
+    if (removedLines > 0) {
         mFileRepo->textMarkRepo()->removeMarks(id(), projectId(), QSet<TextMark::Type>()
                                                , fromLine, fromLine+removedLines);
+        mFileRepo->textMarkRepo()->removeMarks(id(), NodeId(), QSet<TextMark::Type>() << TextMark::bookmark
+                                               , fromLine, fromLine+removedLines);
+    }
     for (int i = fromLine; i <= toLine; ++i) {
         const QList<TextMark*> marks = mFileRepo->textMarkRepo()->marks(id(), i, projectId());
         for (TextMark *mark: marks) {
@@ -706,7 +707,6 @@ void FileMeta::deleteEdit(QWidget *edit)
     }
 
     if (mEditors.isEmpty() && kind() != FileKind::Gsp) {
-        mFileRepo->textMarkRepo()->removeMarks(id(), QSet<TextMark::Type>() << TextMark::bookmark);
         mFileRepo->watch(this);
     }
     if (scEdit && mHighlighter) {

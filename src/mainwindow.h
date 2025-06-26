@@ -152,7 +152,7 @@ public:
     void setForeground();
     void setForegroundOSCheck();
     void convertLowerUpper(bool toUpper);
-    void ensureInScreen();
+    void ensureSizeAndInScreen();
     void setExtendedEditorVisibility(bool visible);
     void resetLoadAmount();
     void toggleDistractionFreeMode();
@@ -539,6 +539,7 @@ private:
     gamscom::PinControl mPinControl;
     QHash<FontGroup, qreal> mGroupFontSize;
     NodeId mFocussedLog;
+    QSize mWindowSize;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;

@@ -25,7 +25,6 @@
 
 #include "abstractview.h"
 #include "option.h"
-#include "commandline.h"
 #include "optiontokenizer.h"
 #include "gamsparametertablemodel.h"
 #include "optioncompleterdelegate.h"
@@ -108,7 +107,7 @@ public slots:
 private slots:
     void findAndSelectionParameterFromDefinition();
 
-    void showParameterDefinition();
+    void showParameterDefinition(bool selectRow = true);
     void showParameterRecurrence();
     void deleteParameter();
     void deleteAllParameters();

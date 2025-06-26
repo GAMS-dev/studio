@@ -632,17 +632,20 @@ void ParameterEditor::findAndSelectionParameterFromDefinition()
     ui->gamsParameterTreeView->setFocus();
 }
 
-void ParameterEditor::showParameterDefinition()
+void ParameterEditor::showParameterDefinition(bool selectRow)
 {
    if (!mExtendedEditor->isVisible())
        return;
 
     QModelIndexList indexSelection = ui->gamsParameterTableView->selectionModel()->selectedIndexes();
-    for(const QModelIndex index : std::as_const(indexSelection)) {
-        ui->gamsParameterTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
-    }
 
-    const QModelIndexList selection = ui->gamsParameterTableView->selectionModel()->selectedRows();
+   QModelIndexList selection;
+    if (selectRow) {
+        selection = ui->gamsParameterTableView->selectionModel()->selectedRows();
+    } else {
+        selection = indexSelection;
+        ui->gamsParameterTableView->selectionModel()->setCurrentIndex ( selection.first(), QItemSelectionModel::Select );
+    }
 
     if (selection.count() <= 0)
        return;
@@ -948,12 +951,10 @@ void ParameterEditor::on_newTableRowDropped(const QModelIndex &index)
         ui->gamsParameterTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
     }
 
-    if (mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumStr &&
-        mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumInt &&
-        mOptionTokenizer->getOption()->getOptionSubType(optionName) != optsubNoValue)
-        ui->gamsParameterTableView->edit( mParameterTableModel->index(index.row(), GamsParameterTableModel::COLUMN_OPTION_VALUE) );
+    ui->gamsParameterTableView->selectionModel()->clearSelection();
+    ui->gamsParameterTableView->edit( mParameterTableModel->index(index.row(), GamsParameterTableModel::COLUMN_OPTION_VALUE) );
 
-    showParameterDefinition();
+    showParameterDefinition(false);
     connect(ui->gamsParameterTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ParameterEditor::findAndSelectionParameterFromDefinition, Qt::UniqueConnection);
 }
 

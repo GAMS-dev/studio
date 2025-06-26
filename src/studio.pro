@@ -95,7 +95,6 @@ SOURCES += \
     editors/defaultsystemlogger.cpp \
     editors/editorhelper.cpp \
     editors/fastfilemapper.cpp \
-    editors/filemapper.cpp \
     editors/logparser.cpp \
     editors/memorymapper.cpp \
     editors/navigationhistory.cpp \
@@ -329,7 +328,6 @@ HEADERS += \
     editors/defaultsystemlogger.h \
     editors/editorhelper.h \
     editors/fastfilemapper.h \
-    editors/filemapper.h \
     editors/logparser.h \
     editors/memorymapper.h \
     editors/navigationhistory.h \
