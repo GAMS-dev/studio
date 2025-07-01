@@ -911,7 +911,7 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
     QPoint pos = mEdit->cursorRect(cur).bottomLeft()
             + QPoint(mEdit->viewport()->contentsMargins().left(), mEdit->viewport()->contentsMargins().top());
 
-    QRect rect = QRect(mEdit->mapToGlobal(pos), geometry().size());
+    QRect rect = QRect(mEdit->viewport()->mapToGlobal(pos), geometry().size());
     int hei = sizeHintForRow(0) * qMin(10, rowCount());
     QScreen *screen = qApp->screenAt(rect.topLeft());
     while (hei > sizeHintForRow(0) && rect.top() + hei > screen->availableVirtualGeometry().bottom())

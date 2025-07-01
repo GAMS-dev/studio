@@ -1,3 +1,7 @@
+Version 1.21.4
+==================
+- Fixed completer position when profiler is visible.
+
 Version 1.21.3
 ==================
 - Added functionality to store and restore bookmarks.
