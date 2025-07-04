@@ -17,24 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSGETKEYPROCESS_H
-#define GAMSGETKEYPROCESS_H
+#ifndef GAMSPROBEPROCESS_H
+#define GAMSPROBEPROCESS_H
 
 #include <QProcess>
 
 namespace gams {
 namespace studio {
 
-class GamsGetKeyProcess final
+class GamsprobeProcess final
 {
 public:
-    GamsGetKeyProcess();
-
-    QString alpId() const;
-    void setAlpId(const QString& id);
-
-    QString checkoutDuration() const;
-    void setCheckouDuration(const QString& duration);
+    GamsprobeProcess();
 
     QString execute();
 
@@ -44,11 +38,9 @@ private:
 private:
     QString mApplication;
     QProcess mProcess;
-    QString mAlpId;
-    QString mCheckoutDuration;
 };
 
 }
 }
 
-#endif // GAMSGETKEYPROCESS_H
+#endif // GAMSPROBEPROCESS_H

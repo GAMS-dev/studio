@@ -227,6 +227,7 @@ SOURCES += \
     process/connectprocess.cpp \
     process/gamsgetkeyprocess.cpp \
     process/gamslibprocess.cpp  \
+    process/gamsprobeprocess.cpp \
     process/gamsprocess.cpp     \
     process/gmsunzipprocess.cpp \
     process/gmszipprocess.cpp \
@@ -461,6 +462,7 @@ HEADERS += \
     process/connectprocess.h \
     process/gamsgetkeyprocess.h \
     process/gamslibprocess.h \
+    process/gamsprobeprocess.h \
     process/gamsprocess.h \
     process/gmsunzipprocess.h \
     process/gmszipprocess.h \

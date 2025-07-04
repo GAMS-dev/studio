@@ -25,6 +25,7 @@
 #include "editors/sysloglocator.h"
 #include "process/gamsprocess.h"
 #include "process/gamsgetkeyprocess.h"
+#include "process/gamsprobeprocess.h"
 #include "theme.h"
 
 #include <QClipboard>
@@ -236,7 +237,10 @@ void GamsLicensingDialog::copyLicenseInfo()
     QClipboard *clip = QGuiApplication::clipboard();
     QTextDocument doc;
     doc.setHtml(ui->label->text());
-    clip->setText(doc.toPlainText());
+    QStringList stats { doc.toPlainText() };
+    GamsprobeProcess gp;
+    stats << gp.execute();
+    clip->setText(stats.join(""));
 }
 
 void GamsLicensingDialog::installFile()
