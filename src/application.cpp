@@ -68,8 +68,7 @@ Application::Application(int& argc, char** argv)
 #ifdef _WIN32
     QApplication::setStyle(QStyleFactory::create("Fusion"));
 #endif
-    QLocale *locale = new QLocale(QLocale::English, QLocale::UnitedStates);
-    QLocale::setDefault(*locale);
+    QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
     parseCmdArgs();
     QString userName;
 #ifdef __unix__
