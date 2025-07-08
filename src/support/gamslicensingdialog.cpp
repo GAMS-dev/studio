@@ -215,8 +215,9 @@ void GamsLicensingDialog::createLicenseFileFromClipboard(QWidget *parent)
 {
     GamsLicenseInfo licenseInfo;
     auto license = licenseInfo.licenseFromClipboard();
-    if (license.isEmpty())
+    if (license.isEmpty()) {
         return;
+    }
     if (!licenseInfo.isLicenseValid(license)) {
         auto msg = "The license is invalid and has not been installed. The license is";
         SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
@@ -275,14 +276,23 @@ void GamsLicensingDialog::installAlp()
     proc.setAlpId(ui->idEdit->text().trimmed());
     proc.setCheckouDuration(ui->cdEdit->text());
     auto license = proc.execute().split("\n", Qt::SkipEmptyParts);
+    auto error = proc.errorMessage();
+    if (!error.isEmpty()) {
+        auto msg = "The license has not been installed.";
+        SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
+        SysLogLocator::systemLog()->append(error, LogMsgType::Error);
+        ui->errorLabel->setText(error);
+        return;
+    }
     for (int i=0; i<license.size(); ++i) {
         license[i] = license[i].trimmed();
     }
     GamsLicenseInfo licenseInfo;
-    if (license.isEmpty() || !licenseInfo.isLicenseValid(license)) {
-        auto str = license.join(" ");
-        ui->errorLabel->setText(str);
-        SysLogLocator::systemLog()->append(str, LogMsgType::Error);
+    if (!licenseInfo.isLicenseValid(license)) {
+        QString msg = "The license is invalid and has not been installed. The license is";
+        SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
+        SysLogLocator::systemLog()->append(license.join("\n"), LogMsgType::Error);
+        ui->errorLabel->setText("The license is invalid and has not been installed.");
         return;
     }
     if (licenseInfo.isGamsLicense(license)) {

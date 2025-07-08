@@ -38,6 +38,8 @@ public:
 
     QString execute();
 
+    QString errorMessage() const;
+
 private:
     QString nativeAppPath();
 
@@ -46,6 +48,7 @@ private:
     QProcess mProcess;
     QString mAlpId;
     QString mCheckoutDuration;
+    QString mErrorMessage;
 };
 
 }

@@ -52,9 +52,14 @@ QString GamsGetKeyProcess::execute()
     if (mProcess.waitForFinished()) {
         content = mProcess.readAllStandardOutput();
         if (content.isEmpty())
-            content = mProcess.readAllStandardError();
+            mErrorMessage = mProcess.readAllStandardError();
     }
     return content;
+}
+
+QString GamsGetKeyProcess::errorMessage() const
+{
+    return mErrorMessage;
 }
 
 QString GamsGetKeyProcess::alpId() const
