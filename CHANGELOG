@@ -1,6 +1,7 @@
 Version 1.21.4
 ==================
 - Fixed completer position when profiler is visible.
+- Fixed incorrect error message when interrupting Studio without debugging.
 
 Version 1.21.3
 ==================

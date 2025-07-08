@@ -1363,7 +1363,7 @@ bool PExProjectNode::startComServer(gamscom::ComFeatures features)
         connect(mComServer, &gamscom::Server::signalPaused, this, &PExProjectNode::gotoPaused);
         connect(mComServer, &gamscom::Server::signalStop, this, &PExProjectNode::terminate);
         connect(mComServer, &gamscom::Server::signalLinesMap, this, &PExProjectNode::addLinesMap);
-        if (process())
+        if (process() && mComServer && mComServer->comFeatures().testFlag(gamscom::cfRunDebug))
             connect(process(), &AbstractProcess::interruptGenerated, mComServer, &gamscom::Server::sendStepLine);
     }
     if (runnableGms()) mComServer->setMain(runnableGms()->location());
