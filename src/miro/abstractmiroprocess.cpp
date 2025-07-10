@@ -51,14 +51,17 @@ AbstractMiroProcess::AbstractMiroProcess(const QString &application, QObject *pa
 
 void AbstractMiroProcess::execute()
 {
+    QString app = nativeAppPath();
+    if (!isAppAvailable(app))
+        return;
     mProcess.setWorkingDirectory(workingDirectory());
 #if defined(__unix__) || defined(__APPLE__)
-    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
-    mProcess.start(nativeAppPath(), parameters());
+    emit newProcessCall("Running:", appCall(app, parameters()));
+    mProcess.start(app, parameters());
 #else
     mProcess.setNativeArguments(parameters().join(" "));
-    mProcess.setProgram(nativeAppPath());
-    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
+    mProcess.setProgram(app);
+    emit newProcessCall("Running:", appCall(app, parameters()));
     mProcess.start();
 #endif
 }

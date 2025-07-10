@@ -12,6 +12,7 @@ HEADERS +=                                      \
     $$SRCPATH/editors/defaultsystemlogger.h     \
     $$SRCPATH/editors/sysloglocator.h           \
     $$SRCPATH/exception.h                       \
+    $$SRCPATH/common.h                          \
     $$SRCPATH/commonpaths.h                     \
     $$SRCPATH/commandlineparser.h               \
     $$SRCPATH/support/versioninfoloader.h
@@ -21,6 +22,7 @@ SOURCES +=                                      \
     $$SRCPATH/editors/sysloglocator.cpp         \
     $$SRCPATH/support/versioninfoloader.cpp     \
     $$SRCPATH/exception.cpp                     \
+    $$SRCPATH/common.cpp                        \
     $$SRCPATH/commonpaths.cpp                   \
     $$SRCPATH/commandlineparser.cpp             \
     tst_testversioninfoloader.cpp

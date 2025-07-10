@@ -18,8 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "mirodeployprocess.h"
-#include "editors/abstractsystemlogger.h"
-#include "editors/sysloglocator.h"
 #include "commonpaths.h"
 #include "mirocommon.h"
 

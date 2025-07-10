@@ -36,15 +36,17 @@ QString GamsGetKeyProcess::execute()
     QStringList args({mAlpId});
     if (!mCheckoutDuration.isEmpty())
         args << "-c" << mCheckoutDuration;
-    auto appPath = nativeAppPath();
-    if (appPath.isEmpty())
+    auto app = nativeAppPath();
+    if (app.isEmpty()) {
+        mErrorMessage = "Could not locate gamsgetkey.";
         return QString();
+    }
 
 #if defined(__unix__) || defined(__APPLE__)
-    mProcess.start(nativeAppPath(), args);
+    mProcess.start(app, args);
 #else
     mProcess.setNativeArguments(args.join(" "));
-    mProcess.setProgram(nativeAppPath());
+    mProcess.setProgram(app);
     mProcess.start();
 #endif
 

@@ -33,14 +33,16 @@ GamsprobeProcess::GamsprobeProcess()
 
 QString GamsprobeProcess::execute()
 {
-    auto appPath = nativeAppPath();
-    if (appPath.isEmpty())
-        return QString("Error: Could not locate gamsprobe");
+    auto app = nativeAppPath();
+    if (app.isEmpty()) {
+        mErrorMessage = "Could not locate gamsprobe.";
+        return QString();
+    }
 
 #if defined(__unix__) || defined(__APPLE__)
-    mProcess.start(nativeAppPath());
+    mProcess.start(app);
 #else
-    mProcess.setProgram(nativeAppPath());
+    mProcess.setProgram(app);
     mProcess.start();
 #endif
 
@@ -48,9 +50,14 @@ QString GamsprobeProcess::execute()
     if (mProcess.waitForFinished()) {
         content = mProcess.readAllStandardOutput();
         if (content.isEmpty())
-            content = mProcess.readAllStandardError();
+            mErrorMessage = mProcess.readAllStandardError();
     }
     return content;
+}
+
+QString GamsprobeProcess::errorMessage() const
+{
+    return mErrorMessage;
 }
 
 QString GamsprobeProcess::nativeAppPath()

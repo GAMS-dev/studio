@@ -1,6 +1,6 @@
 QT += core testlib widgets gui svg concurrent network printsupport
 
-CONFIG += c++14
+CONFIG += c++17 warn_on depend_includepath testcase
 CONFIG -= app_bundle
 
 DESTDIR = ../bin

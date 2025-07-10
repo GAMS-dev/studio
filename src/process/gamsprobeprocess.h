@@ -32,12 +32,15 @@ public:
 
     QString execute();
 
+    QString errorMessage() const;
+
 private:
     QString nativeAppPath();
 
 private:
     QString mApplication;
     QProcess mProcess;
+    QString mErrorMessage;
 };
 
 }

@@ -8,8 +8,10 @@ SUBDIRS +=                              \
            testdialogfilefilter         \
            testdoclocation              \
            testeditors                  \
+           testgamsgetkeyprocess \
            testgamslicenseinfo          \
            testgamsoption               \
+           testgamsprobeprocess \
            testgamsuserconfig           \
            testgdxviewer                \
            testmemorymapper             \

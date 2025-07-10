@@ -74,16 +74,19 @@ void NeosProcess::execute()
     mInLogClone = false;
     QStringList params = compileParameters();
     mProcess.setWorkingDirectory(workingDirectory());
+    QString app = nativeAppPath();
+    if (!isAppAvailable(app))
+        return;
 
 #if defined(__unix__) || defined(__APPLE__)
-    mProcess.start(nativeAppPath(), params);
+    mProcess.start(app, params);
 #else
     mProcess.setNativeArguments(params.join(" "));
-    mProcess.setProgram(nativeAppPath());
+    mProcess.setProgram(app);
     mProcess.start();
 #endif
 
-    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
+    emit newProcessCall("Running:", appCall(app, parameters()));
     setProcState(Proc1Compile);
 }
 

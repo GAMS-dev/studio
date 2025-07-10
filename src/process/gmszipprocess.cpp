@@ -29,10 +29,13 @@ GmszipProcess::GmszipProcess(QObject *parent) : AbstractGamsProcess("gmszip", pa
 
 void GmszipProcess::execute()
 {
+    auto app = nativeAppPath();
+    if (!isAppAvailable(app))
+        return;
     mProcess.setWorkingDirectory(workingDirectory());
     mProcess.setArguments(parameters());
-    mProcess.setProgram(nativeAppPath());
-    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
+    mProcess.setProgram(app);
+    emit newProcessCall("Running:", appCall(app, parameters()));
     mProcess.start();
 }
 

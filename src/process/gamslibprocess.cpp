@@ -32,8 +32,11 @@ GamsLibProcess::GamsLibProcess(QObject *parent)
 
 void GamsLibProcess::execute()
 {
-    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
-    mProcess.start(nativeAppPath(), parameters());
+    auto app = nativeAppPath();
+    if (!isAppAvailable(app))
+        return;
+    emit newProcessCall("Running:", appCall(app, parameters()));
+    mProcess.start(app, parameters());
 }
 
 } // namespace studio

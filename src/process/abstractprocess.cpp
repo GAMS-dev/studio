@@ -18,10 +18,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "abstractprocess.h"
-#include "../commonpaths.h"
+#include "commonpaths.h"
+#include "editors/abstractsystemlogger.h"
+#include "editors/sysloglocator.h"
 
 #include <QDir>
 #include <QMetaType>
+#include <QStandardPaths>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -117,6 +120,15 @@ void AbstractProcess::interruptIntern(bool hardKill)
         kill(pid, SIGTERM);
     emit interruptGenerated();
 #endif
+}
+
+bool AbstractProcess::isAppAvailable(const QString& app)
+{
+    if (!app.isEmpty() && QFileInfo::exists(app))
+        return true;
+    QString msg = QString("The %1 executable could not be found.").arg(application());
+    SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
+    return false;
 }
 
 QByteArray AbstractProcess::lastError() const
@@ -220,7 +232,7 @@ QString AbstractGamsProcess::nativeAppPath()
     QString systemDir = CommonPaths::systemDir();
     if (systemDir.isEmpty())
         return QString();
-    auto appPath = QDir(systemDir).filePath(AbstractProcess::nativeAppPath());
+    auto appPath = QStandardPaths::findExecutable(AbstractProcess::nativeAppPath(), { systemDir });
     return QDir::toNativeSeparators(appPath);
 }
 

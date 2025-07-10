@@ -15,6 +15,7 @@ HEADERS +=                          \
     $$SRCPATH/support/gamslicenseinfo.h       \
     $$SRCPATH/support/checkforupdate.h        \
     $$SRCPATH/support/solverconfiginfo.h      \
+    $$SRCPATH/common.h                        \
     $$SRCPATH/commonpaths.h                   \
     $$SRCPATH/exception.h                     \
     $$SRCPATH/commandlineparser.h             \
@@ -27,6 +28,7 @@ SOURCES +=                                      \
     $$SRCPATH/support/gamslicenseinfo.cpp       \
     $$SRCPATH/support/checkforupdate.cpp        \
     $$SRCPATH/support/solverconfiginfo.cpp      \
+    $$SRCPATH/common.cpp                        \
     $$SRCPATH/commonpaths.cpp                   \
     $$SRCPATH/exception.cpp                     \
     $$SRCPATH/commandlineparser.cpp             \
