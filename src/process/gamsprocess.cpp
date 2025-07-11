@@ -32,14 +32,17 @@ GamsProcess::GamsProcess(QObject *parent)
 
 void GamsProcess::execute()
 {
+    auto app = nativeAppPath();
+    if (!isAppAvailable(app))
+        return;
     mProcess.setWorkingDirectory(workingDirectory());
 #if defined(__unix__) || defined(__APPLE__)
-    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
-    mProcess.start(nativeAppPath(), parameters());
+    emit newProcessCall("Running:", appCall(app, parameters()));
+    mProcess.start(app, parameters());
 #else
     mProcess.setNativeArguments(parameters().join(" "));
-    mProcess.setProgram(nativeAppPath());
-    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
+    mProcess.setProgram(app);
+    emit newProcessCall("Running:", appCall(app, parameters()));
     mProcess.start();
 #endif
 }
@@ -54,15 +57,15 @@ QString GamsProcess::aboutGAMS()
     QProcess process;
     QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
     QStringList args({"/??", "lo=3", "procTreeMemMonitor=0", "curdir=\"" + tempDir + "\""});
-    QString appPath = nativeAppPath();
-    if (appPath.isEmpty())
+    QString app = nativeAppPath();
+    if (!isAppAvailable(app))
         return QString();
 
 #if defined(__unix__) || defined(__APPLE__)
-    process.start(nativeAppPath(), args);
+    process.start(app, args);
 #else
     process.setNativeArguments(args.join(" "));
-    process.setProgram(nativeAppPath());
+    process.setProgram(app);
     process.start();
 #endif
 

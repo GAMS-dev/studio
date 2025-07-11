@@ -4,12 +4,11 @@ include(../tests.pri)
 
 INCLUDEPATH += $$SRCPATH
 
-
-
 SOURCES += \
     tst_testgdxviewer.cpp \
     $$SRCPATH/abstractview.cpp \
     $$SRCPATH/commonpaths.cpp \
+    $$SRCPATH/common.cpp                        \
     $$SRCPATH/editors/abstracttextmapper.cpp \
     $$SRCPATH/editors/chunktextmapper.cpp \
     $$SRCPATH/editors/defaultsystemlogger.cpp \

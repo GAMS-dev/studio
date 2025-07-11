@@ -3,6 +3,7 @@ Version 1.22.0
 - Added the `gamsprobe` output to the `Copy System Information` output of the GAMS Licensing dialog.
 - Improved error messages forlicense installations via ALP.
 - Improved Studio to ignore the old style GAMS licenses, i.e. only accept the modern GAMS licenses.
+- Added additional system log messages in case a GAMS executable is missing, like `gams` or `gamsgetkey`.
 
 Version 1.21.4
 ==================

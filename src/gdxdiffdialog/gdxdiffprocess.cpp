@@ -37,9 +37,12 @@ GdxDiffProcess::GdxDiffProcess(QObject *parent)
 
 void GdxDiffProcess::execute()
 {
+    QString app = nativeAppPath();
+    if (!isAppAvailable(app))
+        return;
     mProcess.setWorkingDirectory(workingDirectory());
-    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
-    mProcess.start(nativeAppPath(), parameters());
+    emit newProcessCall("Running:", appCall(app, parameters()));
+    mProcess.start(app, parameters());
 }
 
 QString GdxDiffProcess::diffFile() const

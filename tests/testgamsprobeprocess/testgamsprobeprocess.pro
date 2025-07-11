@@ -17,9 +17,10 @@ HEADERS +=                                      \
     $$SRCPATH/exception.h
 
 SOURCES +=                                      \
-    testabstractprocess.cpp                     \
+    tst_testgamsprobeprocess.cpp                \
     $$SRCPATH/editors/defaultsystemlogger.cpp   \
     $$SRCPATH/editors/SysLogLocator.cpp         \
+    $$SRCPATH/process/gamsprobeprocess.cpp      \
     $$SRCPATH/process/abstractprocess.cpp       \
     $$SRCPATH/commonpaths.cpp                   \
     $$SRCPATH/common.cpp                        \

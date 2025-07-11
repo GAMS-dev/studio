@@ -34,19 +34,21 @@ ConnectProcess::ConnectProcess(QObject *parent)
             [](const QString &text, const QString &call){ SysLogLocator::systemLog()->append(text + " " + call, LogMsgType::Info); });
     connect(this, &AbstractProcess::newStdChannelData,
             [](const QString &text){ SysLogLocator::systemLog()->append(text, LogMsgType::Info); });
-
 }
 
 void ConnectProcess::execute()
 {
+    QString app = nativeAppPath();
+    if (!isAppAvailable(app))
+        return;
     mProcess.setWorkingDirectory(workingDirectory());
     QStringList param;
     param << QDir::toNativeSeparators(CommonPaths::systemDir() + "/connectdriver.py");
     param << QDir::toNativeSeparators(CommonPaths::systemDir());
     param << parameters();
     setParameters(param);
-    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
-    mProcess.start(nativeAppPath(), parameters());
+    emit newProcessCall("Running:", appCall(app, parameters()));
+    mProcess.start(app, parameters());
 }
 
 void ConnectProcess::stop(int waitMSec)

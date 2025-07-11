@@ -24,7 +24,7 @@
 #include <QProcess>
 #include <QMutex>
 
-#include "../common.h"
+#include "common.h"
 
 namespace gams {
 namespace studio {
@@ -86,10 +86,14 @@ protected slots:
 
 protected:
     virtual QString nativeAppPath();
+
     inline QString appCall(const QString &app, const QStringList &args) {
         return app + " " + args.join(" ");
     }
+
     void interruptIntern(bool hardKill = false);
+
+    bool isAppAvailable(const QString &app);
 
 protected:
     NodeId mProjectId = NodeId();

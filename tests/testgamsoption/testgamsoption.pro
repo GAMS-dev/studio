@@ -8,6 +8,7 @@ INCLUDEPATH +=  \
 
 HEADERS += \
     testgamsoption.h \
+    $$SRCPATH/common.h       \
     $$SRCPATH/theme.h \
     $$SRCPATH/SvgEngine.h \
     $$SRCPATH/encoding.h \
@@ -21,6 +22,7 @@ SOURCES += \
     $$SRCPATH/encoding.cpp \
     $$SRCPATH/option/optiontokenizer.cpp \
     $$SRCPATH/option/option.cpp \
+    $$SRCPATH/common.cpp               \
     $$SRCPATH/commonpaths.cpp \
     $$SRCPATH/editors/sysloglocator.cpp \
     $$SRCPATH/editors/defaultsystemlogger.cpp \

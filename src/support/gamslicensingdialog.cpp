@@ -239,8 +239,16 @@ void GamsLicensingDialog::copyLicenseInfo()
     QTextDocument doc;
     doc.setHtml(ui->label->text());
     QStringList stats { doc.toPlainText() };
-    GamsprobeProcess gp;
-    stats << gp.execute();
+    GamsprobeProcess proc;
+    auto data = proc.execute();
+    auto error = proc.errorMessage();
+    if (!proc.errorMessage().isEmpty()) {
+        auto msg = "The gamsprobe content can not be added to the license information.";
+        SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
+        SysLogLocator::systemLog()->append(error, LogMsgType::Error);
+    } else {
+        stats << data;
+    }
     clip->setText(stats.join(""));
 }
 
