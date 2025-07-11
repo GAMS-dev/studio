@@ -87,7 +87,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     mSettings = Settings::settings();
 
     QItemSelectionModel *treeModel = ui->cleanTreeView->selectionModel();
-    mCleanupFilterModel = new CleanupFilterModel;
+    mCleanupFilterModel = new CleanupFilterModel(ui->cleanTreeView);
     ui->cleanTreeView->setModel(mCleanupFilterModel);
     delete treeModel;
     connect(ui->cleanAddButton, &QPushButton::clicked, this, [this]{
@@ -103,7 +103,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->cleanFilterDeselectAllButton, &QPushButton::clicked, this, [this]{ mCleanupFilterModel->setSelection(Qt::Unchecked); });
 
     QItemSelectionModel *tableModel = ui->cleanTableView->selectionModel();
-    mWorkspaceModel = new CleanupWorkspaceModel;
+    mWorkspaceModel = new CleanupWorkspaceModel(ui->cleanTableView);
     ui->cleanTableView->setModel(mWorkspaceModel);
     delete tableModel;
     connect(ui->cleanWsSelectAllButton, &QPushButton::clicked, this, [this]{ mWorkspaceModel->setSelection(Qt::Checked); });

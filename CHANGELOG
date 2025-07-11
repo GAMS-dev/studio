@@ -4,6 +4,11 @@ Version 1.22.0
 - Improved error messages forlicense installations via ALP.
 - Improved Studio to ignore the old style GAMS licenses, i.e. only accept the modern GAMS licenses.
 
+Version 1.21.4
+==================
+- Fixed completer position when profiler is visible.
+- Fixed incorrect error message when interrupting Studio without debugging.
+
 Version 1.21.3
 ==================
 - Added functionality to store and restore bookmarks.
