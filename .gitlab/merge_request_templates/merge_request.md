@@ -12,5 +12,9 @@ Closes #TICKETNUMBER
 - [ ] CHANGELOG
 - [ ] GAMS documentation
 - [ ] Code documentation
-- [ ] Profiling
-- [ ] Unit Tests
+- [ ] Have the following quality enhancements been covered, i.e. check the issue. 
+  - [ ] Clazy
+  - [ ] clang-tidy
+  - [ ] Memory checks, e.g. valgrind
+  - [ ] Profiling
+  - [ ] Unit Tests

@@ -7,5 +7,9 @@ t.b.d.
 - [ ] Update CHANGELOG
 - [ ] Update GAMS documentation
 - [ ] Code documentation
-- [ ] Profiling
-- [ ] Unit Tests
+- [ ] Quality enhancements
+  - [ ] Clazy
+  - [ ] clang-tidy
+  - [ ] Memory checks, e.g. valgrind
+  - [ ] Profiling
+  - [ ] Unit Tests
