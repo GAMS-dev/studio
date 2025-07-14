@@ -143,11 +143,11 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
         if (index.column()==OptionDefinitionModel::COLUMN_OPTION_NAME) {
             QString description = item->data(OptionDefinitionModel::COLUMN_DESCIPTION).toString();
             return ( description.isEmpty() ? QString("<html><span style=\"font-weight:600;\">%1</span></html>").arg(item->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString())
-                                           : QString("<html><span style=\"font-weight:600;\">%1</span><br/>%2</html>").arg(item->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString()).arg(description) );
+                                           : QString("<html><span style=\"font-weight:600;\">%1</span><br/>%2</html>").arg(item->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString(), description) );
         } else if (index.column()==OptionDefinitionModel::COLUMN_SYNONYM) {
             QString synonym = item->data(OptionDefinitionModel::COLUMN_SYNONYM).toString();
             return (synonym.isEmpty() ? QVariant() : QString("<html><span style=\"font-weight:600;\">%1</span> is a synonym of <span style=\"font-weight:600;\">%2</span></html>")
-                                                          .arg(synonym).arg(item->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString())
+                                                          .arg(synonym, item->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString())
                     );
         }
         return item->data(index.column());

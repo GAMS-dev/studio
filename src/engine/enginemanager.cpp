@@ -30,7 +30,6 @@
 #include <QSslConfiguration>
 
 #include "networkmanager.h"
-#include "logger.h"
 
 using namespace OpenAPI;
 
@@ -244,7 +243,7 @@ EngineManager::EngineManager(QObject* parent)
     });
 
     connect(mDefaultApi, &OAIDefaultApi::getConfigurationSignalFull, this,
-            [this](OAIHttpRequestWorker *worker, const OAIModel_configuration &summary) {
+            [this](OAIHttpRequestWorker *, const OAIModel_configuration &summary) {
         emit rePrioAccess(summary.getJobPrioritiesAccess().compare("enabled", Qt::CaseInsensitive) == 0);
     });
 

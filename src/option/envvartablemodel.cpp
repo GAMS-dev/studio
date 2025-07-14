@@ -373,13 +373,13 @@ void EnvVarTableModel::updateCheckState()
 {
     for(int i = 0; i<mEnvVarItem.size(); ++i) {
          if (isThereAnError( mEnvVarItem.at(i)) ) {
-             setHeaderData( i, Qt::Vertical,
-                               Qt::CheckState(Qt::Checked),
-                               Qt::CheckStateRole );
+             EnvVarTableModel::setHeaderData(i, Qt::Vertical,
+                                                Qt::CheckState(Qt::Checked),
+                                                Qt::CheckStateRole);
          } else {
-             setHeaderData( i, Qt::Vertical,
-                               Qt::CheckState(Qt::Unchecked),
-                               Qt::CheckStateRole );
+             EnvVarTableModel::setHeaderData(i, Qt::Vertical,
+                                                Qt::CheckState(Qt::Unchecked),
+                                                Qt::CheckStateRole);
          }
     }
 }

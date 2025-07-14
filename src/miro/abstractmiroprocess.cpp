@@ -24,7 +24,7 @@
 
 #include <QDir>
 
-#ifdef _WIN32
+#ifdef _WIN64
 #include "Windows.h"
 #endif
 
@@ -178,7 +178,7 @@ void AbstractMiroProcess::readStdChannel(QProcess &process, QProcess::ProcessCha
 void AbstractMiroProcess::gamsInterrupt()
 {
     QString pid = QString::number(mProcess.processId());
-#ifdef _WIN32
+#ifdef _WIN64
     //IntPtr receiver;
     COPYDATASTRUCT cds;
     const char* msgText = "GAMS Message Interrupt";

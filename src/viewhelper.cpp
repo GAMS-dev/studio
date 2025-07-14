@@ -107,7 +107,7 @@ void ViewHelper::changeAppearance(int appearance)
         appearance = Settings::settings()->toInt(skEdAppearance);
     int pickedTheme = appearance;
 
-#ifdef _WIN32
+#ifdef _WIN64
     bool canFollowOS = true; // deactivate follow OS option for linux
 
     if (canFollowOS && pickedTheme == 0) { // do OS specific things

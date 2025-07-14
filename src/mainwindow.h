@@ -492,7 +492,8 @@ private:
     void restoreFromSettings();
     QString currentPath();
     neos::NeosProcess *createNeosProcess();
-    bool executePrepare(PExProjectNode *project, const QString &commandLineStr, AbstractProcess* process = nullptr);
+    bool executePrepare(PExProjectNode *project, const QString &commandLineStr, AbstractProcess* process = nullptr
+                        , gamscom::ComFeatures comMode = gamscom::cfNoCom);
     void execution(PExProjectNode *project);
     void openFilesDialog(OpenGroupOption opt);
     void openFilesProcess(const QStringList &files, OpenGroupOption opt);

@@ -94,7 +94,7 @@ void TestFileMapper::testFile()
     DEB() << "size " << size;
     QCOMPARE(mMapper->size(), size);
     QCOMPARE(mMapper->lineCount(), 5000);
-#ifdef _WIN32
+#ifdef _WIN64
     // for 2-byte linebreaks \r\n
     qint64 lineLen = 100;
 #else
@@ -158,7 +158,7 @@ void TestFileMapper::testPosAndAnchor()
     QCOMPARE(mMapper->checkField(FastFileMapper::fCacheLast), 5000);
     mMapper->setPosRelative(18, 0);
 
-#ifdef _WIN32
+#ifdef _WIN64
     // for 2-byte linebreaks \r\n
     qint64 lineLen = 100;
 #else

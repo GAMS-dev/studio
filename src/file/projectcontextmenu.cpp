@@ -585,7 +585,7 @@ void ProjectContextMenu::onOpenFileLoc()
     PExFileNode *file = mNodes.first()->toFile();
     if (file) {
 // select file on windows by calling explorer.exe with parameter /select
-#ifdef _WIN32
+#ifdef _WIN64
         QString explorerPath = QStandardPaths::findExecutable("explorer.exe");
         if (explorerPath.isEmpty()) {
             QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file->location()).path()));

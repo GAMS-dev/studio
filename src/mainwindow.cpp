@@ -82,7 +82,7 @@
 #else
 # include <colors/palettemanager.h>
 #endif
-#ifdef _WIN32
+#ifdef _WIN64
 # include <Windows.h>
 #endif
 
@@ -698,7 +698,7 @@ void MainWindow::initEnvironment()
     QByteArray curPath = qgetenv("PATH");
     qputenv("PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
 
-#ifndef _WIN32
+#ifndef _WIN64
     curPath = qgetenv("LD_LIBRARY_PATH");
     qputenv("LD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
 #endif
@@ -1853,7 +1853,7 @@ void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const Q
                                                          : pfFileOnly ? ViewHelper::dialogPfFileFilter()
                                                                       : ViewHelper::dialogFileFilterUserCreated().join(";;");
     QString *defaultFilter = nullptr;
-#ifdef _WINDOWS_
+#ifdef _WIN64
     // Workaround for Windows bug to always add the 1st suffix if it doesn't match
     QString defFilter = "All files (*.*)";
     if (!solverName.isEmpty())
@@ -4371,25 +4371,30 @@ void MainWindow::execute(const QString &commandLineStr, AbstractProcess* process
     }
     if (!process)
         process = new GamsProcess();
-    bool ready = executePrepare(project, commandLineStr, process);
+
+    updateProfilerAction();
+    bool serverCheck = project->startComServer(comMode);
+    bool ready = executePrepare(project, commandLineStr, process, comMode);
     if (ready) {
-        updateProfilerAction();
-        if (project->startComServer(comMode)) {
+        if (serverCheck) {
             if (comMode & gamscom::cfRunDebug)
                 ui->debugWidget->setVisible(true);
             execution(project);
-        }
-        else {
+        } else {
             appendSystemLogWarning("Could not start server connection for project [" + project->name() + "]. "
                                    + (project->comServer() ? " Server is already running."
                                                              : "Too many active servers."));
         }
-    } else if (!process->lastError().isEmpty())
-        appendSystemLogError(process->lastError());
+    } else {
+        project->stopComServer();
+        if (!process->lastError().isEmpty())
+            appendSystemLogError(process->lastError());
+    }
 }
 
 
-bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandLineStr, AbstractProcess* process)
+bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandLineStr, AbstractProcess* process
+                                , gamscom::ComFeatures comMode)
 {
     Settings *settings = Settings::settings();
     project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
@@ -4502,7 +4507,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     if (project->parameterFile()) {
         QDir wDir(workDir);
-#ifdef _WIN32
+#ifdef _WIN64
         itemList.prepend(option::OptionItem("parmFile", '"'+wDir.relativeFilePath(project->parameterFile()->location())+'"',-1,-1));
 #else
         itemList.prepend(option::OptionItem("parmFile", wDir.relativeFilePath(project->parameterFile()->location()),-1,-1));
@@ -4514,7 +4519,8 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     AbstractProcess* projectProc = project->process();
     int logOption = 0;
     logNode->linkToProcess(projectProc);
-    projectProc->setParameters(project->analyzeParameters(gmsFilePath, projectProc->defaultParameters(), itemList, opt, logOption));
+    projectProc->setParameters(project->analyzeParameters(gmsFilePath, projectProc->defaultParameters(), itemList, opt
+                                                          , comMode, logOption));
     if (projectProc->parameters().isEmpty())
         return false;
 

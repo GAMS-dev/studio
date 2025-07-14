@@ -65,7 +65,7 @@ void logToFile(QtMsgType type, const QMessageLogContext &context, const QString 
 Application::Application(int& argc, char** argv)
     : QApplication(argc, argv)
 {
-#ifdef _WIN32
+#ifdef _WIN64
     QApplication::setStyle(QStyleFactory::create("Fusion"));
 #endif
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));

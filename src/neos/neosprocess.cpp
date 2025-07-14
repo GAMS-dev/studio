@@ -29,7 +29,7 @@
 #include <QMessageBox>
 #include "support/solverconfiginfo.h"
 
-#ifdef _WIN32
+#ifdef _WIN64
 #include "Windows.h"
 #endif
 

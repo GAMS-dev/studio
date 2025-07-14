@@ -51,7 +51,7 @@ void HeaderViewProxy::deleteInstance()
 
 bool HeaderViewProxy::platformShouldDrawBorder()
 {
-#ifdef _WIN32
+#ifdef _WIN64
     return true;
 #else
     return false;
