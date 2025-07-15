@@ -4399,6 +4399,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     Settings *settings = Settings::settings();
     project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
     mGamsParameterEditor->loadCommandLine(project->getRunParametersHistory());
+    project->setProfilerVisible(comMode & gamscom::cfProfiler);
 
     project->clearErrorTexts();
     if (QWidget *wid = currentEdit())
@@ -4693,7 +4694,8 @@ void MainWindow::on_actionRunWithSelected_triggered()
     option::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
             ? option::RunActionState::CompileWithSelected
             : option::RunActionState::RunWithSelected;
-    execute(mGamsParameterEditor->on_runAction(state), nullptr);
+    gamscom::ComFeatures comMode = ui->action3_Profiling->isChecked() ? gamscom::cfProfiler : gamscom::cfNoCom;
+    execute(mGamsParameterEditor->on_runAction(state), nullptr, comMode);
 }
 
 void MainWindow::on_actionCompile_triggered()
