@@ -86,7 +86,7 @@ QModelIndex ProjectTreeModel::parent(const QModelIndex& child) const
 
 int ProjectTreeModel::rowCount(const QModelIndex& parent) const
 {
-    if (!parent.isValid()) return 0;
+    if (!parent.isValid()) return 1;
     PExAbstractNode* aNode = node(parent);
     if (!aNode) return 1; // parent of root
     PExGroupNode* group = aNode->toGroup();

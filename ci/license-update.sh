@@ -10,8 +10,9 @@ cd ..
 
 ## Update copyright and license
 git clone https://${GITLAB_USER}:${GITLAB_CI_UPDATE_TOKEN}@git.gams.com/afust/license-update-script.git script
-./script/update-license.py -p $CI_PROJECT_DIR/studio/src --studio-license
 ./script/update-license.py -p $CI_PROJECT_DIR/studio/platform --studio-license
+./script/update-license.py -p $CI_PROJECT_DIR/studio/src --studio-license
+./script/update-license.py -p $CI_PROJECT_DIR/studio/tests --studio-license
 
 ## Commit and push updates
 cd studio
