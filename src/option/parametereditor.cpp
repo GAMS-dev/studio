@@ -242,9 +242,9 @@ QString ParameterEditor::on_runAction(RunActionState state)
     }
 
     if (state == RunActionState::RunWithSelected) {
-        if (!gdxParam && actionFlags.size() && actionFlags.at(0)->isChecked()) commandLineStr.append("GDX=default ");
-        if (!refParam && actionFlags.size() > 1 && actionFlags.at(1)->isChecked()) commandLineStr.append("RF=default ");
-        if (!profParam && actionFlags.size() > 2 && actionFlags.at(2)->isChecked()) commandLineStr.append("Profile=300 ");
+        if (!gdxParam && actionFlags.size() && actionFlags.at(0)->isChecked()) commandLineStr.prepend("GDX=default ");
+        if (!refParam && actionFlags.size() > 1 && actionFlags.at(1)->isChecked()) commandLineStr.prepend("RF=default ");
+        if (!profParam && actionFlags.size() > 2 && actionFlags.at(2)->isChecked()) commandLineStr.prepend("Profile=300 ");
         ui->gamsRunToolButton->setDefaultAction( actionRunWithSelected );
 
     } else if (state == RunActionState::RunDebug) {
@@ -254,14 +254,14 @@ QString ParameterEditor::on_runAction(RunActionState state)
         ui->gamsRunToolButton->setDefaultAction( actionStepDebug );
 
     } else if (state == RunActionState::Compile) {
-        if (!actParam) commandLineStr.append("ACTION=C");
+        if (!actParam) commandLineStr.prepend("ACTION=C");
         ui->gamsRunToolButton->setDefaultAction( actionCompile );
 
     } else if (state == RunActionState::CompileWithSelected) {
-        if (!gdxParam && actionFlags.size() && actionFlags.at(0)->isChecked()) commandLineStr.append("GDX=default ");
-        if (!refParam && actionFlags.size() > 1 && actionFlags.at(1)->isChecked()) commandLineStr.append("RF=default ");
-        if (!profParam && actionFlags.size() > 2 && actionFlags.at(2)->isChecked()) commandLineStr.append("Profile=300 ");
-        if (!actParam) commandLineStr.append("ACTION=C");
+        if (!gdxParam && actionFlags.size() && actionFlags.at(0)->isChecked()) commandLineStr.prepend("GDX=default ");
+        if (!refParam && actionFlags.size() > 1 && actionFlags.at(1)->isChecked()) commandLineStr.prepend("RF=default ");
+        if (!profParam && actionFlags.size() > 2 && actionFlags.at(2)->isChecked()) commandLineStr.prepend("Profile=300 ");
+        if (!actParam) commandLineStr.prepend("ACTION=C");
         ui->gamsRunToolButton->setDefaultAction( actionCompileWithSelected );
 
     } else if (state == RunActionState::RunNeos) {

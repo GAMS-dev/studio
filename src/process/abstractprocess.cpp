@@ -26,7 +26,7 @@
 #include <QMetaType>
 #include <QStandardPaths>
 
-#ifdef _WIN32
+#ifdef _WIN64
 #include <Windows.h>
 #include <signal.h>
 #elif __APPLE__
@@ -69,7 +69,7 @@ void AbstractProcess::terminate()
     interruptIntern(true);
 }
 
-#ifdef _WIN32
+#ifdef _WIN64
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 {
     if (fdwCtrlType == CTRL_C_EVENT)
@@ -78,11 +78,11 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
     // pass other signals to the next handler
     return false;
 }
-#endif // _WIN32
+#endif // _WIN64
 
 void AbstractProcess::interruptIntern(bool hardKill)
 {
-#ifdef _WIN32
+#ifdef _WIN64
     if (hardKill) {
         mProcess.kill();
     } else {

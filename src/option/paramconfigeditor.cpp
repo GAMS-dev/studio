@@ -621,7 +621,7 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
                                                                             optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
         ui->paramCfgTableView->clearSelection();
         QItemSelection selection;
-        for(const QModelIndex &idx: indices) {
+        for(const QModelIndex &idx: std::as_const(indices)) {
             const QModelIndex leftIndex  = ui->paramCfgTableView->model()->index(idx.row(), ConfigParamTableModel::COLUMN_PARAM_KEY);
             const QModelIndex rightIndex = ui->paramCfgTableView->model()->index(idx.row(), ConfigParamTableModel::COLUMN_ENTRY_NUMBER);
             const QItemSelection rowSelection(leftIndex, rightIndex);
@@ -655,7 +655,7 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
         } else if (multipleEntryExisted) {
             QString entryDetailedText = QString("Entries:\n");
             int i = 0;
-            for (const QModelIndex &idx : indices)
+            for (const QModelIndex &idx : std::as_const(indices))
                 entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getParameterTableEntry(idx.row())));
             const QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
                 "When a GAMS config file contains multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",

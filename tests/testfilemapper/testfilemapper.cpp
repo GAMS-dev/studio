@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2025 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2025 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,7 +94,7 @@ void TestFileMapper::testFile()
     DEB() << "size " << size;
     QCOMPARE(mMapper->size(), size);
     QCOMPARE(mMapper->lineCount(), 5000);
-#ifdef _WIN32
+#ifdef _WIN64
     // for 2-byte linebreaks \r\n
     qint64 lineLen = 100;
 #else
@@ -158,7 +158,7 @@ void TestFileMapper::testPosAndAnchor()
     QCOMPARE(mMapper->checkField(FastFileMapper::fCacheLast), 5000);
     mMapper->setPosRelative(18, 0);
 
-#ifdef _WIN32
+#ifdef _WIN64
     // for 2-byte linebreaks \r\n
     qint64 lineLen = 100;
 #else

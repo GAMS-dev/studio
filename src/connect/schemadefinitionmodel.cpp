@@ -329,7 +329,8 @@ void SchemaDefinitionModel::setupTreeItemModelData()
     rootData << "Option" << "Required"  << "Type" << "Nullable" <<  "Default"
              << "Allowed Values"  << "min" /*<< "max"*/ << "SchemaKey" << "DragEnabled" << "Excludes" ;
 
-    for (const QString& schemaName : mConnect->getSchemaNames()) {
+    const auto schemaNames = mConnect->getSchemaNames();
+    for (const QString& schemaName : schemaNames) {
         SchemaDefinitionItem* rootItem = new SchemaDefinitionItem(schemaName, rootData);
         mRootItems[schemaName] = rootItem;
 

@@ -1653,7 +1653,7 @@ int ConnectDataModel::whichOneOfSchema(const YAML::Node &data, ConnectSchema *sc
     for(const QString& schemastr : oneofschemakeys) {
         QStringList sstr(schemastr);
         bool found = false;
-        for(const QString& kstr : oneofkeystr) {
+        for(const QString& kstr : std::as_const(oneofkeystr)) {
             QString str = kstr;
             if (schema->isOneOfDefined(sstr.join(":") + ":" + kstr))
                 str += "[0]";
@@ -1870,7 +1870,7 @@ void ConnectDataModel::setupTreeItemModelData()
             }
             position++;
         }
-        informDataChanged( index(0,0).parent() );
+        informDataChanged( ConnectDataModel::index(0,0).parent() );
     }
 }
 

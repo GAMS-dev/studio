@@ -36,7 +36,7 @@
 namespace gams {
 namespace studio {
 
-#ifdef _WIN32
+#ifdef _WIN64
     static const QString allFilesFilter = "*.*";
 #else
     // using *.* would exclude all files without extension

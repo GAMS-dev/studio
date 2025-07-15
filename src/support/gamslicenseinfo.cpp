@@ -179,7 +179,7 @@ QStringList GamsLicenseInfo::gamsDataLocations()
                     systemDir.toStdString().c_str()))
         return dataPaths;
 
-#ifdef _WIN32
+#ifdef _WIN64
     auto dir = QDir::toNativeSeparators(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first());
     auto currentPath = QDir::toNativeSeparators(QDir::currentPath());
     for (int i=0; i<nOffset && i<numdirs; i++) {

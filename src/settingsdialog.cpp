@@ -77,7 +77,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
         ui->cbThemes->insertItem(i, Theme::instance()->themes().at(i));
     }
     mFixedThemeCount = 2;
-#ifdef _WIN32
+#ifdef _WIN64
     ui->cbThemes->insertItem(0, "Follow Operating System");
     ++mFixedThemeCount;
 #elif __APPLE__
@@ -237,7 +237,7 @@ void SettingsDialog::loadSettings()
     mSettings->loadFile(Settings::scUser);
     mSettings->loadFile(Settings::scTheme);
     int pickedTheme = mSettings->toInt(skEdAppearance);
-#ifdef _WIN32
+#ifdef _WIN64
     Theme::instance()->setActiveTheme(--pickedTheme);
 #else
     Theme::instance()->setActiveTheme(pickedTheme);

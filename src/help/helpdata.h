@@ -121,8 +121,10 @@ public:
         };
 
         support::SolverConfigInfo solverInfo;
+        // TODO: Calling values() generates a list. Iterate over map instead
         const QMap<int, QString> solverNames = solverInfo.solverNames();
         for (const QString& s : solverNames.values()) {
+            // TODO: Calling keys() generates a list. Iterate over map instead
             if (exceptionlist.keys().contains(s.toLower())) {
                 list << QPair<QString,QString>(s.toLower(), docs + "/S_" + exceptionlist.value(s.toLower()).toUpper()+".html");
             } else {

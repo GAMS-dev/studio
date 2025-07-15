@@ -156,7 +156,7 @@ QStringList EngineProcess::compileParameters() const
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             needsActC = false;
             i.setValue("action=c");
-#ifndef _WIN32
+#ifndef _WIN64
         } else if (par.startsWith("parmFile=", Qt::CaseInsensitive) || par.startsWith("pf=", Qt::CaseInsensitive)) {
             QStringList parts = par.split("=");
             QString fileName = parts.at(1).trimmed();

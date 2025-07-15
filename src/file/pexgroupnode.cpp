@@ -712,7 +712,7 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
         return;
     }
     if (workDir().isEmpty())
-        setLocation(QFileInfo(gmsFile->location()).absoluteDir().path());
+        PExProjectNode::setLocation(QFileInfo(gmsFile->location()).absoluteDir().path());
 
     QString gmsPath = gmsFile->location();
     setParameter("gms", gmsPath);
@@ -747,9 +747,9 @@ void PExProjectNode::setParameterFile(FileMeta *pfFile)
     FileMeta *prevPf = parameterFile();
     setParameterFile(pfPath);
     if (PExFileNode *node = findFile(prevPf))
-        emit projectRepo()->nodeChanged(node->id());
+        projectRepo()->nodeChanged(node->id());
     if (PExFileNode *node = findFile(parameterFile()))
-        emit projectRepo()->nodeChanged(node->id());
+        projectRepo()->nodeChanged(node->id());
 }
 
 void PExProjectNode::setParameterFile(const QString &fileName)
@@ -1018,10 +1018,16 @@ QStringList PExProjectNode::getRunParametersHistory() const
 ///
 /// \brief PExProjectNode::analyzeParameters translates the gms file and an OptionItem list into a single QStringList, while also setting all extracted parameters for this project
 /// \param gmsLocation gms file to be run
+/// \param defaultParameters additional default parameters
 /// \param itemList list of options given by studio and user
+/// \param opt OptionItem to handle the parameters
+/// \param comMode the comMode to be set for the communication with GAMS
+/// \param logOption returns the logOption from the last logoption argument
 /// \return QStringList all arguments
 ///
-QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const QStringList &defaultParameters, const QList<option::OptionItem> &itemList, option::Option *opt, int &logOption)
+QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const QStringList &defaultParameters
+                                              , const QList<option::OptionItem> &itemList, option::Option *opt
+                                              , gamscom::ComFeatures comMode, int &logOption)
 {
     mDoProfile = false;
     bool ok;
@@ -1032,6 +1038,17 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
     QList<int> defaultArgumentIdList = QList<int>();
     defaultArgumentList      << "logoption" << "ide" << "errorlog" << "errmsg" << "pagesize" << "lstTitleleftaligned" ;
     defaultArgumentValueList << "3"         << "1"   << "99"       << "1"      << "0"        << "1"                   ;
+    if (comMode && mComServer) {
+        if (comMode.testFlag(gamscom::cfRunDebug)) {
+            defaultArgumentList      << "DebugPort";
+            defaultArgumentValueList << QString::number(mComServer->port());
+        }
+        if (comMode.testFlag(gamscom::cfProfiler)) {
+            defaultArgumentList      << "ComPort";
+            defaultArgumentValueList << QString::number(mComServer->port());
+        }
+    }
+
     int position = 0;
     for (const QString &arg : std::as_const(defaultArgumentList)) {
         defaultArgumentIdList << opt->getOrdinalNumber(arg);
@@ -1368,15 +1385,6 @@ bool PExProjectNode::startComServer(gamscom::ComFeatures features)
     }
     if (runnableGms()) mComServer->setMain(runnableGms()->location());
     bool res = mComServer->start(features);
-    if (process()) {
-        QStringList params = process()->parameters();
-        if (features & gamscom::cfRunDebug)
-            params << ("DebugPort=" + QString::number(mComServer->port()));
-        params << ("ComPort=" + QString::number(mComServer->port()));
-        process()->setParameters(params);
-    } else {
-        DEB() << "Process isn't up already.";
-    }
     return res;
 }
 
