@@ -3234,7 +3234,7 @@ void MainWindow::updateAndSaveSettings()
     QSize scrDiff = screen->availableSize() - frameSize();
     if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         settings->setSize(skWinSize, size());
-        settings->setPoint(skWinPos, pos());
+        settings->setPoint(skWinPos, geometry().topLeft());
     }
     settings->setByteArray(skWinState, saveState());
     settings->setBool(skWinMaximized, isMaximized() || (mMaximizedBeforeFullScreen && isFullScreen()));
@@ -3323,7 +3323,6 @@ void MainWindow::restoreFromSettings()
     // main window
     move(settings->toPoint(skWinPos));
     mWindowSize = settings->toSize(skWinSize);
-    ensureSizeAndInScreen();
     QTimer::singleShot(0, this, &MainWindow::ensureSizeAndInScreen);
 
     mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
