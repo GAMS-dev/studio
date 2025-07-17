@@ -9,6 +9,7 @@ Version 1.21.4
 ==================
 - Fixed completer position when profiler is visible.
 - Fixed incorrect error message when interrupting Studio without debugging.
+- Fixed that the Studio window has been restored at the wrong position.
 - Improved error message from GAMS when the command line parameters contains errors.
 - Upgraded to Qt 6.9.1
 
