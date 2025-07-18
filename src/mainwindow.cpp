@@ -3234,7 +3234,7 @@ void MainWindow::updateAndSaveSettings()
     QSize scrDiff = screen->availableSize() - frameSize();
     if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         settings->setSize(skWinSize, size());
-        settings->setPoint(skWinPos, pos());
+        settings->setPoint(skWinPos, geometry().topLeft());
     }
     settings->setByteArray(skWinState, saveState());
     settings->setBool(skWinMaximized, isMaximized() || (mMaximizedBeforeFullScreen && isFullScreen()));
@@ -3323,7 +3323,6 @@ void MainWindow::restoreFromSettings()
     // main window
     move(settings->toPoint(skWinPos));
     mWindowSize = settings->toSize(skWinSize);
-    ensureSizeAndInScreen();
     QTimer::singleShot(0, this, &MainWindow::ensureSizeAndInScreen);
 
     mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
@@ -4399,6 +4398,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     Settings *settings = Settings::settings();
     project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
     mGamsParameterEditor->loadCommandLine(project->getRunParametersHistory());
+    project->setProfilerVisible(comMode & gamscom::cfProfiler);
 
     project->clearErrorTexts();
     if (QWidget *wid = currentEdit())
@@ -4693,7 +4693,8 @@ void MainWindow::on_actionRunWithSelected_triggered()
     option::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
             ? option::RunActionState::CompileWithSelected
             : option::RunActionState::RunWithSelected;
-    execute(mGamsParameterEditor->on_runAction(state), nullptr);
+    gamscom::ComFeatures comMode = ui->action3_Profiling->isChecked() ? gamscom::cfProfiler : gamscom::cfNoCom;
+    execute(mGamsParameterEditor->on_runAction(state), nullptr, comMode);
 }
 
 void MainWindow::on_actionCompile_triggered()

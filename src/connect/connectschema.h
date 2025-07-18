@@ -54,6 +54,13 @@ enum class SchemaValueType {
 };
 Q_ENUM_NS(SchemaValueType)
 
+// Turn off the warning by using the suggested function by Microsoft Visual C++ compiler
+#ifdef _MSC_VER
+#define stringDuplicate(s) _strdup(s)
+#else
+#define stringDuplicate(s) strdup(s)
+#endif
+
 union Value  {
     bool    boolval;
     int     intval;
@@ -64,8 +71,8 @@ union Value  {
     Value(bool val) : boolval(val)  { }
     Value(int val)  : intval(val)   { }
     Value(double val) : doubleval(val) { }
-    Value(const char* val) : stringval(val != nullptr ? strdup(val) : nullptr)  { }
-    Value(const std::string& val) : stringval(strdup(val.c_str()))       { }
+    Value(const char* val) : stringval(val != nullptr ? stringDuplicate(val) : nullptr)  { }
+    Value(const std::string& val) : stringval(stringDuplicate(val.c_str()))       { }
 
     Value& operator=(bool val)  {
        boolval = val;
@@ -80,11 +87,11 @@ union Value  {
        return *this;
     }
     Value& operator=(const char* val) {
-       stringval = val != nullptr ? strdup(val) : nullptr;
+       stringval = val != nullptr ? stringDuplicate(val) : nullptr;
         return *this;
     }
     Value& operator=(const std::string& val) {
-       stringval = strdup(val.c_str());
+       stringval = stringDuplicate(val.c_str());
        return *this;
     }
 
