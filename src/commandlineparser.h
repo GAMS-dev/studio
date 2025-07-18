@@ -61,7 +61,7 @@ private:
     int mActiveHelpView = -1;
     QString mGamsDir = QString();
     QString mLogFile = QString();
-    static QString C4ULog;
+    static QString NetLog;
 };
 
 } // namespace studio

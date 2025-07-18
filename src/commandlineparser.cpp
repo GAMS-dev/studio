@@ -23,7 +23,7 @@
 namespace gams {
 namespace studio {
 
-QString CommandLineParser::C4ULog = "";
+QString CommandLineParser::NetLog = "";
 
 CommandLineParser::CommandLineParser()
     : QCommandLineParser()
@@ -50,7 +50,7 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
     addOption({"log-file", "Set a log file for Studio system log", "file"});
     addOption({"skip-check-for-update", "Skip all online check for update actions"});
     addOption({"integrated-help", "Switches the integrated help on/off (default: on)", "on/off"});
-    addOption({"dump-c4u-data", "Dump the C4U respone and additional information if available", "log file path"});
+    addOption({"network-log", "Write the network log for the tools used, like C4U and gamsgetkey", "log file path"});
 
     if (!parse(QCoreApplication::arguments()))
         return CommandLineError;
@@ -80,8 +80,8 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
         if (mActiveHelpView < 0)
             return CommandLineError;
     }
-    if (isSet("dump-c4u-data"))
-        C4ULog = this->value("dump-c4u-data");
+    if (isSet("network-log"))
+        NetLog = this->value("network-log");
     mFiles = getFileArgs();
 
     return CommandLineOk;
@@ -130,7 +130,7 @@ QString CommandLineParser::logFile() const
 
 QString CommandLineParser::c4uLog()
 {
-    return C4ULog;
+    return NetLog;
 }
 
 inline QStringList CommandLineParser::getFileArgs()
