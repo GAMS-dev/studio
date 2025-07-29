@@ -82,6 +82,7 @@ SOURCES += \
     connect/schemadefinitionmodel.cpp \
     connect/schemalistmodel.cpp \
     connect/treecellresizer.cpp \
+    file/gprimporter.cpp \
     gamscom/continuouslinedata.cpp \
     gamscom/debugwidget.cpp \
     gamscom/pincontrol.cpp \
@@ -315,6 +316,7 @@ HEADERS += \
     connect/schemadefinitionmodel.h \
     connect/schemalistmodel.h \
     connect/treecellresizer.h \
+    file/gprimporter.h \
     gamscom/continuouslinedata.h \
     gamscom/debugwidget.h \
     gamscom/pincontrol.h \

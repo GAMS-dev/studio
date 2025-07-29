@@ -76,6 +76,7 @@
 #include "file/pathselect.h"
 #include "msgbox.h"
 #include "encoding.h"
+#include "file/gprimporter.h"
 
 #ifdef __APPLE__
 # include "../platform/macos/macoscocoabridge.h"
@@ -4212,6 +4213,8 @@ void MainWindow::openFilesProcess(const QStringList &files, OpenGroupOption opt)
                     }
                 }
             }
+        } else if (fileName.endsWith(".gpr", Qt::CaseInsensitive)) {
+            importGprProject(fileName);
         } else {
             // detect if the file is already present at the scope
             fileNode = openFilePath(fileName, nullptr, opt, true, false);
@@ -6136,6 +6139,16 @@ void MainWindow::updateTabSize(int size)
     }
 
     mSyslog->updateTabSize();
+}
+
+void MainWindow::importGprProject(const QString &gprFile)
+{
+    GprImporter importer;
+    connect(&importer, &GprImporter::openFilePath, this, [this](const QString &file, PExProjectNode *project) {
+        openFilePath(file, project, ogNone, true);
+    });
+    connect(&importer, &GprImporter::warning, this, &MainWindow::appendSystemLogWarning);
+    importer.import(gprFile, mProjectRepo);
 }
 
 bool MainWindow::readTabs(const QVariantMap &tabData)

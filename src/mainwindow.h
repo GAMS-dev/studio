@@ -443,6 +443,7 @@ private slots:
     void updateFonts(qreal fontSize = 0, const QString &fontFamily = QString());
     void updateEditorLineWrapping();
     void updateTabSize(int size);
+    void importGprProject(const QString &gprFile);
     void openProject(const QString &gspFile);
     void moveProjectDialog(gams::studio::PExProjectNode *project, bool fullCopy);
     void moveProjectCollideDialog(gams::studio::MultiCopyCheck mcs, PExProjectNode *project,
