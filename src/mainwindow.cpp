@@ -4179,9 +4179,10 @@ int MainWindow::pinViewTabIndex()
 void MainWindow::openFilesDialog(OpenGroupOption opt)
 {
     QString path = currentPath();
-    QString text = (opt == ogProjects ? "Open project(s)" : "Open file(s)");
+    QString text = (opt == ogProjects ? "Open project(s)" : opt == ogImportGpr ? "Import GPR project" : "Open file(s)");
     QString filter = (opt == ogProjects ? ViewHelper::dialogProjectFilter()
-                                        : ViewHelper::dialogFileFilterAll(true)).join(";;");
+                                        : opt == ogImportGpr ? ViewHelper::dialogImportGprFilter()
+                                                             : ViewHelper::dialogFileFilterAll(true)).join(";;");
     const QStringList files = QFileDialog::getOpenFileNames(this, text, path, filter,
                                                             opt == ogProjects ? nullptr : &mCurrentFileOpenFilter,
                                                             DONT_RESOLVE_SYMLINKS_ON_MACOS);
@@ -7263,6 +7264,12 @@ void MainWindow::on_actionShow_Profiler_toggled(bool showProfiler)
     }
     updateProfilerAction();
 }
+
+void MainWindow::on_actionImport_GPR_project_triggered()
+{
+    openFilesDialog(ogImportGpr);
+}
+
 
 
 }

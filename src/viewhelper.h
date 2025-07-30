@@ -166,6 +166,11 @@ public:
         return res;
     }
 
+    static QStringList dialogImportGprFilter() {
+        QStringList res("Old gamside Project (*.gpr)");
+        return res;
+    }
+
     static const QString dialogGdxFilter() {
         QString res("GDX file (*.gdx);;");
         res.append("All files (" + allFilesFilter + ")");

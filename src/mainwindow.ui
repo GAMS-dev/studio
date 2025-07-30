@@ -137,6 +137,7 @@
     <addaction name="actionOpen"/>
     <addaction name="actionOpenAlternative"/>
     <addaction name="actionOpen_Folder"/>
+    <addaction name="actionImport_GPR_project"/>
     <addaction name="separator"/>
     <addaction name="actionRestore_Recently_Closed_Tab"/>
     <addaction name="separator"/>
@@ -1781,6 +1782,17 @@
    </property>
    <property name="toolTip">
     <string>Activate Profiling</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionImport_GPR_project">
+   <property name="text">
+    <string>Import GPR project</string>
+   </property>
+   <property name="toolTip">
+    <string>Imports a gamside GPR project</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

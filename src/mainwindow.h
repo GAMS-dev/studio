@@ -470,6 +470,8 @@ private slots:
     void on_actionShow_Profiler_toggled(bool showProfiler);
     void updateProfilerAction();
 
+    void on_actionImport_GPR_project_triggered();
+
 private:
     void deleteLogFiles(const QString &pattern, const QString &workspace);
     void deleteScratchDirectories(const QString &workspace);

@@ -178,7 +178,8 @@ enum OpenGroupOption {
     ogFindGroup,
     ogCurrentGroup,
     ogNewGroup,
-    ogProjects
+    ogProjects,
+    ogImportGpr
 };
 
 typedef QMap<int, int> SortedIntMap; // also used as int-set to handle sort and avoid double entries
