@@ -4287,6 +4287,8 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
                     openFileNode(pro); // open project
                     usedProjects << pro;
                 }
+            } else if (item.endsWith(".gpr", Qt::CaseInsensitive)) {
+                importGprProject(item);
             } else {
                 PExProjectNode *itemProject = project;
                 if (!itemProject) {
