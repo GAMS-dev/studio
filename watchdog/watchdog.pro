@@ -14,6 +14,8 @@ SOURCES += \
     ../src/exception.cpp
 
 HEADERS += \
+    checksystem_mac.h \
+    checksystem_unix.h \
     reportdialog.h \
     watchdog.h \
     ../src/commonpaths.h \
