@@ -6,7 +6,7 @@
 
 #ifdef _WIN64
 #include "checksystem_win.h"
-#elif _APPLE_
+#elif __APPLE__
 #include "checksystem_mac.h"
 #else
 #include "checksystem_unix.h"
