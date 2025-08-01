@@ -7,6 +7,8 @@ CONFIG += c++17
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+include(../gamsdependency.pri)
+
 SOURCES += \
     reportdialog.cpp \
     watchdog.cpp \
@@ -14,8 +16,6 @@ SOURCES += \
     ../src/exception.cpp
 
 HEADERS += \
-    checksystem_mac.h \
-    checksystem_unix.h \
     reportdialog.h \
     watchdog.h \
     ../src/commonpaths.h \
@@ -30,15 +30,22 @@ SOURCES += checksystem_win.cpp
 HEADERS += checksystem_win.h
 }
 
-# macx {
-# SOURCES += checksystem_mac.cpp
-# HEADERS += checksystem_mac.h
-# }
 
-# unix {
+macx {
+    HEADERS += ../platform/macos/macoscocoabridge.h \
+               ../platform/macos/macospathfinder.h \
+               checksystem_mac.h
+
+    SOURCES += ../platform/macos/macospathfinder.cpp
+#               checksystem_mac.cpp
+
+    OBJECTIVE_SOURCES += ../platform/macos/macoscocoabridge.mm
+}
+
+unix {
 # SOURCES += checksystem_unix.cpp
-# HEADERS += checksystem_unix.h
-# }
+HEADERS += checksystem_unix.h
+}
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
