@@ -1,3 +1,7 @@
+Version 1.21.5
+==================
+- Added count of active processes to Studio title.
+
 Version 1.21.4
 ==================
 - Fixed completer position when the profiler is visible.

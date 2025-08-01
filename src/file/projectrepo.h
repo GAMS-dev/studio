@@ -153,9 +153,10 @@ public:
     void setDebugMode(bool debug);
     bool debugMode() const;
     QIcon runAnimateIcon(QIcon::Mode mode = QIcon::Normal, int alpha = 100);
+    int activeProcesses();
 
 signals:
-    void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
+    void gamsProcessStateChanged(gams::studio::PExProjectNode* project);
     void openProject(const QString &gspFile);
     void openFile(gams::studio::FileMeta* fileMeta, bool focus = true, gams::studio::PExProjectNode *project = nullptr,
                   QString encoding = QString(), bool forcedAsTextEditor = false, gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
@@ -178,7 +179,7 @@ signals:
     void switchToTab(FileMeta *fileMeta);
 
 public slots:
-    void gamsProcessStateChange(gams::studio::PExGroupNode* group);
+    void gamsProcessStateChange(PExProjectNode *project);
     void fileChanged(const FileId &fileId);
     void nodeChanged(const NodeId &nodeId);
     void closeNodeById(const NodeId &nodeId);

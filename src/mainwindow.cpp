@@ -1490,14 +1490,12 @@ void MainWindow::setActiveEncoding(const QString &encoding)
         }
 }
 
-void MainWindow::gamsProcessStateChanged(PExGroupNode* group)
+void MainWindow::gamsProcessStateChanged(PExProjectNode *project)
 {
-    if (mRecent.project() == group) updateRunState();
-
-    PExProjectNode* project = group->toProject();
     if (!project) return;
-    PExLogNode* log = project->logNode();
+    if (mRecent.project() == project) updateRunState();
 
+    PExLogNode* log = project->logNode();
     QTabBar::ButtonPosition closeSide = QTabBar::ButtonPosition(style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this));
     for (int i = 0; i < ui->logTabs->children().size(); i++) {
         if (mFileMetaRepo.fileMeta(ui->logTabs->widget(i)) == log->file()) {
@@ -1508,6 +1506,11 @@ void MainWindow::gamsProcessStateChanged(PExGroupNode* group)
                 ui->logTabs->tabBar()->tabButton(i, closeSide)->show();
         }
     }
+    int count = mProjectRepo.activeProcesses();
+
+    QString title = QString("GAMS Studio - %1 active process%2");
+    title = title.arg(count ? QString::number(count) : "No", count > 1 ? "es" : "");
+    setWindowTitle(title);
 }
 
 void MainWindow::projectContextMenuRequested(const QPoint& pos)

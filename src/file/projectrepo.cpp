@@ -1294,9 +1294,18 @@ QIcon ProjectRepo::runAnimateIcon(QIcon::Mode mode, int alpha)
     return mRunIcons.value(key).at(mRunAnimateIndex);
 }
 
-void ProjectRepo::gamsProcessStateChange(PExGroupNode *group)
+int ProjectRepo::activeProcesses()
 {
-    PExProjectNode *project = group->toProject();
+    int res = 0;
+    for (const PExProjectNode *project : projects()) {
+        if (project->process() && project->gamsProcessState() != QProcess::NotRunning)
+            ++res;
+    }
+    return res;
+}
+
+void ProjectRepo::gamsProcessStateChange(PExProjectNode *project)
+{
     if (!project) return;
     QModelIndex ind = mProxyModel->asIndex(project);
     if (project->process()->state() == QProcess::NotRunning) {

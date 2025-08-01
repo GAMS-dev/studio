@@ -167,7 +167,7 @@ public:
     void updateProfilerForOpenNodes();
 
 signals:
-    void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
+    void gamsProcessStateChanged(gams::studio::PExProjectNode* project);
     void getParameterValue(QString param, QString &value);
     void baseDirChanged(gams::studio::PExProjectNode *project);
     void runnableChanged();
