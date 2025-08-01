@@ -4,6 +4,7 @@ TARGET = studio
 TEMPLATE = app
 DESTDIR = bin
 CONFIG += c++20
+CONFIG -= qml_debug
 
 # Precompiled header, can be switched off with qmake CONFIG+=no_pch
 !no_pch {
@@ -49,6 +50,9 @@ unix {
 win32 {
     RC_FILE += ../platform/windows/studio.rc
     LIBS += -luser32 -lMpr
+    QMAKE_LFLAGS_RELEASE+=/MAP
+    QMAKE_CFLAGS_RELEASE += /Zi
+    QMAKE_LFLAGS_RELEASE +=/debug /opt:ref
 }
 
 # The following define makes your compiler emit warnings if you use

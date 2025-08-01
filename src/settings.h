@@ -286,6 +286,7 @@ public:
 
     void updateAppearanceAndTheme();
     void updateSettingsFiles();
+    QString settingsPath();
 
     void reload();
     void resetKeys(const QList<SettingsKey> &keys);
@@ -323,7 +324,6 @@ private:
 
     int usableVersion(ScopePair scopes);
     void loadVersionData(ScopePair scopes);
-    QString settingsPath();
     void initDefault();
     void addVersionInfo(Scope scope, QVariantMap &map);
     void saveFile(Scope scope);
