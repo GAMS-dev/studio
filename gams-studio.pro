@@ -2,7 +2,7 @@ TEMPLATE = subdirs
 
 SUBDIRS += src      \
            watchdog \
-           crash    \
+#           crash    \
            tests
 
 src.file = src/studio.pro
