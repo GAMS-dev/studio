@@ -10,14 +10,13 @@ CONFIG += c++17
 
 win32 {
 LIBS += -lDbghelp
+QMAKE_LFLAGS_RELEASE+=/MAP
+QMAKE_CFLAGS_RELEASE += /Zi
+QMAKE_LFLAGS_RELEASE +=/debug /opt:ref
 }
 
 SOURCES += \
     main.cpp
-
-QMAKE_LFLAGS_RELEASE+=/MAP
-QMAKE_CFLAGS_RELEASE += /Zi
-QMAKE_LFLAGS_RELEASE +=/debug /opt:ref
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
