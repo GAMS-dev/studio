@@ -254,14 +254,13 @@ QString ParameterEditor::on_runAction(RunActionState state)
         ui->gamsRunToolButton->setDefaultAction( actionStepDebug );
 
     } else if (state == RunActionState::Compile) {
-        if (!actParam) commandLineStr.prepend("ACTION=C");
+        if (!actParam) commandLineStr.prepend("ACTION=C ");
         ui->gamsRunToolButton->setDefaultAction( actionCompile );
 
     } else if (state == RunActionState::CompileWithSelected) {
         if (!gdxParam && actionFlags.size() && actionFlags.at(0)->isChecked()) commandLineStr.prepend("GDX=default ");
         if (!refParam && actionFlags.size() > 1 && actionFlags.at(1)->isChecked()) commandLineStr.prepend("RF=default ");
-        if (!profParam && actionFlags.size() > 2 && actionFlags.at(2)->isChecked()) commandLineStr.prepend("Profile=300 ");
-        if (!actParam) commandLineStr.prepend("ACTION=C");
+        if (!actParam) commandLineStr.prepend("ACTION=C ");
         ui->gamsRunToolButton->setDefaultAction( actionCompileWithSelected );
 
     } else if (state == RunActionState::RunNeos) {
@@ -1077,10 +1076,8 @@ void ParameterEditor::setRunsActionGroup()
     runMenu->addSeparator();
 
     runMenu->addAction(actionRunWithSelected);
-    // actionRunCompileWithSelected->setMenu(opt1Menu);
     actionRunWithSelected->setData(1);
     runMenu->addAction(actionCompileWithSelected);
-    // actionCompileWithSelected->setMenu(opt2Menu);
     actionCompileWithSelected->setData(2);
 
     runMenu->addSeparator();
@@ -1088,7 +1085,9 @@ void ParameterEditor::setRunsActionGroup()
     runMenu->addAction(actionRunEngine);
 
     actionRun->setShortcutVisibleInContextMenu(true);
+    actionCompile->setShortcutVisibleInContextMenu(true);
     actionRunWithSelected->setShortcutVisibleInContextMenu(true);
+    actionCompileWithSelected->setShortcutVisibleInContextMenu(true);
     actionRunDebug->setShortcutVisibleInContextMenu(true);
     actionStepDebug->setShortcutVisibleInContextMenu(true);
     actionRunNeos->setShortcutVisibleInContextMenu(true);
@@ -1116,7 +1115,9 @@ void ParameterEditor::setInterruptActionGroup()
 void ParameterEditor::setRunActionsEnabled(bool enable)
 {
     actionRun->setEnabled(enable);
+    actionCompile->setEnabled(enable);
     actionRunWithSelected->setEnabled(enable);
+    actionCompileWithSelected->setEnabled(enable);
     actionRunDebug->setEnabled(enable);
     actionStepDebug->setEnabled(enable);
     actionRunNeos->setEnabled(enable && mHasSSL);

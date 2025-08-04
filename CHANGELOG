@@ -1,6 +1,7 @@
 Version 1.21.5
 ==================
 - Added count of active processes to Studio title.
+- Fixed missing shortcuts Shift-F9 and Shift-F10.
 
 Version 1.21.4
 ==================

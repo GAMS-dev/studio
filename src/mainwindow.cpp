@@ -130,8 +130,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Shortcuts
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
-    new QShortcut(QKeySequence("Shift+F9"), this, this, &MainWindow::on_actionCompile_triggered, Qt::ApplicationShortcut);
-    new QShortcut(QKeySequence("Shift+F10"), this, this, &MainWindow::on_actionCompileWithSelected_triggered, Qt::ApplicationShortcut);
 
 #ifdef __APPLE__
     ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
