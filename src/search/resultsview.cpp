@@ -78,12 +78,7 @@ void ResultsView::jumpToResult(bool focus)
 {
     auto index = ui->resultView->currentIndex();
     auto item = static_cast<ResultItem*>(index.internalPointer());
-    Result r;
-    if (item->type() != ResultItem::Entry) {
-        r = item->child(0)->data();
-    } else {
-        r = item->data();
-    }
+    Result r = item->type() != ResultItem::Entry ? item->child(0)->data() : item->data();
     mMain->searchDialog()->jumpToResult(r);
     emit updateMatchLabel(item->data().logicalIndex()+1, mResultModel->resultCount());
     if (!focus) setFocus(); // focus stays in results view

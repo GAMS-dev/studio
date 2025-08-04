@@ -27,50 +27,77 @@ namespace gams {
 namespace studio {
 namespace search {
 
-    enum Scope {
-        Selection,
-        ThisFile,
-        ThisProject,
-        OpenTabs,
-        AllFiles,
-        Folder
-    };
+enum Scope {
+    Selection,
+    ThisFile,
+    ThisProject,
+    OpenTabs,
+    AllFiles,
+    Folder
+};
 
-    struct SearchFile
+class SearchFile
+{
+public:
+    SearchFile(FileMeta* fm)
+        : mPath(fm ? fm->location() : "")
+        , mFileMeta(fm)
     {
-        QString path;
-        FileMeta* fileMeta;
 
-        SearchFile(FileMeta* fm) : path(fm ? fm->location() : ""), fileMeta(fm) { }
-        SearchFile(const QString &path, FileMeta* fm = nullptr) : path(path), fileMeta(fm) { }
+    }
 
-        bool operator==(const SearchFile &rhs) const
-        {
-            return fileMeta && fileMeta == rhs.fileMeta &&
-                   path == rhs.path;
-        }
-    };
-
-    struct SearchParameters
+    SearchFile(const QString &path, FileMeta* fm = nullptr)
+        : mPath(path)
+        , mFileMeta(fm)
     {
-        QRegularExpression regex;
-        QString searchTerm;
-        QString replaceTerm;
 
-        FileMeta* currentFile = nullptr;
+    }
 
-        bool useRegex;
-        bool caseSensitive;
-        bool searchBackwards;
-        bool showResults;
-        bool ignoreReadOnly;
-        bool includeSubdirs;
+    QString path() const
+    {
+        return mPath;
+    }
 
-        Scope scope;
-        QString path;
-        QStringList excludeFilter;
-        QStringList includeFilter;
-    };
+    FileMeta* fileMeta() const
+    {
+        return mFileMeta;
+    }
+
+    bool operator==(const SearchFile &rhs) const
+    {
+        return (mFileMeta == rhs.mFileMeta && mPath == rhs.mPath);
+    }
+
+    bool operator!=(const SearchFile &rhs) const
+    {
+        return (mFileMeta != rhs.mFileMeta || mPath != rhs.mPath);
+    }
+
+private:
+    QString mPath;
+    FileMeta* mFileMeta;
+};
+
+struct SearchParameters
+{
+    QRegularExpression regex;
+    QString searchTerm;
+    QString replaceTerm;
+
+    FileMeta* currentFile = nullptr;
+
+    bool useRegex;
+    bool caseSensitive;
+    bool searchBackwards;
+    bool showResults;
+    bool ignoreReadOnly;
+    bool includeSubdirs;
+
+    Scope scope;
+    QString path;
+    QStringList excludeFilter;
+    QStringList includeFilter;
+};
 
 }
 }

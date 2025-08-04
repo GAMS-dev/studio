@@ -48,7 +48,6 @@ public:
 
 private:
     MainWindow* mMain;
-
 };
 
 }

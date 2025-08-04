@@ -18,8 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "searchlocator.h"
-#include "searchdialog.h"
-#include "result.h"
 #include <QList>
 
 namespace gams {

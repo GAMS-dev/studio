@@ -18,8 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QFile>
-#include <QRegularExpression>
-#include "search/searchhelpers.h"
 #include "searchworker.h"
 #include "file/filemeta.h"
 
@@ -72,13 +70,12 @@ void SearchWorker::findInFiles()
     for (const SearchFile &sf : std::as_const(mFiles)) {
         if (cacheFull || thread()->isInterruptionRequested()) break;
 
-        if (sf.fileMeta)
-            projectGroup = sf.fileMeta->projectId();
+        if (sf.fileMeta())
+            projectGroup = sf.fileMeta()->projectId();
 
         int lineCounter = 0;
-        QFile file(sf.path);
+        QFile file(sf.path());
         if (file.open(QFile::ReadOnly)) {
-
             while (!file.atEnd() && !cacheFull) { // read file
 
                 lineCounter++;

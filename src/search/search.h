@@ -62,7 +62,7 @@ public:
     Search& operator=(Search &&) = delete;
 
     void start(const SearchParameters &parameters);
-    void runSearch(QList<SearchFile> files);
+    void runSearch(const QList<SearchFile> &files);
     void requestStop();
 
     void findNext(Direction direction);

@@ -21,9 +21,8 @@
 #define SEARCHWORKER_H
 
 #include <QMutex>
-#include <QObject>
-#include <QRegularExpression>
 #include <QPoint>
+#include <QRegularExpression>
 #include "result.h"
 #include "searchhelpers.h"
 
@@ -35,6 +34,7 @@ class FileMeta;
 namespace search {
 
 class SearchResultModel;
+
 class SearchWorker : public QObject
 {
     Q_OBJECT

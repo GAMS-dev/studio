@@ -228,8 +228,8 @@ QList<SearchFile> SearchDialog::getFilesByScope(const SearchParameters &paramete
         }
         case Scope::ThisProject: {
             PExProjectNode* p = mFileHandler->findProject(mCurrentEditor);
-            if (!p) return QList<SearchFile>();
-
+            if (!p)
+                return QList<SearchFile>();
             for (PExFileNode *f : p->listFiles())
                 files << SearchFile(f->file());
             files = mFileWorker.filterFiles(files, parameters);
@@ -242,13 +242,15 @@ QList<SearchFile> SearchDialog::getFilesByScope(const SearchParameters &paramete
             break;
         }
         case Scope::OpenTabs: {
-            for (FileMeta* fm : mFileHandler->openFiles())
+            auto metas =  mFileHandler->openFiles();
+            for (FileMeta* fm : std::as_const(metas))
                 files << SearchFile(fm);
             files = mFileWorker.filterFiles(files, parameters);
             break;
         }
         case Scope::AllFiles: {
-            for (FileMeta* fm : mFileHandler->fileMetas())
+            auto metas = mFileHandler->fileMetas();
+            for (FileMeta* fm : std::as_const(metas))
                 files << SearchFile(fm);
             files = mFileWorker.filterFiles(files, parameters);
             break;
@@ -273,7 +275,9 @@ void SearchDialog::on_searchPrev()
 
 void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int charsAdded)
 {
-    Q_UNUSED(from)  Q_UNUSED(charsRemoved)  Q_UNUSED(charsAdded)
+    Q_UNUSED(from);
+    Q_UNUSED(charsRemoved);
+    Q_UNUSED(charsAdded);
     mSearch.invalidateCache();
 }
 

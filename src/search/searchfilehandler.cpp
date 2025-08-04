@@ -23,7 +23,8 @@ namespace gams {
 namespace studio {
 namespace search {
 
-SearchFileHandler::SearchFileHandler(MainWindow *main) : mMain(main)
+SearchFileHandler::SearchFileHandler(MainWindow *main)
+    : mMain(main)
 { }
 
 FileMeta* SearchFileHandler::fileMeta(QWidget *widget)

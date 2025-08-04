@@ -25,9 +25,9 @@ namespace studio {
 namespace search {
 
 class Search;
+
 class SearchLocator
 {
-
 public:
     static search::Search* search();
     static void provide(Search* s);
