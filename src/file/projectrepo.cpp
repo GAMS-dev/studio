@@ -686,7 +686,7 @@ void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, 
 {
     QString oldFile = project->fileName();
     project->setFileName(filePath);
-    bool removeOld = filePath.compare(project->fileName(), FileType::fsCaseSense()) != 0;
+    bool removeOld = filePath.compare(oldFile, FileType::fsCaseSense()) != 0;
     bool keepSmall = project->type() == PExProjectNode::tSmall && !removeOld;
     project->setHasGspFile(true);
     project->setNeedSave();

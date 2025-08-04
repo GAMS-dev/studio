@@ -61,6 +61,7 @@ public:
     void setFieldData(Field field, const QString& value);
     QString fieldData(Field field);
     PExProjectNode *project() { return mProject; }
+    bool isValidName(const QString &name);
     bool save();
 
 signals:
@@ -101,6 +102,7 @@ private slots:
     void updateData(ProjectData::Field field);
     void updateComboboxEntries();
 
+    void on_edName_textChanged(const QString &text);
     void on_edWorkDir_textChanged(const QString &text);
     void on_edBaseDir_textChanged(const QString &text);
     void on_bGspSwitch_clicked();
@@ -112,6 +114,7 @@ private slots:
 
 private:
     void setSharedData(ProjectData *sharedData);
+    bool isValidName(const QString &name);
     void updateEditColor(QLineEdit *edit, const QString &text);
     void updateState();
     void showDirDialog(const QString &title, QLineEdit *lineEdit, const QString &defaultDir);
