@@ -291,6 +291,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeProject, this, &MainWindow::closeProject);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeDelFiles, this, &MainWindow::closeAndDeleteFiles);
+    connect(&mProjectContextMenu, &ProjectContextMenu::getCurrentFileOpenFilter, this, [this](QString *&currentFilter) {
+        currentFilter = &mCurrentFileOpenFilter;
+    });
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::newFileDialog, this, &MainWindow::newFileDialogPrepare);
@@ -407,6 +410,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     initWelcomePage();
 
+    mCurrentFileOpenFilter = Settings::settings()->toString(skCurrentFileOpenFilter);
     mNavigationHistory->startRecord();
     QPushButton *tabMenu = new QPushButton(Theme::icon(":/%1/menu"), "", ui->mainTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
@@ -3281,6 +3285,7 @@ void MainWindow::updateAndSaveSettings()
     if (PExProjectNode *project = mProjectRepo.focussedProject())
         focProId = int(project->id());
     settings->setInt(skCurrentFocusProject, focProId);
+    settings->setString(skCurrentFileOpenFilter, mCurrentFileOpenFilter);
 
     QVariantMap tabData;
     writeTabs(tabData);
@@ -4168,7 +4173,8 @@ void MainWindow::openFilesDialog(OpenGroupOption opt)
     QString filter = (opt == ogProjects ? ViewHelper::dialogProjectFilter()
                                         : ViewHelper::dialogFileFilterAll(true)).join(";;");
     const QStringList files = QFileDialog::getOpenFileNames(this, text, path, filter,
-                                                            nullptr, DONT_RESOLVE_SYMLINKS_ON_MACOS);
+                                                            opt == ogProjects ? nullptr : &mCurrentFileOpenFilter,
+                                                            DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (files.isEmpty()) return;
     openFilesProcess(files, opt);
 }

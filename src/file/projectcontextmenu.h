@@ -69,6 +69,7 @@ signals:
     void openTerminal(const QString& workingDir);
     void openGdxDiffDialog(QString workingDirectory, QString input1, QString input2="");
     void resetGdxStates(const QStringList &files);
+    void getCurrentFileOpenFilter(QString *&currentFilter);
 
 private slots:
     void onCloseGroup();

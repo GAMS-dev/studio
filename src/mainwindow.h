@@ -555,6 +555,7 @@ private:
     StatusWidgets* mStatusWidgets;
     QTimer mWinStateTimer;
     QTimer mSaveSettingsTimer;
+    QString mCurrentFileOpenFilter;
 
     GamsLibProcess *mLibProcess = nullptr;
     QActionGroup *mCodecGroupSwitch = nullptr;
