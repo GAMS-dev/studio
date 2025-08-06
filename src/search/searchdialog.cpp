@@ -337,8 +337,8 @@ void SearchDialog::on_btn_forward_clicked()
 }
 
 void SearchDialog::findNextPrev(bool backwards) {
-    if (!checkSearchTerm()) return;
-
+    if (!checkSearchTerm())
+        return;
     insertHistory();
     mSearch.findNext(backwards ? Search::Backward : Search::Forward);
 }

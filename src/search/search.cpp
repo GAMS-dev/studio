@@ -254,7 +254,6 @@ void Search::findNext(Direction direction)
     if (!mCacheAvailable) {
         emit invalidateResults();
         emit updateUI();
-
         // generate new cache
         start(mSearchDialog->createSearchParameters(false, false, direction == Search::Backward));
     }
