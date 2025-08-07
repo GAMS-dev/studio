@@ -22,6 +22,7 @@
 #include "file/pexgroupnode.h"
 #include "file/pexfilenode.h"
 #include "file/filemeta.h"
+#include "file/projectrepo.h"
 #include "theme.h"
 
 #include <QDir>
@@ -35,6 +36,10 @@ namespace studio {
 namespace project {
 
 const QString cNone("-none-");
+const QString cName("Name: the name of the project");
+const QString cProFile("Project file: this file contains all project information."
+                       "\n The filename is always the project name."
+                       "\n The folder can be changed using 'Move Project File ...' in the Project Explorer.");
 
 ProjectData::ProjectData(PExProjectNode *project)
 {
@@ -70,6 +75,21 @@ QString ProjectData::fieldData(Field field)
     return mData.value(field);
 }
 
+bool ProjectData::isValidName(const QString &name)
+{
+    bool res = true;
+    QFileInfo proFile(mProject->fileName());
+    QString newProName = proFile.path() +'/'+ name +'.'+ proFile.suffix();
+    for (const PExProjectNode *project : mProject->projectRepo()->projects()) {
+        if (project == mProject) continue;
+        if (project->fileName().compare(newProName, FileType::fsCaseSense()) == 0) {
+            res = false;
+            break;
+        }
+    }
+    return res;
+}
+
 bool ProjectData::save()
 {
     QString path = QDir::fromNativeSeparators(mData.value(baseDir)).trimmed();
@@ -78,6 +98,12 @@ bool ProjectData::save()
     path = QDir::fromNativeSeparators(mData.value(workDir)).trimmed();
     if (path.compare(mProject->workDir(), FileType::fsCaseSense()))
         mProject->setWorkDir(path);
+
+    QFileInfo proFile(mProject->fileName());
+    if (proFile.completeBaseName().compare(mData.value(name), FileType::fsCaseSense()) != 0) {
+        QString newProFile = proFile.path() +"/"+ mData.value(name) +"."+ proFile.suffix();
+        mProject->projectRepo()->moveProject(mProject, newProFile, false);
+    }
     updateFile(FileKind::Gms, QDir::fromNativeSeparators(mData.value(mainFile)).trimmed());
     updateFile(FileKind::Pf, QDir::fromNativeSeparators(mData.value(pfFile)).trimmed());
     mProject->setNeedSave();
@@ -129,12 +155,11 @@ ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
     ui->setupUi(this);
     mBlockUpdate = true;
     mSharedData = sharedData;
-    ui->edName->setEnabled(false);
-    ui->edName->setToolTip("Name: the name of the project, this is always the filename");
+    ui->edProjectFile->setEnabled(false);
+    ui->edProjectFile->setToolTip(cProFile);
+    ui->edName->setToolTip(cName);
     ui->cbMainFile->setToolTip("Main file: this file will be excuted with GAMS");
     ui->cbPfFile->setToolTip("Parameter file: this file contains the default parameters");
-    ui->edProjectFile->setEnabled(false);
-    ui->edProjectFile->setToolTip("Project file: this file contains all project information");
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files");
     ui->edWorkDir->setToolTip("Working directory: used as working directory to run GAMS");
@@ -186,6 +211,28 @@ bool ProjectEdit::save()
     return res;
 }
 
+void ProjectEdit::on_edName_textChanged(const QString &text)
+{
+    if (mBlockUpdate) return;
+
+    bool valid = isValidName(text.trimmed());
+    if (!valid) {
+        QPalette pal = qApp->palette();
+        pal.setColor(QPalette::Text, Theme::color(Theme::Mark_errorFg));
+        ui->edName->setPalette(pal);
+    } else {
+        ui->edName->setPalette(qApp->palette());
+        if (text != mSharedData->fieldData(ProjectData::name))
+            mSharedData->setFieldData(ProjectData::name, text);
+    }
+    updateState();
+}
+
+bool ProjectEdit::isValidName(const QString &name)
+{
+    return mSharedData->isValidName(name);
+}
+
 void ProjectEdit::on_edWorkDir_textChanged(const QString &text)
 {
     if (mBlockUpdate) return;
@@ -220,6 +267,8 @@ void ProjectEdit::updateState()
 {
     PExProjectNode *pro = mSharedData->project();
     bool isModified = pro->needSave();
+    if (ui->edName->text().trimmed().compare(pro->name()))
+        isModified = true;
     QString edPath = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
     if (edPath.endsWith("/")) edPath = edPath.left(edPath.length()-1);
     if (edPath.compare(pro->location(), FileType::fsCaseSense()))
@@ -294,6 +343,8 @@ void ProjectEdit::updateComboboxEntries()
     ui->bGspSwitch->setIcon(Theme::icon(QString(":/%1/") + (hasGsp ? "delete-all" : "new")));
     ui->bGspSwitch->setToolTip(hasGsp ? "Delete the project file (project data is stored in the Studio settings)"
                                       : "Create a project file (.gsp) for this project");
+    ui->edName->setToolTip(cName + (hasGsp ? "\n Renaming changes the project file name."  : ""));
+    ui->edProjectFile->setToolTip(hasGsp ? cProFile : "Project data is stored in the Studio settings");
     // update combobox of main-file and pf-file
     QStringList mainFiles = files(FileKind::Gms);
     if (mainFiles.isEmpty())

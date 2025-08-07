@@ -305,6 +305,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skProjects, scSys, {"projects"}, QJsonArray());
     safelyAdd(res, skCurrentFocusProject, scSys, {"currentFocusProject"}, -1);
     safelyAdd(res, skOptionsPerMainFile, scSys, {"optionsPerMainFile"}, true);
+    safelyAdd(res, skCurrentFileOpenFilter, scSys, {"currentFileOpenFilter"}, "");
     safelyAdd(res, skTabs, scSys, {"tabs"}, QJsonObject());
     safelyAdd(res, skBookmarks, scSys, {"fileBookmarks"}, QJsonArray());
     safelyAdd(res, skPinViewTabIndex, scSys, {"pinView", "tabIndex"}, -1);

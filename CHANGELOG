@@ -1,9 +1,18 @@
-Version 1.22.0
+Version 1.22.0  *
 ==================
 - Added the `gamsprobe` output to the `Copy System Information` output of the GAMS Licensing dialog.
 - Improved error messages forlicense installations via ALP.
 - Improved Studio to ignore the old style GAMS licenses, i.e. only accept the modern GAMS licenses.
 - Added additional system log messages in case a GAMS executable is missing, like `gams` or `gamsgetkey`.
+
+Version 1.21.5 *
+==================
+- Added count of active processes to Studio title.
+- Fixed missing shortcuts Shift-F9 and Shift-F10.
+- Fixed crash when performing a search at the project level, where the file list contained modified and unmodified files.
+- Enabled renaming of a project in the project editor.
+- Restore and persist the selected filter in file open dialog.
+- Improved focus system log events, i.e. focus the system log on errors only.
 
 Version 1.21.4
 ==================

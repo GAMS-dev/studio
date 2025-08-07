@@ -263,7 +263,7 @@ private slots:
     // View
     void invalidateTheme(bool refreshSyntax);
     void rehighlightOpenFiles();
-    void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
+    void gamsProcessStateChanged(gams::studio::PExProjectNode* project);
     void projectContextMenuRequested(const QPoint &pos);
     void mainTabContextMenuRequested(const QPoint& pos);
     void logTabContextMenuRequested(const QPoint& pos);
@@ -555,6 +555,7 @@ private:
     StatusWidgets* mStatusWidgets;
     QTimer mWinStateTimer;
     QTimer mSaveSettingsTimer;
+    QString mCurrentFileOpenFilter;
 
     GamsLibProcess *mLibProcess = nullptr;
     QActionGroup *mCodecGroupSwitch = nullptr;

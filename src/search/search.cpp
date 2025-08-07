@@ -100,7 +100,7 @@ void Search::start(const SearchParameters &parameters)
     }
 }
 
-void Search::runSearch(QList<SearchFile> files)
+void Search::runSearch(const QList<SearchFile> &files)
 {
     if (mStopRequested) {
         mStopRequested = false;
@@ -117,12 +117,10 @@ void Search::runSearch(QList<SearchFile> files)
 
     FileMeta* currentFile = mFileHandler->fileMeta(mSearchDialog->currentEditor());
     for (const SearchFile& sf : std::as_const(files)) {
-
-        if (FileMeta* fm = sf.fileMeta) {
+        if (FileMeta* fm = sf.fileMeta()) {
             // skip certain file types
             if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Ref)
                 continue;
-
             // sort files by modified, current file first
             if (fm->isModified() && fm->document()) {
                 if (fm == currentFile) modified.insert(0, fm);
@@ -130,12 +128,16 @@ void Search::runSearch(QList<SearchFile> files)
             } else {
                 if (fm == currentFile) unmodified.insert(0, sf);
             }
-        } else unmodified << sf;
+        } else {
+            unmodified << sf;
+        }
     }
 
+    // process modified files before the parallel part starts
+    for (const SearchFile &sf : std::as_const(modified))
+        findInDoc(sf.fileMeta());
+
     // start background task first
-    NodeId projectNode = mSearchDialog->selectedScope() == Scope::ThisProject
-                             ? currentFile->projectId() : NodeId();
     SearchWorker* sw = new SearchWorker(unmodified, mLastSearchParameters.regex, &mResults,
                                         mLastSearchParameters.showResults);
     sw->moveToThread(&mSearchThread);
@@ -148,9 +150,6 @@ void Search::runSearch(QList<SearchFile> files)
 
     mSearchThread.start();
     mSearchThread.setPriority(QThread::LowPriority); // search is a background task
-
-    for (const SearchFile &sf : std::as_const(modified))
-        findInDoc(sf.fileMeta);
 }
 
 void Search::requestStop()
@@ -229,22 +228,25 @@ void Search::checkFileChanged(const FileId &fileId)
 
 void Search::findInDoc(FileMeta* fm)
 {
-    QTextCursor item;
-    QTextCursor lastItem = QTextCursor(fm->document());
+    QTextCursor cursor;
+    QTextCursor lastCursor = QTextCursor(fm->document());
 
     do {
-        item = fm->document()->find(mLastSearchParameters.regex, lastItem,
+        cursor = fm->document()->find(mLastSearchParameters.regex, lastCursor,
                                     createFindFlags(mLastSearchParameters));
-        if (item != lastItem) lastItem = item;
+        if (cursor != lastCursor) lastCursor = cursor;
         else break;
 
-        if (!item.isNull()) {
-            mResults.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
-                                   item.selectedText().length(), fm->location(),
-                                   fm->projectId(), item.block().text()));
+        if (!cursor.isNull()) {
+            mResults.append(Result(cursor.blockNumber()+1,
+                                   cursor.positionInBlock() - cursor.selectedText().length(),
+                                   cursor.selectedText().length(),
+                                   fm->location(),
+                                   fm->projectId(),
+                                   cursor.block().text()));
         }
         if (mResults.size() > MAX_SEARCH_RESULTS) break;
-    } while (!item.isNull());
+    } while (!cursor.isNull());
 }
 
 void Search::findNext(Direction direction)
@@ -252,7 +254,6 @@ void Search::findNext(Direction direction)
     if (!mCacheAvailable) {
         emit invalidateResults();
         emit updateUI();
-
         // generate new cache
         start(mSearchDialog->createSearchParameters(false, false, direction == Search::Backward));
     }
@@ -630,10 +631,10 @@ void Search::replaceAll(SearchParameters parameters)
     int matchedFiles = 0;
 
     for (const SearchFile &file : std::as_const(files)) {
-        FileMeta* fm = file.fileMeta;
+        FileMeta* fm = file.fileMeta();
 
         if (!fm)
-            fm = mFileHandler->findFile(file.path);
+            fm = mFileHandler->findFile(file.path());
 
         if (fm && fm->document()) {
             if (!opened.contains(fm)) opened << fm;
@@ -645,8 +646,8 @@ void Search::replaceAll(SearchParameters parameters)
     }
 
     QString fileName = !files.count()
-                           ? "" : files.first().fileMeta ? files.first().fileMeta->name()
-                                                         : QFileInfo(files.first().path).fileName();
+                           ? "" : files.first().fileMeta() ? files.first().fileMeta()->name()
+                                                 : QFileInfo(files.first().path()).fileName();
 
     // user interaction
     QMessageBox msgBox;
@@ -672,7 +673,7 @@ void Search::replaceAll(SearchParameters parameters)
         msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
 
         for (const SearchFile &file : std::as_const(files))
-            detailedText.append(file.path+"\n");
+            detailedText.append(file.path()+"\n");
 
         detailedText.append("\nThese files do not necessarily have any matches in them. "
                             "This is just a representation of the selected scope in the search window. "

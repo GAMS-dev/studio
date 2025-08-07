@@ -31,6 +31,7 @@ namespace search {
 class Result
 {
     friend class SearchResultList;
+
 public:
     Result();
 
@@ -41,6 +42,10 @@ public:
         return (filePath()==r1.filePath() && lineNr()==r1.lineNr() && colNr()==r1.colNr());
     }
 
+    bool operator!=(const Result& r1) {
+        return (filePath()!=r1.filePath() || lineNr()!=r1.lineNr() || colNr()!=r1.colNr());
+    }
+
     int lineNr() const;
     int colNr() const;
 
@@ -49,6 +54,7 @@ public:
 
     QString context() const;
     int length() const;
+
     NodeId parentGroup() const;
     void setParentGroup(const NodeId &parent);
 

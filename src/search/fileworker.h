@@ -45,7 +45,7 @@ public:
     FileWorker(const SearchParameters &params, AbstractSearchFileHandler *fh);
     void setParameters(const SearchParameters &parameters);
     QList<SearchFile> collectFilesInFolder();
-    QList<SearchFile> filterFiles(QList<SearchFile> files, SearchParameters params);
+    QList<SearchFile> filterFiles(const QList<SearchFile> &files, const SearchParameters &params);
 
 signals:
     void filesCollected(QList<gams::studio::search::SearchFile> files);

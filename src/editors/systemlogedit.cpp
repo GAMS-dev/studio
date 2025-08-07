@@ -46,10 +46,10 @@ void SystemLogEdit::append(const QString &msg, LogMsgType type)
     QString time = QTime::currentTime().toString("hh:mm:ss");
     appendPlainText(logLevel + " [" + time + "]: " + out);
     DEB() << logLevel << " [" << time << "]: " << out;
-    if (type == LogMsgType::Info)
-        emit newMessage(false);
-    else
+    if (type == LogMsgType::Error)
         emit newMessage(true);
+    else
+        emit newMessage(false);
 }
 
 void SystemLogEdit::mouseMoveEvent(QMouseEvent *event)
