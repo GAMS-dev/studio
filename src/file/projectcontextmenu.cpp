@@ -216,7 +216,7 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     PExFileNode *fileNode = mNodes.size() ? mNodes.first()->toFile() : nullptr;
     bool isFreeSpace = !fileNode && !isProject;
     bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms;
-    bool isRunnable = false;
+    bool isMainFile = false;
     bool isOpen = fileNode && fileNode->file()->isOpen();
     bool isOpenable = fileNode && !fileNode->file()->isOpen();
     bool isOptFile = fileNode && fileNode->file()->kind() == FileKind::Opt;
@@ -273,7 +273,7 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     QString file;
     if (fileNode && fileNode->assignedProject()) {
         file = fileNode->assignedProject()->parameter("gms");
-        isRunnable = fileNode->location() == file;
+        isMainFile = fileNode->location() == file;
     }
 
     mActions[actExplorer]->setEnabled(single);
@@ -325,7 +325,7 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     mActions[actUnfocusProject]->setVisible(focussedProject);
 
     mActions[actSep1]->setVisible(isProject);
-    mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && !isGamsSys && single);
+    mActions[actSetMain]->setVisible(isGmsFile && !isMainFile && !isGamsSys && single);
 
     mActions[actAddNewFile]->setVisible((isProject || isGroup) && !isGamsSys);
     mActions[actAddExisting]->setVisible((isProject || isGroup) && !isGamsSys);
@@ -660,8 +660,8 @@ void ProjectContextMenu::onOpenEfi()
 
 QString ProjectContextMenu::getEfiName(PExProjectNode *project) const
 {
-    if (!project || !project->runnableGms()) return QString();
-    QFileInfo info(project->runnableGms()->location());
+    if (!project || !project->mainFile()) return QString();
+    QFileInfo info(project->mainFile()->location());
     return info.path() + '/' + info.completeBaseName() + ".efi";
 }
 
@@ -676,7 +676,7 @@ bool ProjectContextMenu::allowChange(const QList<PExAbstractNode*> nodes)
         if (node->toProject()) return false;
         if (PExFileNode *file = node->toFile()) {
             if (!file) continue;
-            if (project->runnableGms() == file->file()) return false;
+            if (project->mainFile() == file->file()) return false;
         }
     }
     return true;

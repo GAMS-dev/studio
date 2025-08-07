@@ -51,7 +51,7 @@ enum MultiCopyCheck {
 };
 
 ///
-/// The ProjectRepo handles all open and assigned nodes of projects or simple gms-runables. It is based on an
+/// The ProjectRepo handles all open and assigned nodes of projects or simple gms-runnables. It is based on an
 /// QAbstractItemModel to provide a model for a QTreeView.
 ///
 class ProjectRepo : public QObject
@@ -162,7 +162,7 @@ signals:
                   QString encoding = QString(), bool forcedAsTextEditor = false, gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFolder(QString path, gams::studio::PExProjectNode* project);
     void changed();
-    void runnableChanged();
+    void mainFileChanged();
     void updateProfilerAction();
     void childrenChanged();
     void logTabRenamed(QWidget *wid, const QString &newName);

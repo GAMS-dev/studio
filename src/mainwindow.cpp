@@ -178,7 +178,7 @@ MainWindow::MainWindow(QWidget *parent)
         if (testOnly) *testOnly = false;
         if (tabIndex < 0) return;
         if (PExFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->widget(tabIndex))) {
-            if (node->file()->kind() == FileKind::Gms && node->assignedProject()->runnableGms() != node->file()) {
+            if (node->file()->kind() == FileKind::Gms && node->assignedProject()->mainFile() != node->file()) {
                 if (testOnly) *testOnly = true;
                 else setMainFile(node);
             }
@@ -380,7 +380,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::invalidateResultsView, this, &MainWindow::invalidateResultsView);
     connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
     connect(mSearchDialog, &search::SearchDialog::toggle, this, &MainWindow::toggleSearchDialog);
-    connect(&mProjectRepo, &ProjectRepo::runnableChanged, this, &MainWindow::runnableChanged);
+    connect(&mProjectRepo, &ProjectRepo::mainFileChanged, this, &MainWindow::mainFileChanged);
     connect(&mProjectRepo, &ProjectRepo::updateProfilerAction, this, &MainWindow::updateProfilerAction);
     connect(&mProjectRepo, &ProjectRepo::getConfigPaths, this, [](QStringList &configPaths) {
         configPaths = CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath);
@@ -604,8 +604,8 @@ void MainWindow::initWelcomePage()
             mProjectRepo.read(QVariantMap(), projectPath);
             project = mProjectRepo.findProject(projectPath);
         }
-        if (project && project->runnableGms()) {
-            openFile(project->runnableGms(), true, project);
+        if (project && project->mainFile()) {
+            openFile(project->mainFile(), true, project);
         }
         if (project && mProjectRepo.focussedProject())
             focusProject(project);
@@ -1894,7 +1894,7 @@ void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const Q
             if (projectOnly && !mProjectRepo.findProject(filePath)) {
                 openProject(filePath);
                 if (PExProjectNode *project = mProjectRepo.findProject(filePath)) {
-                    if (FileMeta *meta = project->runnableGms())
+                    if (FileMeta *meta = project->mainFile())
                         openFile(meta, true, project);
                 }
             }
@@ -2129,7 +2129,7 @@ void MainWindow::on_actionSave_As_triggered()
                 PExProjectNode *project = node->assignedProject();
                 bool isMain = false;
                 if (project) {
-                    FileMeta *mainFM = project ? project->runnableGms() : nullptr;
+                    FileMeta *mainFM = project ? project->mainFile() : nullptr;
                     isMain = (mainFM == fileMeta || mainFM == destFM);
                 }
 
@@ -2157,9 +2157,9 @@ void MainWindow::on_actionSave_As_triggered()
                 }
                 if (isMain) {
                     if (node->file()->kind() == FileKind::Gms)
-                        project->setRunnableGms(node->file());
+                        project->setMainFile(node->file());
                     else
-                        project->setRunnableGms(nullptr);
+                        project->setMainFile(nullptr);
                 }
                 updateStatusFile();
                 updateAndSaveSettings();
@@ -2650,9 +2650,9 @@ void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
     // add all created files to project explorer
     project->addNodesForSpecialFiles();
 
-    FileMeta *runMeta = project->runnableGms();
+    FileMeta *runMeta = project->mainFile();
     if (!runMeta) {
-        appendSystemLogError("Invalid runable attached to process");
+        appendSystemLogError("Invalid runnable attached to process");
         return;
     }
     if (project && project->hasLogNode()) {
@@ -3052,7 +3052,7 @@ bool MainWindow::isActiveProjectRunnable()
        } else {
            PExProjectNode *project = mRecent.project(false);
            if (!project) return false;
-           return project->runnableGms() && QFile::exists(project->workDir()) && QFile::exists(project->location());
+           return project->mainFile() && QFile::exists(project->workDir()) && QFile::exists(project->location());
        }
     }
     return false;
@@ -4195,7 +4195,7 @@ void MainWindow::openFilesProcess(const QStringList &files, OpenGroupOption opt)
                 openProject(fileName);
                 if (PExProjectNode *project = mProjectRepo.findProject(fileName)) {
                     openedProjects << project;
-                    if (FileMeta *meta = project->runnableGms()) {
+                    if (FileMeta *meta = project->mainFile()) {
                         if (!firstNode)
                             firstNode = mProjectRepo.findFile(meta, project);
                         else
@@ -4297,8 +4297,8 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
     }
     // find runnable gms, for now take first one found
     if (gmsFiles.size() > 0) {
-        if (project && !project->runnableGms() && !gmsFiles.isEmpty())
-            project->setRunnableGms(gmsFiles.first()->file());
+        if (project && !project->mainFile() && !gmsFiles.isEmpty())
+            project->setMainFile(gmsFiles.first()->file());
     }
 
     if (!filesNotFound.empty()) {
@@ -4500,7 +4500,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     // select gms-file and working dir to run
     QString gmsFilePath = project->parameter("gms");
     if (gmsFilePath == "") {
-        appendSystemLogWarning("No runnable GMS file found in group ["+project->name()+"].");
+        appendSystemLogWarning("No runnable GMS file found in project ["+project->name()+"].");
         ui->actionShow_System_Log->trigger();
         return false;
     }
@@ -4585,7 +4585,7 @@ void MainWindow::setMainFile(PExFileNode *node)
     PExProjectNode *project = node->assignedProject();
     if (project) {
         project->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
-        project->setRunnableGms(node->file());
+        project->setMainFile(node->file());
         updateRunState();
     }
 }
@@ -4895,11 +4895,11 @@ void MainWindow::checkForEngingJob()
 {
     for (PExProjectNode *project : mProjectRepo.projects()) {
         if (!project->engineJobToken().isEmpty()) {
-            bool needSwitching = (currentProject() != project && project->runnableGms());
+            bool needSwitching = (currentProject() != project && project->mainFile());
             QMessageBox::StandardButton button = QMessageBox::question(this, "Resume GAMS Engine Job?", "Studio was left with a running GAMS Engine job.\nTry to resume?");
             if (button == QMessageBox::Yes) {
                 if (needSwitching)
-                    mProjectRepo.openFile(project->runnableGms(), true, project);
+                    mProjectRepo.openFile(project->mainFile(), true, project);
                 initEngineStartDialog(true);
             } else {
                 project->setEngineJobToken("");
@@ -5526,9 +5526,9 @@ void MainWindow::focusProject(PExProjectNode *project)
             }
         }
     } else if (ui->mainTabs->count()) {
-        if (project->runnableGms()) {
-            openFile(project->runnableGms());
-            int idx = ui->mainTabs->indexOf(project->runnableGms()->editors().first());
+        if (project->mainFile()) {
+            openFile(project->mainFile());
+            int idx = ui->mainTabs->indexOf(project->mainFile()->editors().first());
             visibleList.insert(idx, true);
         } else
             ui->mainTabs->setCurrentIndex(0);
@@ -5604,8 +5604,8 @@ void MainWindow::internalCloseProject(PExProjectNode *project, const QVector<Fil
 void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)
 {
     PExProjectNode *project = mProjectRepo.asProject(proc->projectId());
-    if (!project || !project->runnableGms()) return;
-    QString gmsFilePath = project->runnableGms()->location();
+    if (!project || !project->mainFile()) return;
+    QString gmsFilePath = project->mainFile()->location();
     PExFileNode *gdxNode = project->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
     if (gdxNode && gdxNode->file()->isOpen()) {
         if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
@@ -5622,7 +5622,7 @@ void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)
 void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
 {
     PExProjectNode *project = mProjectRepo.asProject(proc->projectId());
-    if (!project || !project->runnableGms()) return;
+    if (!project || !project->mainFile()) return;
     const QList<PExFileNode*> gdxNodes = project->findFiles(FileKind::Gdx);
     for (PExFileNode *gdxNode : gdxNodes) {
         if (gdxNode->file()->isOpen()) {
@@ -5645,7 +5645,7 @@ void MainWindow::closeNodeConditionally(PExFileNode* node)
 {
     // count nodes to the same file
     PExProjectNode *project = node->assignedProject();
-    if (project && project->runnableGms() == node->file() && !terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
+    if (project && project->mainFile() == node->file() && !terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
         return;
     QVector<PExFileNode*> fileNodes = mProjectRepo.fileNodes(node->file()->id());
     PExGroupNode *group = node->parentNode();
@@ -7034,7 +7034,7 @@ void MainWindow::updateTabIcon(PExAbstractNode *node, int tabIndex)
 #endif
 }
 
-void MainWindow::runnableChanged()
+void MainWindow::mainFileChanged()
 {
     for (int i = 1; i < mainTabs()->count(); ++i)
         updateTabIcon(nullptr, i);
@@ -7044,7 +7044,7 @@ void MainWindow::runnableChanged()
             QStringList params = proj->getRunParametersHistory();
             mGamsParameterEditor->loadCommandLine(params);
             // ensure the options are actualized
-            if (FileMeta *meta = proj->runnableGms()) {
+            if (FileMeta *meta = proj->mainFile()) {
                 FileId id = meta->id();
                 if (id.isValid())
                     proj->setRunFileParameterHistory(id, params);

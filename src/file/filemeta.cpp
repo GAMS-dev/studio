@@ -902,10 +902,10 @@ bool FileMeta::save(const QString &newLocation)
         if (efi) {
             PExProjectNode *project = mFileRepo->projectRepo()->asProject(projectId());
             if (project) {
-                if (!project->runnableGms()) {
+                if (!project->mainFile()) {
                     efi->setWarnText("Warning: project contains no runnable GAMS file ");
                 } else {
-                    QFileInfo gmsFi(project->runnableGms()->location());
+                    QFileInfo gmsFi(project->mainFile()->location());
                     QFileInfo thisFi(location);
                     if (gmsFi.completeBaseName().compare(thisFi.completeBaseName(), FileType::fsCaseSense()) != 0) {
                         QString text = "Warning: only " + gmsFi.completeBaseName()

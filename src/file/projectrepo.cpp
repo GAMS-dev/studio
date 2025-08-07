@@ -464,8 +464,8 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
     QVariantMap projectObject;
     bool expand = true;
     QDir dir(QFileInfo(project->fileName()).absolutePath());
-    if (project->runnableGms()) {
-        QString filePath = project->runnableGms()->location();
+    if (project->mainFile()) {
+        QString filePath = project->mainFile()->location();
         projectObject.insert("file", relativePaths ? dir.relativeFilePath(filePath) : filePath);
     }
     if (project->hasParameterFile()) {
@@ -630,7 +630,7 @@ PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, co
         connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
         connect(project, &PExProjectNode::getParameterValue, this, &ProjectRepo::getParameterValue);
         connect(project, &PExProjectNode::baseDirChanged, this, &ProjectRepo::reassignFiles);
-        connect(project, &PExProjectNode::runnableChanged, this, &ProjectRepo::runnableChanged);
+        connect(project, &PExProjectNode::mainFileChanged, this, &ProjectRepo::mainFileChanged);
         connect(project, &PExProjectNode::updateProfilerAction, this, &ProjectRepo::updateProfilerAction);
         connect(project, &PExProjectNode::openInPinView, this, &ProjectRepo::openInPinView);
         connect(project, &PExProjectNode::openFileNode, this, [this](PExFileNode *node) {
@@ -762,14 +762,14 @@ void ProjectRepo::closeNode(PExFileNode *node)
         removeFromIndex(node);
     }
 
-    // if this file is marked as runnable remove reference
-    if (project && project->runnableGms() == node->file()) {
-        project->setRunnableGms();
+    // if this file is marked as main file remove reference
+    if (project && project->mainFile() == node->file()) {
+        project->setMainFile();
         for (int i = 0; i < project->childCount(); i++) {
             // choose next as main gms file
-            PExFileNode *nextRunable = project->childNode(i)->toFile();
-            if (nextRunable && nextRunable->location().endsWith(".gms", Qt::CaseInsensitive)) {
-                project->setRunnableGms(nextRunable->file());
+            PExFileNode *nextRunnable = project->childNode(i)->toFile();
+            if (nextRunnable && nextRunnable->location().endsWith(".gms", Qt::CaseInsensitive)) {
+                project->setMainFile(nextRunnable->file());
                 break;
             }
         }
@@ -897,8 +897,8 @@ PExFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, PExProjectNod
         fileMeta->setProjectId(project->id());
     }
     connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
-    if (!project->runnableGms() && fileMeta->kind() == FileKind::Gms)
-        project->setRunnableGms(fileMeta);
+    if (!project->mainFile() && fileMeta->kind() == FileKind::Gms)
+        project->setMainFile(fileMeta);
     return file;
 }
 
@@ -1171,8 +1171,8 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     if (!filesNotFound.isEmpty()) {
         DEB() << "Files not found:\n" << filesNotFound.join("\n");
     }
-    if (project && !project->runnableGms() && !gmsFiles.isEmpty()) {
-        project->setRunnableGms(gmsFiles.first()->file());
+    if (project && !project->mainFile() && !gmsFiles.isEmpty()) {
+        project->setMainFile(gmsFiles.first()->file());
     }
     if (act & Qt::MoveAction) {
         for (const NodeId &nodeId: std::as_const(knownIds)) {
@@ -1194,11 +1194,11 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
 void ProjectRepo::reassignFiles(PExProjectNode *project)
 {
     QVector<PExFileNode *> files = project->listFiles();
-    FileMeta *runGms = project->runnableGms();
+    FileMeta *runGms = project->mainFile();
     for (PExFileNode *file: std::as_const(files))
         addToProject(project, file);
     emit openRecentFile();
-    project->setRunnableGms(runGms);
+    project->setMainFile(runGms);
 }
 
 QVariantMap ProjectRepo::parseProjectFile(const QString &gspFile) const

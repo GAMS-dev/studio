@@ -133,7 +133,7 @@ void EngineProcess::execute()
 QStringList EngineProcess::compileParameters() const
 {
     if (mOutPath.isEmpty()) {
-        DEB() << "Error: No runable file assigned to the GAMS Engine process";
+        DEB() << "Error: No runnable file assigned to the GAMS Engine process";
         return QStringList();
     }
     QFileInfo fi(mOutPath);

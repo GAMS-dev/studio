@@ -304,7 +304,6 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEncodings, scSys, {"encodings"}, "");
     safelyAdd(res, skProjects, scSys, {"projects"}, QJsonArray());
     safelyAdd(res, skCurrentFocusProject, scSys, {"currentFocusProject"}, -1);
-    safelyAdd(res, skOptionsPerMainFile, scSys, {"optionsPerMainFile"}, true);
     safelyAdd(res, skCurrentFileOpenFilter, scSys, {"currentFileOpenFilter"}, "");
     safelyAdd(res, skTabs, scSys, {"tabs"}, QJsonObject());
     safelyAdd(res, skBookmarks, scSys, {"fileBookmarks"}, QJsonArray());
@@ -339,6 +338,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skJumpToError, scUser, {"jumpToErrors"}, true);
     safelyAdd(res, skForegroundOnDemand, scUser, {"foregroundOnDemand"}, true);
     safelyAdd(res, skOpenInCurrent, scUser, {"openInCurrent"}, false);
+    safelyAdd(res, skOptionsPerMainFile, scUser, {"optionsPerMainFile"}, true);
     safelyAdd(res, skHistorySize, scUser, {"historySize"}, 20);
     safelyAdd(res, skEnableLog, scUser, {"enableLog"}, true);
 
