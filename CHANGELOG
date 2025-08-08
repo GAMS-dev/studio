@@ -5,7 +5,7 @@ Version 1.22.0  *
 - Improved Studio to ignore the old style GAMS licenses, i.e. only accept the modern GAMS licenses.
 - Added additional system log messages in case a GAMS executable is missing, like `gams` or `gamsgetkey`.
 
-Version 1.21.5 *
+Version 1.21.5
 ==================
 - Added count of active processes to Studio title.
 - Fixed missing shortcuts Shift-F9 and Shift-F10.

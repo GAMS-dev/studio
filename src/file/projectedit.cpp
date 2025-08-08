@@ -52,8 +52,8 @@ ProjectData::ProjectData(PExProjectNode *project)
     mData.insert(nameExt, project->nameExt());
     mData.insert(workDir, QDir::toNativeSeparators(project->workDir()));
     mData.insert(baseDir, QDir::toNativeSeparators(project->location()));
-    if (mProject->runnableGms())
-        mData.insert(mainFile, QDir::toNativeSeparators(mProject->runnableGms()->location()));
+    if (mProject->mainFile())
+        mData.insert(mainFile, QDir::toNativeSeparators(mProject->mainFile()->location()));
     else
         mData.insert(mainFile, cNone);
     if (mProject->parameterFile())
@@ -113,13 +113,13 @@ bool ProjectData::save()
 void ProjectData::updateFile(FileKind kind, const QString &path)
 {
     if (!mProject) return;
-    FileMeta *meta = kind == FileKind::Gms ? mProject->runnableGms() : mProject->parameterFile();
+    FileMeta *meta = kind == FileKind::Gms ? mProject->mainFile() : mProject->parameterFile();
     QString curPath = meta ? QDir::fromNativeSeparators(meta->location()) : QString();
     if (curPath.compare(path, FileType::fsCaseSense()) != 0) {
         PExFileNode *file = mProject->findFile(path);
         meta = file ? file->file() : nullptr;
         if (kind == FileKind::Gms)
-            mProject->setRunnableGms(meta);
+            mProject->setMainFile(meta);
         else
             mProject->setParameterFile(meta);
     }
@@ -138,7 +138,7 @@ void ProjectData::projectChanged(const NodeId &id)
         setFieldData(ProjectData::name, mProject->name());
     if (fieldData(ProjectData::nameExt) != mProject->nameExt())
         setFieldData(ProjectData::nameExt, mProject->nameExt());
-    QString mainFile = mProject->runnableGms() ? QDir::toNativeSeparators(mProject->runnableGms()->location()) : "";
+    QString mainFile = mProject->mainFile() ? QDir::toNativeSeparators(mProject->mainFile()->location()) : "";
     if (fieldData(ProjectData::mainFile) != mainFile)
         setFieldData(ProjectData::mainFile, mainFile);
     QString pfFile = mProject->parameterFile() ? QDir::toNativeSeparators(mProject->parameterFile()->location()) : "";
@@ -277,7 +277,7 @@ void ProjectEdit::updateState()
     if (edPath.endsWith("/")) edPath = edPath.left(edPath.length()-1);
     if (edPath.compare(pro->workDir(), FileType::fsCaseSense()))
         isModified = true;
-    QString proPath = pro->runnableGms() ? pro->runnableGms()->location() : cNone;
+    QString proPath = pro->mainFile() ? pro->mainFile()->location() : cNone;
     edPath = QDir::fromNativeSeparators(ui->cbMainFile->currentText());
     if (edPath.compare(proPath))
         isModified = true;

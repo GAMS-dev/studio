@@ -101,8 +101,8 @@ public:
     void setName(const QString& name) override;
     bool hasLogNode() const;
     PExLogNode* logNode();
-    FileMeta *runnableGms() const;
-    void setRunnableGms(FileMeta *gmsFile = nullptr);
+    FileMeta *mainFile() const;
+    void setMainFile(FileMeta *gmsFile = nullptr);
     bool hasParameterFile();
     FileMeta *parameterFile() const;
     void setParameterFile(FileMeta *pfFile = nullptr);
@@ -170,7 +170,7 @@ signals:
     void gamsProcessStateChanged(gams::studio::PExProjectNode* project);
     void getParameterValue(QString param, QString &value);
     void baseDirChanged(gams::studio::PExProjectNode *project);
-    void runnableChanged();
+    void mainFileChanged();
     void addProcessLog(const QByteArray &data);
     void openInPinView(gams::studio::PExProjectNode *project, QWidget *editInMainTabs);
     void openFileNode(PExFileNode *node);

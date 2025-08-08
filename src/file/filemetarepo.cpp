@@ -299,8 +299,8 @@ void FileMetaRepo::setUserGamsTypes(const QStringList &suffix)
         }
     }
     for (PExProjectNode * project : std::as_const(projects)) {
-        if (!project->runnableGms() || project->runnableGms()->kind() != FileKind::Gms) {
-            project->setRunnableGms();
+        if (!project->mainFile() || project->mainFile()->kind() != FileKind::Gms) {
+            project->setMainFile();
         }
     }
 }

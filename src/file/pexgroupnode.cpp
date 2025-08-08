@@ -61,7 +61,7 @@ QIcon PExGroupNode::icon(QIcon::Mode mode, int alpha)
 {
     PExProjectNode *project = assignedProject();
     if (project) {
-        FileMeta *fmGms = project->runnableGms();
+        FileMeta *fmGms = project->mainFile();
         if (fmGms) {
             PExFileNode *gms = projectRepo()->findFile(fmGms, project);
             if (gms) {
@@ -181,7 +181,7 @@ PExProjectNode *PExGroupNode::findProject(const FileId &runId) const
 {
     for (PExAbstractNode* node: childNodes()) {
         PExProjectNode* project = node->toProject();
-        if (project && project->runnableGms()->id() == runId)
+        if (project && project->mainFile()->id() == runId)
             return project;
         const PExGroupNode* group = node->toGroup();
         if (group) {
@@ -232,7 +232,7 @@ PExProjectNode::PExProjectNode(const QString &filePath, const QString &basePath,
 
     if (mWorkDir.isEmpty()) mWorkDir = basePath;
     if (runFileMeta && runFileMeta->kind() == FileKind::Gms) {
-        setRunnableGms(runFileMeta);
+        setMainFile(runFileMeta);
         setNeedSave(false);
     }
 }
@@ -245,7 +245,7 @@ void PExProjectNode::setHasGspFile(bool hasGspFile)
 
 bool PExProjectNode::wantsGspFile()
 {
-    if (Settings::settings()->toBool(skProGspNeedsMain) && !runnableGms())
+    if (Settings::settings()->toBool(skProGspNeedsMain) && !mainFile())
         return false;
     int fileCountLimit = Settings::settings()->toInt(skProGspByFileCount);
     if (fileCountLimit == 0 || childCount() < fileCountLimit)
@@ -342,7 +342,7 @@ void PExProjectNode::appendChild(PExAbstractNode *child)
     PExGroupNode::appendChild(child);
     PExFileNode *file = child->toFile();
     if (!mParameterHash.contains("gms") && file && file->file() && file->file()->kind() == FileKind::Gms) {
-        setRunnableGms(file->file());
+        setMainFile(file->file());
     }
     if (!mParameterHash.contains("pf") && file && file->file() && file->file()->kind() == FileKind::Pf) {
         setParameterFile(file->file());
@@ -366,7 +366,7 @@ void PExProjectNode::removeChild(PExAbstractNode *child)
             if (key=="pf") pfLost = true;
         }
     }
-    if (gmsLost) setRunnableGms();
+    if (gmsLost) setMainFile();
     if (pfLost) setParameterFile();
     setNeedSave();
 }
@@ -667,20 +667,20 @@ void PExProjectNode::setLogLocation(QString path)
     updateLogName(log.completeBaseName());
 }
 
-FileMeta* PExProjectNode::runnableGms() const
+FileMeta* PExProjectNode::mainFile() const
 {
     FileMetaRepo *repo = fileRepo();
     if (!repo) return nullptr;
     return repo->fileMeta(parameter("gms"));
 }
 
-void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
+void PExProjectNode::setMainFile(FileMeta *gmsFile)
 {
     if (mType > PExProjectNode::tCommon) return;
     QList<NodeId> ids;
     PExFileNode *gmsFileNode = nullptr;
     if (!gmsFile) {
-        // find alternative runable file
+        // find alternative main file
         for (PExAbstractNode *node: listFiles()) {
             gmsFileNode = node->toFile();
             if (gmsFileNode->file()->kind() == FileKind::Gms) {
@@ -692,7 +692,7 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
         gmsFileNode = findFile(gmsFile);
     }
     if (gmsFile && gmsFile->kind() != FileKind::Gms) {
-        DEB() << "Only files of FileKind::Gms can become runable";
+        DEB() << "Only files of FileKind::Gms can become the main file";
         return;
     }
 
@@ -708,7 +708,7 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
         for (NodeId id : ids) {
             emit changed(id);
         }
-        emit runnableChanged();
+        emit mainFileChanged();
         return;
     }
     if (workDir().isEmpty())
@@ -721,7 +721,7 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     for (NodeId id : ids) {
         emit changed(id);
     }
-    emit runnableChanged();
+    emit mainFileChanged();
 }
 
 bool PExProjectNode::hasParameterFile()
@@ -782,10 +782,10 @@ void PExProjectNode::unlinkProjectEditFileMeta()
 
 QString PExProjectNode::mainModelName(bool stripped) const
 {
-    FileMeta *fileMeta = runnableGms();
+    FileMeta *fileMeta = mainFile();
 
     if (!fileMeta) {
-        SysLogLocator::systemLog()->append(QString("Could not find a runable gms file for project: %1")
+        SysLogLocator::systemLog()->append(QString("Could not find a runnable gms file for project: %1")
                 .arg(name()), LogMsgType::Error);
         return QString();
     }
@@ -940,7 +940,7 @@ void PExProjectNode::breakpoints(const QString &filename, SortedIntMap &bps, Sor
 void PExProjectNode::switchProfiler(bool active)
 {
     mDoProfile = active;
-    mProfiler->setMainFile(runnableGms() ? runnableGms()->location() : "");
+    mProfiler->setMainFile(mainFile() ? mainFile()->location() : "");
     setProfilerVisible(active);
     emit updateProfilerAction();
     updateOpenEditors();
@@ -978,7 +978,7 @@ void PExProjectNode::addRunParametersHistory(const QString &runParameters)
 {
     FileId id;
     if (Settings::settings()->toBool(skOptionsPerMainFile))
-        if (FileMeta *meta = runnableGms())
+        if (FileMeta *meta = mainFile())
             id = meta->id();
     if (!runParameters.simplified().isEmpty()) {
        QStringList list = mRunFileParameters[id].filter(runParameters.simplified());
@@ -1005,7 +1005,7 @@ QStringList PExProjectNode::getRunParametersHistory() const
 {
     FileId id;
     if (Settings::settings()->toBool(skOptionsPerMainFile))
-        if (FileMeta *meta = runnableGms())
+        if (FileMeta *meta = mainFile())
             id = meta->id();
     QStringList params = mRunFileParameters.value(id, QStringList());
     if (params.size() == 1 && params.at(0).isEmpty())
@@ -1142,7 +1142,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
             } else if (item.optionId == opt->getOrdinalNumber("ParmFile")) {
                 if (value == "default") value = "\"" + filestem + ".pf\"";
                 setParameterFile(value.isEmpty() ? "" : cleanPath(path, value));
-                emit runnableChanged();
+                emit mainFileChanged();
 
             } else if (item.optionId == opt->getOrdinalNumber("logoption")) {
                 int lo = item.value.toInt(&ok);
@@ -1243,10 +1243,10 @@ bool PExProjectNode::isProcess(const AbstractProcess *process) const
 
 bool PExProjectNode::jumpToFirstError(bool focus, PExFileNode* lstNode)
 {
-    if (!runnableGms()) return false;
-//    QList<TextMark*> marks = textMarkRepo()->marks(runnableGms()->id(), -1, id(), TextMark::error, 1);
+    if (!mainFile()) return false;
+//    QList<TextMark*> marks = textMarkRepo()->marks(mainFile()->id(), -1, id(), TextMark::error, 1);
 //    TextMark* textMark = marks.size() ? marks.first() : nullptr;
-    TextMark* textMark = textMarkRepo()->marks(runnableGms()->id())->firstError(id());
+    TextMark* textMark = textMarkRepo()->marks(mainFile()->id())->firstError(id());
 
     if (textMark) {
         if (Settings::settings()->toBool(skOpenLst)) {
@@ -1285,7 +1285,7 @@ bool PExProjectNode::hasParameter(const QString &kind) const
 
 void PExProjectNode::addNodesForSpecialFiles()
 {
-    FileMeta* runFile = runnableGms();
+    FileMeta* runFile = mainFile();
     for (auto it = mParameterHash.constBegin(); it != mParameterHash.constEnd(); ++it) {
         const QString &loc = it.value();
         if (loc.isEmpty())
@@ -1383,7 +1383,7 @@ bool PExProjectNode::startComServer(gamscom::ComFeatures features)
         if (process() && mComServer && mComServer->comFeatures().testFlag(gamscom::cfRunDebug))
             connect(process(), &AbstractProcess::interruptGenerated, mComServer, &gamscom::Server::sendStepLine);
     }
-    if (runnableGms()) mComServer->setMain(runnableGms()->location());
+    if (mainFile()) mComServer->setMain(mainFile()->location());
     bool res = mComServer->start(features);
     return res;
 }
@@ -1417,7 +1417,7 @@ QString PExProjectNode::tooltip()
         res.append( "\n\nResults from searching in\n" + QDir::toNativeSeparators(location()));
     else
         res.append( "\n\nContaining special GAMS system files");
-    if (runnableGms()) res.append("\nMain GMS file: ").append(runnableGms()->name());
+    if (mainFile()) res.append("\nMain GMS file: ").append(mainFile()->name());
     if (!parameter("lst").isEmpty())
         res.append("\nLast output file: ").append(QFileInfo(parameter("lst")).fileName());
     if (!parameter("ls2").isEmpty())

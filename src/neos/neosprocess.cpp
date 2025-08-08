@@ -93,7 +93,7 @@ void NeosProcess::execute()
 QStringList NeosProcess::compileParameters()
 {
     if (mOutPath.isEmpty()) {
-        DEB() << "Error: No runable file assigned to the NEOS process";
+        DEB() << "Error: No runnable file assigned to the NEOS process";
         return QStringList();
     }
     QFileInfo fi(mOutPath);
