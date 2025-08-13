@@ -434,7 +434,7 @@ protected:
     void initGamsStandardPaths();
     QWidget *otherEdit();
     void initEdit(FileMeta *fileMeta, QWidget *edit);
-    void checkForEngingJob();
+    void checkForEngineJob();
     void ensureWorkspace();
     void continueAsyncCall();
 
@@ -480,6 +480,7 @@ private:
     void initEnvironment();
     void initNavigator();
     void adjustFonts();
+    void processMainFileDynamics();
     QVector<PExAbstractNode*> selectedNodes(QModelIndex index = QModelIndex());
     bool handleFileChanges(FileMeta *fc, bool closeAndWillReopen);
     PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);

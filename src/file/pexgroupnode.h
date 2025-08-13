@@ -103,6 +103,8 @@ public:
     PExLogNode* logNode();
     FileMeta *mainFile() const;
     void setMainFile(FileMeta *gmsFile = nullptr);
+    bool dynamicMainFile() const;
+    void setDynamicMainFile(bool newDynamicMainFile);
     bool hasParameterFile();
     FileMeta *parameterFile() const;
     void setParameterFile(FileMeta *pfFile = nullptr);
@@ -228,6 +230,7 @@ private:
     QTimer mUpdateEditsTimer;
     PExLogNode* mLogNode = nullptr;
     FileMeta *mProjectEditFileMeta = nullptr;
+    bool mDynamicMainFile = false;
     QHash<int, QString> mErrorTexts;
     QHash<FileId, QStringList> mRunFileParameters;
     QHash<QString, QString> mParameterHash;

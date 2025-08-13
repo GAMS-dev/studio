@@ -729,6 +729,16 @@ void MainWindow::adjustFonts()
     ui->statusBar->setFont(f);
 }
 
+void MainWindow::processMainFileDynamics()
+{
+    if (PExProjectNode *project = currentProject()) {
+        if (!project->dynamicMainFile()) return;
+        PExFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
+        if (!node || node->file()->kind() != FileKind::Gms) return;
+        project->setMainFile(node->file());
+    }
+}
+
 void MainWindow::updateProfilerAction()
 {
     PExProjectNode *project = mRecent.project();
@@ -4150,8 +4160,7 @@ PExProjectNode *MainWindow::currentProject()
 {
     PExFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
     if (!node) return mRecent.project();
-    PExProjectNode *project = (node ? node->assignedProject()
-                                    : mProjectRepo.findProject(node->file()->projectId()));
+    PExProjectNode *project = node->assignedProject();
     if (!project) project = mRecent.project();
     return project;
 }
@@ -4456,6 +4465,8 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
             return false;
     }
 
+    processMainFileDynamics();
+
     // clear the TextMarks for this project
     QSet<TextMark::Type> markTypes;
     markTypes << TextMark::error << TextMark::link << TextMark::target;
@@ -4635,7 +4646,7 @@ void MainWindow::initDelayedElements()
         appendSystemLogWarning(warn);
 
     checkGamsLicense();
-    checkForEngingJob();
+    checkForEngineJob();
     connect(mSyslog, &SystemLogEdit::newMessage, this, &MainWindow::updateSystemLogTab);
 
     if (QStringConverter::availableCodecs().count() < 16)
@@ -4701,16 +4712,19 @@ void MainWindow::on_actionRunWithSelected_triggered()
             ? option::RunActionState::CompileWithSelected
             : option::RunActionState::RunWithSelected;
     gamscom::ComFeatures comMode = ui->action3_Profiling->isChecked() ? gamscom::cfProfiler : gamscom::cfNoCom;
+    processMainFileDynamics();
     execute(mGamsParameterEditor->on_runAction(state), nullptr, comMode);
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
+    processMainFileDynamics();
     execute(mGamsParameterEditor->on_runAction(option::RunActionState::Compile), nullptr);
 }
 
 void MainWindow::on_actionCompileWithSelected_triggered()
 {
+    processMainFileDynamics();
     execute(mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithSelected), nullptr);
 }
 
@@ -4719,6 +4733,7 @@ void MainWindow::on_actionRunDebugger_triggered()
     if (ui->debugWidget->isVisible()) {
         emit ui->debugWidget->sendRun();
     } else {
+        processMainFileDynamics();
         execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebug), nullptr, gamscom::cfRunDebug);
     }
 }
@@ -4728,6 +4743,7 @@ void MainWindow::on_actionStepDebugger_triggered()
     if (ui->debugWidget->isVisible()) {
         emit ui->debugWidget->sendStepLine();
     } else {
+        processMainFileDynamics();
         execute(mGamsParameterEditor->on_runAction(option::RunActionState::StepDebug), nullptr, gamscom::cfStepDebug);
     }
 }
@@ -4837,6 +4853,7 @@ void MainWindow::prepareNeosProcess()
 {
     PExProjectNode *project = currentProject();
     if (!project) return;
+    processMainFileDynamics();
     updateAndSaveSettings();
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(project->process());
     neosPtr->setStarting();
@@ -4891,7 +4908,7 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
     }
 }
 
-void MainWindow::checkForEngingJob()
+void MainWindow::checkForEngineJob()
 {
     for (PExProjectNode *project : mProjectRepo.projects()) {
         if (!project->engineJobToken().isEmpty()) {
@@ -5070,6 +5087,7 @@ void MainWindow::prepareEngineProcess()
             updateAndSaveSettings();
         }
     });
+    processMainFileDynamics();
     if (!executePrepare(project, mGamsParameterEditor->getCurrentCommandLineData())) {
         appendSystemLogError("Error executing GAMS Engine job: " + project->process()->lastError());
         return;

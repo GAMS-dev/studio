@@ -62,7 +62,7 @@ enum SettingsKey {
     skEncodings,
     skProjects,
     skCurrentFocusProject,
-    skOptionsPerMainFile,
+    skCurrentFileOpenFilter,
     skTabs,
     skHistory,
     skBookmarks,
@@ -93,7 +93,8 @@ enum SettingsKey {
     skForegroundOnDemand,
     skHistorySize,
     skOpenInCurrent,
-    skCurrentFileOpenFilter,
+    skOptionsPerMainFile,
+    skDynamicMainFile,
     skEnableLog,
 
     // project settings page

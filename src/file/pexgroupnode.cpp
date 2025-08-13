@@ -224,6 +224,7 @@ PExProjectNode::PExProjectNode(const QString &filePath, const QString &basePath,
     , mWorkDir(workDir)
     , mType(type)
 {
+    mDynamicMainFile = Settings::settings()->toBool(skDynamicMainFile);
     mContLineData = new gamscom::ContinuousLineData();
     mProfiler = new gamscom::Profiler();
     mProfiler->setContinuousLineData(mContLineData);
@@ -493,6 +494,16 @@ QString PExProjectNode::resolveHRef(const QString &href, PExFileNode *&node, int
         if (parts.size() > 2) col = parts.at(2).toInt();
     }
     return res;
+}
+
+bool PExProjectNode::dynamicMainFile() const
+{
+    return mDynamicMainFile;
+}
+
+void PExProjectNode::setDynamicMainFile(bool newDynamicMainFile)
+{
+    mDynamicMainFile = newDynamicMainFile;
 }
 
 void PExProjectNode::updateOpenEditors()

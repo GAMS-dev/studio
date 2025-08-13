@@ -381,6 +381,7 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
             if (projectData.contains("engineJobToken"))
                 project->setEngineJobToken(projectData.value("engineJobToken").toString(), false);
             project->setRunFileParameterHistory(FileId(), projectData.value("options").toStringList());
+            project->setDynamicMainFile(projectData.value("dynamicMainFile").toBool());
             if (!project->childCount()) {
                 closeGroup(project);
             }
@@ -481,6 +482,7 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
     projectObject.insert("workDir", relativePaths ? dir.relativeFilePath(project->workDir()) : project->workDir() );
     projectObject.insert("name", project->name());
     projectObject.insert("options", project->getRunParametersHistory());
+    projectObject.insert("dynamicMainFile", project->dynamicMainFile());
     if (!project->engineJobToken().isEmpty())
         projectObject.insert("engineJobToken", project->engineJobToken());
     QModelIndex mi = mProxyModel->asIndex(project);

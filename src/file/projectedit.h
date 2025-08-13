@@ -51,6 +51,7 @@ public:
         mainFile = 0x0020,
         pfFile   = 0x0040,
         hasGsp   = 0x0080,
+        dynMain  = 0x0100,
         all      = 0xffff,
     };
     Q_DECLARE_FLAGS(Fields, Field)
@@ -77,6 +78,7 @@ private:
 
 private:
     QHash<Field, QString> mData;
+    QHash<Field, QString> mDataOri;
     PExProjectNode *mProject;
 };
 
@@ -109,8 +111,8 @@ private slots:
     void on_bWorkDir_clicked();
     void on_bBaseDir_clicked();
     void on_cbMainFile_currentIndexChanged(int index);
+    void on_cbDynamicMainFile_toggled(bool checked);
     void on_cbPfFile_currentIndexChanged(int index);
-
 
 private:
     void setSharedData(ProjectData *sharedData);

@@ -254,6 +254,7 @@ void SettingsDialog::loadSettings()
     (mSettings->toBool(skOpenInCurrent) ? ui->rb_openInCurrentProject : ui->rb_openInAnyProject)->setChecked(true);
     ui->cb_EnableLog->setChecked(mSettings->toBool(skEnableLog));
     ui->cb_optionsStore->setCurrentIndex(mSettings->toBool(skOptionsPerMainFile) ? 1: 0);
+    ui->cb_dynamicMainFile->setChecked(mSettings->toBool(skDynamicMainFile));
     ui->cbGspNeedsMainFile->setChecked(mSettings->toBool(skProGspNeedsMain));
     ui->sbGspByFileCount->setValue(mSettings->toInt(skProGspByFileCount));
 
@@ -423,6 +424,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skOpenInCurrent, ui->rb_openInCurrentProject->isChecked());
     mSettings->setBool(skEnableLog, ui->cb_EnableLog->isChecked());
     mSettings->setBool(skOptionsPerMainFile, ui->cb_optionsStore->currentIndex() == 1);
+    mSettings->setBool(skDynamicMainFile, ui->cb_dynamicMainFile->isChecked());
     mSettings->setBool(skProGspNeedsMain, ui->cbGspNeedsMainFile->isChecked());
     mSettings->setInt(skProGspByFileCount, ui->sbGspByFileCount->value());
 

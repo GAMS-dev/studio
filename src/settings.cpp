@@ -339,6 +339,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skForegroundOnDemand, scUser, {"foregroundOnDemand"}, true);
     safelyAdd(res, skOpenInCurrent, scUser, {"openInCurrent"}, false);
     safelyAdd(res, skOptionsPerMainFile, scUser, {"optionsPerMainFile"}, true);
+    safelyAdd(res, skDynamicMainFile, scUser, {"dynamicMainFile"}, false);
     safelyAdd(res, skHistorySize, scUser, {"historySize"}, 20);
     safelyAdd(res, skEnableLog, scUser, {"enableLog"}, true);
 
