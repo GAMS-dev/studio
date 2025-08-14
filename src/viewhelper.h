@@ -167,7 +167,7 @@ public:
     }
 
     static QStringList dialogImportGprFilter() {
-        QStringList res("Old gamside Project (*.gpr)");
+        QStringList res("GAMS IDE project (*.gpr)");
         return res;
     }
 
