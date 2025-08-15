@@ -32,11 +32,25 @@ class GprImporter : public QObject
     Q_OBJECT
 public:
     GprImporter();
-    void import(const QString &gprFile, ProjectRepo &repo);
+    bool import(const QString &gprFile, ProjectRepo &repo);
 
 signals:
     void warning(const QString &message);
     void openFilePath(const QString &file, PExProjectNode *project);
+
+private:
+    bool readFile(const QString &gprFile);
+    bool relocatePath(const QString &projectPath);
+    const QStringList tailPaths(const QString &path);
+    const QStringList parentPaths(const QString str);
+
+private:
+    QString mProjectPath;
+    QStringList mAddFiles;
+    QStringList mOpenFiles;
+    QHash<QString, FileId> mFileIds;
+    QHash<QString, QStringList> mAllRPs;
+
 };
 
 } // namespace studio

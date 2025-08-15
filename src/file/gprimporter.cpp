@@ -25,25 +25,58 @@ namespace studio {
 GprImporter::GprImporter()
 { }
 
-void GprImporter::import(const QString &gprFile, ProjectRepo &repo)
+bool GprImporter::import(const QString &gprFile, ProjectRepo &repo)
+{
+    if (!readFile(gprFile)) return false;
+
+    PExProjectNode *project = nullptr;
+    QFileInfo gprFI(gprFile);
+    mProjectPath = gprFI.absolutePath();
+    if (!relocatePath(mProjectPath)) {
+        return false;
+    }
+
+    // create project and add all files
+    for (const QString &file : std::as_const(mAddFiles)) {
+        QFileInfo fi(file);
+        if (!project)
+            project = repo.createProject(gprFI.completeBaseName() + "-import", gprFI.path(), "", onExist_AddNr);
+        PExFileNode *node = repo.findOrCreateFileNode(fi.filePath(), project);
+        if (node->file()->kind() == FileKind::Gms)
+            mFileIds.insert(fi.completeBaseName().toUpper(), node->file()->id());
+    }
+
+    // add command line parameters
+    for (auto it = mAllRPs.constBegin(); it != mAllRPs.constEnd(); ++it) {
+        FileId fId = mFileIds.value(it.key());
+        if (fId.isValid())
+            project->setRunFileParameterHistory(fId, it.value());
+        else
+            emit warning("Import GPR: Couldn't add run parameters for " + it.key());
+    }
+    for (const QString &file : mOpenFiles) {
+        emit openFilePath(file, project /*, ogNone, true*/);
+    }
+    return true;
+}
+
+bool GprImporter::readFile(const QString &gprFile)
 {
     QFile gpr(gprFile);
     if (!gpr.exists()) {
         emit warning("GPR Import: Can't find file. " + gprFile);
-        return;
+        return false;
     }
     if (!gpr.open(QIODeviceBase::ReadOnly)) {
         emit warning("GPR Import: Can't open file. " + gpr.errorString());
-        return;
+        return false;
     }
 
-    QStringList addFiles;
-    QStringList openFiles;
-    QHash<QString, FileId> fileIds;
-    QHash<QString, QStringList> allRPs;
+    mAddFiles.clear();
+    mOpenFiles.clear();
+    mFileIds.clear();
+    mAllRPs.clear();
 
-    QFileInfo gprFI(gprFile);
-    PExProjectNode *project = nullptr;
     int lineNr = -1;
     QString group;
     QString rpGroup;
@@ -57,11 +90,10 @@ void GprImporter::import(const QString &gprFile, ProjectRepo &repo)
             int ind = line.indexOf("]");
             if (ind < 0) {
                 emit warning("GPR Import: Tag not closed in line " + QString::number(lineNr));
-                return;
+                return false;
             }
             group = line.mid(1, ind - 1);
             rpGroup = group.startsWith("RP:") ? group.mid(3) : "";
-            DEB() << "group " << group << "  rpGroup " << rpGroup;
             continue;
         }
 
@@ -69,7 +101,7 @@ void GprImporter::import(const QString &gprFile, ProjectRepo &repo)
         if (group.startsWith("MRUFILES")) {
             int ind = line.indexOf("=") + 1;
             if (ind > 0)
-                addFiles << QDir::fromNativeSeparators(line.mid(ind));
+                mAddFiles << QDir::fromNativeSeparators(line.mid(ind));
 
         } else if (group.startsWith("OPENWINDOW_")) {
             if (!line.startsWith("FILE"))
@@ -77,48 +109,109 @@ void GprImporter::import(const QString &gprFile, ProjectRepo &repo)
             int ind = line.indexOf("=") + 1;
             if (ind > 0) {
                 QString file = QDir::fromNativeSeparators(line.mid(ind));
-                openFiles.prepend(file); // prepend to open the first at last and make it the current
+                mOpenFiles.prepend(file); // prepend to open the first at last and make it the current
             }
 
         } else if (group.startsWith("RP:")) {
             int ind = line.indexOf("=") + 1;
             if (ind > 0) {
-                if (!allRPs.contains(rpGroup))
-                    allRPs.insert(rpGroup, QStringList());
-                if (!allRPs.value(rpGroup).contains(line.mid(ind)))
-                    allRPs[rpGroup].prepend(line.mid(ind));
+                if (!mAllRPs.contains(rpGroup)) {
+                    mAllRPs.insert(rpGroup, QStringList());
+                    DEB() << " Parameters for " << rpGroup;
+                }
+                if (!mAllRPs.value(rpGroup).contains(line.mid(ind))) {
+                    mAllRPs[rpGroup].prepend(line.mid(ind));
+                    DEB() << "   : '" << line.mid(ind) << "'";
+                }
             }
         }
     }
     gpr.close();
 
     // add opened before non-opened files. First file first, to ensure the mainfile will be the topmost
-    for (const QString &file : openFiles)
-        addFiles.prepend(file);
+    for (const QString &file : mOpenFiles)
+        mAddFiles.prepend(file);
 
-    // create project and add al files
-    for (const QString &file : std::as_const(addFiles)) {
-        QFileInfo fi(file);
-        if (!project)
-            project = repo.createProject(gprFI.completeBaseName() + "-import", gprFI.path(), "", onExist_AddNr);
-        PExFileNode *node = repo.findOrCreateFileNode(fi.filePath(), project);
-        if (node->file()->kind() == FileKind::Gms)
-            fileIds.insert(fi.completeBaseName().toUpper(), node->file()->id());
-    }
-
-    // add command line parameters
-    for (auto it = allRPs.constBegin(); it != allRPs.constEnd(); ++it) {
-        FileId fId = fileIds.value(it.key());
-        if (fId.isValid())
-            project->setRunFileParameterHistory(fId, it.value());
-        else
-            emit warning("Import GPR: Couldn't add run parameters for " + it.key());
-    }
-    for (const QString &file : openFiles) {
-        emit openFilePath(file, project /*, ogNone, true*/);
-    }
-
+    return true;
 }
+
+bool GprImporter::relocatePath(const QString &projectPath)
+{
+    // Keep paths unchanged if first file exists in that place
+    if (projectPath.isEmpty() || !mAddFiles.size())
+        return false;
+    if (QFile::exists(mAddFiles.first()))
+        return true;
+
+    // Find the commonPath (also using recentPaths) that matches an existing file
+    QString oriPath;
+    QString newPath;
+    for (int i = 1; i < mAddFiles.size(); ++i) {
+        QString file = mAddFiles.at(i);
+        for (const QString &path : parentPaths(projectPath)) {
+            for (const QString &tail : tailPaths(file)) {
+                if (QFile::exists(path + tail)) {
+                    oriPath = file.left(file.size() - tail.size());
+                    newPath = path;
+                    break;
+                }
+            }
+            if (oriPath.size()) break;
+        }
+        if (oriPath.size()) break;
+    }
+    // shorten while folders are equal
+    while (true) {
+        QString tail = oriPath.mid(oriPath.lastIndexOf('/'));
+        if (tail.length() > 1 && newPath.endsWith(tail, FileType::fsCaseSense())) {
+            oriPath = oriPath.left(oriPath.length() - tail.length());
+            newPath = newPath.left(newPath.length() - tail.length());
+        } else {
+            break;
+        }
+    }
+
+    // Relocate all file entries
+    DEB() << "Relocate files to '" << newPath << "'";
+    for (int i = 0; i < mAddFiles.size(); ++i) {
+        if (mAddFiles.at(i).startsWith(oriPath)) {
+            QString newFilename = newPath + mAddFiles.at(i).mid(oriPath.length());
+            mAddFiles.replace(i, newFilename);
+            DEB() << "  - " << mAddFiles.at(i);
+        } else {
+            DEB() << "  - Outside of path, file kept: " << mAddFiles.at(i);
+        }
+    }
+    for (int i = 0; i < mOpenFiles.size(); ++i) {
+        if (mOpenFiles.at(i).startsWith(oriPath))
+            mOpenFiles.replace(i, newPath + mOpenFiles.at(i).mid(oriPath.length()));
+    }
+    return true;
+}
+
+
+const QStringList GprImporter::tailPaths(const QString& str)
+{
+    QStringList res;
+    QString path = QFileInfo(QDir::cleanPath(str)).filePath();
+    QString prev = path;
+    while((path = QFileInfo(path).path()).length() < prev.length()) {
+        res << (str.mid(path.length()));
+        prev = path;
+    }
+    return res;
+}
+
+const QStringList GprImporter::parentPaths(const QString str)
+{
+    QStringList res;
+    QString path = QFileInfo(QDir::cleanPath(str)).filePath();
+    res << path;
+    while((path = QFileInfo(path).path()).length() < res.last().length())
+        res << path;
+    return res;
+}
+
 
 } // namespace studio
 } // namespace gams

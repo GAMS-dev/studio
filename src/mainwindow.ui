@@ -1789,10 +1789,10 @@
   </action>
   <action name="actionImport_GPR_project">
    <property name="text">
-    <string>Import GPR project</string>
+    <string>Import GAMS IDE project (.gpr)</string>
    </property>
    <property name="toolTip">
-    <string>Imports a gamside GPR project</string>
+    <string>Imports a GAMS IDE project (.gpr)</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
