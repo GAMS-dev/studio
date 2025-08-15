@@ -101,14 +101,14 @@ bool GprImporter::readFile(const QString &gprFile)
         if (group.startsWith("MRUFILES")) {
             int ind = line.indexOf("=") + 1;
             if (ind > 0)
-                mAddFiles << QDir::fromNativeSeparators(line.mid(ind));
+                mAddFiles << line.mid(ind).replace('\\', '/');
 
         } else if (group.startsWith("OPENWINDOW_")) {
             if (!line.startsWith("FILE"))
                 continue;
             int ind = line.indexOf("=") + 1;
             if (ind > 0) {
-                QString file = QDir::fromNativeSeparators(line.mid(ind));
+                QString file = line.mid(ind).replace('\\', '/');
                 mOpenFiles.prepend(file); // prepend to open the first at last and make it the current
             }
 
