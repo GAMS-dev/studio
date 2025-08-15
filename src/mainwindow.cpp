@@ -132,10 +132,6 @@ MainWindow::MainWindow(QWidget *parent)
     // Shortcuts
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
 
-#ifndef _WIN64
-    ui->actionImport_GPR_project->setEnabled(false);
-#endif
-
 #ifdef __APPLE__
     ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
     ui->actionPreviousTab->setShortcut(QKeySequence("Ctrl+{"));
@@ -275,6 +271,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::openProject, this, [this](const QString &gspFile) {
         openFilesProcess(QStringList() << gspFile, ogProjects);
     });
+    connect(&mProjectRepo, &ProjectRepo::importGprProject, this, &MainWindow::importGprProject);
     connect(&mProjectRepo, &ProjectRepo::openInPinView, this, &MainWindow::openInPinView);
     connect(&mProjectRepo, &ProjectRepo::switchToTab, this, &MainWindow::switchToMainTab);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
@@ -4218,10 +4215,8 @@ void MainWindow::openFilesProcess(const QStringList &files, OpenGroupOption opt)
                     }
                 }
             }
-#ifdef _WIN64
         } else if (fileName.endsWith(".gpr", Qt::CaseInsensitive)) {
             importGprProject(fileName);
-#endif
         } else {
             // detect if the file is already present at the scope
             fileNode = openFilePath(fileName, nullptr, opt, true, false);
@@ -4294,10 +4289,8 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
                     openFileNode(pro); // open project
                     usedProjects << pro;
                 }
-#ifdef _WIN64
             } else if (item.endsWith(".gpr", Qt::CaseInsensitive)) {
                 importGprProject(item);
-#endif
             } else {
                 PExProjectNode *itemProject = project;
                 if (!itemProject) {

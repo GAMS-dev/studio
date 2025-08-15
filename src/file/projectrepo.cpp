@@ -1155,6 +1155,10 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
                 emit openProject(item);
                 continue;
             }
+            if (item.endsWith(".gpr", Qt::CaseInsensitive)) {
+                emit importGprProject(item);
+                continue;
+            }
             PExFileNode* file = findOrCreateFileNode(item, project);
             if (knownIds.contains(file->id())) knownIds.removeAll(file->id());
             if (file->file()->kind() == FileKind::Gms) gmsFiles << file;

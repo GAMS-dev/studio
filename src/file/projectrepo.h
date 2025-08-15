@@ -158,6 +158,7 @@ public:
 signals:
     void gamsProcessStateChanged(gams::studio::PExProjectNode* project);
     void openProject(const QString &gspFile);
+    void importGprProject(const QString &gprFile);
     void openFile(gams::studio::FileMeta* fileMeta, bool focus = true, gams::studio::PExProjectNode *project = nullptr,
                   QString encoding = QString(), bool forcedAsTextEditor = false, gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFolder(QString path, gams::studio::PExProjectNode* project);
