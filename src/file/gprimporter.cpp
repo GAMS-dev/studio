@@ -55,7 +55,10 @@ bool GprImporter::import(const QString &gprFile, ProjectRepo &repo)
             emit warning("Import GPR: Couldn't add run parameters for " + it.key());
     }
     for (const QString &file : mOpenFiles) {
-        emit openFilePath(file, project /*, ogNone, true*/);
+        if (QFile::exists(file))
+            emit openFilePath(file, project /*, ogNone, true*/);
+        else
+            emit warning("File not found. Couldn't import " + file);
     }
     return true;
 }
