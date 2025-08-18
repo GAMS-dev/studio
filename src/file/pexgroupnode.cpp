@@ -218,7 +218,7 @@ void PExGroupNode::hasFile(const QString &fName, bool &exists)
 }
 
 PExProjectNode::PExProjectNode(const QString &filePath, const QString &basePath,
-                               FileMeta* runFileMeta, const QString &workDir, Type type)
+                               FileMeta* mainFileMeta, const QString &workDir, Type type)
     : PExGroupNode(QFileInfo(filePath).completeBaseName(), basePath, NodeType::project)
     , mProjectFile(filePath)
     , mWorkDir(workDir)
@@ -231,8 +231,8 @@ PExProjectNode::PExProjectNode(const QString &filePath, const QString &basePath,
     connect(&mUpdateEditsTimer, &QTimer::timeout, this, &PExProjectNode::updateOpenEditors);
 
     if (mWorkDir.isEmpty()) mWorkDir = basePath;
-    if (runFileMeta && runFileMeta->kind() == FileKind::Gms) {
-        setMainFile(runFileMeta);
+    if (mainFileMeta && mainFileMeta->kind() == FileKind::Gms) {
+        setMainFile(mainFileMeta);
         setNeedSave(false);
     }
 }
@@ -964,14 +964,14 @@ bool PExProjectNode::hasErrorText(int lstLine)
     return (lstLine < 0) ? mErrorTexts.size() > 0 : mErrorTexts.contains(lstLine);
 }
 
-void PExProjectNode::setRunFileParameterHistory(FileId fileId, const QStringList &parameterLists)
+void PExProjectNode::setMainFileParameterHistory(FileId fileId, const QStringList &parameterLists)
 {
-    mRunFileParameters.insert(fileId, parameterLists);
+    mMainFileParameters.insert(fileId, parameterLists);
 }
 
-QStringList PExProjectNode::runFileParameterHistory(FileId fileId) const
+QStringList PExProjectNode::mainFileParameterHistory(FileId fileId) const
 {
-    return mRunFileParameters.value(fileId, QStringList());
+    return mMainFileParameters.value(fileId, QStringList());
 }
 
 void PExProjectNode::addRunParametersHistory(const QString &runParameters)
@@ -981,23 +981,23 @@ void PExProjectNode::addRunParametersHistory(const QString &runParameters)
         if (FileMeta *meta = mainFile())
             id = meta->id();
     if (!runParameters.simplified().isEmpty()) {
-       QStringList list = mRunFileParameters[id].filter(runParameters.simplified());
+       QStringList list = mMainFileParameters[id].filter(runParameters.simplified());
        if (list.size() > 0) {
-           mRunFileParameters[id].removeOne(runParameters.simplified());
+           mMainFileParameters[id].removeOne(runParameters.simplified());
        }
     } else {
-        for (int i = 0; i < mRunFileParameters[id].size(); ++i) {
-            QString str = mRunFileParameters[id].at(i);
+        for (int i = 0; i < mMainFileParameters[id].size(); ++i) {
+            QString str = mMainFileParameters[id].at(i);
             if (str.simplified().isEmpty()) {
-                mRunFileParameters[id].removeAt(i);
+                mMainFileParameters[id].removeAt(i);
                 break;
             }
         }
     }
-    mRunFileParameters[id].append(runParameters.simplified());
+    mMainFileParameters[id].append(runParameters.simplified());
     if (id.isValid()) {
         // update the project global parameters list
-        mRunFileParameters.insert(FileId(), runFileParameterHistory(id));
+        mMainFileParameters.insert(FileId(), mainFileParameterHistory(id));
     }
 }
 
@@ -1007,11 +1007,11 @@ QStringList PExProjectNode::getRunParametersHistory() const
     if (Settings::settings()->toBool(skOptionsPerMainFile))
         if (FileMeta *meta = mainFile())
             id = meta->id();
-    QStringList params = mRunFileParameters.value(id, QStringList());
+    QStringList params = mMainFileParameters.value(id, QStringList());
     if (params.size() == 1 && params.at(0).isEmpty())
         params.clear();
     if (params.isEmpty())
-        return mRunFileParameters.value(FileId(), QStringList());
+        return mMainFileParameters.value(FileId(), QStringList());
     return params;
 }
 
@@ -1285,7 +1285,6 @@ bool PExProjectNode::hasParameter(const QString &kind) const
 
 void PExProjectNode::addNodesForSpecialFiles()
 {
-    FileMeta* runFile = mainFile();
     for (auto it = mParameterHash.constBegin(); it != mParameterHash.constEnd(); ++it) {
         const QString &loc = it.value();
         if (loc.isEmpty())
@@ -1293,8 +1292,8 @@ void PExProjectNode::addNodesForSpecialFiles()
         if (QFileInfo::exists(loc)) {
             PExFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(QFileInfo(loc).fileName()));
             QString encoding = node->file()->encoding();
-            node->file()->setEncoding(runFile ? runFile->encoding()
-                                              : Settings::settings()->toString(skDefaultEncoding));
+            node->file()->setEncoding(mainFile() ? mainFile()->encoding()
+                                                 : Settings::settings()->toString(skDefaultEncoding));
             if (encoding != node->file()->encoding())
                 setNeedSave();
         } else {

@@ -67,6 +67,8 @@ bool PathRequest::checkProject()
             ui->laText->setText(QString("All referenced files found."));
         ui->laText->setToolTip(QString());
     } else {
+        for (const QString &file : missed)
+            emit warning("File not found: " + file);
         bool one = (missed.size() == 1);
         ui->laText->setText(mInitialText.arg(one ? "One file" : QString::number(missed.size()) + " files"));
         ui->laText->setToolTip("Missing file"+QString(missed.size()==1 ? "":"s")+":\n" + missed.join("\n"));

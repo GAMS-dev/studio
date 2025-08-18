@@ -295,7 +295,6 @@ MainWindow::MainWindow(QWidget *parent)
         currentFilter = &mCurrentFileOpenFilter;
     });
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
-    connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::newFileDialog, this, &MainWindow::newFileDialogPrepare);
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
@@ -1113,11 +1112,6 @@ void MainWindow::addToGroup(PExGroupNode* group, const QString& filepath)
 {
     PExProjectNode *project = group->assignedProject();
     openFileNode(mProjectRepo.findOrCreateFileNode(filepath, project), true);
-}
-
-void MainWindow::sendSourcePath(QString &source)
-{
-    source = mRecent.path();
 }
 
 void MainWindow::updateMenuToEncoding(const QString &currentEncoding)
@@ -3427,6 +3421,10 @@ void MainWindow::openProject(const QString &gspFile)
         } else {
             // only one project map
             path::PathRequest *dialog = new path::PathRequest(this);
+            connect(dialog, &path::PathRequest::warning, this, [this](const QString &text) {
+                appendSystemLogWarning(text);
+                updateSystemLogTab(true);
+            });
             QString basePath = QFileInfo(gspFile).path();
             dialog->init(&mProjectRepo, gspFile, basePath, map);
 
@@ -5344,7 +5342,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         }
         try {
             if (encoding.isEmpty()) encoding = fileMeta->encoding();
-            edit = fileMeta->createEdit(tabWidget, project, getEditorFont(fileMeta->fontGroup(forcedAsTextEditor)), encoding, forcedAsTextEditor);
+            edit = fileMeta->createEdit(tabWidget, project, getEditorFont(fileMeta->fontGroup(forcedAsTextEditor)),
+                                        encoding, forcedAsTextEditor);
             int tabIndex = fileMeta->addToTab(tabWidget, edit, tabStrategy);
             PExAbstractNode *node = mProjectRepo.findFile(fileMeta, project);
             if (!node) node = project;
@@ -7047,7 +7046,7 @@ void MainWindow::mainFileChanged()
             if (FileMeta *meta = proj->mainFile()) {
                 FileId id = meta->id();
                 if (id.isValid())
-                    proj->setRunFileParameterHistory(id, params);
+                    proj->setMainFileParameterHistory(id, params);
             }
         }
     }

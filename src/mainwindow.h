@@ -249,7 +249,6 @@ private slots:
     void closeNodeConditionally(gams::studio::PExFileNode *node);
     void closeAndDeleteFiles(QList<PExFileNode *> fileNodes);
     void addToGroup(gams::studio::PExGroupNode *group, const QString &filepath);
-    void sendSourcePath(QString &source);
     void changeToLog(gams::studio::PExAbstractNode* node, bool openOutput, bool createMissing);
     void storeTree();
     void cloneBookmarkMenu(QMenu *menu);

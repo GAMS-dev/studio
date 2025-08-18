@@ -37,12 +37,14 @@ class PathRequest;
 class PathRequest : public QDialog
 {
     Q_OBJECT
-
 public:
     explicit PathRequest(QWidget *parent = nullptr);
     ~PathRequest() override;
     void init(ProjectRepo *repo, const QString &name, const QString &baseDir, const QVariantMap &data);
     bool checkProject();
+
+signals:
+    void warning(const QString &message);
 
 private:
     Ui::PathRequest *ui;
