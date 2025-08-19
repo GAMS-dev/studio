@@ -118,7 +118,7 @@ public:
 
     bool checkRead(const QVariantMap &map, int &count, int &ignored, QStringList &missed, const QString &baseDir);
     bool readList(const QVariantList &projectsList);
-    bool read(const QVariantMap &projectMap, QString gspFile = QString());
+    bool read(const QVariantMap &projectMap, QString gspFile = QString(), bool doWarn = true);
     void write(QVariantList &projects) const;
     void save(PExProjectNode *project, const QVariantMap &data) const;
     QVariantMap getProjectMap(PExProjectNode *project, bool relativePaths = false) const;
@@ -195,7 +195,7 @@ private:
     friend class PExProjectNode;
 
     QVariantMap parseProjectFile(const QString &gspFile) const;
-    bool readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &baseDir = QString());
+    bool readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &baseDir = QString(), bool doWarn = true);
     void writeProjectFiles(const PExProjectNode *project, QVariantList &childList, bool relativePaths = false) const;
     void addToProject(PExProjectNode *project, PExFileNode *file);
     QString uniqueNameExt(PExGroupNode *parentNode, const QString &name, PExAbstractNode *node = nullptr);

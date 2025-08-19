@@ -294,7 +294,7 @@ bool ProjectRepo::readList(const QVariantList &projectsList)
     return res;
 }
 
-bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
+bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile, bool doWarn)
 {
     bool res = true;
     PExProjectNode::Type type = PExProjectNode::tCommon;
@@ -372,7 +372,7 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
                     pfFile = projectDir.absoluteFilePath(pfFile);
                 project->setParameterFile(pfFile);
             }
-            if (!readProjectFiles(project, subChildren, projectPath))
+            if (!readProjectFiles(project, subChildren, projectPath, doWarn))
                 res = false;
             bool expand = projectData.contains("expand") ? projectData.value("expand").toBool() : true;
             mTreeView->setExpanded(mProxyModel->asIndex(project), expand);
@@ -389,7 +389,7 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
     return res;
 }
 
-bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &baseDir)
+bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &baseDir, bool doWarn)
 {
     bool res = true;
     if (!project)
@@ -416,7 +416,8 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
                     optList = child.value("options").toStringList();
                 project->setMainFileParameterHistory(node->file()->id(), optList);
             } else if (!CIgnoreSuffix.contains('.'+QFileInfo(file).suffix()+'.')) {
-                emit addWarning("File not found: " + file);
+                if (doWarn)
+                    emit addWarning("File not found: " + file);
                 res = false;
             }
         }

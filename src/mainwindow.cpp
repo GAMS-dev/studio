@@ -3442,7 +3442,7 @@ void MainWindow::openProject(const QString &gspFile)
                 });
                 connect(dialog, &path::PathRequest::accepted, this, [this, map, gspFile]() {
                     bool hasProjectFocus = mProjectRepo.focussedProject();
-                    mProjectRepo.read(map, gspFile);
+                    mProjectRepo.read(map, gspFile, false);
                     if (hasProjectFocus)
                         focusProject(mProjectRepo.findProject(gspFile));
                 });
@@ -4084,7 +4084,7 @@ PExFileNode* MainWindow::openFilePath(const QString filePath, PExProjectNode* kn
                                       bool focus, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     if (!QFileInfo::exists(filePath))
-        EXCEPT() << "File not found: " << filePath;
+        EXCEPT() << "MW: File not found: " << filePath;
 
     PExProjectNode *curProject = mRecent.project();
     PExProjectNode *project = knownProject;
