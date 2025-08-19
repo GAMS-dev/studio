@@ -158,6 +158,7 @@ ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
     ui->edProjectFile->setEnabled(false);
     ui->edProjectFile->setToolTip(cProFile);
     ui->edName->setToolTip(cName);
+    ui->edFullName->setToolTip("Full name: the full name of the project including extension to avoid name conflicts");
     ui->cbMainFile->setToolTip("Main file: this file will be excuted with GAMS");
     ui->cbPfFile->setToolTip("Parameter file: this file contains the default parameters");
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
@@ -318,13 +319,16 @@ void ProjectEdit::on_bBaseDir_clicked()
 
 void ProjectEdit::updateData(gams::studio::project::ProjectData::Field field)
 {
-    if (field & (ProjectData::name | ProjectData::nameExt))
+    if (field & (ProjectData::name | ProjectData::nameExt)) {
         mSharedData->project()->refreshProjectTabName();
+        QString fullName = mSharedData->fieldData(ProjectData::name) + mSharedData->fieldData(ProjectData::nameExt);
+        if (ui->edFullName->text() != fullName)
+            ui->edFullName->setText(fullName);
+    }
     if ((field & ProjectData::file) && ui->edProjectFile->text() != mSharedData->fieldData(ProjectData::file))
         ui->edProjectFile->setText(mSharedData->fieldData(ProjectData::file));
-    QString fullName = mSharedData->fieldData(ProjectData::name) + mSharedData->fieldData(ProjectData::nameExt);
-    if (ui->edName->text() != fullName)
-        ui->edName->setText(fullName);
+    if ((field & ProjectData::name) && ui->edName->text() != mSharedData->fieldData(ProjectData::name))
+        ui->edName->setText(mSharedData->fieldData(ProjectData::name));
     if ((field & ProjectData::workDir) && ui->edWorkDir->text() != mSharedData->fieldData(ProjectData::workDir))
         ui->edWorkDir->setText(mSharedData->fieldData(ProjectData::workDir));
     if ((field & ProjectData::baseDir) && ui->edBaseDir->text() != mSharedData->fieldData(ProjectData::baseDir))
