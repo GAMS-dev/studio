@@ -6147,12 +6147,13 @@ void MainWindow::updateTabSize(int size)
 
 void MainWindow::importGprProject(const QString &gprFile)
 {
-    GprImporter importer;
-    connect(&importer, &GprImporter::openFilePath, this, [this](const QString &file, PExProjectNode *project) {
+    gpr::GprImporter *importer = new gpr::GprImporter(this, mProjectRepo);
+    connect(importer, &gpr::GprImporter::openFilePath, this, [this](const QString &file, PExProjectNode *project) {
         openFilePath(file, project, ogNone, true);
     });
-    connect(&importer, &GprImporter::warning, this, &MainWindow::appendSystemLogWarning);
-    importer.import(gprFile, mProjectRepo);
+    connect(importer, &gpr::GprImporter::warning, this, &MainWindow::appendSystemLogWarning);
+    connect(importer, &gpr::GprImporter::finished, this, [importer](int ) { delete importer; });
+    importer->import(gprFile);
 }
 
 bool MainWindow::readTabs(const QVariantMap &tabData)

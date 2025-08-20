@@ -18,49 +18,68 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gprimporter.h"
+#include "ui_gprimporter.h"
+#include <QPushButton>
 
 namespace gams {
 namespace studio {
+namespace gpr {
 
-GprImporter::GprImporter()
-{ }
 
-bool GprImporter::import(const QString &gprFile, ProjectRepo &repo)
+GprImporter::GprImporter(QWidget *parent, ProjectRepo &repo) :
+    QDialog(parent),
+    ui(new Ui::GprImporter),
+    mProjectRepo(repo)
+{
+    ui->setupUi(this);
+    mMissText = ui->laMissCount->text();
+    mCoverText = ui->laNewCoverCount->text();
+    connect(ui->btOk, &QPushButton::clicked, this, &GprImporter::okClicked);
+    connect(ui->btCancel, &QPushButton::clicked, this, &GprImporter::close);
+}
+
+bool GprImporter::import(const QString &gprFile)
 {
     if (!readFile(gprFile)) return false;
-
-    PExProjectNode *project = nullptr;
-    QFileInfo gprFI(gprFile);
-    mProjectPath = gprFI.absolutePath();
-    if (!relocatePath(mProjectPath)) {
+    mProjectInfo = QFileInfo(gprFile);
+    QString projectPath = mProjectInfo.absolutePath();
+    if (projectPath.isEmpty() || !mAddFiles.size())
         return false;
-    }
 
-    // create project and add all files
-    for (const QString &file : std::as_const(mAddFiles)) {
-        QFileInfo fi(file);
-        if (!project)
-            project = repo.createProject(gprFI.completeBaseName() + "-import", gprFI.path(), "", onExist_AddNr);
-        PExFileNode *node = repo.findOrCreateFileNode(fi.filePath(), project);
-        if (node->file()->kind() == FileKind::Gms)
-            mFileIds.insert(fi.completeBaseName().toUpper(), node->file()->id());
-    }
-
-    // add command line parameters
-    for (auto it = mAllRPs.constBegin(); it != mAllRPs.constEnd(); ++it) {
-        FileId fId = mFileIds.value(it.key());
-        if (fId.isValid())
-            project->setRunFileParameterHistory(fId, it.value());
-        else
-            emit warning("Import GPR: Couldn't add run parameters for " + it.key());
-    }
-    for (const QString &file : mOpenFiles) {
-        if (QFile::exists(file))
-            emit openFilePath(file, project /*, ogNone, true*/);
-        else
-            emit warning("File not found. Couldn't import " + file);
+    QString oriPath;
+    QString newPath;
+    if (int miss = needRelocatePaths(projectPath, oriPath, newPath)) {
+        ui->laMissCount->setText(mMissText.arg(miss).arg(mAddFiles.count()));
+        ui->edCurrentPath->setText(oriPath);
+        ui->edRelocatedPath->setText(newPath);
+        int missRelocate = checkPaths(oriPath, newPath);
+        ui->laNewCoverCount->setText(mCoverText.arg(mAddFiles.count() - missRelocate).arg(mAddFiles.count()));
+        show();
+    } else {
+        createProject();
     }
     return true;
+}
+
+void GprImporter::relocatePaths(const QString &oriPath, QString newPath)
+{
+    while (newPath.endsWith("/"))
+        newPath = newPath.left(newPath.length() - 1);
+    DEB() << "Relocate files to '" << newPath << "'";
+    for (int i = 0; i < mAddFiles.size(); ++i) {
+        if (mAddFiles.at(i).startsWith(oriPath)) {
+            QString newFilename = newPath + mAddFiles.at(i).mid(oriPath.length());
+            mAddFiles.replace(i, newFilename);
+            DEB() << "  - " << mAddFiles.at(i);
+        } else {
+            DEB() << "  - Outside of path, file kept: " << mAddFiles.at(i);
+        }
+    }
+    for (int i = 0; i < mOpenFiles.size(); ++i) {
+        if (mOpenFiles.at(i).startsWith(oriPath))
+            mOpenFiles.replace(i, newPath + mOpenFiles.at(i).mid(oriPath.length()));
+    }
+
 }
 
 bool GprImporter::readFile(const QString &gprFile)
@@ -138,17 +157,18 @@ bool GprImporter::readFile(const QString &gprFile)
     return true;
 }
 
-bool GprImporter::relocatePath(const QString &projectPath)
+int GprImporter::needRelocatePaths(const QString &projectPath, QString &oriPath, QString &newPath)
 {
+    oriPath = QString();
+    newPath = QString();
+
     // Keep paths unchanged if first file exists in that place
-    if (projectPath.isEmpty() || !mAddFiles.size())
-        return false;
-    if (QFile::exists(mAddFiles.first()))
-        return true;
+    int miss = 0;
+    for (const QString &file : mAddFiles)
+        if (!QFile::exists(file)) ++miss;
+    if (!miss) return miss;
 
     // Find the commonPath (also using recentPaths) that matches an existing file
-    QString oriPath;
-    QString newPath;
     for (int i = 1; i < mAddFiles.size(); ++i) {
         QString file = mAddFiles.at(i);
         for (const QString &path : parentPaths(projectPath)) {
@@ -173,23 +193,22 @@ bool GprImporter::relocatePath(const QString &projectPath)
             break;
         }
     }
+    return miss;
+}
 
-    // Relocate all file entries
-    DEB() << "Relocate files to '" << newPath << "'";
+int GprImporter::checkPaths(const QString &oriPath, QString newPath)
+{
+    while (newPath.endsWith("/"))
+        newPath = newPath.left(newPath.length() - 1);
+    if (!QFileInfo::exists(newPath)) return -1;
+    int miss = 0;
     for (int i = 0; i < mAddFiles.size(); ++i) {
         if (mAddFiles.at(i).startsWith(oriPath)) {
             QString newFilename = newPath + mAddFiles.at(i).mid(oriPath.length());
-            mAddFiles.replace(i, newFilename);
-            DEB() << "  - " << mAddFiles.at(i);
-        } else {
-            DEB() << "  - Outside of path, file kept: " << mAddFiles.at(i);
+            if (!QFile::exists(newFilename)) ++miss;
         }
     }
-    for (int i = 0; i < mOpenFiles.size(); ++i) {
-        if (mOpenFiles.at(i).startsWith(oriPath))
-            mOpenFiles.replace(i, newPath + mOpenFiles.at(i).mid(oriPath.length()));
-    }
-    return true;
+    return miss;
 }
 
 
@@ -215,6 +234,57 @@ const QStringList GprImporter::parentPaths(const QString str)
     return res;
 }
 
+void GprImporter::createProject()
+{
+    // create project and add all files
+    PExProjectNode *project = nullptr;
+    for (const QString &file : std::as_const(mAddFiles)) {
+        QFileInfo fi(file);
+        if (!project)
+            project = mProjectRepo.createProject(mProjectInfo.completeBaseName() + "-import"
+                                                 , mProjectInfo.path(), "", onExist_AddNr);
+        PExFileNode *node = mProjectRepo.findOrCreateFileNode(fi.filePath(), project);
+        if (node->file()->kind() == FileKind::Gms)
+            mFileIds.insert(fi.completeBaseName().toUpper(), node->file()->id());
+    }
 
+    // add command line parameters
+    for (auto it = mAllRPs.constBegin(); it != mAllRPs.constEnd(); ++it) {
+        FileId fId = mFileIds.value(it.key());
+        if (fId.isValid())
+            project->setRunFileParameterHistory(fId, it.value());
+        else
+            emit warning("Import GPR: Couldn't add run parameters for " + it.key());
+    }
+    for (const QString &file : mOpenFiles) {
+        if (QFile::exists(file))
+            emit openFilePath(file, project /*, ogNone, true*/);
+        else
+            emit warning("File not found. Couldn't import " + file);
+    }
+}
+
+void GprImporter::okClicked()
+{
+    relocatePaths(ui->edCurrentPath->text(), ui->edRelocatedPath->text());
+    createProject();
+    close();
+}
+
+void GprImporter::on_edRelocatedPath_textEdited(const QString &text)
+{
+    int miss = checkPaths(ui->edCurrentPath->text(), ui->edRelocatedPath->text());
+    ui->edRelocatedPath->setStyleSheet(miss < 0 ? "color:"+toColor(Theme::Normal_Red).name()+";" : "");
+    if (miss < 0) miss = mAddFiles.count();
+    ui->laNewCoverCount->setText(mCoverText.arg(mAddFiles.count() - miss).arg(mAddFiles.count()));
+    ui->btOk->setEnabled(miss < mAddFiles.count());
+}
+
+
+
+
+
+
+} // namespace gpr
 } // namespace studio
 } // namespace gams

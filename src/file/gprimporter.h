@@ -20,32 +20,49 @@
 #ifndef GPRIMPORTER_H
 #define GPRIMPORTER_H
 
+#include <QDialog>
 #include <QStringList>
 #include "projectrepo.h"
 #include "pexgroupnode.h"
 
 namespace gams {
 namespace studio {
+namespace gpr {
 
-class GprImporter : public QObject
+namespace Ui {
+class GprImporter;
+}
+
+class GprImporter : public QDialog
 {
     Q_OBJECT
 public:
-    GprImporter();
-    bool import(const QString &gprFile, ProjectRepo &repo);
+    GprImporter(QWidget *parent, ProjectRepo &repo);
+    bool import(const QString &gprFile);
 
 signals:
     void warning(const QString &message);
     void openFilePath(const QString &file, PExProjectNode *project);
 
-private:
-    bool readFile(const QString &gprFile);
-    bool relocatePath(const QString &projectPath);
-    const QStringList tailPaths(const QString &path);
-    const QStringList parentPaths(const QString str);
+private slots:
+    void relocatePaths(const QString &oriPath, QString newPath);
+    void okClicked();
+    void on_edRelocatedPath_textEdited(const QString &text);
 
 private:
-    QString mProjectPath;
+    bool readFile(const QString &gprFile);
+    int needRelocatePaths(const QString &projectPath, QString &oriPath, QString &newPath);
+    int checkPaths(const QString &oriPath, QString newPath);
+    const QStringList tailPaths(const QString &path);
+    const QStringList parentPaths(const QString str);
+    void createProject();
+
+private:
+    Ui::GprImporter *ui;
+    ProjectRepo &mProjectRepo;
+    QFileInfo mProjectInfo;
+    QString mMissText;
+    QString mCoverText;
     QStringList mAddFiles;
     QStringList mOpenFiles;
     QHash<QString, FileId> mFileIds;
@@ -53,6 +70,7 @@ private:
 
 };
 
+} // namespace gpr
 } // namespace studio
 } // namespace gams
 

@@ -538,6 +538,7 @@ FORMS += \
     encodingsdialog.ui \
     engine/efieditor.ui \
     engine/enginestartdialog.ui \
+    file/gprimporter.ui \
     file/pathrequest.ui \
     file/pathselect.ui \
     file/projectedit.ui \
