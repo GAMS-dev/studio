@@ -5,6 +5,7 @@ Version 1.22.0  *
 - Improved error messages forlicense installations via ALP.
 - Improved Studio to ignore the old style GAMS licenses, i.e. only accept the modern GAMS licenses.
 - Added additional system log messages in case a GAMS executable is missing, like `gams` or `gamsgetkey`.
+- Added import functionality for project files from the classic GAMS IDE (*.gpr).
 
 Version 1.21.5
 ==================
