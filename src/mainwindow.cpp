@@ -3598,6 +3598,7 @@ void MainWindow::updateProjectList()
     for (QAction *act : acts) {
         mActFocusProject->removeAction(act);
         ui->menuFocus_Project->removeAction(act);
+        delete act;
     }
     ui->cbFocusProject->clear();
 
@@ -3612,8 +3613,7 @@ void MainWindow::updateProjectList()
                 name += "[" + project->nameExt() + "]";
         }
 
-        QAction *act;
-        act = new QAction(name, mActFocusProject);
+        QAction *act = new QAction(name, mActFocusProject);
         act->setCheckable(true);
         int actId = project ? int(project->id()) : -1;
         act->setData(actId);

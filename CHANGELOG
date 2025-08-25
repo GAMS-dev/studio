@@ -1,7 +1,8 @@
-Version 1.21.6
+Version 1.21.6 *
 ==================
 - Fixed crash when reading a Studio project and the main file is missing.
 - Added warning for missing files when reading a Studio project.
+- Fixed tab menu to show only files of the focused project (when focused).
 
 Version 1.21.5
 ==================

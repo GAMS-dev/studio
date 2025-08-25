@@ -42,11 +42,12 @@ public:
     virtual ~TabListModel() override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    QTabWidget *tabs() { return mTabs; }
+    QTabWidget *tabs() const { return mTabs; }
 
 private:
     QString nameAppendix(const QModelIndex &index) const;
     QString modName(const QModelIndex &index) const;
+    int toAbsIndex(int filteredIndex) const;
 
 private:
     QTabWidget *mTabs = nullptr;
