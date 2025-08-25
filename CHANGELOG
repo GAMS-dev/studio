@@ -1,3 +1,8 @@
+Version 1.21.6
+==================
+- Fixed crash when reading a Studio project and the main file is missing.
+- Added warning for missing files when reading a Studio project.
+
 Version 1.21.5
 ==================
 - Added count of active processes to Studio title.
