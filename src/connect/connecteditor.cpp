@@ -24,6 +24,7 @@
 #include "connectdatakeydelegate.h"
 #include "connectdatavaluedelegate.h"
 #include "connectdataactiondelegate.h"
+#include "editors/sysloglocator.h"
 #include "schemadefinitionmodel.h"
 #include "schemalistmodel.h"
 #include "headerviewproxy.h"
@@ -75,7 +76,6 @@ bool ConnectEditor::init(bool quiet)
             EXCEPT() << e.what();
         }
     }
-
     setFocusProxy(ui->dataTreeView);
 
     SchemaListModel* schemaItemModel = new SchemaListModel( mConnect->getSchemaNames(), this );
@@ -244,6 +244,9 @@ bool ConnectEditor::init(bool quiet)
 
     ui->dataTreeView->clearSelection();
     ui->helpTreeView->clearSelection();
+
+    QTimer::singleShot(200, this, [this]() { checkProblemLoad();  });
+
     return true;
 }
 
@@ -427,6 +430,30 @@ void ConnectEditor::moveDownDatatItemRequested(const QModelIndex &index)
     ui->dataTreeView->setUpdatesEnabled(true);
 }
 
+bool ConnectEditor::checkProblemLoad()
+{
+    if (mDataModel && !mDataModel->problemLoaded().isEmpty()) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Unable to display file correctly");
+        msgBox.setText(QString("Unable to display the file '%1' correctly: %2.\n\n"
+                              "Reopen the file as text and manually edit or remove the contents "
+                              "to prevent data from being lost or overwritten by Connect Editor." ).arg(mLocation, mDataModel->problemLoaded()));
+        msgBox.setInformativeText("Close and Reopen file as Text?");
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+
+        if (msgBox.exec() == QMessageBox::Yes) {
+            openAsTextButton_clicked(false);
+            return true;
+        } else {
+            SysLogLocator::systemLog()->append(QString("%1 in %2. Connect Editor is unable to display data from %2 correctly."
+                                                       " Reopen %2 as text might prevent data from being lost or overwritten.")
+                                            .arg(mDataModel->problemLoaded(), mLocation), LogMsgType::Warning);
+        }
+    }
+    return false;
+}
+
 void ConnectEditor::on_reloadConnectFile()
 {
     try {
@@ -444,6 +471,7 @@ void ConnectEditor::on_reloadConnectFile()
             msgBox.setStandardButtons(QMessageBox::Ok);
             if (msgBox.exec() == QMessageBox::Ok) {  }
     }
+    checkProblemLoad();
 }
 
 void ConnectEditor::saveExpandedState()

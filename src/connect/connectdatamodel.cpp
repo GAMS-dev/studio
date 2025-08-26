@@ -24,6 +24,7 @@
 #include <QMimeData>
 #include <QDir>
 #include <QRegularExpression>
+#include <QMessageBox>
 
 #include "connectdatamodel.h"
 #include "theme.h"
@@ -46,7 +47,8 @@ ConnectDataModel::ConnectDataModel(const QString& filename,  Connect* c, QObject
       mOnlyRequriedAttributesAdded(false),
       mItemIDCount(0),
       mLocation(filename),
-      mConnect(c)
+      mConnect(c),
+      mProblemLoaded("")
 {
     try {
         mConnectData = mConnect->loadDataFromFile(mLocation);
@@ -54,7 +56,13 @@ ConnectDataModel::ConnectDataModel(const QString& filename,  Connect* c, QObject
         EXCEPT() << e.what();
     }
 
-    setupTreeItemModelData();
+    try {
+       setupTreeItemModelData();
+    } catch (Exception &e) {
+        mProblemLoaded = QString::fromStdString(e.what());
+        if (mProblemLoaded.startsWith("["))
+            mProblemLoaded.remove(0,1);
+    }
 }
 
 ConnectDataModel::~ConnectDataModel()
@@ -1193,6 +1201,7 @@ void ConnectDataModel::onlyRequriedAttributedChanged(Qt::CheckState state)
 
 void ConnectDataModel::reloadConnectDataModel()
 {
+    mProblemLoaded = "";
     try {
         ConnectData* data = mConnect->loadDataFromFile(mLocation);
         delete mConnectData;
@@ -1207,7 +1216,13 @@ void ConnectDataModel::reloadConnectDataModel()
 
     mItemIDCount = 0;
 
-    setupTreeItemModelData();
+    try {
+        setupTreeItemModelData();
+    } catch (Exception &e) {
+        mProblemLoaded = QString::fromStdString(e.what());
+        if (mProblemLoaded.startsWith("["))
+            mProblemLoaded.remove(0,1);
+    }
     endResetModel();
 }
 
@@ -1393,6 +1408,11 @@ ConnectData *ConnectDataModel::getConnectData()
          }
      }
      return new ConnectData(root);
+}
+
+QString ConnectDataModel::problemLoaded()
+{
+    return mProblemLoaded;
 }
 
 bool ConnectDataModel::hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey, bool samelevel) const
@@ -1838,8 +1858,10 @@ void ConnectDataModel::setupTreeItemModelData()
         int position = 0;
         for(size_t i = 0; i<node.size(); i++) {
             for (YAML::const_iterator it = node[i].begin(); it != node[i].end(); ++it) {
-                const QString schemaName = QString::fromStdString(it->first.as<std::string>());
+                QString schemaName = QString::fromStdString(it->first.as<std::string>());
                 ConnectSchema* schema = mConnect->getSchema(schemaName);
+                if (!schema)
+                    EXCEPT() << "Unknown schema '" << schemaName << "' data";
                 QStringList dataKeys;
                 QList<QVariant> listData;
                 listData << schemaName;

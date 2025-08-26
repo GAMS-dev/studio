@@ -5,6 +5,7 @@ Version 1.21.6 *
 - Fixed tab menu to show only files of the focused project (when focused).
 - Fixed a crash when a project with an extension number is edited in the project options.
 - Fixed empty `FileUsed` Tab in Reference File Viewer when the file has been updated and reloaded. 
+- Fixed a crash when opening a file contained an unknown schema data name in Connect Editor.
 
 Version 1.21.5
 ==================
