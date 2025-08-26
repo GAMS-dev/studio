@@ -24,6 +24,10 @@
 
 namespace gams {
 namespace studio {
+
+class GamsAboutProcess;
+class GamsGetKeyProcess;
+
 namespace support {
 
 namespace Ui {
@@ -52,20 +56,23 @@ public:
 private slots:
     void copyLicenseInfo();
     void installFile();
-    void installAlp();
+    void requestAlpLicense();
+    void installAlp(int exitCode);
+    void updateAboutLabel(int exitCode);
 
 private:
-    QString gamsLicense();
+    void fetchGamsLicense();
 
     void setSolverLines(QStringList &about);
 
-    static void writeLicenseFile(GamsLicenseInfo &licenseInfo, QStringList &license,
-                                 QWidget *parent, bool clipboard);
+    static void writeLicenseFile(QStringList &license, QWidget *parent, bool clipboard);
 
     static void showInvalidGamsPyMessageBox(QWidget *parent);
 
 private:
     Ui::GamsLicensingDialog *ui;
+    QScopedPointer<GamsAboutProcess> mGamsAboutProc;
+    QScopedPointer<GamsGetKeyProcess> mGamsGetKeyProc;
 };
 
 }

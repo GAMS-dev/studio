@@ -19,6 +19,7 @@
  */
 #include "enginestartdialog.h"
 #include "ui_enginestartdialog.h"
+#include "support/gamslicenseinfo.h"
 #include "logger.h"
 #include "engineprocess.h"
 #include "theme.h"
@@ -35,7 +36,6 @@ namespace studio {
 namespace engine {
 
 const QString EngineStartDialog::CUnavailable("-");
-QRegularExpression EngineStartDialog::mRexVersion("GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
 
 EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
@@ -82,11 +82,8 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
 
     if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) != 0)
         ui->laLogo->setPixmap(QPixmap(QString::fromUtf8(":/img/engine-logo-w")));
-    GamsProcess gp;
-    QString about = gp.aboutGAMS();
-    QRegularExpressionMatch match = mRexVersion.match(about);
-    if (match.hasMatch())
-        mLocalGamsVersion = match.captured(1).split('.');
+    support::GamsLicenseInfo gi;
+    mLocalGamsVersion = gi.localDistribVersionStringShort().split('.');
     updateLoginStates();
     ui->edUrl->installEventFilter(this);
     mConnectStateUpdater.setSingleShot(true);

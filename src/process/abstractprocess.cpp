@@ -39,9 +39,9 @@ namespace gams {
 namespace studio {
 
 AbstractProcess::AbstractProcess(const QString &appName, QObject *parent)
-    : QObject (parent),
-      mProcess(this),
-      mApplication(appName)
+    : QObject(parent)
+    , mProcess(this)
+    , mApplication(appName)
 {
     if (!QMetaType::isRegistered(qMetaTypeId<QProcess::ProcessState>()))
         qRegisterMetaType<QProcess::ProcessState>();

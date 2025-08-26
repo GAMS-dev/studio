@@ -31,6 +31,16 @@ GamsprobeProcess::GamsprobeProcess()
 
 }
 
+bool GamsprobeProcess::verboseOutput() const
+{
+    return mVerboseOutput;
+}
+
+void GamsprobeProcess::setVerboseOutput(bool enable)
+{
+    mVerboseOutput = enable;
+}
+
 QString GamsprobeProcess::execute()
 {
     auto app = nativeAppPath();
@@ -38,10 +48,15 @@ QString GamsprobeProcess::execute()
         mErrorMessage = "Could not locate gamsprobe.";
         return QString();
     }
+    QStringList args;
+    if (mVerboseOutput) {
+        args << "-v";
+    }
 
 #if defined(__unix__) || defined(__APPLE__)
-    mProcess.start(app);
+    mProcess.start(app, args);
 #else
+    mProcess.setNativeArguments(args.join(" "));
     mProcess.setProgram(app);
     mProcess.start();
 #endif

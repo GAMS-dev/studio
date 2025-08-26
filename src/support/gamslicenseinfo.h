@@ -73,13 +73,13 @@ public:
 
     QStringList gamsConfigLocations();
 
-    QString gamsConfigLicenseLocation();
-
     int localDistribVersion();
 
     QString localDistribVersionString();
 
-    QString licesneFilePath() const;
+    QString localDistribVersionStringShort();
+
+    QString licenseFilePath() const;
 
     bool isAlpha() const;
 
@@ -100,6 +100,12 @@ public:
     int julian();
 
     int today();
+
+    static QString gamsConfigYamlLicenseLocation();
+
+    static QString licenseDirectory();
+
+    static QString licenseLocation();
 
 private:
     QString solverCodes(int solverId) const;

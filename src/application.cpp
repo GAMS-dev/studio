@@ -147,8 +147,6 @@ void Application::init()
     listen();
     DEB() << GAMS_PRODUCTNAME_STR << " " << applicationVersion() << " on " << QSysInfo::prettyProductName() << " "
           << QSysInfo::currentCpuArchitecture() << " build " << QSysInfo::kernelVersion();
-    GamsProcess gp;
-    DEB() << gp.aboutGAMS().split("\n").first();
 }
 
 QString Application::serverName() const

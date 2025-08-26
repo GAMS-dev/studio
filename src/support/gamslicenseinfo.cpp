@@ -56,7 +56,7 @@ GamsLicenseInfo::GamsLicenseInfo()
         EXCEPT() << "Could not create PAL object. " << msg;
     }
 
-    auto configLice = gamsConfigLicenseLocation();
+    auto configLice = gamsConfigYamlLicenseLocation();
 
     int rc; // additional return code, not used here
     auto dataPaths = gamsDataLocations();
@@ -244,7 +244,16 @@ QString GamsLicenseInfo::localDistribVersionString()
     return QString("%1.%2%3").arg(relbuf, goldbuf, postfix);
 }
 
-QString GamsLicenseInfo::licesneFilePath() const
+QString GamsLicenseInfo::localDistribVersionStringShort()
+{
+    char relbuf[GMS_SSSIZE];
+    palGetRel(mPAL, relbuf);
+    char goldbuf[GMS_SSSIZE];
+    palGetGold(mPAL, goldbuf);
+    return QString("%1.%2").arg(relbuf, goldbuf);
+}
+
+QString GamsLicenseInfo::licenseFilePath() const
 {
     return mLicenseFilePath;
 }
@@ -338,7 +347,7 @@ QStringList GamsLicenseInfo::processLicenseData(const QString &data)
     return (licenseLines.size() == 8) ? licenseLines : QStringList();
 }
 
-QString GamsLicenseInfo::gamsConfigLicenseLocation()
+QString GamsLicenseInfo::gamsConfigYamlLicenseLocation()
 {
     QString configData;
     QFile configFile(CommonPaths::defaultGamsUserConfigFile());
@@ -375,6 +384,27 @@ QString GamsLicenseInfo::gamsConfigLicenseLocation()
         SysLogLocator::systemLog()->append(error, LogMsgType::Error);
     }
     return QString();
+}
+
+QString GamsLicenseInfo::licenseDirectory()
+{
+    auto yamlPath = gamsConfigYamlLicenseLocation();
+    if (!yamlPath.isEmpty()) {
+        QFileInfo fi(yamlPath);
+        return fi.dir().absolutePath();
+    }
+    GamsLicenseInfo licenseInfo;
+    return licenseInfo.gamsDataLocations().constFirst();
+}
+
+QString GamsLicenseInfo::licenseLocation()
+{
+    auto liceFile = gamsConfigYamlLicenseLocation();
+    if (liceFile.isEmpty()) {
+        GamsLicenseInfo licenseInfo;
+        liceFile = licenseInfo.gamsDataLocations().constFirst() + "/" + CommonPaths::licenseFile();
+    }
+    return liceFile;
 }
 
 }

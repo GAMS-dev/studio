@@ -37,10 +37,6 @@ ResultTreeView::ResultTreeView(QWidget *parent)
     mMenu->addAction(mExpandAllAction);
     connect(this, &ResultTreeView::customContextMenuRequested,
             this, &ResultTreeView::showCustomContextMenu);
-    //connect(this, &ResultTreeView::collapsed,
-    //        this, &ResultTreeView::resizeColumns);
-    //connect(this, &ResultTreeView::expanded,
-    //        this, &ResultTreeView::resizeColumns);
     connect(mCollapsAllAction, &QAction::triggered, this, [this]{
         collapseAll();
     });

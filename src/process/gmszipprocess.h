@@ -28,6 +28,7 @@ namespace studio {
 class GmszipProcess : public AbstractGamsProcess
 {
     Q_OBJECT
+
 public:
     explicit GmszipProcess(QObject *parent = nullptr);
     void execute() override;

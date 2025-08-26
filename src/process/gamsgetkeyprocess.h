@@ -21,26 +21,57 @@
 #define GAMSGETKEYPROCESS_H
 
 #include <QProcess>
+#include <QMutex>
 
 namespace gams {
 namespace studio {
 
 class GamsGetKeyProcess final
+        : public QObject
 {
+    Q_OBJECT
+
 public:
-    GamsGetKeyProcess();
+    GamsGetKeyProcess(QObject *parent = nullptr);
+
+    ~GamsGetKeyProcess();
 
     QString alpId() const;
     void setAlpId(const QString& id);
 
     QString checkoutDuration() const;
-    void setCheckouDuration(const QString& duration);
+    void setCheckoutDuration(const QString& duration);
 
-    QString execute();
+    QString onPremSever() const;
+    void setOnPremSever(const QString& address);
 
-    QString errorMessage() const;
+    QString onPremCertPath() const;
+    void setOnPremCertPath(const QString &newOnPremCertPath);
+
+    bool verboseOutput() const;
+    void setVerboseOutput(bool enable);
+
+    void execute();
+
+    QString content() const;
+
+    QString logMessages() const;
+
+    void clearState();
+
+    void writeLogToFile(const QString &data);
+
+signals:
+    void finished(int exitCode);
+
+private slots:
+    void readStdOut();
+    void readStdErr();
 
 private:
+    QString application() const;
+    bool isAppAvailable(const QString &app);
+    void readStdChannel(QProcess::ProcessChannel channel);
     QString nativeAppPath();
 
 private:
@@ -48,7 +79,12 @@ private:
     QProcess mProcess;
     QString mAlpId;
     QString mCheckoutDuration;
-    QString mErrorMessage;
+    QString mOnPremSever;
+    QString mOnPremCertPath;
+    QStringList mLogMessages;
+    QStringList mContent;
+    bool mVerboseOutput;
+    QMutex mOutputMutex;
 };
 
 }

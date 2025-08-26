@@ -189,7 +189,6 @@ private:
     int mAuthIndex = 0;
 
     static const QString CUnavailable;
-    static QRegularExpression mRexVersion;
 
 };
 

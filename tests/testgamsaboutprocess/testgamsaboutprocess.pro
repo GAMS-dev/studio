@@ -7,16 +7,16 @@ INCLUDEPATH += $$SRCPATH            \
                $$SRCPATH/process
 
 HEADERS +=                                      \
-    $$SRCPATH/process/gamsgetkeyprocess.h       \
+    $$SRCPATH/process/gamsaboutprocess.h        \
     $$SRCPATH/commonpaths.h                     \
     $$SRCPATH/common.h                          \
     $$SRCPATH/exception.h
 
 SOURCES +=                                      \
-    tst_testgamsgetkeyprocess.cpp               \
+    tst_testgamsaboutprocess.cpp                \
     $$SRCPATH/editors/defaultsystemlogger.cpp   \
     $$SRCPATH/editors/sysloglocator.cpp         \
-    $$SRCPATH/process/gamsgetkeyprocess.cpp     \
+    $$SRCPATH/process/gamsaboutprocess.cpp      \
     $$SRCPATH/commandlineparser.cpp             \
     $$SRCPATH/commonpaths.cpp                   \
     $$SRCPATH/common.cpp                        \

@@ -50,9 +50,6 @@ private:
     /// \brief Check the GAMS Distribution to GAMS Studio compatibility.
     ///
     void checkCompatibility();
-
-private:
-    static QRegularExpression RegEx;
 };
 
 }

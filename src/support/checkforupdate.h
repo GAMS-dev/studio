@@ -33,7 +33,7 @@ class VersionInfoLoader;
 ///
 /// \brief Handels all steps required to perform the check for update process.
 ///
-class CheckForUpdate : public QObject
+class CheckForUpdate final : public QObject
 {
     Q_OBJECT
 

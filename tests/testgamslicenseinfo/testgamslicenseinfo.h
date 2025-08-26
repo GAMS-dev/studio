@@ -65,6 +65,7 @@ private slots:
 
     void testLocalDistribVersion();
     void testLocalDistribVersionString();
+    void testLocalDistribVersionStringShort();
 
     void testLicenseFromFile_simpleErrorCases();
 
@@ -75,6 +76,9 @@ private slots:
     void testLicenseFromFile_randomSpaces();
 
     void testLicenseFromFile_BOM();
+
+    void testLicenseDirectory();
+    void testLicenseLocation();
 
 private:
     QStringList testLicense();

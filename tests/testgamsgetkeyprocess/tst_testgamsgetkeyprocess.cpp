@@ -17,7 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QtTest>
+#include <QTest>
+#include <QSignalSpy>
 
 #include "commonpaths.h"
 #include "gamsgetkeyprocess.h"
@@ -35,6 +36,7 @@ public:
 private slots:
     void initTestCase();
     void cleanupTestCase();
+
     void test_getset();
     void test_execute_error();
 
@@ -66,16 +68,38 @@ void TestGamsGetKeyProcess::test_getset()
 {
     mProcess->setAlpId("OK");
     QCOMPARE(mProcess->alpId(), "OK");
-    mProcess->setCheckouDuration("Some Time");
+    mProcess->setCheckoutDuration("Some Time");
     QCOMPARE(mProcess->checkoutDuration(), "Some Time");
+    mProcess->setCheckoutDuration(QString());
+    mProcess->setOnPremSever("some string data");
+    QCOMPARE(mProcess->onPremSever(), "some string data");
+    QVERIFY(!mProcess->verboseOutput());
+    mProcess->setVerboseOutput(true);
+    QVERIFY(mProcess->verboseOutput());
+    mProcess->setVerboseOutput(false);
+    QVERIFY(mProcess->content().isEmpty());
+    QVERIFY(mProcess->logMessages().isEmpty());
+    QVERIFY(mProcess->onPremCertPath().isEmpty());
+    mProcess->setOnPremCertPath("/home/user/Documents/GAMS");
+    QCOMPARE(mProcess->onPremCertPath(), "/home/user/Documents/GAMS");
 }
 
 void TestGamsGetKeyProcess::test_execute_error()
 {
-    auto data = mProcess->execute();
-    auto error = mProcess->errorMessage();
-    QVERIFY(data.isEmpty());
-    QVERIFY(!error.isEmpty());
+    QSignalSpy spy(mProcess, SIGNAL(finished(int)));
+    mProcess->setAlpId(QString());
+    mProcess->setCheckoutDuration(QString());
+    mProcess->setOnPremSever(QString());
+    mProcess->setOnPremCertPath(QString());
+    mProcess->execute();
+    QCOMPARE(spy.count(), 1);
+    QList<QVariant> args = spy.takeFirst();
+    QVERIFY(args.at(0).typeId() == QMetaType::Int);
+    QVERIFY(mProcess->content().isEmpty());
+    QVERIFY(!mProcess->logMessages().isEmpty());
+    mProcess->clearState();
+    QVERIFY(mProcess->content().isEmpty());
+    QVERIFY(mProcess->logMessages().isEmpty());
 }
 
 QTEST_APPLESS_MAIN(TestGamsGetKeyProcess)

@@ -23,7 +23,7 @@
 #include "gamslicenseinfo.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
-#include "process/gamsprocess.h"
+#include "process/gamsaboutprocess.h"
 #include "process/gamsgetkeyprocess.h"
 #include "process/gamsprobeprocess.h"
 #include "theme.h"
@@ -45,18 +45,25 @@ namespace support {
 GamsLicensingDialog::GamsLicensingDialog(const QString &title, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::GamsLicensingDialog)
+    , mGamsAboutProc(new GamsAboutProcess(this))
+    , mGamsGetKeyProc(new GamsGetKeyProcess(this))
 {
     ui->setupUi(this);
     createLicenseFileFromClipboard(parent);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle(title);
-    ui->label->setText(gamsLicense());
+    fetchGamsLicense();
     ui->gamslogo->setPixmap(Theme::icon(":/img/gams-w24").pixmap(ui->gamslogo->size()));
     QRegularExpression regex("^\\d+$");
     ui->cdEdit->setValidator(new QRegularExpressionValidator(regex, this));
     connect(ui->copyButton, &QPushButton::clicked, this, &GamsLicensingDialog::copyLicenseInfo);
     connect(ui->fileButton, &QPushButton::clicked, this, &GamsLicensingDialog::installFile);
-    connect(ui->alpButton, &QPushButton::clicked, this, &GamsLicensingDialog::installAlp);
+    connect(ui->alpButton, &QPushButton::clicked, this, &GamsLicensingDialog::requestAlpLicense);
+    connect(ui->idEdit, &QLineEdit::returnPressed, this, &GamsLicensingDialog::requestAlpLicense);
+    connect(ui->cdEdit, &QLineEdit::returnPressed, this, &GamsLicensingDialog::requestAlpLicense);
+    connect(ui->opEdit, &QLineEdit::returnPressed, this, &GamsLicensingDialog::requestAlpLicense);
+    connect(mGamsAboutProc.get(), &GamsAboutProcess::finished, this, &GamsLicensingDialog::updateAboutLabel);
+    connect(mGamsGetKeyProc.get(), &GamsGetKeyProcess::finished, this, &GamsLicensingDialog::installAlp);
 }
 
 GamsLicensingDialog::~GamsLicensingDialog()
@@ -72,42 +79,11 @@ QString GamsLicensingDialog::studioInfo()
     return ret;
 }
 
-QString GamsLicensingDialog::gamsLicense()
+void GamsLicensingDialog::fetchGamsLicense()
 {
-    QStringList about;
-    about << "<b><big>GAMS Distribution ";
-    GamsLicenseInfo licenseInfo;
-    about << licenseInfo.localDistribVersionString();
-    about << "</big></b><br/><br/>";
-
-    GamsProcess gproc;
-    bool licenseLines = false;
-    const auto lines = gproc.aboutGAMS().split("\n");
-    for(const auto &line : lines) {
-        if (licenseLines) {
-            if (line.startsWith("#L")) {
-                continue;
-            } else if (line.startsWith("Licensed platform:")) {
-                licenseLines = false;
-                about << "</pre>" " \r""<br/>" << line << "<br/>";
-            } else {
-                about << line + "\n";
-            }
-        } else if (line.startsWith("License ")) {
-            about << line << "<br/>";
-            licenseLines = true;
-            about << "<pre style=\"font-family:'Courier New',monospace\">";
-        } else if (line.contains("License file not found")) {
-            about << "<br/>" << line  << "<br/>";
-        } else if (line.contains("gamslice.txt")) {
-            about << line;
-        } else {
-            about << line << "<br/>";
-        }
-    }
-    setSolverLines(about);
-
-    return about.join("");
+    ui->label->setText("Fetching GAMS system information. Please wait...");
+    mGamsAboutProc->clearState();
+    mGamsAboutProc->execute();
 }
 
 void GamsLicensingDialog::setSolverLines(QStringList& about)
@@ -145,13 +121,9 @@ void GamsLicensingDialog::setSolverLines(QStringList& about)
     about << "</ul><br/>";
 }
 
-void GamsLicensingDialog::writeLicenseFile(GamsLicenseInfo &licenseInfo, QStringList &license,
-                                           QWidget *parent, bool clipboard)
+void GamsLicensingDialog::writeLicenseFile(QStringList &license, QWidget *parent, bool clipboard)
 {
-    auto liceFile = licenseInfo.gamsConfigLicenseLocation();
-    if (liceFile.isEmpty()) {
-        liceFile = licenseInfo.gamsDataLocations().constFirst() + "/" + CommonPaths::licenseFile();
-    }
+    auto liceFile = GamsLicenseInfo::licenseLocation();
     QFile licenseFile(liceFile);
     if (licenseFile.exists()) {
         QString text;
@@ -208,6 +180,7 @@ void GamsLicensingDialog::writeLicenseFile(GamsLicenseInfo &licenseInfo, QString
 void GamsLicensingDialog::showInvalidGamsPyMessageBox(QWidget *parent)
 {
     auto msg = "The selected license seems to be a GAMSPy or GAMSPy++ license and will not be installed. Please retry with a GAMS license.";
+    SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
     QMessageBox::critical(parent, "Invalid License", msg);
 }
 
@@ -225,7 +198,7 @@ void GamsLicensingDialog::createLicenseFileFromClipboard(QWidget *parent)
         return;
     }
     if (licenseInfo.isGamsLicense(license)) {
-        writeLicenseFile(licenseInfo, license, parent, true);
+        writeLicenseFile(license, parent, true);
     } else {
         auto msg = "The license in the clipboard seams to be a GAMSPy or GAMSPy++ license and will not be installed. Please retry with a GAMS license.";
         QMessageBox::critical(parent, "Invalid License", msg);
@@ -270,27 +243,54 @@ void GamsLicensingDialog::installFile()
         return;
     }
     if (licenseInfo.isGamsLicense(license)) {
-        writeLicenseFile(licenseInfo, license, this, false);
-        ui->label->setText(gamsLicense());
+        writeLicenseFile(license, this, false);
+        fetchGamsLicense();
     } else {
         showInvalidGamsPyMessageBox(this);
     }
 }
 
-void GamsLicensingDialog::installAlp()
+void GamsLicensingDialog::requestAlpLicense()
 {
     ui->errorLabel->clear();
-    GamsGetKeyProcess proc;
-    proc.setAlpId(ui->idEdit->text().trimmed());
-    proc.setCheckouDuration(ui->cdEdit->text());
-    auto license = proc.execute().split("\n", Qt::SkipEmptyParts);
-    auto error = proc.errorMessage();
-    if (!error.isEmpty()) {
-        auto msg = "The license has not been installed.";
-        SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
-        SysLogLocator::systemLog()->append(error, LogMsgType::Error);
-        ui->errorLabel->setText(error);
-        return;
+    ui->label->setText("Fetching license. Please wait...");
+    mGamsGetKeyProc->clearState();
+    mGamsGetKeyProc->setAlpId(ui->idEdit->text().trimmed());
+    mGamsGetKeyProc->setCheckoutDuration(ui->cdEdit->text());
+    mGamsGetKeyProc->setOnPremSever(ui->opEdit->text().trimmed());
+    mGamsGetKeyProc->setOnPremCertPath(GamsLicenseInfo::licenseDirectory());
+    mGamsGetKeyProc->execute();
+}
+
+void GamsLicensingDialog::installAlp(int exitCode)
+{
+    ui->errorLabel->clear();
+    auto license = mGamsGetKeyProc->content().split("\n", Qt::SkipEmptyParts);
+    QStringList temp;
+    if (license.size() > 8) {
+        for (int i=license.size()-8; i<license.size(); ++i){
+            temp << license.at(i);
+        }
+        license = temp;
+    }
+    auto log = mGamsGetKeyProc->logMessages();
+    if (!log.isEmpty()) {
+        if (exitCode) {
+            QString msg { "The license has not been installed." };
+            SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
+            QString errmsg("Errors occured while running gamsgetkey (exit code %1). " \
+                           "Please check the system log or use the Studio command line option --network-log.");
+            ui->errorLabel->setText(errmsg.arg(QString::number(exitCode)));
+            mGamsGetKeyProc->writeLogToFile(msg);
+            mGamsGetKeyProc->writeLogToFile(errmsg.arg(QString::number(exitCode)));
+            SysLogLocator::systemLog()->append(log, LogMsgType::Error);
+            mGamsGetKeyProc->writeLogToFile(log);
+            fetchGamsLicense();
+            return;
+        } else {
+            SysLogLocator::systemLog()->append(log, LogMsgType::Info);
+            mGamsGetKeyProc->writeLogToFile(log);
+        }
     }
     for (int i=0; i<license.size(); ++i) {
         license[i] = license[i].trimmed();
@@ -299,16 +299,71 @@ void GamsLicensingDialog::installAlp()
     if (!licenseInfo.isLicenseValid(license)) {
         QString msg = "The license is invalid and has not been installed. The license is";
         SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
-        SysLogLocator::systemLog()->append(license.join("\n"), LogMsgType::Error);
-        ui->errorLabel->setText("The license is invalid and has not been installed.");
+        mGamsGetKeyProc->writeLogToFile(msg);
+        if (license.isEmpty()) {
+            mGamsGetKeyProc->writeLogToFile("<empty license>");
+            SysLogLocator::systemLog()->append("<empty license>", LogMsgType::Error);
+        } else {
+            mGamsGetKeyProc->writeLogToFile(license.join("\n"));
+            SysLogLocator::systemLog()->append(license.join("\n"), LogMsgType::Error);
+        }
+        ui->errorLabel->setText("The license is invalid and has not been installed. " \
+                                "Please check the system log or use the Studio command line option --network-log.");
+        fetchGamsLicense();
         return;
     }
     if (licenseInfo.isGamsLicense(license)) {
-        writeLicenseFile(licenseInfo, license, this, false);
-        ui->label->setText(gamsLicense());
+        writeLicenseFile(license, this, false);
+        fetchGamsLicense();
     } else {
         showInvalidGamsPyMessageBox(this);
     }
+}
+
+void GamsLicensingDialog::updateAboutLabel(int exitCode)
+{
+    if (exitCode) {
+        ui->label->setText("Error: Fetching GAMS system information. Please check the system log.");
+        SysLogLocator::systemLog()->append(mGamsAboutProc->logMessages(), LogMsgType::Error);
+    }
+    QStringList about;
+    about << "<b><big>GAMS Distribution ";
+    GamsLicenseInfo licenseInfo;
+    about << licenseInfo.localDistribVersionString();
+    about << "</big></b><br/><br/>";
+
+    bool licenseLines = false;
+    auto lines = mGamsAboutProc->content().split('\n', Qt::SkipEmptyParts, Qt::CaseInsensitive);
+    if (lines.size() >= 3) {
+        lines.removeFirst();
+        lines.removeLast();
+        lines.removeLast();
+    }
+    for(const auto &line : std::as_const(lines)) {
+        if (licenseLines) {
+            if (line.startsWith("#L")) {
+                continue;
+            } else if (line.startsWith("Licensed platform:")) {
+                licenseLines = false;
+                about << "</pre>" " \r""<br/>" << line << "<br/>";
+            } else {
+                about << line + "\n";
+            }
+        } else if (line.startsWith("License ")) {
+            about << line << "<br/>";
+            licenseLines = true;
+            about << "<pre style=\"font-family:'Courier New',monospace\">";
+        } else if (line.contains("License file not found")) {
+            about << "<br/>" << line  << "<br/>";
+        } else if (line.contains("gamslice.txt")) {
+            about << line;
+        } else {
+            about << line << "<br/>";
+        }
+    }
+    setSolverLines(about);
+
+    ui->label->setText(about.join(""));
 }
 
 QString GamsLicensingDialog::header()

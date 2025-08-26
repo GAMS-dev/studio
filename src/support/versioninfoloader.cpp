@@ -221,9 +221,10 @@ void VersionInfoLoader::sslErrors(QNetworkReply *reply, const QList<QSslError> &
 
 void VersionInfoLoader::writeDataToLog(const QByteArray& data)
 {
-    if (CommandLineParser::c4uLog().isEmpty())
+    auto log = CommandLineParser::networkLog();
+    if (log.isEmpty())
         return;
-    QFile logFile(CommandLineParser::c4uLog());
+    QFile logFile(log);
     if (!logFile.open(QIODevice::Append | QIODevice::Text))
         return;
     logFile.write(data);

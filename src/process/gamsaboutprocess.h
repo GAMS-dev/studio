@@ -17,26 +17,55 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSPROCESS_H
-#define GAMSPROCESS_H
+#ifndef GAMSABOUTPROCESS_H
+#define GAMSABOUTPROCESS_H
 
-#include "abstractprocess.h"
+#include <QProcess>
+#include <QMutex>
 
 namespace gams {
 namespace studio {
 
-class GamsProcess final : public AbstractGamsProcess
+class GamsAboutProcess final
+        : public QObject
 {
     Q_OBJECT
 
 public:
-    GamsProcess(QObject *parent = nullptr);
+    GamsAboutProcess(QObject *parent = nullptr);
 
-    void execute() override;
-    void interrupt() override;
+    ~GamsAboutProcess();
+
+    void execute();
+
+    QString content() const;
+
+    QString logMessages() const;
+
+    void clearState();
+
+signals:
+    void finished(int exitCode);
+
+private slots:
+    void readStdOut();
+    void readStdErr();
+
+private:
+    QString application() const;
+    bool isAppAvailable(const QString &app);
+    void readStdChannel(QProcess::ProcessChannel channel);
+    QString nativeAppPath();
+
+private:
+    QString mApplication;
+    QProcess mProcess;
+    QStringList mLogMessages;
+    QStringList mContent;
+    QMutex mOutputMutex;
 };
 
-} // namespace studio
-} // namespace gams
+}
+}
 
-#endif // GAMSPROCESS_H
+#endif // GAMSABOUTPROCESS_H

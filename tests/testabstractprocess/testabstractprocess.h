@@ -22,7 +22,7 @@
 
 #include <QtTest/QTest>
 
-#include "../../src/process/abstractprocess.h"
+#include "abstractprocess.h"
 
 namespace gams {
 namespace studio {

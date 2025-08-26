@@ -271,6 +271,15 @@ void TestGamsLicenseInfo::testLocalDistribVersionString()
     QVERIFY(match.hasMatch());
 }
 
+void TestGamsLicenseInfo::testLocalDistribVersionStringShort()
+{
+    static QRegularExpression regex("^\\d+\\.\\d+");
+    GamsLicenseInfo gamsLicenseInfo;
+    auto version = gamsLicenseInfo.localDistribVersionStringShort();
+    auto match = regex.match(version);
+    QVERIFY(match.hasMatch());
+}
+
 void TestGamsLicenseInfo::testLicenseFromFile_simpleErrorCases()
 {
     GamsLicenseInfo licenseInfo;
@@ -340,6 +349,18 @@ void TestGamsLicenseInfo::testLicenseFromFile_BOM()
         ostream.flush();
     }
     QCOMPARE(licenseInfo.licenseFromFile("lic4.txt"), testLicense());
+}
+
+void TestGamsLicenseInfo::testLicenseDirectory()
+{
+    auto path = GamsLicenseInfo::licenseDirectory();
+    QVERIFY(!path.endsWith(CommonPaths::licenseFile()));
+}
+
+void TestGamsLicenseInfo::testLicenseLocation()
+{
+    auto path = GamsLicenseInfo::licenseLocation();
+    QVERIFY(path.endsWith(CommonPaths::licenseFile()));
 }
 
 QStringList TestGamsLicenseInfo::testLicense()

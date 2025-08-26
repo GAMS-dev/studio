@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QtTest>
+#include <QTest>
 
 #include "commonpaths.h"
 #include "gamsprobeprocess.h"
@@ -35,6 +35,7 @@ public:
 private slots:
     void initTestCase();
     void cleanupTestCase();
+    void test_getset();
     void test_execute();
 
 private:
@@ -59,6 +60,14 @@ void TestGamsprobeProcess::initTestCase()
 void TestGamsprobeProcess::cleanupTestCase()
 {
     delete mProcess;
+}
+
+void TestGamsprobeProcess::test_getset()
+{
+    QVERIFY(mProcess->verboseOutput() == false);
+    mProcess->setVerboseOutput(true);
+    QVERIFY(mProcess->verboseOutput() == true);
+    mProcess->setVerboseOutput(false);
 }
 
 void TestGamsprobeProcess::test_execute()

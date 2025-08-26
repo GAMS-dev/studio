@@ -47,7 +47,7 @@ public:
     int activeHelpView();
     QString logFile() const;
 
-    static QString c4uLog();
+    static QString networkLog();
 
 private:
     inline QStringList getFileArgs();

@@ -17,26 +17,56 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSPROCESS_H
-#define GAMSPROCESS_H
+#include <QtTest>
 
-#include "abstractprocess.h"
+#include "gamsaboutprocess.h"
 
-namespace gams {
-namespace studio {
+using namespace gams::studio;
 
-class GamsProcess final : public AbstractGamsProcess
+class TestGamsAboutProcess : public QObject
 {
     Q_OBJECT
 
 public:
-    GamsProcess(QObject *parent = nullptr);
+    TestGamsAboutProcess();
+    ~TestGamsAboutProcess();
 
-    void execute() override;
-    void interrupt() override;
+private slots:
+    void initTestCase();
+    void cleanupTestCase();
+
+    void test_getset();
+
+private:
+    GamsAboutProcess *mProcess;
 };
 
-} // namespace studio
-} // namespace gams
+TestGamsAboutProcess::TestGamsAboutProcess()
+{
 
-#endif // GAMSPROCESS_H
+}
+
+TestGamsAboutProcess::~TestGamsAboutProcess()
+{
+
+}
+
+void TestGamsAboutProcess::initTestCase()
+{
+    mProcess = new GamsAboutProcess;
+}
+
+void TestGamsAboutProcess::cleanupTestCase()
+{
+    delete mProcess;
+}
+
+void TestGamsAboutProcess::test_getset()
+{
+    QVERIFY(mProcess->content().isEmpty());
+    QVERIFY(mProcess->logMessages().isEmpty());
+}
+
+QTEST_APPLESS_MAIN(TestGamsAboutProcess)
+
+#include "tst_testgamsaboutprocess.moc"

@@ -52,36 +52,5 @@ void GamsProcess::interrupt()
     interruptIntern();
 }
 
-QString GamsProcess::aboutGAMS()
-{
-    QProcess process;
-    QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    QStringList args({"/??", "lo=3", "procTreeMemMonitor=0", "curdir=\"" + tempDir + "\""});
-    QString app = nativeAppPath();
-    if (!isAppAvailable(app))
-        return QString();
-
-#if defined(__unix__) || defined(__APPLE__)
-    process.start(app, args);
-#else
-    process.setNativeArguments(args.join(" "));
-    process.setProgram(app);
-    process.start();
-#endif
-
-    QString about;
-    if (process.waitForFinished()) {
-        about = process.readAllStandardOutput();
-    }
-    QStringList lines = about.split('\n', Qt::SkipEmptyParts, Qt::CaseInsensitive);
-    if (lines.size() >= 3) {
-        lines.removeFirst();
-        lines.removeLast();
-        lines.removeLast();
-    }
-
-    return lines.join("\n");
-}
-
 } // namespace studio
 } // namespace gams

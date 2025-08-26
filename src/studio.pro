@@ -226,6 +226,7 @@ SOURCES += \
     pinviewwidget.cpp \
     process/abstractprocess.cpp \
     process/connectprocess.cpp \
+    process/gamsaboutprocess.cpp \
     process/gamsgetkeyprocess.cpp \
     process/gamslibprocess.cpp  \
     process/gamsprobeprocess.cpp \
@@ -462,6 +463,7 @@ HEADERS += \
     process.h \
     process/abstractprocess.h \
     process/connectprocess.h \
+    process/gamsaboutprocess.h \
     process/gamsgetkeyprocess.h \
     process/gamslibprocess.h \
     process/gamsprobeprocess.h \

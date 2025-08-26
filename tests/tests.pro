@@ -8,6 +8,7 @@ SUBDIRS +=                              \
            testdialogfilefilter         \
            testdoclocation              \
            testeditors                  \
+           testgamsaboutprocess \
            testgamsgetkeyprocess \
            testgamslicenseinfo          \
            testgamsoption               \

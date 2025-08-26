@@ -140,9 +140,9 @@ void CheckForUpdate::getDistribLicenseInfo()
     mDistribVersionInfo += "<ul>";
     mDistribVersionInfo += addLiTag(QString("Your GAMS system directory is <a href=\"%1\">%1</a>")
                                         .arg(CommonPaths::systemDir()));
-    if (QFileInfo::exists(mLicenseInfo->licesneFilePath())) {
+    if (QFileInfo::exists(mLicenseInfo->licenseFilePath())) {
         mDistribVersionInfo += addLiTag(QString("Your license file is at <a href=\"%1\">%1</a>")
-                                            .arg(mLicenseInfo->licesneFilePath()));
+                                            .arg(mLicenseInfo->licenseFilePath()));
     }
     if (!mValidLicense) {
         mDistribVersionInfo += addLiTag("No valid license file found, checking for updates anyway:");

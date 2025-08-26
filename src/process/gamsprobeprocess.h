@@ -30,6 +30,9 @@ class GamsprobeProcess final
 public:
     GamsprobeProcess();
 
+    bool verboseOutput() const;
+    void setVerboseOutput(bool enable);
+
     QString execute();
 
     QString errorMessage() const;
@@ -41,6 +44,7 @@ private:
     QString mApplication;
     QProcess mProcess;
     QString mErrorMessage;
+    bool mVerboseOutput;
 };
 
 }

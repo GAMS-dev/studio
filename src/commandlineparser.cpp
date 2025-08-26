@@ -128,7 +128,7 @@ QString CommandLineParser::logFile() const
     return mLogFile;
 }
 
-QString CommandLineParser::c4uLog()
+QString CommandLineParser::networkLog()
 {
     return NetLog;
 }
