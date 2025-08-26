@@ -252,7 +252,7 @@ void GprImporter::createProject()
     for (auto it = mAllRPs.constBegin(); it != mAllRPs.constEnd(); ++it) {
         FileId fId = mFileIds.value(it.key());
         if (fId.isValid())
-            project->setRunFileParameterHistory(fId, it.value());
+            project->setMainFileParameterHistory(fId, it.value());
         else
             emit warning("Import GPR: Couldn't add run parameters for " + it.key());
     }

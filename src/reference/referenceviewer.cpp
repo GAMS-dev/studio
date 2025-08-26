@@ -246,17 +246,13 @@ void ReferenceViewer::updateView(bool loadStatus, bool pendingReload)
     } else { // no reload pending
         QProcess::ProcessState state = QProcess::ProcessState::NotRunning;
         emit processState(state);
-        if (state != QProcess::ProcessState::NotRunning) {
-            // call updateViewe again every 500 ms
-            QTimer::singleShot(500, this, [this](){ mReference->loadReferenceFile(mEncodingName, true); });
-        } else {
-            if (mReference->state() == Reference::UnsuccessfullyLoaded ) {
+        if (state == QProcess::ProcessState::NotRunning &&
+            mReference->state() == Reference::UnsuccessfullyLoaded ) {
                 QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
                 SysLogLocator::systemLog()->append(
                     QString("Error while loading: %1%2, the file content might be corrupted or incorrectly overwritten")
                         .arg(mReference->getFileLocation(), errorLine),
                         LogMsgType::Error);
-            }
         }
     }
 }

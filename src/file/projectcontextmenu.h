@@ -44,13 +44,10 @@ public:
 
 signals:
     void closeProject(gams::studio::PExProjectNode* project);
-    void project(gams::studio::PExProjectNode* group);
-    void runFile(gams::studio::PExFileNode *fc);
     void setMainFile(gams::studio::PExFileNode *fc);
     void closeFile(gams::studio::PExFileNode* fc);
     void closeDelFiles(QList<gams::studio::PExFileNode*> fileNodes);
     void addExistingFile(gams::studio::PExGroupNode* group, const QString& file);
-    void getSourcePath(QString& source);
     void openLogFor(gams::studio::PExAbstractNode* node, bool openOutput, bool createMissing);
     void openFilePath(QString fileName, gams::studio::PExProjectNode* knownProject, gams::studio::OpenGroupOption opt, bool focus);
     void openFile(gams::studio::PExFileNode* node, bool focus = true, const QString &encoding = QString(), bool forcedAstextEditor = false,

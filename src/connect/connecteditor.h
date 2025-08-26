@@ -72,6 +72,8 @@ private slots:
     void moveUpDatatItemRequested(const QModelIndex &index);
     void moveDownDatatItemRequested(const QModelIndex &index);
 
+    bool checkProblemLoad();
+
 private:
     bool init(bool quiet=false);
 

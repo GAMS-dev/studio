@@ -7,6 +7,12 @@ Version 1.22.0  *
 - Added additional system log messages in case a GAMS executable is missing, like `gams` or `gamsgetkey`.
 - Added import functionality for project files from the classic GAMS IDE (*.gpr).
 - Added On-Prem license server support.
+- Fixed crash when reading a Studio project and the main file is missing.
+- Added warning for missing files when reading a Studio project.
+- Fixed tab menu to show only files of the focused project (when focused).
+- Fixed a crash when a project with an extension number is edited in the project options.
+- Fixed empty `FileUsed` Tab in Reference File Viewer when the file has been updated and reloaded. 
+- Fixed a crash when opening a file contained an unknown schema data name in Connect Editor.
 
 Version 1.21.5
 ==================

@@ -259,8 +259,8 @@ bool ProjectRepo::checkRead(const QVariantMap &map, int &count, int &ignored, QS
     }
 
     missed.clear();
-    QString runFile = map.value("file").toString();
-    QString runPath = runFile.isEmpty() ? "" : QDir::cleanPath(baseDir.absoluteFilePath(runFile));
+    QString mainFile = map.value("file").toString();
+    QString runPath = mainFile.isEmpty() ? "" : QDir::cleanPath(baseDir.absoluteFilePath(mainFile));
 
     QVariantList children = map.value("nodes").toList();
     if (!children.isEmpty() && !basePath.isEmpty()) {
@@ -294,7 +294,7 @@ bool ProjectRepo::readList(const QVariantList &projectsList)
     return res;
 }
 
-bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
+bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile, bool doWarn)
 {
     bool res = true;
     PExProjectNode::Type type = PExProjectNode::tCommon;
@@ -361,18 +361,18 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
     QString workDir = QDir::cleanPath(projectDir.absoluteFilePath(projectData.value("workDir").toString()));
     if (workDir.isEmpty()) workDir = projectPath;
 
-    QString runFile = QDir::cleanPath(projectDir.absoluteFilePath(projectData.value("file").toString()));
+    QString mainFile = QDir::cleanPath(projectDir.absoluteFilePath(projectData.value("file").toString()));
 
     QVariantList subChildren = projectData.value("nodes").toList();
     if (!name.isEmpty() || !projectPath.isEmpty()) {
-        if (PExProjectNode* project = createProject(gspFile, baseDir, runFile, onExist_Project, workDir, type)) {
+        if (PExProjectNode* project = createProject(gspFile, baseDir, mainFile, onExist_Project, workDir, type)) {
             if (projectData.contains("pf")) {
                 QString pfFile = projectData.value("pf").toString();
                 if (!pfFile.isEmpty())
                     pfFile = projectDir.absoluteFilePath(pfFile);
                 project->setParameterFile(pfFile);
             }
-            if (!readProjectFiles(project, subChildren, projectPath))
+            if (!readProjectFiles(project, subChildren, projectPath, doWarn))
                 res = false;
             bool expand = projectData.contains("expand") ? projectData.value("expand").toBool() : true;
             mTreeView->setExpanded(mProxyModel->asIndex(project), expand);
@@ -380,7 +380,7 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
                 project->setNeedSave();
             if (projectData.contains("engineJobToken"))
                 project->setEngineJobToken(projectData.value("engineJobToken").toString(), false);
-            project->setRunFileParameterHistory(FileId(), projectData.value("options").toStringList());
+            project->setMainFileParameterHistory(FileId(), projectData.value("options").toStringList());
             project->setDynamicMainFile(projectData.value("dynamicMainFile").toBool());
             if (!project->childCount()) {
                 closeGroup(project);
@@ -390,7 +390,7 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
     return res;
 }
 
-bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &baseDir)
+bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &baseDir, bool doWarn)
 {
     bool res = true;
     if (!project)
@@ -415,9 +415,10 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
                 QStringList optList;
                 if (child.contains("options"))
                     optList = child.value("options").toStringList();
-                project->setRunFileParameterHistory(node->file()->id(), optList);
+                project->setMainFileParameterHistory(node->file()->id(), optList);
             } else if (!CIgnoreSuffix.contains('.'+QFileInfo(file).suffix()+'.')) {
-                emit addWarning("File not found: " + file);
+                if (doWarn)
+                    emit addWarning("File not found: " + file);
                 res = false;
             }
         }
@@ -510,7 +511,7 @@ void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList&
         // TODO(JM) Keep for two GAMS releases (until GAMS 52)
         nodeObject.insert("codecMib", Encoding::nameToOldMib(file->file()->encoding()));
 
-        QStringList options = project->runFileParameterHistory(file->file()->id());
+        QStringList options = project->mainFileParameterHistory(file->file()->id());
         if (options.size() == 1 && options.at(0).isEmpty())
             options.clear();
         if (!options.isEmpty())
@@ -595,7 +596,7 @@ void ProjectRepo::uniqueProjectFile(PExGroupNode *parentNode, QString &filePath)
     filePath = res;
 }
 
-PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, const QString &runFileName, ProjectExistFlag mode,
+PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, const QString &mainFileName, ProjectExistFlag mode,
                                            const QString &workDir, PExProjectNode::Type type)
 {
     PExGroupNode *root = mTreeModel->rootNode();
@@ -624,9 +625,10 @@ PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, co
     if (type <= PExProjectNode::tCommon)
         uniqueProjectFile(mTreeModel->rootNode(), name);
 
-    FileMeta* runFile = runFileName.isEmpty() || type > PExProjectNode::tCommon ? nullptr
-                                                                                : mFileRepo->findOrCreateFileMeta(runFileName);
-    project = new PExProjectNode(name, path, runFile, workDir, type);
+    FileMeta* mainFile = nullptr;
+    if (!mainFileName.isEmpty() && QFile::exists(mainFileName) && type <= PExProjectNode::tCommon)
+        mFileRepo->findOrCreateFileMeta(mainFileName);
+    project = new PExProjectNode(name, path, mainFile, workDir, type);
     if (type <= PExProjectNode::tCommon) {
         connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
         connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);

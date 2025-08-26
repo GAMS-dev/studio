@@ -118,8 +118,8 @@ public:
     void clearErrorTexts();
     void clearTextMarks(const QSet<TextMark::Type> &markTypes);
     bool hasErrorText(int lstLine = -1);
-    void setRunFileParameterHistory(FileId fileId, const QStringList &parameterLists);
-    QStringList runFileParameterHistory(FileId fileId) const;
+    void setMainFileParameterHistory(FileId fileId, const QStringList &parameterLists);
+    QStringList mainFileParameterHistory(FileId fileId) const;
     void addRunParametersHistory(const QString &option);
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, const QStringList &defaultParameters
@@ -211,7 +211,7 @@ protected:
     friend class PExFileNode;
 
     PExProjectNode(const QString &filePath, const QString &basePath,
-                   FileMeta *runFileMeta, const QString &workDir, Type type);
+                   FileMeta *mainFileMeta, const QString &workDir, Type type);
     void setFileName(const QString &newProjectFile);
     void errorTexts(const QVector<int> &lstLines, QStringList &result);
     void setLogNode(PExLogNode* logNode);
@@ -232,7 +232,7 @@ private:
     FileMeta *mProjectEditFileMeta = nullptr;
     bool mDynamicMainFile = false;
     QHash<int, QString> mErrorTexts;
-    QHash<FileId, QStringList> mRunFileParameters;
+    QHash<FileId, QStringList> mMainFileParameters;
     QHash<QString, QString> mParameterHash;
     QHash<QString, QMap<int, QString>> mIncludes;
     ChangeState mChangeState = csNone;

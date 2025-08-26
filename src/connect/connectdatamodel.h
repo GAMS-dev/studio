@@ -99,6 +99,7 @@ public:
     bool dropMimeData(const QMimeData * mimedata, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 
     ConnectData* getConnectData();
+    QString problemLoaded();
 
 signals:
     void fromSchemaInserted(const QString& schemaname, int insertPosition);
@@ -149,6 +150,7 @@ protected:
     Connect*         mConnect;
     ConnectData*     mConnectData;
     ConnectDataItem* mRootItem;
+    QString          mProblemLoaded;
 
     static const QString TooltipStrHeader;
     static const QString TooltipStrFooter;

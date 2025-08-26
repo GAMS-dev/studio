@@ -162,7 +162,11 @@ TabListModel::~TabListModel()
 int TabListModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return mTabs->count();
+    int res = 0;
+    for (int i = 0 ; i < mTabs->count() ; ++i) {
+        if (mTabs->isTabVisible(i)) ++res;
+    }
+    return res;
 }
 
 QVariant TabListModel::data(const QModelIndex &index, int role) const
@@ -192,18 +196,34 @@ QVariant TabListModel::data(const QModelIndex &index, int role) const
 
 QString TabListModel::modName(const QModelIndex &index) const
 {
-    QString mod = ViewHelper::modified(mTabs->widget(index.row())) ? "*" : " ";
-    return mod + mTabs->tabBar()->tabText(index.row());
+    int row = toAbsIndex(index.row());
+    if (row < 0) return QString();
+    QString mod = ViewHelper::modified(mTabs->widget(row)) ? "*" : " ";
+    return mod + mTabs->tabBar()->tabText(row);
 }
 
 QString TabListModel::nameAppendix(const QModelIndex &index) const
 {
-    QString appendix = ViewHelper::location(mTabs->widget(index.row()));
+    int row = toAbsIndex(index.row());
+    if (row < 0) return QString();
+    QString appendix = ViewHelper::location(mTabs->widget(row));
     QFileInfo fi(appendix);
     appendix = fi.absoluteDir().dirName();
     if (appendix == ".") appendix = "";
     return appendix;
 }
+
+int TabListModel::toAbsIndex(int filteredIndex) const
+{
+    int row = -1;
+    for (int i = 0; i < mTabs->count(); ++i) {
+        if (mTabs->isTabVisible(i)) ++row;
+        if (row == filteredIndex)
+            return i;
+    }
+    return -1;
+}
+
 
 } // namespace studio
 } // namespace gams
