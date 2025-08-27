@@ -238,6 +238,9 @@ void SymbolReferenceWidget::jumpToReferenceItem(const QModelIndex &index)
     if (!index.isValid())
         return;
 
+    if (index.siblingAtColumn(ReferenceItemModel::COLUMN_REFERRED).data().toInt() <= 0)
+        return;
+
     QVariant location = ui->referenceView->model()->data(index.sibling(index.row(), 0), Qt::UserRole);
     QVariant lineNumber = ui->referenceView->model()->data(index.sibling(index.row(), 1), Qt::UserRole);
     QVariant colNumber = ui->referenceView->model()->data(index.sibling(index.row(), 2), Qt::UserRole);
