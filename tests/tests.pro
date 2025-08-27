@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS +=                              \
+           testreference                \
            testabstractprocess          \
            testblockcode                \
            testcheckforupdate           \

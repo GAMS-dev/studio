@@ -40,8 +40,23 @@ public:
     };
     Q_ENUM(FileUsedSortOrder)
 
-    explicit SymbolTableModel(SymbolDataType::SymbolType type, QObject *parent = nullptr);
+    enum SortType {
+        sortInt = 0,
+        sortString = 1,
+        sortUnknown = 2
+    };
+    enum ColumnType {
+        columnId = 0,
+        columnName = 1,
+        columnType = 2,
+        columnDimension = 3,
+        columnDomain = 4,
+        columnText = 5,
+        columnFileLocation = 6,
+        columnUnknown = 7
+    };
 
+    explicit SymbolTableModel(SymbolDataType::SymbolType type, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -73,21 +88,6 @@ public slots:
     void setFilterPattern(const QRegularExpression &pattern);
 
 private:
-    enum SortType {
-        sortInt = 0,
-        sortString = 1,
-        sortUnknown = 2
-    };
-    enum ColumnType {
-        columnId = 0,
-        columnName = 1,
-        columnType = 2,
-        columnDimension = 3,
-        columnDomain = 4,
-        columnText = 5,
-        columnFileLocation = 6,
-        columnUnknown = 7
-    };
     SortType getSortTypeOf(int column) const;
     ColumnType getColumnTypeOf(int column) const;
     QString getDomainStr(const QList<SymbolId>& domain) const;

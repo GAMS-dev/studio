@@ -32,14 +32,25 @@ typedef int SymbolId;
 
 struct ReferenceItem {
     ReferenceItem() { }
-    ReferenceItem(SymbolId id, ReferenceDataType::ReferenceType type, const QString &loc, int line, int col) :
-        symbolID(id), referenceType(type), location(loc), lineNumber(line), columnNumber(col) { }
+    ReferenceItem(SymbolId id, const QString &name, ReferenceDataType::ReferenceType type, const QString &loc, int line, int col) :
+        symbolID(id), symbolName(name), referenceType(type), location(loc), lineNumber(line), columnNumber(col) { }
 
     SymbolId symbolID = -1;
+    QString symbolName;
     ReferenceDataType::ReferenceType referenceType = ReferenceDataType::ReferenceType::Unknown;
     QString location;
     int lineNumber = -1;
     int columnNumber = -1;
+};
+
+struct ReferenceSettings  {
+    ReferenceSettings()  { }
+    ReferenceSettings(int index, ReferenceItem refitem, int refid, bool compact)
+        : tabIndex(index), item(refitem), id(refid), compactView(compact) { }
+    int tabIndex;
+    ReferenceItem item;
+    int id;
+    bool compactView;
 };
 
 class SymbolReferenceItem

@@ -5461,6 +5461,7 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
     } else if (fileMeta->kind() == FileKind::Ref) {
         reference::ReferenceViewer *refView = ViewHelper::toReferenceViewer(edit);
         connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
+        connect(refView, &reference::ReferenceViewer::referenceTo, this, &MainWindow::on_referenceTo);
     }
 }
 
@@ -5794,19 +5795,102 @@ PExFileNode* MainWindow::addNode(const QString &path, const QString &fileName, P
 void MainWindow::on_referenceJumpTo(const reference::ReferenceItem &item)
 {
     QFileInfo fi(item.location);
+
+    if (!fi.exists()) {
+        SysLogLocator::systemLog()->append("File not found: " + item.location, LogMsgType::Error);
+        return;
+    }
+
     if (fi.isFile()) {
-        PExFileNode* fn = mProjectRepo.findFileNode(mRecent.editor());
+        QWidget* widget = mRecent.editor();
+        reference::ReferenceViewer* recentviewer = ViewHelper::toReferenceViewer(widget);
+        if (recentviewer) {
+            if  (!mPinControl.hasPinChild(currentProject())) {
+                emit openInPinView(currentProject(), widget);
+            } else if (mPinView->widget()!=widget) {
+                openPinView(mCurrentMainTab, Qt::Horizontal);
+            }
+        }
+
+        PExFileNode* fn = mProjectRepo.findOrCreateFileNode(item.location, currentProject());
         if (fn) {
             PExProjectNode* project =  fn->assignedProject();
             mProjectRepo.findOrCreateFileNode(fi.absoluteFilePath(), project);
         }
-        openFilePath(fi.absoluteFilePath(), nullptr, ogNone, true);
-        CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
+
+        switchToMainTab(fn->file());
+        if (!fn->file()->isOpen()) {
+            openFilePath(fi.absoluteFilePath(), nullptr, ogCurrentGroup, true);
+        }
+        if (recentviewer) {
+            reference::ReferenceViewer* pinviewer = ViewHelper::toReferenceViewer(mPinView->widget());
+            if (pinviewer && recentviewer != pinviewer) {
+                disconnect(pinviewer, &reference::ReferenceViewer::referenceTo, this, &MainWindow::on_referenceTo);
+                reference::ReferenceSettings item = recentviewer->saveSettings();
+                pinviewer->loadSettings(item);
+                connect(pinviewer, &reference::ReferenceViewer::referenceTo, this, &MainWindow::on_referenceTo);
+            }
+        }
+        CodeEdit *codeEdit = ViewHelper::toCodeEdit(ui->mainTabs->currentWidget());
         if (codeEdit) {
             int line = (item.lineNumber > 0 ? item.lineNumber-1 : 0);
             int column = (item.columnNumber > 0 ? item.columnNumber-1 : 0);
             codeEdit->jumpTo(line, column);
+            codeEdit->setFocus();
         }
+    }
+}
+
+void MainWindow::on_referenceTo(const reference::ReferenceItem &item)
+{
+    if (item.location.isEmpty()) {
+        QWidget *editWidget = (mCurrentMainTab < 0 ? nullptr : ui->mainTabs->widget(mCurrentMainTab));
+        CodeEdit *codeEdit = ViewHelper::toCodeEdit(editWidget);
+        if (codeEdit) {
+            QTextCursor tc = codeEdit->textCursor();
+            tc.clearSelection();
+            codeEdit->setTextCursor(tc);
+        }
+        return;
+    }
+
+    if (!QFileInfo::exists(item.location)) {
+        SysLogLocator::systemLog()->append("File not found: " + item.location, LogMsgType::Error);
+        return;
+    }
+
+    QWidget* widget = mRecent.editor();
+    reference::ReferenceViewer* recentviewer = ViewHelper::toReferenceViewer(widget);
+    if (recentviewer) {
+        if  (!mPinControl.hasPinChild(currentProject())) {
+            emit openInPinView(currentProject(), widget);
+        } else if (mPinView->widget()!=widget) {
+            openPinView(mCurrentMainTab, Qt::Horizontal);
+        }
+    }
+    PExFileNode*  node = mProjectRepo.findOrCreateFileNode(item.location, currentProject());
+    FileMeta* fm = node->file();
+    if (fm) {
+        switchToMainTab(fm);
+        if (!fm->isOpen()) {
+            openFilePath(fm->location(), nullptr, ogCurrentGroup, true);
+        }
+
+        if (recentviewer) {
+            reference::ReferenceViewer* pinviewer = ViewHelper::toReferenceViewer(mPinView->widget());
+            if (pinviewer && recentviewer != pinviewer) {
+                disconnect(pinviewer, &reference::ReferenceViewer::referenceTo, this, &MainWindow::on_referenceTo);
+                reference::ReferenceSettings item = recentviewer->saveSettings();
+                pinviewer->loadSettings(item);
+                connect(pinviewer, &reference::ReferenceViewer::referenceTo, this, &MainWindow::on_referenceTo);
+            }
+        }
+
+        fm->referenceTo(item.symbolName,
+                                (item.lineNumber<=0 ? item.lineNumber: item.lineNumber-1),
+                                (item.columnNumber<=0? item.columnNumber: item.columnNumber-1),
+                                 item.referenceType==gams::studio::reference::ReferenceDataType::Define);
+
     }
 }
 

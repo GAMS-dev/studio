@@ -59,6 +59,7 @@ public:
 
 signals:
     void jumpTo(gams::studio::reference::ReferenceItem item);
+    void referenceTo(gams::studio::reference::ReferenceItem item);
     void processState(QProcess::ProcessState &state);
 
 public slots:
@@ -66,6 +67,12 @@ public slots:
     void on_tabBarClicked(int index);
     void updateView(bool loadStatus, bool pendingReload);
     void updateFileUsedTabText(bool compactView);
+    int currentSelectedTab();
+    ReferenceSettings saveSettings();
+    void loadSettings(const ReferenceSettings &settings);
+
+protected:
+    void keyPressEvent(QKeyEvent *e) override;
 
 private:
     Ui::ReferenceViewer *ui;

@@ -54,6 +54,7 @@ public:
 
 public slots:
     void updateSelectedSymbol(const QItemSelection &selected, const QItemSelection &deselected);
+    void updateSelectedReference(const QItemSelection &selected, const QItemSelection &deselected);
     void expandResetModel();
     void resetModel();
     void initModel();
@@ -63,6 +64,11 @@ public slots:
     void updateSymbolSelection();
     void resizeColumnToContents();
     void showContextMenu(QPoint p);
+    void selectSymbolReference(const ReferenceItem &item);
+    ReferenceItem currentReferenceItem();
+
+protected:
+    void keyPressEvent(QKeyEvent *e) override;
 
 private:
     Ui::SymbolReferenceWidget *ui;

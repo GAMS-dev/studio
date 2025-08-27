@@ -22,6 +22,8 @@
 #include "sortedfileheaderview.h"
 #include "filterlineedit.h"
 
+#include <QKeyEvent>
+
 namespace gams {
 namespace studio {
 namespace reference {
@@ -43,6 +45,10 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 
     ui->symbolView->setAlternatingRowColors(true);
     ui->symbolView->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    setFocusPolicy(Qt::StrongFocus);
+    setTabOrder(ui->symbolSearchLineEdit, ui->symbolView);
+    setTabOrder(ui->symbolView, ui->referenceView);
 
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->symbolView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
@@ -85,10 +91,12 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->referenceView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->referenceView->setItemsExpandable(true);
     ui->referenceView->setAlternatingRowColors(true);
-    ui->referenceView->setColumnHidden(3, true);
+    ui->referenceView->setColumnHidden(ReferenceItemModel::COLUMN_REFERENCE_TYPE, true);
+    ui->referenceView->setColumnHidden(ReferenceItemModel::COLUMN_REFERRED, true);
     expandResetModel();
 
     connect(ui->referenceView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToReferenceItem);
+    connect(ui->referenceView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedReference);
     connect( mReferenceTreeModel, &ReferenceTreeModel::modelReset, this, &SymbolReferenceWidget::expandResetModel);
 }
 
@@ -120,6 +128,7 @@ void SymbolReferenceWidget::updateSelectedSymbol(const QItemSelection &selected,
 {
     Q_UNUSED(deselected)
     if (selected.indexes().size() > 0) {
+        ui->referenceLabel->clear();
         if (mType == SymbolDataType::FileUsed) {
             mCurrentSymbolID = -1;
             QModelIndex idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_FILEUSED_NAME);
@@ -128,11 +137,39 @@ void SymbolReferenceWidget::updateSelectedSymbol(const QItemSelection &selected,
         } else {
             QModelIndex idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_SYMBOL_ID);
             mCurrentSymbolID = mSymbolTableModel->data( idx ).toInt();
+            QString symbolName = mSymbolTableModel->data( idx.sibling(idx.row(), idx.column()+1)).toString();
+            ui->referenceLabel->setText(symbolName);
+
             idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_SYMBOL_NAME);
             mCurrentSymbolSelection = mSymbolTableModel->data( idx ).toString();
             mReferenceTreeModel->updateSelectedSymbol( mCurrentSymbolSelection );
         }
 
+    }
+}
+
+void SymbolReferenceWidget::updateSelectedReference(const QItemSelection &selected, const QItemSelection &deselected)
+{
+    Q_UNUSED(deselected)
+    if (selected.indexes().size() > 0) {
+        QModelIndex index = ui->referenceView->currentIndex();
+        ui->referenceView->selectionModel()->select(selected.indexes().first(),  QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+        if (index.isValid()) {
+            ReferenceItemModel* item = static_cast<ReferenceItemModel*>(index.internalPointer());
+            ReferenceDataType::ReferenceType reftype  = ReferenceDataType::typeFrom(item->data(ReferenceItemModel::COLUMN_REFERENCE_TYPE).toString());
+            if (item->data(ReferenceItemModel::COLUMN_REFERRED).toInt() > 0) {
+                ReferenceDataType::ReferenceType reftype  = ReferenceDataType::typeFrom(item->data(ReferenceItemModel::COLUMN_REFERENCE_TYPE).toString());
+                QVariant location = item->data(ReferenceItemModel::COLUMN_LOCATION);
+                QVariant line     = item->data(ReferenceItemModel::COLUMN_LINE_NUMBER);
+                QVariant column   = item->data(ReferenceItemModel::COLUMN_COLUMN_NUMBER);
+
+                ReferenceItem refitem(mCurrentSymbolID, mCurrentSymbolSelection, reftype, location.toString(), line.toInt(), column.toInt());
+                emit mReferenceViewer->referenceTo(refitem);
+            } else {
+                ReferenceItem refitem(mCurrentSymbolID, mCurrentSymbolSelection, reftype, "", -1, -1);
+                emit mReferenceViewer->referenceTo(refitem);
+            }
+        }
     }
 }
 
@@ -187,23 +224,26 @@ void SymbolReferenceWidget::initModel(Reference *ref)
 
 void SymbolReferenceWidget::jumpToFile(const QModelIndex &index)
 {
+    if (!index.isValid())
+        return;
+
     if (mType == SymbolDataType::FileUsed) {
-        ReferenceItem item(-1, ReferenceDataType::Unknown, ui->symbolView->model()->data(index.sibling(index.row(), 0)).toString(), 0, 0);
+        ReferenceItem item(mCurrentSymbolID, mCurrentSymbolSelection, ReferenceDataType::Unknown, ui->symbolView->model()->data(index.sibling(index.row(), 0)).toString(), 0, 0);
         emit mReferenceViewer->jumpTo( item );
     }
 }
 
 void SymbolReferenceWidget::jumpToReferenceItem(const QModelIndex &index)
 {
-    QModelIndex  parentIndex =  ui->referenceView->model()->parent(index);
-    if (parentIndex.row() >= 0) {
-        QVariant location = ui->referenceView->model()->data(index.sibling(index.row(), 0), Qt::UserRole);
-        QVariant lineNumber = ui->referenceView->model()->data(index.sibling(index.row(), 1), Qt::UserRole);
-        QVariant colNumber = ui->referenceView->model()->data(index.sibling(index.row(), 2), Qt::UserRole);
-        QVariant typeName = ui->referenceView->model()->data(index.sibling(index.row(), 3), Qt::UserRole);
-        ReferenceItem item(-1, ReferenceDataType::typeFrom(typeName.toString()), location.toString(), lineNumber.toInt(), colNumber.toInt());
-        emit mReferenceViewer->jumpTo( item );
-    }
+    if (!index.isValid())
+        return;
+
+    QVariant location = ui->referenceView->model()->data(index.sibling(index.row(), 0), Qt::UserRole);
+    QVariant lineNumber = ui->referenceView->model()->data(index.sibling(index.row(), 1), Qt::UserRole);
+    QVariant colNumber = ui->referenceView->model()->data(index.sibling(index.row(), 2), Qt::UserRole);
+    QVariant typeName = ui->referenceView->model()->data(index.sibling(index.row(), 3), Qt::UserRole);
+    ReferenceItem item(mCurrentSymbolID, mCurrentSymbolSelection, ReferenceDataType::typeFrom(typeName.toString()), location.toString(), lineNumber.toInt(), colNumber.toInt());
+    emit mReferenceViewer->jumpTo( item );
 }
 
 void SymbolReferenceWidget::updateSymbolSelection()
@@ -241,6 +281,160 @@ void SymbolReferenceWidget::showContextMenu(QPoint p)
         }
         m.exec(ui->symbolView->viewport()->mapToGlobal(p));
     }
+}
+
+ReferenceItem SymbolReferenceWidget::currentReferenceItem()
+{
+    QModelIndex idx = ui->referenceView->currentIndex();
+    ReferenceItemModel* refitem = static_cast<ReferenceItemModel*>(idx.internalPointer());
+    ReferenceItem item(mCurrentSymbolID, mCurrentSymbolSelection,
+                       ReferenceDataType::typeFrom(refitem->data(ReferenceItemModel::COLUMN_REFERENCE_TYPE).toString()),
+                       refitem->data(ReferenceItemModel::COLUMN_LOCATION).toString(),
+                       refitem->data(ReferenceItemModel::COLUMN_LINE_NUMBER).toInt(),
+                       refitem->data(ReferenceItemModel::COLUMN_COLUMN_NUMBER).toInt());
+    return item;
+}
+
+void SymbolReferenceWidget::selectSymbolReference(const ReferenceItem &item)
+{
+    QModelIndexList indices = mSymbolTableModel->match(mSymbolTableModel->index(0, SymbolTableModel::ColumnType::columnId),
+                                                      Qt::DisplayRole,
+                                                      item.symbolID, 1, Qt::MatchExactly|Qt::MatchRecursive);
+
+    if (indices.size() <= 0) {
+        return;
+    }
+
+    ui->symbolView->clearSelection();
+    ui->symbolView->selectRow(indices.first().row());
+    QString datatype = mReferenceTreeModel->index(0, ReferenceItemModel::COLUMN_REFERENCE_TYPE).data().toString();
+    QModelIndexList typeindices = mReferenceTreeModel->match(mReferenceTreeModel->index(0, ReferenceItemModel::COLUMN_REFERENCE_TYPE),
+                                                            Qt::DisplayRole,
+                                                            ReferenceDataType::from(item.referenceType).name(), -1, Qt::MatchExactly|Qt::MatchRecursive);
+    if (typeindices.size() <= 0) {
+        return;
+    }
+
+    for(const QModelIndex &idx: std::as_const(typeindices)) {
+        ReferenceItemModel* refitem = static_cast<ReferenceItemModel*>(idx.internalPointer());
+        if (QString::compare(item.location, refitem->data(ReferenceItemModel::COLUMN_LOCATION).toString(), Qt::CaseInsensitive) ==0 &&
+            item.lineNumber == refitem->data(ReferenceItemModel::COLUMN_LINE_NUMBER).toInt()                                        &&
+            item.columnNumber == refitem->data(ReferenceItemModel::COLUMN_COLUMN_NUMBER).toInt()                                         ) {
+                QModelIndex currentidx =  ui->referenceView->model()->index(idx.row(), ReferenceItemModel::COLUMN_LOCATION, idx.parent());
+                ui->referenceView->setCurrentIndex(currentidx);
+                QItemSelection selection(currentidx, currentidx.siblingAtColumn(ReferenceItemModel::COLUMN_REFERRED));
+                ui->referenceView->selectionModel()->select(selection,  QItemSelectionModel::Select|QItemSelectionModel::Rows);
+                ui->referenceView->setFocus();
+                break;
+        }
+    }
+}
+
+void SymbolReferenceWidget::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Up || e->key() == Qt::Key_Down) {
+        if (ui->referenceView->selectionModel()->hasSelection()) {
+            if (ui->referenceView->hasFocus()) {
+                ui->referenceView->selectionModel()->clearSelection();
+                ui->referenceView->clearFocus();
+                ui->symbolView->setFocus();
+                e->accept();
+                return;
+            }
+        } else if (ui->symbolView->selectionModel()->hasSelection()) {
+                  if (ui->symbolView->hasFocus()) {
+                      ui->symbolView->selectionModel()->clearSelection();
+                      ui->symbolView->clearFocus();
+                      ui->symbolSearchLineEdit->setFocus();
+                      e->accept();
+                      return;
+                  }
+        }
+        if (ui->symbolSearchLineEdit->hasFocus()) {
+            if (e->key() == Qt::Key_Down) {
+                ui->symbolSearchLineEdit->clearFocus();
+                QModelIndex index = ui->symbolView->currentIndex();
+                if (index.isValid()) {
+                    ui->symbolView->selectionModel()->select(index,
+                                                                QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+                    ui->symbolView->setFocus();
+                    e->accept();
+                    return;
+                }
+            }
+        }
+    } else if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
+        if (ui->referenceView->selectionModel()->hasSelection()) {
+            if (ui->referenceView->hasFocus()) {
+                QModelIndexList indexList = ui->referenceView->selectionModel()->selectedIndexes();
+                QModelIndex index = (indexList.size() > 0 ? indexList.first()
+                                                       : ui->referenceView->model()->index(0,0));
+                ui->referenceView->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+                jumpToReferenceItem(index);
+            }
+        } else if (ui->symbolView->selectionModel()->hasSelection()) {
+                   if (ui->symbolView->hasFocus()) {
+                       QModelIndex index = ui->symbolView->currentIndex();
+                       if (index.isValid()) {
+                           ui->referenceView->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+                           ui->referenceView->setFocus();
+                           e->accept();
+                           return;
+                       } else {
+                           index  = ui->referenceView->model()->index(0, 0, QModelIndex());
+                            if (index.isValid()) {
+                                ui->referenceView->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+                                ui->referenceView->setFocus();
+                                e->accept();
+                                return;
+                            }
+                       }
+                   }
+        } else {
+            QModelIndex idx = ui->symbolView->model()->index(0, 0, QModelIndex());
+            if (idx.isValid()) {
+                 ui->symbolView->selectionModel()->select( idx, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+                 ui->symbolView->setFocus();
+            }
+        }
+        e->accept();
+        return;
+    } else if (e->key() == Qt::Key_Escape || e->key() == Qt::Key_Left) {
+        if (ui->symbolSearchLineEdit->hasFocus()) {
+            ui->referenceView->selectionModel()->clearSelection();
+            ui->symbolView->selectionModel()->clearSelection();
+            ui->symbolSearchLineEdit->clearFocus();
+            parentWidget()->setFocus();
+        } else if (ui->referenceView->selectionModel()->hasSelection()) {
+            ui->referenceView->selectionModel()->clearSelection();
+            ui->referenceView->clearFocus( );
+            ui->symbolView->setFocus( );
+        } else if (ui->symbolView->selectionModel()->hasSelection()) {
+            ui->referenceView->selectionModel()->clearSelection();
+            ui->symbolView->selectionModel()->clearSelection();
+            ui->symbolView->clearFocus( );
+            ui->symbolSearchLineEdit->setFocus();
+        } else {
+            if (ui->referenceView->hasFocus()) {
+                ui->referenceView->clearFocus();
+                ui->symbolView->setFocus();
+            } else if (ui->symbolView->hasFocus()) {
+                       ui->referenceView->clearFocus();
+            }
+        }
+        e->accept();
+        return;
+    } else if (e->key() == Qt::Key_Right) {
+              if (ui->symbolView->selectionModel()->hasSelection() && !ui->referenceView->selectionModel()->hasSelection()) {
+                  ui->referenceView->setCurrentIndex(ui->referenceView->model()->index(0, 0, QModelIndex()));
+                  ui->referenceView->selectionModel()->select(ui->referenceView->model()->index(0, 0, QModelIndex()),
+                                                              QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+                  ui->referenceView->setFocus();
+                  e->accept();
+               }
+    }
+
+    QWidget::keyPressEvent(e);
 }
 
 } // namespace reference

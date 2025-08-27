@@ -25,6 +25,7 @@
 #include "reference.h"
 #include "referenceviewer.h"
 #include "fileusedtreemodel.h"
+#include "fileusedfilterproxymodel.h"
 
 namespace Ui {
 class FileReferenceWidget;
@@ -51,6 +52,9 @@ public:
     void activateFilter();
     void deActivateFilter();
 
+protected:
+    void keyPressEvent(QKeyEvent *e) override;
+
 public slots:
     void resetModel();
     void initModel();
@@ -59,10 +63,15 @@ public slots:
     void expandResetModel();
     void jumpToFile(const QModelIndex &index);
     void jumpToReferenceItem(const QModelIndex &index);
+    void linkToReferenceItem(const QItemSelection &selected, const QItemSelection &deselected);
+    void selectFileReference(int id, bool compactView);
+    int currentReferenceId();
+    ReferenceItem referenceItem(int id);
 
 private:
     Ui::FileReferenceWidget *ui;
     FileUsedTreeModel* mFileUsedModel;
+    FileUsedFilterProxyModel* mProxyModel;
 
     bool mFilterActivated;
     Reference* mReference;

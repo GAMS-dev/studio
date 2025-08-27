@@ -95,6 +95,7 @@ public:
     bool refreshMetaData();
 
     void jumpTo(const NodeId &groupId, bool focus, int line = 0, int column = 0, int length = 0);
+    void referenceTo(const QString &symbolName, int line = 0, int column = 0, bool oneColumn=false);
     void rehighlight(int line);
     syntax::SyntaxHighlighter *highlighter() const;
     void marksChanged(const QSet<int> &lines = QSet<int>());

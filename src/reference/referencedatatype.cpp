@@ -68,12 +68,22 @@ const QList<ReferenceDataType*> ReferenceDataType::list()
         mList << new ReferenceDataType(Declare, "declared,Declared", "The identifier is declared as to type. This must be the first appearance of the identifier");
         mList << new ReferenceDataType(Define, "defined,Defined", "An initialization (for a table or a data list between slashes) or symbolic definition (for an equation) starts for the identifier");
         mList << new ReferenceDataType(Assign, "assign,Assigned", "Values are replaced because the identifier appears on the left-hand side of an assignment statement");
-        mList << new ReferenceDataType(ImplicitAssign, "impl-asn,Implicit Assigned", "An equation or variable will be updated as a result of being referred to implicitly in a solve statement");
+        mList << new ReferenceDataType(ImplicitAssign, "impl-asn,Implicitly Assigned", "An equation or variable will be updated as a result of being referred to implicitly in a solve statement");
         mList << new ReferenceDataType(Control, "control,Controlled", "A set is used as (part of) the driving index in an assignment, equation, loop or indexed operation");
         mList << new ReferenceDataType(Reference, "ref,Referenced", "The symbol has been referenced on the right-hand side of an assignment or in a display, equation, model, solve statement or put statetement");
         mList << new ReferenceDataType(Index, "index,Indexed", "A set is used as (part of) the driving index only for set labels. Appears only in the cross reference map of unique elements");
     }
     return mList;
+}
+
+ReferenceDataType::ReferenceType ReferenceDataType::typeFrom(int type)
+{
+    for (ReferenceDataType* t : list()) {
+        if (type==static_cast<int>(t->type()))
+            return t->type();
+    }
+    return Unknown;
+
 }
 
 ReferenceDataType::ReferenceType ReferenceDataType::typeFrom(const QString &name)

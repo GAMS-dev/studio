@@ -53,7 +53,7 @@ public:
     void updateSelectedSymbol(const QString &symbolName);
 
 private:
-    void insertSymbolReference(QList<ReferenceItemModel*>& parents, const QList<ReferenceItem*>& referenceItemList, const QString& referenceType);
+    void insertSymbolReference(QList<ReferenceItemModel*>& parents, const QList<ReferenceItem*>& referenceItemList, ReferenceDataType::ReferenceType type);
 
     Reference* mReference;
     SymbolId mCurrentSymbolID;

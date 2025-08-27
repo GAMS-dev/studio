@@ -173,13 +173,18 @@ void ReferenceViewer::reloadFile(const QString &encodingName)
 void ReferenceViewer::on_tabBarClicked(int index)
 {
     SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->tabWidget->widget(index));
-    if (refWidget && !refWidget->isModelLoaded()) {
-        refWidget->initModel();
+    if (refWidget) {
+        if (!refWidget->isModelLoaded())
+            refWidget->initModel();
+        refWidget->setFocus();
     } else {
         FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(index));
-        if (fileUsedWidget && !fileUsedWidget->isModelLoaded()) {
-            fileUsedWidget->activateFilter();
-            fileUsedWidget->initModel();
+        if (fileUsedWidget) {
+            if (!fileUsedWidget->isModelLoaded()) {
+               fileUsedWidget->activateFilter();
+               fileUsedWidget->initModel();
+            }
+            fileUsedWidget->setFocus();
         }
     }
 }
@@ -260,6 +265,89 @@ void ReferenceViewer::updateView(bool loadStatus, bool pendingReload)
 void ReferenceViewer::updateFileUsedTabText(bool compactview)
 {
     ui->tabWidget->setTabText(11, QString("File Used (%1)").arg(mReference->getNumberOfFileUsed(compactview)));
+}
+
+int ReferenceViewer::currentSelectedTab()
+{
+    return ui->tabWidget->currentIndex();
+}
+
+ReferenceSettings ReferenceViewer::saveSettings()
+{
+    int tabIndex = currentSelectedTab();
+    SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->tabWidget->widget(tabIndex));
+    if (refWidget) {
+        return ReferenceSettings(tabIndex, refWidget->currentReferenceItem(), -1, false);
+    } else {
+        FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(tabIndex));
+        if (fileUsedWidget) {
+            return ReferenceSettings(tabIndex, fileUsedWidget->referenceItem(fileUsedWidget->currentReferenceId()),
+                                     fileUsedWidget->currentReferenceId(), fileUsedWidget->isViewCompact());
+        }
+    }
+    return ReferenceSettings(tabIndex, ReferenceItem(),  -1, false);
+}
+
+void ReferenceViewer::loadSettings(const ReferenceSettings &settings)
+{
+    ui->tabWidget->setCurrentIndex(settings.tabIndex);
+    on_tabBarClicked(ui->tabWidget->currentIndex());
+    SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->tabWidget->widget(settings.tabIndex));
+    if (refWidget) {
+        refWidget->selectSymbolReference(settings.item);
+    } else {
+        FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(settings.tabIndex));
+        if (fileUsedWidget) {
+            fileUsedWidget->selectFileReference(settings.id, settings.compactView);
+        }
+    }
+}
+
+
+void ReferenceViewer::keyPressEvent(QKeyEvent *e)
+{
+    switch (e->key()) {
+    case Qt::Key_Up:
+        if (ui->tabWidget->currentIndex() > 0) {
+            SymbolReferenceWidget* symRefWidget = toSymbolReferenceWidget( ui->tabWidget->widget( ui->tabWidget->currentIndex()-1 ) );
+            if (symRefWidget) {
+                ui->tabWidget->setCurrentWidget( symRefWidget );
+                on_tabBarClicked( ui->tabWidget->currentIndex() );
+                e->accept();
+                return;
+            } else {
+                FileReferenceWidget* fileRefWidget = toFileUsedReferenceWidget( ui->tabWidget->widget( ui->tabWidget->currentIndex()-1 ) );
+                if (fileRefWidget) {
+                    ui->tabWidget->setCurrentWidget( fileRefWidget );
+                    on_tabBarClicked( ui->tabWidget->currentIndex() );
+                    e->accept();
+                    return;
+                }
+            }
+        }
+        break;
+    case Qt::Key_Down: {
+        if (ui->tabWidget->currentIndex() < ui->tabWidget->count()) {
+            SymbolReferenceWidget* symRefWidget = toSymbolReferenceWidget( ui->tabWidget->widget( ui->tabWidget->currentIndex()+1 ) );
+            if (symRefWidget) {
+                ui->tabWidget->setCurrentWidget( symRefWidget );
+                on_tabBarClicked( ui->tabWidget->currentIndex() );
+                e->accept();
+                return;
+            } else {
+                FileReferenceWidget* fileRefWidget = toFileUsedReferenceWidget( ui->tabWidget->widget( ui->tabWidget->currentIndex()+1 ) );
+                if (fileRefWidget) {
+                    ui->tabWidget->setCurrentWidget( fileRefWidget );
+                    on_tabBarClicked( ui->tabWidget->currentIndex() );
+                    e->accept();
+                    return;
+                }
+            }
+        }
+        break;
+    }
+    }
+    QWidget::keyPressEvent(e);
 }
 
 } // namespace reference

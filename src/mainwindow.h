@@ -379,6 +379,7 @@ private slots:
     void on_actionNextTab_triggered();
     void on_actionPreviousTab_triggered();
     void on_referenceJumpTo(const reference::ReferenceItem &item);
+    void on_referenceTo(const reference::ReferenceItem &item);
 
     void focusCmdLine();
     void focusProjectExplorer();

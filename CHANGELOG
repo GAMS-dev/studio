@@ -13,6 +13,7 @@ Version 1.22.0  *
 - Fixed a crash when a project with an extension number is edited in the project options.
 - Fixed empty `FileUsed` Tab in Reference File Viewer when the file has been updated and reloaded. 
 - Fixed a crash when opening a file contained an unknown schema data name in Connect Editor.
+- Improved Reference File Viewer with key navigation through symbols and references.
 
 Version 1.21.5
 ==================

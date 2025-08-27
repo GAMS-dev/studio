@@ -44,6 +44,12 @@ public:
 
     bool removeChildren(int position, int count);
 
+    static const int COLUMN_LOCATION = 0;
+    static const int COLUMN_LINE_NUMBER = 1;
+    static const int COLUMN_COLUMN_NUMBER = 2;
+    static const int COLUMN_REFERENCE_TYPE = 3;
+    static const int COLUMN_REFERRED = 4;
+
 private:
     QList<ReferenceItemModel*> mChildItems;
     QList<QVariant> mItemData;

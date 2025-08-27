@@ -29,7 +29,7 @@ ReferenceTreeModel::ReferenceTreeModel(Reference* ref, QObject *parent) :
     QAbstractItemModel(parent), mReference(ref), mCurrentSymbolID(-1)
 {
     QList<QVariant> rootData;
-    rootData << "Location" << "Line" << "Column" << "Type";
+    rootData << "Location" << "Line" << "Column" << "Type" << "Referred";
     mRootItem = new ReferenceItemModel(rootData);
 }
 
@@ -58,11 +58,13 @@ QVariant ReferenceTreeModel::data(const QModelIndex &index, int role) const
         ReferenceItemModel* parentItem = item->parent();
 
         if (parentItem == mRootItem) {
-            QString name = item->data(columnCount()-1).toString();
+            QString name = item->data(ReferenceItemModel::COLUMN_REFERENCE_TYPE).toString();
             QString description = ReferenceDataType::from(name).description();
             return QString("%1 : %2").arg(name, description);
         } else {
-            return QString("%1 : Line %2 : Column %3").arg(item->data(0).toString(), item->data(1).toString(), item->data(2).toString());
+            return QString("%1 : Line %2 : Column %3").arg(item->data(ReferenceItemModel::COLUMN_LOCATION).toString(),
+                                                           item->data(ReferenceItemModel::COLUMN_LINE_NUMBER).toString(),
+                                                           item->data(ReferenceItemModel::COLUMN_COLUMN_NUMBER).toString());
         }
     }
     case Qt::TextAlignmentRole: {
@@ -199,12 +201,13 @@ void ReferenceTreeModel::updateSelectedSymbol(SymbolId symbolid)
 
     SymbolReferenceItem* symbolRef = mReference->findReferenceFromId(mCurrentSymbolID);
     if (symbolRef) {
-        insertSymbolReference(parents, symbolRef->declare(), "Declared");
-        insertSymbolReference(parents, symbolRef->define(), "Defined");
-        insertSymbolReference(parents, symbolRef->assign(), "Assigned");
-        insertSymbolReference(parents, symbolRef->implicitAssign(), "Implicitly Assigned");
-        insertSymbolReference(parents, symbolRef->control(), "Controlled");
-        insertSymbolReference(parents, symbolRef->reference(), "Referenced");
+        insertSymbolReference(parents, symbolRef->declare(), ReferenceDataType::ReferenceType::Declare);
+        insertSymbolReference(parents, symbolRef->define(), ReferenceDataType::ReferenceType::Define);
+        insertSymbolReference(parents, symbolRef->assign(), ReferenceDataType::ReferenceType::Assign);
+        insertSymbolReference(parents, symbolRef->implicitAssign(), ReferenceDataType::ReferenceType::ImplicitAssign);
+        insertSymbolReference(parents, symbolRef->control(), ReferenceDataType::ReferenceType::Control);
+        insertSymbolReference(parents, symbolRef->index(), ReferenceDataType::ReferenceType::Index);
+        insertSymbolReference(parents, symbolRef->reference(), ReferenceDataType::ReferenceType::Reference);
     }
     endResetModel();
 }
@@ -225,21 +228,22 @@ void ReferenceTreeModel::updateSelectedSymbol(const QString &symbolName)
     SymbolReferenceItem* symbolRef = mReference->findReferenceFromName(symbolName);
     if (symbolRef) {
         mCurrentSymbolID = symbolRef->id();
-        insertSymbolReference(parents, symbolRef->declare(), "Declared");
-        insertSymbolReference(parents, symbolRef->define(), "Defined");
-        insertSymbolReference(parents, symbolRef->assign(), "Assigned");
-        insertSymbolReference(parents, symbolRef->implicitAssign(), "Implicitly Assigned");
-        insertSymbolReference(parents, symbolRef->control(), "Controlled");
-        insertSymbolReference(parents, symbolRef->reference(), "Referenced");
+        insertSymbolReference(parents, symbolRef->declare(), ReferenceDataType::ReferenceType::Declare );
+        insertSymbolReference(parents, symbolRef->define(), ReferenceDataType::ReferenceType::Define);
+        insertSymbolReference(parents, symbolRef->assign(), ReferenceDataType::ReferenceType::Assign);;
+        insertSymbolReference(parents, symbolRef->implicitAssign(), ReferenceDataType::ReferenceType::ImplicitAssign);
+        insertSymbolReference(parents, symbolRef->control(), ReferenceDataType::ReferenceType::Control);
+        insertSymbolReference(parents, symbolRef->index(), ReferenceDataType::ReferenceType::Index);
+        insertSymbolReference(parents, symbolRef->reference(), ReferenceDataType::ReferenceType::Reference);
     }
     endResetModel();
 }
 
-void ReferenceTreeModel::insertSymbolReference(QList<ReferenceItemModel*>& parents, const QList<ReferenceItem *>& referenceItemList, const QString& referenceType)
+void ReferenceTreeModel::insertSymbolReference(QList<ReferenceItemModel*>& parents, const QList<ReferenceItem *>& referenceItemList, ReferenceDataType::ReferenceType type)  //, const QString& referenceType)
 {  
     QList<QVariant> columnData;
-    columnData <<  QString("(%1) %2 %3").arg(referenceItemList.size()).arg(referenceType, (referenceItemList.size()==0)?"":"in")
-                << "" << ""  << referenceType;
+    columnData <<  QString("(%1) %2 %3").arg(referenceItemList.size()).arg(ReferenceDataType::from(type).name(), (referenceItemList.size()==0)?"":"in")
+               << "" << ""  << ReferenceDataType::from(type).name() << 0;
     parents.last()->appendChild(new ReferenceItemModel(columnData, parents.last()));
 
     parents << parents.last()->child(parents.last()->childCount()-1);
@@ -248,7 +252,8 @@ void ReferenceTreeModel::insertSymbolReference(QList<ReferenceItemModel*>& paren
         itemData << QString(item->location);
         itemData << QString::number(item->lineNumber);
         itemData << QString::number(item->columnNumber);
-        itemData << ReferenceDataType::from(item->referenceType).name();
+        itemData << ReferenceDataType::from(type).name();
+        itemData << 1;
         parents.last()->appendChild(new ReferenceItemModel(itemData, parents.last()));
     }
     parents.pop_back();

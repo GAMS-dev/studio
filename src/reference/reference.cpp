@@ -458,25 +458,25 @@ void Reference::addReferenceInfo(SymbolReferenceItem* ref, const QString &refere
     ReferenceDataType::ReferenceType type = ReferenceDataType::typeFrom(referenceType);
     switch (type) {
     case ReferenceDataType::Declare :
-        ref->addDeclare(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        ref->addDeclare(new ReferenceItem(ref->id(), ref->name(), type, location, lineNumber, columnNumber));
         break;
     case ReferenceDataType::Define :
-        ref->addDefine(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        ref->addDefine(new ReferenceItem(ref->id(), ref->name(),type, location, lineNumber, columnNumber));
         break;
     case ReferenceDataType::Assign :
-        ref->addAssign(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        ref->addAssign(new ReferenceItem(ref->id(), ref->name(),type, location, lineNumber, columnNumber));
         break;
     case ReferenceDataType::ImplicitAssign :
-        ref->addImplicitAssign(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        ref->addImplicitAssign(new ReferenceItem(ref->id(), ref->name(), type, location, lineNumber, columnNumber));
         break;
     case ReferenceDataType::Reference :
-        ref->addReference(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        ref->addReference(new ReferenceItem(ref->id(), ref->name(), type, location, lineNumber, columnNumber));
         break;
     case ReferenceDataType::Control :
-        ref->addControl(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        ref->addControl(new ReferenceItem(ref->id(), ref->name(), type, location, lineNumber, columnNumber));
         break;
     case ReferenceDataType::Index :
-        ref->addIndex(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        ref->addIndex(new ReferenceItem(ref->id(), ref->name(), type, location, lineNumber, columnNumber));
         break;
     default:
         break;

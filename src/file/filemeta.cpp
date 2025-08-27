@@ -1016,6 +1016,60 @@ void FileMeta::jumpTo(const NodeId &groupId, bool focus, int line, int column, i
     }
 }
 
+void FileMeta::referenceTo(const QString& symbolName, int line, int column, bool oneColumn)
+{
+    AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditors.first());
+    if (edit && line < edit->document()->blockCount()) {
+        QTextBlock block = edit->document()->findBlockByNumber(line);
+        if (column==-1) {
+            edit->jumpTo( line );
+            QTextCursor tc = edit->textCursor();
+            tc.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+            edit->setTextCursor(tc);
+        } else if (oneColumn) {
+            edit->jumpTo( line, column );
+            QTextCursor tc = edit->textCursor();
+            if (block.text().length()==column) {
+                tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
+            } else {
+                tc.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+            }
+            edit->setTextCursor(tc);
+        } else {
+            QString text = block.text().left(column);
+            int index = text.lastIndexOf(symbolName, -1, Qt::CaseInsensitive);
+            if (index == -1) {
+                if (text.length() < block.text().length()) {
+                    edit->jumpTo( line, column );
+                    QTextCursor tc = edit->textCursor();
+                    tc.movePosition(QTextCursor::StartOfWord, QTextCursor::KeepAnchor);
+                    edit->setTextCursor(tc);
+                } else {
+                    edit->jumpTo( line );
+                    QTextCursor tc = edit->textCursor();
+                    tc.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+                    edit->setTextCursor(tc);
+                }
+            } else  {
+                QString matchedText = text.mid(index, symbolName.length());
+                edit->jumpTo( line, index );
+                QTextCursor tc = edit->textCursor();
+                tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, matchedText.length());
+                edit->setTextCursor(tc);
+            }
+        }
+
+        // center line vertically
+        qreal lines = qreal(edit->rect().height()) / edit->cursorRect().height();
+        qreal ln = qreal(edit->cursorRect().bottom()) / edit->cursorRect().height();
+
+        int mv = int(ln - lines/2);
+        if (qAbs(mv)+1 > lines / 3) // centeres if the cursor is in upper or lower visible-lines/6
+            edit->verticalScrollBar()->setValue(edit->verticalScrollBar()->value()+mv);
+        return;
+    }
+}
+
 void FileMeta::rehighlight(int line)
 {
     if (line < 0) return;

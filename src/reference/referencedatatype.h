@@ -58,6 +58,7 @@ public:
 
     static const QList<ReferenceDataType*> list();
     static ReferenceType typeFrom(const QString& name);
+    static ReferenceType typeFrom(int type);
     static ReferenceDataType& from(const QString& name);
     static ReferenceDataType& from(const ReferenceType type);
 
