@@ -1,19 +1,19 @@
-Version 1.22.0  *
+Version 1.22.0
 ==================
 - Added the `gamsprobe` output to the `Copy System Information` output of the GAMS Licensing dialog.
-- Added dynamic main file to automate switching to the current file.
-- Improved error messages forlicense installations via ALP.
-- Improved Studio to ignore the old style GAMS licenses, i.e. only accept the modern GAMS licenses.
+- Added dynamic main file functionality. This will automatically set the current `gms` file as the project's main file when running the model. 
 - Added additional system log messages in case a GAMS executable is missing, like `gams` or `gamsgetkey`.
-- Added import functionality for project files from the classic GAMS IDE (*.gpr).
+- Added import functionality for project files from the classic GAMS IDE (*.gpr). This is a Windows only feature.
+- Added warnings for missing files when loading a Studio project.
 - Added On-Prem license server support.
-- Fixed crash when reading a Studio project and the main file is missing.
-- Added warning for missing files when reading a Studio project.
-- Fixed tab menu to show only files of the focused project (when focused).
-- Fixed a crash when a project with an extension number is edited in the project options.
-- Fixed empty `FileUsed` Tab in Reference File Viewer when the file has been updated and reloaded. 
-- Fixed a crash when opening a file contained an unknown schema data name in Connect Editor.
+- Improved error messages for license installations via ALP.
+- Improved Studio to ignore the old style GAMS licenses, i.e. only accept the modern GAMS licenses.
 - Improved Reference File Viewer with key navigation through symbols and references.
+- Fixed crash when reading a Studio project and the main `gms` file is missing.
+- Fixed tab menu to show only files of the focused project (when focused).
+- Fixed a crash when a project with an extension number, i.e. two projects have the same display name, is edited in the project options.
+- Fixed empty `FileUsed` Tab in Reference File Viewer when the file has been updated and reloaded.
+- Fixed a crash when opening a file containing an unknown schema data name in Connect Editor.
 
 Version 1.21.5
 ==================
