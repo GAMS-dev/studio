@@ -222,8 +222,7 @@ pack-wei:
       try {
         $bytes = $([System.Convert]::FromBase64String($GAMS_COMODO_CERT))
         Set-Content comodo_cert.p12 -Value $bytes -Encoding Byte
-        signtool sign /v /f comodo_cert.p12 /p $GAMS_COMODO_CERT_PASSWORD /t http://timestamp.comodoca.com studio.exe
-        signtool verify /v /pa studio.exe
+        signtool sign /v /fd SHA256 /f comodo_cert.p12 /p $GAMS_COMODO_CERT_PASSWORD /t http://timestamp.comodoca.com studio.exe
         rm comodo_cert.p12
       } catch {
         $_
@@ -231,6 +230,10 @@ pack-wei:
         if (Test-Path -Path "comodo_cert.p12" -PathType Leaf) {
           rm comodo_cert.p12
         }
+      }
+      signtool verify /v /pa studio.exe
+      if ($LastExitCode -ne 0) {
+        exit 1
       }
     # zip studio directory... for MR artifact exposure
     - cd ..
