@@ -124,6 +124,8 @@ public:
     int foldStart(int line, bool &folded, QString *closingSymbol = nullptr, const QString *usedParenheses = nullptr) const;
     void foldAll(bool onlyDCO = false);
     void unfoldAll();
+    bool toggleFolding(QTextBlock block);
+    QTextBlock findFoldStart(QTextBlock block) const;
     void jumpTo(int line, int column = 0) override;
     void setCompleter(CodeCompleter *completer);
     void clearSearchSelection() override;
@@ -257,9 +259,7 @@ private:
     void updateBlockEditPos();
     void updateLinkAppearance(QPoint pos, bool active = true);
     bool allowClosing(qsizetype chIndex);
-    bool toggleFolding(QTextBlock block);
     LinePair findFoldBlock(int line, bool onlyThisLine = false) const override;
-    QTextBlock findFoldStart(QTextBlock block) const;
     bool unfoldBadBlock(QTextBlock block);
     void checkCursorAfterFolding();
     BreakpointType breakpointType(int line);

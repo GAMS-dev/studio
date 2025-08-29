@@ -3037,7 +3037,7 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
     // dont remove syslog and dont delete resultsView
     if (!(edit == mSyslog || isResults)) {
         FileMeta* log = mFileMetaRepo.fileMeta(edit);
-        if (log) log->deleteEdit(edit);
+        if (log) log->deleteEditor(edit);
         edit->deleteLater();
     }
 }
@@ -3284,6 +3284,7 @@ void MainWindow::updateAndSaveSettings()
     }
 #endif
 
+    // Projects
     QVariantList projects;
     projectRepo()->write(projects);
     settings->setList(skProjects, projects);
@@ -3293,6 +3294,7 @@ void MainWindow::updateAndSaveSettings()
     settings->setInt(skCurrentFocusProject, focProId);
     settings->setString(skCurrentFileOpenFilter, mCurrentFileOpenFilter);
 
+    // Tabs
     QVariantMap tabData;
     writeTabs(tabData);
     settings->setMap(skTabs, tabData);
@@ -3301,6 +3303,19 @@ void MainWindow::updateAndSaveSettings()
     QVariantList bookmarks;
     mTextMarkRepo.writeBookmarks(bookmarks);
     settings->setList(skBookmarks, bookmarks);
+
+    // Folded blocks
+    QVariantList foldedLines;
+    for (FileMeta *meta : mFileMetaRepo.fileMetas()) {
+        meta->updateFoldedBlocks();
+        if (meta->foldedBlocks().size() > 1) {
+            QString data = meta->location();
+            for (int line : meta->foldedBlocks())
+                data += '|' + QString::number(line);
+            foldedLines << data;
+        }
+    }
+    settings->setList(skFoldedLines, foldedLines);
 
     historyChanged();
 
@@ -3588,7 +3603,7 @@ void MainWindow::closePinView()
         if (mRecent.project() != lastProject) updateProfilerAction();
         FileMeta *fm = mFileMetaRepo.fileMeta(edit);
         if (fm) {
-            fm->deleteEdit(edit);
+            fm->deleteEditor(edit);
         } else
             edit->deleteLater();
         updateRecentEdit(edit, ui->mainTabs->currentWidget());
@@ -4618,6 +4633,22 @@ void MainWindow::initDelayedElements()
     Settings *settings = Settings::settings();
     projectRepo()->readList(settings->toList(skProjects));
 
+    // assign stored fold data
+    for (QVariant data : settings->toList(skFoldedLines)) {
+        QStringList elems = data.toString().split('|');
+        if (elems.size() < 2) continue;
+        if (FileMeta *meta = mFileMetaRepo.fileMeta(elems.first())) {
+            QList<int> lines;
+            for (int i = 1; i < elems.size(); ++i) {
+                bool ok = false;
+                int line = elems.at(i).toInt(&ok);
+                if (ok)  lines << line;
+            }
+            if (lines.size() > 1)
+                meta->setFoldedBlocks(lines);
+        }
+    }
+
     if (settings->toBool(skRestoreTabs)) {
         QVariantMap joTabs = settings->toMap(skTabs);
         if (!readTabs(joTabs)) {
@@ -5597,7 +5628,7 @@ void MainWindow::closeProject(PExProjectNode* project)
         if (log) {
             QWidget* edit = log->file()->editors().isEmpty() ? nullptr : log->file()->editors().first();
             if (edit) {
-                log->file()->deleteEdit(edit);
+                log->file()->deleteEditor(edit);
                 int index = ui->logTabs->indexOf(edit);
                 if (index >= 0) ui->logTabs->removeTab(index);
             }
@@ -5746,9 +5777,8 @@ void MainWindow::closeFileEditors(const FileId &fileId, bool willReopen)
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().constFirst();
         if (mRecent.editor() == edit) {
-            if (PExProjectNode *project = mRecent.project(false)) {
-               project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
-            }
+            if (PExProjectNode *project = mRecent.project(false))
+               project->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
         }
         lastIndex = ui->mainTabs->indexOf(edit);
         ui->mainTabs->removeTab(lastIndex);
@@ -5756,7 +5786,7 @@ void MainWindow::closeFileEditors(const FileId &fileId, bool willReopen)
             mSearchDialog->editorChanged(nullptr);
         mRecent.removeEditor(edit);
 
-        fm->deleteEdit(edit);
+        fm->deleteEditor(edit);
     }
     if (fm->kind() != FileKind::Gsp)
         mClosedTabsIndexes << lastIndex;

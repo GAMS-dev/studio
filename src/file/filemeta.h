@@ -80,13 +80,16 @@ public:
     bool isPinnable();
     void updateTabName(QTabWidget *tabWidget, int index);
     void updateBreakpoints();
+    void setFoldedBlocks(const QList<int> &foldedBlocks);
+    QList<int> foldedBlocks() const;
+    void updateFoldedBlocks();
 
     QWidget *createEdit(QWidget *parent, PExProjectNode *project, const QFont &font, QString encoding = QString(), bool forcedAsTextEdit = false);
     int addToTab(QTabWidget *tabWidget, QWidget *edit, NewTabStrategy tabStrategy = tabAfterCurrent);
     const QWidgetList editors() const;
     QWidget* topEditor() const;
     void editToTop(QWidget* edit);
-    void deleteEdit(QWidget* edit);
+    void deleteEditor(QWidget* edit);
     bool hasEditor(QWidget * const &edit) const;
     void load(QString encoding, bool init = true);
     bool save(const QString& newLocation = "");
@@ -162,6 +165,7 @@ private:
     void initEditorColors();
     void updateEditorColors();
     void addEditor(QWidget* edit);
+    bool initFoldedBlocks(QList<int> startLines);
 
 private:
     FileId mId;
@@ -177,6 +181,7 @@ private:
     QString mEncoding;
     QTextDocument* mDocument = nullptr;
     syntax::SyntaxHighlighter* mHighlighter = nullptr;
+    QList<int> mFoldedBlocks;
     int mLineCount = 0;
     int mChangedLine = 0;
     bool mLoading = false;

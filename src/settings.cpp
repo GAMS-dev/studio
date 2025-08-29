@@ -307,6 +307,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skCurrentFileOpenFilter, scSys, {"currentFileOpenFilter"}, "");
     safelyAdd(res, skTabs, scSys, {"tabs"}, QJsonObject());
     safelyAdd(res, skBookmarks, scSys, {"fileBookmarks"}, QJsonArray());
+    safelyAdd(res, skFoldedLines, scSys, {"foldedLines"}, QJsonArray());
     safelyAdd(res, skPinViewTabIndex, scSys, {"pinView", "tabIndex"}, -1);
     safelyAdd(res, skPinViewSize, scSys, {"pinView", "size"}, QString("10,10"));
     safelyAdd(res, skPinOrientation, scSys, {"pinView", "orientation"}, 1);

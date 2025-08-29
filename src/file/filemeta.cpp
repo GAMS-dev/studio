@@ -633,6 +633,51 @@ void FileMeta::updateBreakpoints()
     }
 }
 
+void FileMeta::updateFoldedBlocks()
+{
+    if (mDocument) {
+        mFoldedBlocks.clear();
+        mFoldedBlocks << mDocument->blockCount();
+        QTextBlock block = mDocument->firstBlock();
+        while (block.isValid()) {
+            syntax::BlockData *startDat = syntax::BlockData::fromTextBlock(block);
+            if (startDat && startDat->foldCount())
+                mFoldedBlocks << block.blockNumber();
+            block = block.next();
+        }
+        if (mFoldedBlocks.size() == 1)
+            mFoldedBlocks.clear();
+    }
+}
+
+bool FileMeta::initFoldedBlocks(QList<int> startLines)
+{
+    if (startLines.isEmpty()) return true;
+    if (!mDocument || mDocument->blockCount() != startLines.first()) return false;
+
+    CodeEdit *edit = ViewHelper::toCodeEdit(mEditors.first());
+    if (!edit) return false;
+    for (int line : startLines) {
+        QTextBlock block = mDocument->findBlockByNumber(line);
+        syntax::BlockData *dat = syntax::BlockData::fromTextBlock(block);
+        if (block.isValid() && dat && !dat->isFolded() && edit->findFoldStart(block) == block)
+            edit->toggleFolding(block);
+    }
+    return true;
+}
+
+void FileMeta::setFoldedBlocks(const QList<int> &foldedBlocks)
+{
+    mFoldedBlocks = foldedBlocks;
+    if (mEditors.size())
+        initFoldedBlocks(foldedBlocks);
+}
+
+QList<int> FileMeta::foldedBlocks() const
+{
+    return mFoldedBlocks;
+}
+
 const NodeId &FileMeta::projectId() const
 {
     return mProjectId;
@@ -650,7 +695,7 @@ void FileMeta::editToTop(QWidget *edit)
     addEditor(edit);
 }
 
-void FileMeta::deleteEdit(QWidget *edit)
+void FileMeta::deleteEditor(QWidget *edit)
 {
     int i = mEditors.indexOf(edit);
     if (i < 0) {
@@ -662,6 +707,8 @@ void FileMeta::deleteEdit(QWidget *edit)
     CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
     mEditors.removeAt(i);
     edit->removeEventFilter(this);
+    if (scEdit)
+        updateFoldedBlocks();
 
     if (aEdit) {
         aEdit->setMarks(nullptr);
@@ -672,9 +719,8 @@ void FileMeta::deleteEdit(QWidget *edit)
 
         if (mEditors.isEmpty()) {
             emit documentClosed();
-            if (kind() != FileKind::Log) {
+            if (kind() != FileKind::Log)
                 unlinkAndFreeDocument();
-            }
         }
         disconnect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         disconnect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
@@ -702,13 +748,12 @@ void FileMeta::deleteEdit(QWidget *edit)
     } else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(edit)) {
         gdx->writeState(location());
     }
-    if (AbstractView* av = ViewHelper::toAbstractView(edit)) {
+    if (AbstractView* av = ViewHelper::toAbstractView(edit))
         disconnect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);
-    }
 
-    if (mEditors.isEmpty() && kind() != FileKind::Gsp) {
+    if (mEditors.isEmpty() && kind() != FileKind::Gsp)
         mFileRepo->watch(this);
-    }
+
     if (scEdit && mHighlighter) {
         scEdit->setCompleter(nullptr);
         disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
@@ -1480,10 +1525,11 @@ int FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, NewTabStrategy tabS
     if (mEditors.size() == 1 && kind() != FileKind::Log && kind() != FileKind::Gsp && ViewHelper::toAbstractEdit(edit)) {
         try {
             load(mEncoding);
+            initFoldedBlocks(mFoldedBlocks);
         } catch (Exception &e) {
             if (mEditors.size() > 0) {
                 tabWidget->removeTab(tabWidget->currentIndex()+1);
-                deleteEdit(mEditors.first());
+                deleteEditor(mEditors.first());
             }
             e.raise();
         }
