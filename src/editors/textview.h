@@ -134,6 +134,7 @@ private:
 
     AbstractTextMapper *mMapper = nullptr;
     TextViewEdit *mEdit;
+    qreal mPartialScroll = 0.0;
     bool *mStayAtTail = nullptr;
     bool mSliderStartedAtTail = false;
     int mSliderMouseStart = 0;
