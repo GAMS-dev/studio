@@ -3,6 +3,7 @@ Version 1.22.0 *
 - Fixed mouse scroll issue in log and lst-viewer on macOS.
 - Fixed scrolling through main tabs not possible when in project focus.
 - Improved dynamic main file: Instantly switch file on tab change.
+- Upgraded to Qt 6.9.2.
 
 Version 1.22.0
 ==================
