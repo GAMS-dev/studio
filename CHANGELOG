@@ -1,6 +1,7 @@
 Version 1.22.0 *
 ==================
 - Fixed mouse scroll issue in log and lst-viewer on macOS.
+- Fixed scrolling through main tabs not possible when in project focus.
 
 Version 1.22.0
 ==================
