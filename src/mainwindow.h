@@ -232,7 +232,7 @@ private slots:
     void focusProject(PExProjectNode *project);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
-    void activeTabChanged(int index);
+    void activeMainTabChanged(int index);
     void tabBarClicked(int index);
     void fileChanged(const FileId &fileId);
     void fileModifiedChanged(const FileId &fileId, bool modified);
