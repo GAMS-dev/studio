@@ -248,7 +248,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mCodecGroupReload, &QActionGroup::triggered, this, &MainWindow::codecReload);
     mCodecGroupSwitch = new QActionGroup(this);
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
-    connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
+    connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeMainTabChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::on_menuFile_aboutToShow);
     connect(ui->logTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
     connect(ui->logTabs, &TabWidget::closeTab, this, &MainWindow::on_logTabs_tabCloseRequested);
@@ -2195,7 +2195,7 @@ void MainWindow::on_actionClose_Tab_triggered()
 
 void MainWindow::on_actionClose_All_triggered()
 {
-    disconnect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
+    disconnect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeMainTabChanged);
     if (ui->mainTabs->count() > 1)
         ui->mainTabs->tabBar()->moveTab(ui->mainTabs->currentIndex(), ui->mainTabs->count()-1);
 
@@ -2203,7 +2203,7 @@ void MainWindow::on_actionClose_All_triggered()
         on_mainTabs_tabCloseRequested(ui->mainTabs->count() - 1);
 
     ui->mainTabs->setTabVisible(0, true);
-    connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
+    connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeMainTabChanged);
 }
 
 void MainWindow::on_actionClose_All_Except_triggered()
@@ -2274,8 +2274,9 @@ void MainWindow::loadCommandLines(PExProjectNode* oldProj, PExProjectNode* proj)
     }
 }
 
-void MainWindow::activeTabChanged(int index)
+void MainWindow::activeMainTabChanged(int index)
 {
+    processMainFileDynamics();
     for (int i = 1; i < mainTabs()->count(); ++i)
         updateTabIcon(nullptr, i);
     if (!mWp) return;
@@ -5384,6 +5385,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         initEdit(fileMeta, edit);
         fileMeta->setProjectId(project->id());
     }
+
     // set keyboard focus to editor
     if (focus && edit) {
         if (edit == mPinView->widget()) {
@@ -5405,6 +5407,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         updateTabIcon(nullptr, mCurrentMainTab);
         updateRecentEdit(mRecent.editor(), edit);
     }
+    processMainFileDynamics();
     for (int i = 1; i < mainTabs()->count(); ++i)
         updateTabIcon(nullptr, i);
     addToHistory(fileMeta->location());
