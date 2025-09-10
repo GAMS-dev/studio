@@ -463,6 +463,7 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
 
         QList<ParamConfigItem *> itemList;
         QList<int> overrideIdRowList;
+        itemList.reserve(newItems.size());
         for (const QString &text : std::as_const(newItems)) {
             const QStringList textList = text.split("=");
             const int optionid = mOption->getOptionDefinition(textList.at(0)).number;
@@ -692,6 +693,7 @@ void ConfigParamTableModel::on_removeConfigParamItem()
 void ConfigParamTableModel::updateRecurrentStatus()
 {
     QList<int> idList;
+    idList.reserve(mOptionItem.size());
     for(ParamConfigItem* item : std::as_const(mOptionItem)) {
         idList << item->optionId;
     }

@@ -551,7 +551,8 @@ bool ConnectDataModel::removeItem(const QModelIndex &index)
                               if (found) {
                                    break;
                               }
-                              for(const QString& k : treeItem->data(static_cast<int>(DataItemColumn::ExcludedKeys)).toString().split(",")) {
+                              QStringList excludeList = treeItem->data(static_cast<int>(DataItemColumn::ExcludedKeys)).toString().split(",");
+                              for(const QString& k : std::as_const(excludeList)) {
                                   if (found)
                                       break;
                                   if (QString::compare(k, c->data(static_cast<int>(DataItemColumn::Key)).toString())==0) {
@@ -856,11 +857,12 @@ void ConnectDataModel::addFromSchema(const QString& schemaname, int position)
     parents << mRootItem << mRootItem->child(0);
 
     beginInsertRows(indexForTreeItem(parents.last()), position, position);
+    QStringList dataKeys;
+    QList<QVariant> listData;
     for(size_t i = 0; i<node.size(); i++) {
         for (YAML::const_iterator it = node[i].begin(); it != node[i].end(); ++it) {
             QString schemaName = QString::fromStdString(it->first.as<std::string>());
-            QStringList dataKeys;
-            QList<QVariant> listData;
+            listData.resize(0);
             listData << schemaName;
             listData << "";
             listData << QVariant(static_cast<int>(DataCheckState::SchemaName));
@@ -997,6 +999,7 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
     ConnectSchema* schema = mConnect->getSchema(schemaname);
     YAML::Node node = data->getRootNode();
     bool empty = (schema ? schema->isEmpty(schemaKeys.join(":")) : true);
+    parents.reserve(node.size() + 1);
     for(size_t i = 0; i<node.size(); i++) {
         QList<QVariant> mapSeqData;
 //        QString listkey = schemaKeys.last();
@@ -1095,8 +1098,8 @@ void ConnectDataModel::insertLastListElement(const QString &schemaname, QStringL
 
     ConnectSchema* schema = mConnect->getSchema(schemaname);
     YAML::Node node = data->getRootNode();
-
-    for(size_t i = 0; i<node.size(); i++) {
+    parents.reserve(node.size() + 1);
+    for (size_t i = 0; i < node.size(); ++i) {
         QList<QVariant> mapSeqData;
 //        QString listkey = schemaKeys.last();
         mapSeqData << QVariant::fromValue(idx.row()+i);
@@ -1855,15 +1858,16 @@ void ConnectDataModel::setupTreeItemModelData()
         if (node.Type()!=YAML::NodeType::Sequence)
             EXCEPT() << "Error: The file content might be corrupted or incorrectly overwritten";
 
+        QStringList dataKeys;
+        QList<QVariant> listData;
         int position = 0;
-        for(size_t i = 0; i<node.size(); i++) {
+        for (size_t i = 0; i<node.size(); i++) {
             for (YAML::const_iterator it = node[i].begin(); it != node[i].end(); ++it) {
                 QString schemaName = QString::fromStdString(it->first.as<std::string>());
                 ConnectSchema* schema = mConnect->getSchema(schemaName);
                 if (!schema)
                     EXCEPT() << "Unknown schema '" << schemaName << "' data";
-                QStringList dataKeys;
-                QList<QVariant> listData;
+                listData.resize(0);
                 listData << schemaName;
                 listData << "";
                 listData << QVariant(static_cast<int>(DataCheckState::SchemaName));

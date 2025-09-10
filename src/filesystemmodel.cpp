@@ -21,6 +21,8 @@
 #include "file/filetype.h"
 #include "logger.h"
 
+using namespace std::chrono_literals;
+
 namespace gams {
 namespace studio {
 namespace fs {
@@ -86,7 +88,7 @@ bool FilteredFileSystemModel::filterAcceptsRow(int source_row, const QModelIndex
 FileSystemModel::FileSystemModel(QObject *parent)
     : QFileSystemModel(parent)
 {
-    mUpdateTimer.setInterval(50);
+    mUpdateTimer.setInterval(50ms);
     mUpdateTimer.setSingleShot(true);
     connect(&mUpdateTimer, &QTimer::timeout, this, &FileSystemModel::updateDirCheckStates);
     connect(this, &QFileSystemModel::directoryLoaded, this, &FileSystemModel::newDirectoryData);
@@ -155,6 +157,8 @@ void FileSystemModel::selectAllFiles(const QDir &dir)
     invalidateDirState(index(dir.path()));
     QSet<QModelIndex> indices;
     QModelIndex idx;
+    const auto visibleFiList = visibleFileInfoList(dir);
+    indices.reserve(visibleFiList.size());
     for (const QFileInfo &info : visibleFileInfoList(dir)) {
         idx = index(info.filePath());
         indices << idx;
@@ -220,6 +224,7 @@ void FileSystemModel::clearSelection()
 QStringList FileSystemModel::selectedFiles(bool addWriteBackState)
 {
     QStringList selection;
+    selection.reserve(mSelectedFiles.size());
     for (const auto &file: std::as_const(mSelectedFiles))
         selection << file;
     if (addWriteBackState) {
@@ -251,7 +256,7 @@ void FileSystemModel::setSelectedFiles(const QStringList &files)
     for (const QString &file: std::as_const(missFiles)) {
         mSelectedFiles.remove(file);
     }
-    if (missFiles.count()) emit missingFiles(missFiles);
+    if (!missFiles.isEmpty()) emit missingFiles(missFiles);
     invalidateDirStates();
     emit selectionCountChanged(mSelectedFiles.count());
 }

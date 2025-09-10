@@ -66,7 +66,7 @@ public slots:
     void linkToReferenceItem(const QItemSelection &selected, const QItemSelection &deselected);
     void selectFileReference(int id, bool compactView);
     int currentReferenceId();
-    ReferenceItem referenceItem(int id);
+    gams::studio::reference::ReferenceItem referenceItem(int id);
 
 private:
     Ui::FileReferenceWidget *ui;

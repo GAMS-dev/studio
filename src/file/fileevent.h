@@ -43,7 +43,7 @@ struct FileEventData
     QTime time;
 };
 
-uint qHash(const FileEventData &key);
+size_t qHash(const FileEventData &key);
 
 class FileEvent : public QEvent
 {

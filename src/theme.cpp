@@ -612,8 +612,9 @@ QColor Theme::profileColor(ColorSlot baseSlot, qreal alpha)
 QVariantList Theme::writeUserThemes() const
 {
     QVariantList res;
+    res.reserve(mColorThemes.size());
     // starts with index i=2 (only export user settings, light and dark should be fixed)
-    for (int i = 2; i < mColorThemes.length(); ++i) {
+    for (int i = 2; i < mColorThemes.size(); ++i) {
         QVariantMap resData;
         const QHash<ColorSlot, Color> &theme = mColorThemes.at(i);
         for (ColorSlot key = invalid; key < ColorSlotCount; key = static_cast<ColorSlot>(key+1)) {
@@ -651,7 +652,7 @@ void Theme::readUserThemes(const QVariantList &sourceThemes)
             ColorSlot cSlot = slot(it.key());
             if (cSlot == invalid) continue;
             QStringList dat = it.value().toString().split(',');
-            if (!dat.size()) continue;
+            if (dat.isEmpty()) continue;
             bool ok = true;
             int iFlag = dat.size() < 2 ? 0 : dat.at(1).toInt(&ok);
             Color color = Color(QColor(dat.at(0)), FontFlag(iFlag));
@@ -678,7 +679,7 @@ int Theme::readUserTheme(const QVariantMap &tSource)
         ColorSlot cSlot = slot(it.key());
         if (cSlot == invalid) continue;
         QStringList dat = it.value().toString().split(',');
-        if (!dat.size()) continue;
+        if (dat.isEmpty()) continue;
         bool ok = true;
         int iFlag = dat.size() < 2 ? 0 : dat.at(1).toInt(&ok);
         Color color = Color(QColor(dat.at(0)), FontFlag(iFlag));

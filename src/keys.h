@@ -147,7 +147,7 @@ inline bool operator==(const KeySeqList& keySeq, QKeyEvent *e) { return (e ? key
 inline bool operator!=(QKeyEvent *e, const KeySeqList& keySeq) { return !(e ? keySeq.matches(e) : false); }
 inline bool operator!=(const KeySeqList& keySeq, QKeyEvent *e) { return !(e ? keySeq.matches(e) : false); }
 
-constexpr inline uint qHash(Hotkey key) noexcept { return uint(key); }
+constexpr inline size_t qHash(Hotkey key) noexcept { return size_t(key); }
 
 
 } // namespace studio

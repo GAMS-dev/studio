@@ -191,8 +191,8 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
     QStringList remain(arguments);
     QString ready = keyword;
     bool progress = true;
-    while (remain.length() || progress) {
-        if (remain.length() && ready.length() + 2 + remain.first().length() < 255) {
+    while (!remain.isEmpty() || progress) {
+        if (!remain.isEmpty() && ready.length() + 2 + remain.first().length() < 255) {
             ready += '\n' + remain.takeFirst();
             progress = true;
         }
@@ -225,7 +225,7 @@ Server::ParseResult Server::handleReply(const QString &replyData)
         }
     }
     QStringList data;
-    if (reList.size()) {
+    if (!reList.isEmpty()) {
         data = reList.first().split('|');
     }
 
@@ -287,7 +287,7 @@ Server::ParseResult Server::handleReply(const QString &replyData)
     }   break;
     case gdxReady: {
         QString file;
-        if (reList.size())
+        if (!reList.isEmpty())
             file = QDir::fromNativeSeparators(data.first());
 
         if (file.isEmpty()) {
@@ -466,7 +466,7 @@ void Server::addInclude(const QString &filename, QList<int> &incLine)
 
 void Server::addIncludeFrom(const QString &filename, int contLine)
 {
-    if (!mIncludes.size() || !mIncludes.last()->childFile.isEmpty()) {
+    if (mIncludes.isEmpty() || !mIncludes.last()->childFile.isEmpty()) {
         DEB() << "GamsCom warning: Unexpected include start for " << filename << ":0 [" << contLine << "]. Data ignored.";
         return;
     }

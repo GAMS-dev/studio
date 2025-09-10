@@ -75,6 +75,7 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
     mOptionTokenizer = new OptionTokenizer(GamsOptDefFile);
 
     QList<ParamConfigItem *> optionItem;
+    optionItem.reserve(initParamItems.size());
     for(ConfigItem* item: initParamItems) {
         optionItem.append( new ParamConfigItem(-1, item->key, item->value, item->minVersion, item->maxVersion) );
     }
@@ -447,6 +448,7 @@ void ParamConfigEditor::on_selectRow(int logicalIndex)
 void ParamConfigEditor::on_reloadGamsUserConfigFile(const QList<ConfigItem *> &initParams)
 {
     QList<ParamConfigItem *> optionItem;
+    optionItem.reserve(initParams.size());
     for(ConfigItem* item: initParams) {
         optionItem.append( new ParamConfigItem(-1, item->key, item->value, item->minVersion, item->maxVersion) );
     }
@@ -539,6 +541,7 @@ void ParamConfigEditor::deleteOption()
 
         QList<int> rows;
         const auto indexes = ui->paramCfgTableView->selectionModel()->selectedRows();
+        rows.reserve(indexes.size());
         for(const QModelIndex & index : indexes) {
             rows.append( index.row() );
         }
@@ -587,6 +590,7 @@ void ParamConfigEditor::selectSearchField() const
 QList<ConfigItem *> ParamConfigEditor::parameterConfigItems()
 {
     QList<ConfigItem *> itemList;
+    itemList.reserve(mParameterTableModel->parameterConfigItems().size());
     for(ParamConfigItem* item : mParameterTableModel->parameterConfigItems()) {
         itemList.append( new ConfigItem(item->key, item->value, item->minVersion, item->maxVersion) );
     }
@@ -1055,6 +1059,7 @@ void ParamConfigEditor::on_actionInsert_triggered()
     if (isThereAnIndexSelection()) {
         QList<int> rows;
         const auto indexes = ui->paramCfgTableView->selectionModel()->selectedIndexes();
+        rows.reserve(indexes.size());
         for(const QModelIndex idx : indexes) {
             rows.append( idx.row() );
         }
@@ -1121,6 +1126,7 @@ void ParamConfigEditor::on_actionDelete_triggered()
 
         QList<int> rows;
         const auto indexes = ui->paramCfgTableView->selectionModel()->selectedRows();
+        rows.reserve(indexes.size());
         for(const QModelIndex & index : indexes) {
             rows.append( index.row() );
         }

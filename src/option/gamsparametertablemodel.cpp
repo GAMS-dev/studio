@@ -417,6 +417,7 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
     if (action ==  Qt::CopyAction) {
 
         QList<OptionItem> itemList;
+        itemList.reserve(newItems.size());
         QList<int> overrideIdRowList;
         for (const QString &text : std::as_const(newItems)) {
             const QStringList textList = text.split("=");

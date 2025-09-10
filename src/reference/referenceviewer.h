@@ -68,8 +68,8 @@ public slots:
     void updateView(bool loadStatus, bool pendingReload);
     void updateFileUsedTabText(bool compactView);
     int currentSelectedTab();
-    ReferenceSettings saveSettings();
-    void loadSettings(const ReferenceSettings &settings);
+    gams::studio::reference::ReferenceSettings saveSettings();
+    void loadSettings(const gams::studio::reference::ReferenceSettings &settings);
 
 protected:
     void keyPressEvent(QKeyEvent *e) override;

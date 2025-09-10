@@ -37,6 +37,7 @@ DictList::DictList(QList<QPair<QString, QString> > list, const QString &prefix)
     std::sort(list.begin(), list.end(), cmpStr);
     QString prevS;
     mEntries.reserve(list.size());
+    mDescript.reserve(list.size());
     mEqualStart.reserve(list.size());
     for (int i = 0; i < list.size(); ++i) {
         const QString &s( prefix.isNull() ? list.at(i).first : prefix + list.at(i).first);
@@ -72,11 +73,11 @@ QStringList SyntaxKeywordBase::docForLastRequest() const
 QStringList SyntaxKeywordBase::swapStringCase(const QStringList &list)
 {
     QStringList res;
+    res.reserve(list.size());
     for (const QString &s: list) {
         QString swapped("");
-        for (QChar c: s) {
+        for (QChar c: s)
             swapped += (c.isUpper() ? c.toLower() : c.toUpper());
-        }
         res << swapped;
     }
     return res;
@@ -524,6 +525,7 @@ SyntaxSimpleKeyword::SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData *shar
     } else if (kind == SyntaxKind::SystemCompileAttrib) {
         setExtraKeywordChars("._ ");
         QList<QPair<QString, QString>> list2;
+        list2.reserve(list.size() + 1);
         list2.append(systemEmpData);
         for (const QPair<QString, QString> &entry : std::as_const(list)) {
             list2.append(QPair<QString, QString>(QStringLiteral(u"system.")+entry.first, entry.second));
@@ -531,10 +533,12 @@ SyntaxSimpleKeyword::SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData *shar
         mKeywords.insert(int(kind), new DictList(list2));
     } else if (kind == SyntaxKind::SystemCompileAttribR) {
         setExtraKeywordChars("._ ");
-        QList<QPair<QString, QString>> list2;
         QHash<QString, QString> descript;
+        descript.reserve(SyntaxData::systemCTConstText().size());
         for (const QPair<QString, QString> &entry : SyntaxData::systemCTConstText())
             descript.insert(entry.first, entry.second);
+        QList<QPair<QString, QString>> list2;
+        list2.reserve(SyntaxData::systemCTConstants().size());
         for (const QPair<QString, int> &entry : SyntaxData::systemCTConstants()) {
             int split = entry.first.indexOf('.');
             QString key = entry.first.left(split);

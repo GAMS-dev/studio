@@ -27,6 +27,8 @@
 #include <QMutexLocker>
 #include <QHash>
 
+using namespace std::chrono_literals;
+
 namespace gams {
 namespace studio {
 namespace engine {
@@ -60,7 +62,7 @@ AuthManager::AuthManager(EngineManager *engineManager, QObject *parent)
     mNetworkManager = NetworkManager::manager();
     if (!mNetworkManager) EXCEPT() << "AuthManager: the NetworkManager must not be null";
     mTimeoutTimer.setSingleShot(true);
-    mTimeoutTimer.setInterval(10000);
+    mTimeoutTimer.setInterval(10000ms);
     connect(mEngineManager, &EngineManager::reListProvider, this, &AuthManager::processProviderList);
     connect(mEngineManager, &EngineManager::reListProviderError, this, &AuthManager::reListProviderError);
     connect(mEngineManager, &EngineManager::reFetchOAuth2Token, this, &AuthManager::reFetchOAuth2Token);

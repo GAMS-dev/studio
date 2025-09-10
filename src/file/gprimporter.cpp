@@ -273,6 +273,7 @@ void GprImporter::okClicked()
 
 void GprImporter::on_edRelocatedPath_textEdited(const QString &text)
 {
+    Q_UNUSED(text)
     int miss = checkPaths(ui->edCurrentPath->text(), ui->edRelocatedPath->text());
     ui->edRelocatedPath->setStyleSheet(miss < 0 ? "color:"+toColor(Theme::Normal_Red).name()+";" : "");
     if (miss < 0) miss = mAddFiles.count();

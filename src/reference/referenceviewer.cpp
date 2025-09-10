@@ -228,7 +228,7 @@ void ReferenceViewer::updateView(bool loadStatus, bool pendingReload)
     } else {
         QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
         ui->tabWidget->setToolTip(QString("<p style='white-space:pre'>Error while loading: %1%2<br>The file content might be corrupted or incorrectly overwritten</p>")
-                                      .arg(mReference->getFileLocation()).arg(errorLine));
+                                      .arg(mReference->getFileLocation(), errorLine));
         ui->tabWidget->setTabText(0, QString("All Symbols (?)"));
         ui->tabWidget->setTabText(1, QString("Set (?)"));
         ui->tabWidget->setTabText(2, QString("Acronym (?)"));

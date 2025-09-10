@@ -118,8 +118,9 @@ bool GlbParser::parseFile(const QString &glbFile)
                 line = readLine(in);
                 if (line.startsWith("Directory")) // skip extra line containing the source directory of the model to be retrieved
                     line = readLine(in);
-                QStringList values;
                 int suffixNumber = 0;
+                QStringList values;
+                values.reserve(nrColumns);
                 for(int i=0; i<nrColumns; i++)
                     values << "";
                 QString longDescription;

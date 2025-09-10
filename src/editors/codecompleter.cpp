@@ -355,6 +355,8 @@ void CodeCompleterModel::addDynamicData()
 {
     QStringList data;
     QList<int> descriptIndex;
+    data.reserve(mData.size() * 3);
+    descriptIndex.reserve(mData.size() * 3);
     QMap<int, CodeCompleterType> iType;
     for (int i = 0; i < mData.size(); ++i) {
         if (mDescriptIndex.at(i) != i) {
@@ -1055,7 +1057,7 @@ void CodeCompleter::insertCurrent(bool equalPartOnly)
         QTextCursor cur = mEdit->textCursor();
         QString line = cur.block().text();
         cur.beginEditBlock();
-        if (mFilterText.length())
+        if (!mFilterText.isEmpty())
             cur.setPosition(cur.position() - int(mFilterText.length()));
         int start = cur.positionInBlock();
         QString res = model()->data(currentIndex()).toString();

@@ -216,7 +216,7 @@ public slots:
     virtual void pasteClipboard();
     void updateExtraSelections() override;
     void unfold(const QTextBlock &block) override;
-    void breakpointsChanged(const SortedIntMap &bpLines, const SortedIntMap &abpLines);
+    void breakpointsChanged(const gams::studio::SortedIntMap &bpLines, const gams::studio::SortedIntMap &abpLines);
     void setPausedPos(int line);
 
 protected slots:

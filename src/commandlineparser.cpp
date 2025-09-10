@@ -137,6 +137,7 @@ inline QStringList CommandLineParser::getFileArgs()
 {
     QStringList absoluteFilePaths;
     const auto args = positionalArguments();
+    absoluteFilePaths.reserve(args.size());
     for (const auto &file : args)
         absoluteFilePaths << CommonPaths::absolutFilePath(file);
     return absoluteFilePaths;

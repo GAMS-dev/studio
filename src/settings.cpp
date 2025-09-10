@@ -58,6 +58,7 @@ QString sizeToString(QSize s) {
 QList<int> toIntArray(const QString &s) {
     QList<int> res;
     const QStringList list = s.split(',');
+    res.reserve(list.size());
     for (const QString &v: list) res << v.toInt();
     return res;
 }

@@ -310,7 +310,6 @@ void SymbolReferenceWidget::selectSymbolReference(const ReferenceItem &item)
 
     ui->symbolView->clearSelection();
     ui->symbolView->selectRow(indices.first().row());
-    QString datatype = mReferenceTreeModel->index(0, ReferenceItemModel::COLUMN_REFERENCE_TYPE).data().toString();
     QModelIndexList typeindices = mReferenceTreeModel->match(mReferenceTreeModel->index(0, ReferenceItemModel::COLUMN_REFERENCE_TYPE),
                                                             Qt::DisplayRole,
                                                             ReferenceDataType::from(item.referenceType).name(), -1, Qt::MatchExactly|Qt::MatchRecursive);

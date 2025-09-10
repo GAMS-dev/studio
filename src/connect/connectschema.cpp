@@ -370,6 +370,7 @@ QStringList ConnectSchema::getTypeAsStringList(const QString &key) const
 {
     QStringList strlist;
     if (contains(key)) {
+        strlist.reserve(mSchemaHelper[key]->types.size());
         for (const SchemaType t : std::as_const(mSchemaHelper[key]->types)) {
             const int tt = static_cast<int>(t);
             if ( tt==(int)SchemaType::Integer)

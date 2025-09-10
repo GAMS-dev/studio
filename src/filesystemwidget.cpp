@@ -96,6 +96,7 @@ void FileSystemWidget::setModelName(const QString &modelName)
         return;
     }
     QStringList uncommonFiles;
+    uncommonFiles.reserve(mUncommonFiles.size());
     for (const QString &rawFile: std::as_const(mUncommonFiles)) {
         uncommonFiles << (rawFile.contains("%1") ? rawFile.arg(modelName.toLower()) : rawFile);
     }

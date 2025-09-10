@@ -83,7 +83,7 @@ int MsgBox::dialog(QMessageBox::Icon icon, const QString &title, const QString &
     if (!button1Text.isEmpty()) buttonList << messageBox.addButton(button1Text, QMessageBox::ActionRole);
     if (!button2Text.isEmpty()) buttonList << messageBox.addButton(button2Text, QMessageBox::ActionRole);
 
-    messageBox.setDefaultButton(static_cast<QPushButton *>(buttonList.value( defaultButtonNumber)));
+    messageBox.setDefaultButton(buttonList.value(defaultButtonNumber));
     messageBox.setEscapeButton(buttonList.value(escapeButtonNumber));
     messageBox.exec();
 

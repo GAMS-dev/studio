@@ -283,6 +283,7 @@ void Profiler::addIncludes(const QList<IncludeLine *> lines)
 QList<QPair<int, qreal> > Profiler::maxTime() const
 {
     QList<QPair<int, qreal> > res;
+    res.reserve(mMaxSingleTime.size());
     for (int i = 0; i < mMaxSingleTime.size(); ++i) {
         res << QPair<int, qreal>(mMaxSingleTime.at(i).first, mMaxSingleTime.at(i).second.timeInSec);
     }
@@ -292,6 +293,7 @@ QList<QPair<int, qreal> > Profiler::maxTime() const
 QList<QPair<int, int> > Profiler::maxSteps() const
 {
     QList<QPair<int, int> > res;
+    res.reserve(mMaxSingleSteps.size());
     for (int i = 0; i < mMaxSingleSteps.size(); ++i) {
         res << QPair<int, qreal>(mMaxSingleSteps.at(i).first, mMaxSingleSteps.at(i).second.steps);
     }

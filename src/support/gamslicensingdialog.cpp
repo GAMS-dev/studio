@@ -266,11 +266,11 @@ void GamsLicensingDialog::installAlp(int exitCode)
 {
     ui->errorLabel->clear();
     auto license = mGamsGetKeyProc->content().split("\n", Qt::SkipEmptyParts);
-    QStringList temp;
     if (license.size() > 8) {
-        for (int i=license.size()-8; i<license.size(); ++i){
+        QStringList temp;
+        temp.reserve(9);
+        for (int i = license.size() - 8; i < license.size(); ++i)
             temp << license.at(i);
-        }
         license = temp;
     }
     auto log = mGamsGetKeyProc->logMessages();

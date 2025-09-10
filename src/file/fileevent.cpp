@@ -85,8 +85,8 @@ bool FileEventData::operator!=(const FileEventData &other) const
     return !(*this == other);
 }
 
-uint qHash(const FileEventData &key) {
-    return (key.fileId << 3) + int(key.kind);
+size_t qHash(const FileEventData &key) {
+    return size_t(key.fileId << 3) + size_t(key.kind);
 }
 
 } // namespace studio

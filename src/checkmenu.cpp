@@ -111,7 +111,7 @@ void CheckMenu::keyPressEvent(QKeyEvent *event)
             keysForParent << Qt::Key_Up  << Qt::Key_Down;
             if (event->key() == Qt::Key_Right) {
                 mParentFocus = false;
-                if (!activeAction() && actions().size())
+                if (!activeAction() && !actions().isEmpty())
                     setActiveAction(actions().at(0));
             } else if (keysForParent.contains(event->key())) {
                 mParentMenu->keyPressEvent(event);

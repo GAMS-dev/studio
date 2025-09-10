@@ -360,11 +360,13 @@ QStringList Option::getKeyAndSynonymList() const
 
 QStringList Option::getValuesList(const QString &optionName) const
 {
-   QStringList valueList;
-   for ( const OptionValue &value: getValueList(optionName.toUpper()) )
-       valueList << value.value.toString();
+    QStringList valueList;
+    const auto optionValues = getValueList(optionName.toUpper());
+    valueList.reserve(optionValues.size());
+    for (const OptionValue &value: optionValues)
+        valueList << value.value.toString();
 
-   return valueList;
+    return valueList;
 }
 
 const QStringList Option::getSynonymList(const QString &optionName) const
@@ -535,6 +537,7 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
          char* s = optStringQuote(mOPTHandle, stringquoteChars);
          mStringquote = (s ? (s[0] ? stringquoteChars : "") : "");
 
+         QStringList synonymList;
          for (int i = 1; i <= optCount(mOPTHandle); ++i) {
 
              char name[GMS_SSSIZE];
@@ -577,7 +580,7 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
              }
              opt.deprecated = optIsDeprecated(mOPTHandle, name);
              opt.valid = (helpContextNr != 0);
-             QStringList synonymList;
+             synonymList.resize(0);
              if (synonym.contains(nameStr)) {
                  QMultiMap<QString, QString>::iterator it = synonym.find(nameStr);
                  while (it != synonym.end() && (QString::compare(it.key(), nameStr, Qt::CaseInsensitive) == 0) ) {
