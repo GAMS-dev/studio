@@ -506,6 +506,16 @@ void PExProjectNode::setDynamicMainFile(bool newDynamicMainFile)
     mDynamicMainFile = newDynamicMainFile;
 }
 
+bool PExProjectNode::ownBaseDir() const
+{
+    return mOwnBaseDir || (location().compare(mWorkDir) != 0);
+}
+
+void PExProjectNode::setOwnBaseDir(bool ownBaseDir)
+{
+    mOwnBaseDir = ownBaseDir;
+}
+
 void PExProjectNode::updateOpenEditors()
 {
     if (mProfiler)
@@ -1203,8 +1213,13 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
 void PExProjectNode::setLocation(const QString &newLocation)
 {
     // check if changed more than letter case
-    bool changed = location().isEmpty() || location().compare(newLocation, FileType::fsCaseSense()) != 0;
+    bool wasEmpty = location().isEmpty();
+    bool changed = wasEmpty || location().compare(newLocation, FileType::fsCaseSense()) != 0;
     PExGroupNode::setLocation(newLocation);
+    if (wasEmpty) {
+        QFileInfo fi(fileName());
+        setFileName(newLocation + "/" + fi.fileName());
+    }
     if (changed)
         emit baseDirChanged(this);
 }

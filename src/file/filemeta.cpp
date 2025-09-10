@@ -1266,12 +1266,12 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
 
     if (kind() == FileKind::Gsp) {
         project::ProjectData *sharedData = nullptr;
-        project::ProjectEdit *otherProp = nullptr;
-        if (editors().size()) {
-            otherProp = ViewHelper::toProjectEdit(topEditor());
-            sharedData = otherProp->sharedData();
-        } else {
+        project::ProjectEdit *otherPEdit = nullptr;
+        if (editors().isEmpty()) {
             sharedData = new project::ProjectData(project);
+        } else {
+            otherPEdit = ViewHelper::toProjectEdit(topEditor());
+            sharedData = otherPEdit->sharedData();
         }
         project::ProjectEdit *prop = new project::ProjectEdit(sharedData, parent);
         project->setProjectEditFileMeta(this);

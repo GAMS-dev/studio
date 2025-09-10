@@ -105,6 +105,8 @@ public:
     void setMainFile(FileMeta *gmsFile = nullptr);
     bool dynamicMainFile() const;
     void setDynamicMainFile(bool newDynamicMainFile);
+    bool ownBaseDir() const;
+    void setOwnBaseDir(bool ownBaseDir);
     bool hasParameterFile();
     FileMeta *parameterFile() const;
     void setParameterFile(FileMeta *pfFile = nullptr);
@@ -231,6 +233,7 @@ private:
     PExLogNode* mLogNode = nullptr;
     FileMeta *mProjectEditFileMeta = nullptr;
     bool mDynamicMainFile = false;
+    bool mOwnBaseDir = false;
     QHash<int, QString> mErrorTexts;
     QHash<FileId, QStringList> mMainFileParameters;
     QHash<QString, QString> mParameterHash;

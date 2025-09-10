@@ -40,6 +40,25 @@ namespace studio {
 
 const QString ProjectRepo::CIgnoreSuffix(".lst.lxi.log.");
 const QString CGamsSystemProjectName("-GAMS-System-");
+const QString CSuffixGsp(".gsp");
+const QString CSuffixGpr(".gpr");
+const QString CFieldProject("project");
+const QString CFieldFile("file");
+const QString CFieldPf("pf");
+const QString CFieldProjectType("projectType");
+const QString CFieldPath("path");
+const QString CFieldWorkDir("workDir");
+const QString CFieldName("name");
+const QString CFieldOptions("options");
+const QString CFieldDynamicMainFile("dynamicMainFile");
+const QString CFieldOwnBaseDir("ownBaseDir");
+const QString CFieldEngineJobToken("engineJobToken");
+const QString CFieldExpand("expand");
+const QString CFieldNodes("nodes");
+const QString CFieldType("type");
+const QString CFieldEncoding("encoding");
+
+const QString CFieldCodecMib("codecMib");  // TODO(JM) Keep for two GAMS releases (until GAMS 52)
 
 ProjectRepo::ProjectRepo(QObject* parent)
     : QObject(parent), mNextId(0), mTreeModel(new ProjectTreeModel(this, new PExRootNode(this)))
@@ -249,24 +268,24 @@ bool ProjectRepo::checkRead(const QVariantMap &map, int &count, int &ignored, QS
     count = 0;
     ignored = 0;
     if (basePath.isEmpty()) {
-        addWarning("Missing base path. Can't open project " + map.value("name").toString());
+        addWarning("Missing base path. Can't open project " + map.value(CFieldName).toString());
         return false;
     }
     QDir baseDir(basePath);
     if (!baseDir.exists() || !baseDir.isAbsolute()) {
-        addWarning("Base path '" +basePath + "' not valid. Can't open project " + map.value("name").toString());
+        addWarning("Base path '" +basePath + "' not valid. Can't open project " + map.value(CFieldName).toString());
         return false;
     }
 
     missed.clear();
-    QString mainFile = map.value("file").toString();
+    QString mainFile = map.value(CFieldFile).toString();
     QString runPath = mainFile.isEmpty() ? "" : QDir::cleanPath(baseDir.absoluteFilePath(mainFile));
 
-    QVariantList children = map.value("nodes").toList();
+    QVariantList children = map.value(CFieldNodes).toList();
     if (!children.isEmpty() && !basePath.isEmpty()) {
         for (int i = 0; i < children.size(); ++i) {
             QVariantMap child = children.at(i).toMap();
-            QString fileName = QDir::cleanPath(baseDir.absoluteFilePath(child.value("file").toString()));
+            QString fileName = QDir::cleanPath(baseDir.absoluteFilePath(child.value(CFieldFile).toString()));
             if (fileName.compare(runPath, FileType::fsCaseSense()) == 0)
                 runPath = QString();
             QFileInfo file(fileName);
@@ -298,11 +317,11 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile, bool doWa
 {
     bool res = true;
     PExProjectNode::Type type = PExProjectNode::tCommon;
-    if (projectMap.contains("projectType"))
-        type = PExProjectNode::Type(projectMap.value("projectType").toInt());
+    if (projectMap.contains(CFieldProjectType))
+        type = PExProjectNode::Type(projectMap.value(CFieldProjectType).toInt());
     else {
         // identify projectType for older settings
-        QString name = projectMap.value("name").toString();
+        QString name = projectMap.value(CFieldName).toString();
         if (name.startsWith("-Search: ")) type = PExProjectNode::tSearch;
         if (name.compare(CGamsSystemProjectName) == 0) type = PExProjectNode::tGams;
     }
@@ -311,8 +330,8 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile, bool doWa
     QVariantMap projectData = projectMap;
 
     // if there is a valid project file, load it instead of the settings part
-    if (gspFile.isEmpty() && projectMap.contains("project"))
-        gspFile = projectMap.value("project").toString();
+    if (gspFile.isEmpty() && projectMap.contains(CFieldProject))
+        gspFile = projectMap.value(CFieldProject).toString();
 
     if (type == PExProjectNode::tCommon && !gspFile.isEmpty()) {
         projectPath = QFileInfo(gspFile).absolutePath();
@@ -341,13 +360,13 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile, bool doWa
     }
 
     // read name and path from projectData, and fill missing data
-    QString name = projectData.value("name").toString();
-    QString baseDir = projectData.value("path").toString();
+    QString name = projectData.value(CFieldName).toString();
+    QString baseDir = projectData.value(CFieldPath).toString();
     if (gspFile.isEmpty()) {
         if (baseDir.isEmpty())
             baseDir = CommonPaths::defaultWorkingDir();
         projectPath = baseDir;
-        gspFile = projectPath + '/' + name + ".gsp";
+        gspFile = projectPath + '/' + name + CSuffixGsp;
     }
     if (baseDir.isEmpty()) {
         if (projectPath.isEmpty())
@@ -358,30 +377,33 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile, bool doWa
     if (QDir(baseDir).isRelative())
         baseDir = QDir::cleanPath(projectDir.absoluteFilePath(baseDir));
 
-    QString workDir = QDir::cleanPath(projectDir.absoluteFilePath(projectData.value("workDir").toString()));
-    if (workDir.isEmpty()) workDir = projectPath;
+    QString workDir = QDir::cleanPath(projectDir.absoluteFilePath(projectData.value(CFieldWorkDir).toString()));
+    if (workDir.isEmpty())
+        workDir = projectPath;
 
-    QString mainFile = QDir::cleanPath(projectDir.absoluteFilePath(projectData.value("file").toString()));
+    QString mainFile = QDir::cleanPath(projectDir.absoluteFilePath(projectData.value(CFieldFile).toString()));
 
-    QVariantList subChildren = projectData.value("nodes").toList();
+    QVariantList subChildren = projectData.value(CFieldNodes).toList();
     if (!name.isEmpty() || !projectPath.isEmpty()) {
         if (PExProjectNode* project = createProject(gspFile, baseDir, mainFile, onExist_Project, workDir, type)) {
-            if (projectData.contains("pf")) {
-                QString pfFile = projectData.value("pf").toString();
+            if (projectData.contains(CFieldPf)) {
+                QString pfFile = projectData.value(CFieldPf).toString();
                 if (!pfFile.isEmpty())
                     pfFile = projectDir.absoluteFilePath(pfFile);
                 project->setParameterFile(pfFile);
             }
             if (!readProjectFiles(project, subChildren, projectPath, doWarn))
                 res = false;
-            bool expand = projectData.contains("expand") ? projectData.value("expand").toBool() : true;
+            bool expand = projectData.contains(CFieldExpand) ? projectData.value(CFieldExpand).toBool() : true;
             mTreeView->setExpanded(mProxyModel->asIndex(project), expand);
             if (projectChangedMarker)
                 project->setNeedSave();
-            if (projectData.contains("engineJobToken"))
-                project->setEngineJobToken(projectData.value("engineJobToken").toString(), false);
-            project->setMainFileParameterHistory(FileId(), projectData.value("options").toStringList());
-            project->setDynamicMainFile(projectData.value("dynamicMainFile").toBool());
+            if (projectData.contains(CFieldEngineJobToken))
+                project->setEngineJobToken(projectData.value(CFieldEngineJobToken).toString(), false);
+            project->setMainFileParameterHistory(FileId(), projectData.value(CFieldOptions).toStringList());
+            project->setDynamicMainFile(projectData.value(CFieldDynamicMainFile).toBool());
+            project->setOwnBaseDir(projectData.value(CFieldOwnBaseDir, false).toBool());
+
             if (!project->childCount()) {
                 closeGroup(project);
             }
@@ -398,23 +420,23 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
     QDir localBaseDir(baseDir);
     for (int i = 0; i < children.size(); ++i) {
         QVariantMap child = children.at(i).toMap();
-        QString name = child.value("name").toString();
-        QString file = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value("file").toString()));
+        QString name = child.value(CFieldName).toString();
+        QString file = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value(CFieldFile).toString()));
         if (!name.isEmpty() || !file.isEmpty()) {
-            QString suf = child["type"].toString();
+            QString suf = child[CFieldType].toString();
             if (suf == "gms") suf = QFileInfo(name).fileName();
             FileType *ft = &FileType::from(suf);
             if (QFileInfo::exists(file)) {
                 PExFileNode * node = findOrCreateFileNode(file, project, ft, name);
-                QString encoding = child.contains("encoding") ?
-                                       child.value("encoding").toString()
-                                       : child.contains("codecMib") ?
-                                           Encoding::name(child.value("codecMib").toInt())
+                QString encoding = child.contains(CFieldEncoding) ?
+                                       child.value(CFieldEncoding).toString()
+                                       : child.contains(CFieldCodecMib) ?
+                                           Encoding::name(child.value(CFieldCodecMib).toInt())
                                            : Settings::settings()->toString(skDefaultEncoding);
                 node->file()->setEncoding(encoding);
                 QStringList optList;
-                if (child.contains("options"))
-                    optList = child.value("options").toStringList();
+                if (child.contains(CFieldOptions))
+                    optList = child.value(CFieldOptions).toStringList();
                 project->setMainFileParameterHistory(node->file()->id(), optList);
             } else if (!CIgnoreSuffix.contains('.'+QFileInfo(file).suffix()+'.')) {
                 if (doWarn)
@@ -441,7 +463,7 @@ void ProjectRepo::write(QVariantList &projects) const
         if (project->type() != PExProjectNode::tSearch) {
             QVariantMap data;
             data = getProjectMap(project, false);
-            data.insert("project", project->fileName());
+            data.insert(CFieldProject, project->fileName());
             projects.append(data);
         }
     }
@@ -468,7 +490,7 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
     QDir dir(QFileInfo(project->fileName()).absolutePath());
     if (project->mainFile()) {
         QString filePath = project->mainFile()->location();
-        projectObject.insert("file", relativePaths ? dir.relativeFilePath(filePath) : filePath);
+        projectObject.insert(CFieldFile, relativePaths ? dir.relativeFilePath(filePath) : filePath);
     }
     if (project->hasParameterFile()) {
         QString pfPath;
@@ -476,25 +498,26 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
             QString filePath = meta->location();
             pfPath = relativePaths ? dir.relativeFilePath(filePath) : filePath;
         }
-        projectObject.insert("pf", pfPath);
+        projectObject.insert(CFieldPf, pfPath);
     }
-    projectObject.insert("projectType", int(project->type()));
-    projectObject.insert("path", relativePaths ? dir.relativeFilePath(project->location()) : project->location() );
-    projectObject.insert("workDir", relativePaths ? dir.relativeFilePath(project->workDir()) : project->workDir() );
-    projectObject.insert("name", project->name());
-    projectObject.insert("options", project->getRunParametersHistory());
-    projectObject.insert("dynamicMainFile", project->dynamicMainFile());
+    projectObject.insert(CFieldProjectType, int(project->type()));
+    projectObject.insert(CFieldPath, relativePaths ? dir.relativeFilePath(project->location()) : project->location() );
+    projectObject.insert(CFieldWorkDir, relativePaths ? dir.relativeFilePath(project->workDir()) : project->workDir() );
+    projectObject.insert(CFieldName, project->name());
+    projectObject.insert(CFieldOptions, project->getRunParametersHistory());
+    projectObject.insert(CFieldDynamicMainFile, project->dynamicMainFile());
+    projectObject.insert(CFieldOwnBaseDir, project->ownBaseDir());
     if (!project->engineJobToken().isEmpty())
-        projectObject.insert("engineJobToken", project->engineJobToken());
+        projectObject.insert(CFieldEngineJobToken, project->engineJobToken());
     QModelIndex mi = mProxyModel->asIndex(project);
     bool ok = true;
     expand = isExpanded(project->id(), &ok);
     if (!ok)
         expand = mTreeView->isExpanded(mi);
-    if (!expand) projectObject.insert("expand", false);
+    if (!expand) projectObject.insert(CFieldExpand, false);
     QVariantList subArray;
     writeProjectFiles(project, subArray, relativePaths);
-    projectObject.insert("nodes", subArray);
+    projectObject.insert(CFieldNodes, subArray);
     return projectObject;
 }
 
@@ -503,19 +526,19 @@ void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList&
     QDir dir(QFileInfo(project->fileName()).absolutePath());
     for (PExFileNode *file : project->listFiles()) {
         QVariantMap nodeObject;
-        nodeObject.insert("file", relativePaths ? dir.relativeFilePath(file->location()) : file->location());
-        nodeObject.insert("name", file->name());
-        nodeObject.insert("type", file->file()->kindAsStr());
-        nodeObject.insert("encoding", file->file()->encoding());
+        nodeObject.insert(CFieldFile, relativePaths ? dir.relativeFilePath(file->location()) : file->location());
+        nodeObject.insert(CFieldName, file->name());
+        nodeObject.insert(CFieldType, file->file()->kindAsStr());
+        nodeObject.insert(CFieldEncoding, file->file()->encoding());
 
         // TODO(JM) Keep for two GAMS releases (until GAMS 52)
-        nodeObject.insert("codecMib", Encoding::nameToOldMib(file->file()->encoding()));
+        nodeObject.insert(CFieldCodecMib, Encoding::nameToOldMib(file->file()->encoding()));
 
         QStringList options = project->mainFileParameterHistory(file->file()->id());
         if (options.size() == 1 && options.at(0).isEmpty())
             options.clear();
         if (!options.isEmpty())
-            nodeObject.insert("options", options);
+            nodeObject.insert(CFieldOptions, options);
         childList.append(nodeObject);
     }
 }
@@ -582,7 +605,7 @@ void ProjectRepo::uniqueProjectFile(PExGroupNode *parentNode, QString &filePath)
     QString res;
     bool conflict = true;
     while (conflict) {
-        res = fi.path() + '/' + fi.completeBaseName() + (nr>0 ? QString::number(nr) : "") + ".gsp";
+        res = fi.path() + '/' + fi.completeBaseName() + (nr>0 ? QString::number(nr) : "") + CSuffixGsp;
         conflict = false;
         for (PExAbstractNode * n : parentNode->childNodes()) {
             PExProjectNode *project = n->toProject();
@@ -607,13 +630,10 @@ PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, co
     else if (type == PExProjectNode::tGams) {
         name = CGamsSystemProjectName;
     } else if (type <= PExProjectNode::tCommon) {
-        if (!name.endsWith(".gsp", FileType::fsCaseSense())) {
-            QFileInfo fi(name);
-            name = path + '/' + fi.completeBaseName() + ".gsp";
-        }
-        if (!name.contains('/')) {
+        if (!name.endsWith(CSuffixGsp, FileType::fsCaseSense()))
+            name += CSuffixGsp;
+        if (!name.contains('/') && !path.isEmpty())
             name = path + '/' + name;
-        }
     }
 
     PExProjectNode* project = findProject(name);
@@ -686,21 +706,23 @@ MultiCopyCheck ProjectRepo::getCopyPaths(PExProjectNode *project, const QString 
     return res;
 }
 
-void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, bool fullCopy)
+void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, ProjectMoveOption option)
 {
     QString oldFile = project->fileName();
     project->setFileName(filePath);
     bool removeOld = filePath.compare(oldFile, FileType::fsCaseSense()) != 0;
     bool keepSmall = project->type() == PExProjectNode::tSmall && !removeOld;
-    project->setHasGspFile(true);
-    project->setNeedSave();
-    QVariantMap proData = getProjectMap(project, true);
-    save(project, proData);
-    if (fullCopy) {
+    if (option != pmRename) {
+        project->setHasGspFile(true);
+        project->setNeedSave();
+        QVariantMap proData = getProjectMap(project, true);
+        save(project, proData);
+    }
+    if (option == pmFullCopy) {
         if (keepSmall) project->setHasGspFile(false);
         project->setFileName(oldFile);
     } else {
-        if (removeOld) {
+        if (removeOld && option != pmRename) {
             QFile file(oldFile);
             file.remove();
         }
@@ -1110,7 +1132,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     } else {
         QString validFile;
         for (const QString &filePath: std::as_const(files)) {
-            if (!filePath.endsWith(".gsp", Qt::CaseInsensitive)) {
+            if (!filePath.endsWith(CSuffixGsp, Qt::CaseInsensitive)) {
                 validFile = filePath;
                 break;
             }
@@ -1134,7 +1156,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         QFileInfo f(item);
         QDir d(item);
         if (f.isFile()) {
-            if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
+            if (item.endsWith(CSuffixGsp, Qt::CaseInsensitive)) {
                 ++projectCount;
                 continue;
             }
@@ -1153,11 +1175,11 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         QDir d(item);
 
         if (f.isFile()) {
-            if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
+            if (item.endsWith(CSuffixGsp, Qt::CaseInsensitive)) {
                 emit openProject(item);
                 continue;
             }
-            if (item.endsWith(".gpr", Qt::CaseInsensitive)) {
+            if (item.endsWith(CSuffixGpr, Qt::CaseInsensitive)) {
                 emit importGprProject(item);
                 continue;
             }
