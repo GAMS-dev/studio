@@ -52,6 +52,7 @@ public:
         pfFile   = 0x0040,
         hasGsp   = 0x0080,
         dynMain  = 0x0100,
+        ownBase  = 0x0200,
         all      = 0xffff,
     };
     Q_DECLARE_FLAGS(Fields, Field)
@@ -100,6 +101,9 @@ signals:
     void modificationChanged(bool modification);
     void saveProjects();
 
+protected:
+    void showEvent(QShowEvent *event) override;
+
 private slots:
     void updateData(ProjectData::Field field);
     void updateComboboxEntries();
@@ -113,6 +117,8 @@ private slots:
     void on_cbMainFile_currentIndexChanged(int index);
     void on_cbDynamicMainFile_toggled(bool checked);
     void on_cbPfFile_currentIndexChanged(int index);
+
+    void on_cbOwnBaseDir_toggled(bool checked);
 
 private:
     void setSharedData(ProjectData *sharedData);
@@ -129,7 +135,6 @@ private:
     bool mModified = false;
     bool mBlockUpdate = false;
     QString mName;
-
 };
 
 

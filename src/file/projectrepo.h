@@ -49,6 +49,11 @@ enum MultiCopyCheck {
     mcsMissCollide,
     mcsMissAll,
 };
+enum ProjectMoveOption {
+    pmMove,
+    pmRename,
+    pmFullCopy,
+};
 
 ///
 /// The ProjectRepo handles all open and assigned nodes of projects or simple gms-runnables. It is based on an
@@ -126,7 +131,7 @@ public:
     PExProjectNode *createProject(QString name, const QString &path, const QString &mainFileName, ProjectExistFlag mode,
                                   const QString &workDir = QString(), PExProjectNode::Type type = PExProjectNode::tSmall);
     MultiCopyCheck getCopyPaths(PExProjectNode *project, const QString &filePath, QStringList &srcFiles, QStringList &dstFiles, QStringList &missFiles, QStringList &existFiles);
-    void moveProject(PExProjectNode *project, const QString &filePath, bool fullCopy);
+    void moveProject(PExProjectNode *project, const QString &filePath, ProjectMoveOption option);
     PExGroupNode *findOrCreateFolder(const QString &folderName, PExGroupNode *parentNode, bool isAbs);
     PExFileNode *findOrCreateFileNode(QString location, PExProjectNode *project = nullptr, FileType *knownType = nullptr
             , const QString &explicitName = QString());

@@ -3521,7 +3521,7 @@ void MainWindow::moveProjectDialog(PExProjectNode *project, bool fullCopy)
                 moveProjectCollideDialog(mcs, project, srcFiles, dstFiles, missFiles, collideFiles);
             }
         } else {
-            mProjectRepo.moveProject(project, fileName, fullCopy);
+            mProjectRepo.moveProject(project, fileName, fullCopy ? pmFullCopy : pmMove);
             SysLogLocator::systemLog()->append("Project file " + QString(fullCopy ? "copied" : "renamed") + " to " + fileName,
                                                LogMsgType::Info);
         }
@@ -3578,7 +3578,7 @@ void MainWindow::copyFiles(const QStringList &srcFiles, const QStringList &dstFi
     if (project->type() == PExProjectNode::tSmall) {
         // The first entry in srcFiles an dstFiles is always the project file.
         // A tSmall project w/o gsp-file is created here
-        mProjectRepo.moveProject(project, dstFiles.at(0), true);
+        mProjectRepo.moveProject(project, dstFiles.at(0), pmFullCopy);
         ++count;
         ++i;
     }
@@ -7312,7 +7312,7 @@ void MainWindow::on_actionNew_Project_triggered()
         appendSystemLogWarning("Couldn't create new project");
         return;
     }
-    mProjectRepo.editProjectName(project);
+    openFileNode(project);
 }
 
 void MainWindow::on_actionOpen_Project_triggered()

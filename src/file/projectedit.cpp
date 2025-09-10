@@ -35,6 +35,8 @@ namespace gams {
 namespace studio {
 namespace project {
 
+const QString cOn("1");
+const QString cOff("0");
 const QString cNone("-none-");
 const QString cName("Name: the name of the project");
 const QString cProFile("Project file: this file contains all project information."
@@ -47,8 +49,9 @@ ProjectData::ProjectData(PExProjectNode *project)
     QString projectFile = mProject->type() == PExProjectNode::tSmall ? "[internal]"
                                                                      : QDir::toNativeSeparators(mProject->fileName());
     mDataOri.insert(file, projectFile);
-    mDataOri.insert(hasGsp, mProject->type() == PExProjectNode::tSmall ? "0" : "1");
-    mDataOri.insert(dynMain, mProject->dynamicMainFile() ? "dyn" : "fix");
+    mDataOri.insert(hasGsp, mProject->type() == PExProjectNode::tSmall ? cOff : cOn);
+    mDataOri.insert(dynMain, mProject->dynamicMainFile() ? cOn : cOff);
+    mDataOri.insert(ownBase, mProject->ownBaseDir() ? cOn : cOff);
     mDataOri.insert(name, mProject->name());
     mDataOri.insert(nameExt, mProject->nameExt());
     QString path = mProject->workDir();
@@ -71,7 +74,7 @@ ProjectData::ProjectData(PExProjectNode *project)
 void ProjectData::setFieldData(Field field, const QString& value)
 {
     bool change = (mData.contains(field) ? mData.value(field) : mDataOri.value(field)) != value;
-    if (mData.value(field) == mDataOri.value(field))
+    if (value == mDataOri.value(field))
         mData.remove(field);
     else
         mData.insert(field, value);
@@ -129,7 +132,8 @@ bool ProjectData::save()
         QFileInfo proFile(mProject->fileName());
         if (proFile.completeBaseName().compare(mData.value(name), FileType::fsCaseSense()) != 0) {
             QString newProFile = proFile.path() +"/"+ mData.value(name) +"."+ proFile.suffix();
-            mProject->projectRepo()->moveProject(mProject, newProFile, false);
+            ProjectMoveOption opt = mProject->type() == PExProjectNode::tCommon ? pmMove : pmRename;
+            mProject->projectRepo()->moveProject(mProject, newProFile, opt);
             mDataOri.insert(name, mData.value(name));
         }
     }
@@ -138,9 +142,15 @@ bool ProjectData::save()
         mDataOri.insert(mainFile, mData.value(mainFile));
     }
     if (mData.contains(dynMain)) {
-        if (mProject->dynamicMainFile() != (mData.value(dynMain) == "dyn")) {
-            mProject->setDynamicMainFile(mData.value(dynMain) == "dyn");
+        if (mProject->dynamicMainFile() != (mData.value(dynMain) == cOn)) {
+            mProject->setDynamicMainFile(mData.value(dynMain) == cOn);
             mDataOri.insert(dynMain, mData.value(dynMain));
+        }
+    }
+    if (mData.contains(ownBase)) {
+        if (mProject->ownBaseDir() != (mData.value(ownBase) == cOn)) {
+            mProject->setOwnBaseDir(mData.value(ownBase) == cOn);
+            mDataOri.insert(ownBase, mData.value(ownBase));
         }
     }
     if (mData.contains(pfFile)) {
@@ -177,13 +187,17 @@ void ProjectData::projectChanged(const NodeId &id)
         mDataOri.insert(ProjectData::file, projectFile);
         emit changed(ProjectData::file);
     }
-    if (mDataOri.value(ProjectData::hasGsp) != (mProject->type() == PExProjectNode::tSmall ? "0" : "1")) {
-        mDataOri.insert(ProjectData::hasGsp, (mProject->type() == PExProjectNode::tSmall ? "0" : "1"));
+    if (mDataOri.value(ProjectData::hasGsp) != (mProject->type() == PExProjectNode::tSmall ? cOff : cOn)) {
+        mDataOri.insert(ProjectData::hasGsp, (mProject->type() == PExProjectNode::tSmall ? cOff : cOn));
         emit changed(ProjectData::hasGsp);
     }
-    if (mDataOri.value(ProjectData::dynMain) != (mProject->dynamicMainFile() ? "dyn" : "fix")) {
-        mDataOri.insert(ProjectData::dynMain, (mProject->dynamicMainFile() ? "dyn" : "fix"));
+    if (mDataOri.value(ProjectData::dynMain) != (mProject->dynamicMainFile() ? cOn : cOff)) {
+        mDataOri.insert(ProjectData::dynMain, (mProject->dynamicMainFile() ? cOn : cOff));
         emit changed(ProjectData::dynMain);
+    }
+    if (mDataOri.value(ProjectData::ownBase) != (mProject->ownBaseDir() ? cOn : cOff)) {
+        mDataOri.insert(ProjectData::ownBase, (mProject->ownBaseDir() ? cOn : cOff));
+        emit changed(ProjectData::ownBase);
     }
     if (mDataOri.value(ProjectData::name) != mProject->name()) {
         mDataOri.insert(ProjectData::name, mProject->name());
@@ -217,28 +231,35 @@ ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
     ui(new Ui::ProjectEdit)
 {
     ui->setupUi(this);
+    setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     mBlockUpdate = true;
     mSharedData = sharedData;
+
     ui->edProjectFile->setEnabled(false);
     ui->edProjectFile->setToolTip(cProFile);
+    ui->laProjectFile->setToolTip(ui->edProjectFile->toolTip());
     ui->edName->setToolTip(cName);
+    ui->laName->setToolTip(ui->edName->toolTip());
     ui->edFullName->setEnabled(false);
     ui->edFullName->setToolTip("Full name: the full name of the project including extension to avoid name conflicts");
-    ui->cbMainFile->setToolTip("Main file: this file will be excuted with GAMS");
-    ui->cbPfFile->setToolTip("Parameter file: this file contains the default parameters");
-    setWindowFlag(Qt::WindowContextHelpButtonHint, false);
-    ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files");
+
     ui->edWorkDir->setToolTip("Working directory: used as working directory to run GAMS");
-    ui->laName->setToolTip(ui->edName->toolTip());
-    ui->laProjectFile->setToolTip(ui->edProjectFile->toolTip());
-    ui->laMainGms->setToolTip(ui->cbMainFile->toolTip());
-    ui->laPfFile->setToolTip(ui->cbPfFile->toolTip());
-    ui->laBaseDir->setToolTip(ui->edBaseDir->toolTip());
     ui->laWorkDir->setToolTip(ui->edWorkDir->toolTip());
+    ui->bWorkDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
+    ui->bWorkDir->setToolTip("Browse for working directory");
+
+    ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files/n"
+                              "Equals the Working directory by default. Check to assign a different path.");
+    ui->cbOwnBaseDir->setToolTip(ui->edBaseDir->toolTip());
     ui->bBaseDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
     ui->bBaseDir->setToolTip("Browse for base directory");
-    ui->bWorkDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
-    ui->bBaseDir->setToolTip("Browse for working directory");
+    ui->edBaseDir->setEnabled(sharedData->fieldData(ProjectData::ownBase) == cOn);
+    ui->bBaseDir->setEnabled(sharedData->fieldData(ProjectData::ownBase) == cOn);
+
+    ui->cbMainFile->setToolTip("Main file: this file will be excuted with GAMS");
+    ui->laMainGms->setToolTip(ui->cbMainFile->toolTip());
+    ui->cbPfFile->setToolTip("Parameter file: this file contains the default parameters");
+    ui->laPfFile->setToolTip(ui->cbPfFile->toolTip());
     adjustSize();
     connect(sharedData, &ProjectData::changed, this, &ProjectEdit::updateData);
     connect(sharedData, &ProjectData::projectFilesChanged, this, &ProjectEdit::updateComboboxEntries);
@@ -277,6 +298,17 @@ bool ProjectEdit::save()
     return res;
 }
 
+void ProjectEdit::showEvent(QShowEvent *event)
+{
+    AbstractView::showEvent(event);
+    if (mSharedData->project()->isEmpty() && mSharedData->project()->name().compare("newProject") == 0) {
+        ui->edName->selectAll();
+        QTimer::singleShot(0, this, [this]() {
+            ui->edName->setFocus();
+        });
+    }
+}
+
 void ProjectEdit::on_edName_textChanged(const QString &text)
 {
     if (mBlockUpdate) return;
@@ -305,6 +337,8 @@ void ProjectEdit::on_edWorkDir_textChanged(const QString &text)
     updateEditColor(ui->edWorkDir, text);
     if (text != mSharedData->fieldData(ProjectData::workDir))
         mSharedData->setFieldData(ProjectData::workDir, text);
+    if (mSharedData->fieldData(ProjectData::ownBase) == cOff)
+        ui->edBaseDir->setText(text);
     updateState();
 }
 
@@ -348,6 +382,8 @@ void ProjectEdit::updateState()
     if (edPath.compare(proPath))
         isModified = true;
     if (ui->cbDynamicMainFile->isChecked() != pro->dynamicMainFile())
+        isModified = true;
+    if (ui->cbOwnBaseDir->isChecked() != pro->ownBaseDir())
         isModified = true;
     proPath = pro->parameterFile() ? pro->parameterFile()->location() : cNone;
     edPath = QDir::fromNativeSeparators(ui->cbPfFile->currentText());
@@ -396,8 +432,13 @@ void ProjectEdit::updateData(gams::studio::project::ProjectData::Field field)
         ui->edProjectFile->setText(mSharedData->fieldData(ProjectData::file));
     if ((field & ProjectData::name) && ui->edName->text() != mSharedData->fieldData(ProjectData::name))
         ui->edName->setText(mSharedData->fieldData(ProjectData::name));
-    if ((field & ProjectData::dynMain) && ui->cbDynamicMainFile->isChecked() != (mSharedData->fieldData(ProjectData::dynMain) == "dyn"))
-        ui->cbDynamicMainFile->setChecked(mSharedData->fieldData(ProjectData::dynMain) == "dyn");
+    if ((field & ProjectData::dynMain) && ui->cbDynamicMainFile->isChecked() != (mSharedData->fieldData(ProjectData::dynMain) == cOn))
+        ui->cbDynamicMainFile->setChecked(mSharedData->fieldData(ProjectData::dynMain) == cOn);
+    if ((field & ProjectData::ownBase) && ui->cbOwnBaseDir->isChecked() != (mSharedData->fieldData(ProjectData::ownBase) == cOn)) {
+        ui->cbOwnBaseDir->setChecked(mSharedData->fieldData(ProjectData::ownBase) == cOn);
+        ui->edBaseDir->setEnabled(ui->cbOwnBaseDir->isChecked());
+        ui->bBaseDir->setEnabled(ui->cbOwnBaseDir->isChecked());
+    }
     if ((field & ProjectData::workDir) && ui->edWorkDir->text() != mSharedData->fieldData(ProjectData::workDir))
         ui->edWorkDir->setText(mSharedData->fieldData(ProjectData::workDir));
     if ((field & ProjectData::baseDir) && ui->edBaseDir->text() != mSharedData->fieldData(ProjectData::baseDir))
@@ -411,7 +452,7 @@ void ProjectEdit::updateData(gams::studio::project::ProjectData::Field field)
 
 void ProjectEdit::updateComboboxEntries()
 {
-    bool hasGsp = mSharedData->fieldData(ProjectData::hasGsp) != "0";
+    bool hasGsp = mSharedData->fieldData(ProjectData::hasGsp) == cOn;
     ui->bGspSwitch->setEnabled(hasGsp || mSharedData->project()->childCount());
     ui->bGspSwitch->setIcon(Theme::icon(QString(":/%1/") + (hasGsp ? "delete-all" : "new")));
     ui->bGspSwitch->setToolTip(hasGsp ? "Delete the project file (project data is stored in the Studio settings)"
@@ -493,8 +534,22 @@ void ProjectEdit::on_cbMainFile_currentIndexChanged(int index)
 void ProjectEdit::on_cbDynamicMainFile_toggled(bool checked)
 {
     Q_UNUSED(checked)
-    if (ui->cbDynamicMainFile->isChecked() != (mSharedData->fieldData(ProjectData::dynMain) == "dyn"))
-        mSharedData->setFieldData(ProjectData::dynMain, ui->cbDynamicMainFile->isChecked() ? "dyn" : "fix");
+    if (ui->cbDynamicMainFile->isChecked() != (mSharedData->fieldData(ProjectData::dynMain) == cOn))
+        mSharedData->setFieldData(ProjectData::dynMain, ui->cbDynamicMainFile->isChecked() ? cOn : cOff);
+    updateState();
+}
+
+void ProjectEdit::on_cbOwnBaseDir_toggled(bool checked)
+{
+    Q_UNUSED(checked)
+    if (ui->cbOwnBaseDir->isChecked() != (mSharedData->fieldData(ProjectData::ownBase) == cOn)) {
+        mSharedData->setFieldData(ProjectData::ownBase, ui->cbOwnBaseDir->isChecked() ? cOn : cOff);
+        if (!checked) {
+            ui->edBaseDir->setText(ui->edWorkDir->text());
+        }
+        ui->edBaseDir->setEnabled(ui->cbOwnBaseDir->isChecked());
+        ui->bBaseDir->setEnabled(ui->cbOwnBaseDir->isChecked());
+    }
     updateState();
 }
 
