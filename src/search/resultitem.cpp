@@ -132,7 +132,7 @@ ResultItem::Type ResultItem::type() const
 
 bool gams::studio::search::ResultItem::hasChilds() const
 {
-    return mChilds.size();
+    return !mChilds.isEmpty();
 }
 
 }

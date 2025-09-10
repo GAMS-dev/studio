@@ -436,7 +436,7 @@ void ParameterEditor::addParameterFromDefinition(const QModelIndex &index)
                                                                      entryNumberData, -1, Qt::MatchExactly|Qt::MatchRecursive);
     ui->gamsParameterTableView->clearSelection();
     QItemSelection selection;
-    for(const QModelIndex &idx: indices) {
+    for(const QModelIndex &idx: std::as_const(indices)) {
         const QModelIndex leftIndex  = ui->gamsParameterTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_OPTION_KEY);
         const QModelIndex rightIndex = ui->gamsParameterTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
         const QItemSelection rowSelection(leftIndex, rightIndex);
@@ -467,7 +467,7 @@ void ParameterEditor::addParameterFromDefinition(const QModelIndex &index)
     } else if (multipleEntryExisted) {
         QString entryDetailedText = QString("Entries:\n");
         int i = 0;
-        for (const QModelIndex &idx : indices)
+        for (const QModelIndex &idx : std::as_const(indices))
             entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getParameterTableEntry(idx.row())));
         const QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
             "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",

@@ -104,7 +104,8 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
         labelPrevSection = model()->headerData(prevIndex, orientation(), Qt::DisplayRole).toStringList();
     }
     else {
-        for(int i=0; i<dim(); i++)
+        labelPrevSection.reserve(dim());
+        for (int i = 0; i < dim(); ++i)
             labelPrevSection << "";
     }
     QPointF oldBO = painter->brushOrigin();
@@ -393,8 +394,8 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
     sym()->setTableView(newColDim, tvDims);
     event->accept();
 
-    emit (static_cast<QTableView*>(this->parent()))->horizontalHeader()->geometriesChanged();
-    emit (static_cast<QTableView*>(this->parent()))->verticalHeader()->geometriesChanged();
+    emit static_cast<QTableView*>(this->parent())->horizontalHeader()->geometriesChanged();
+    emit static_cast<QTableView*>(this->parent())->verticalHeader()->geometriesChanged();
 
     GdxSymbolView *symView = static_cast<GdxSymbolView*>(parent()->parent());
     symView->moveTvFilterColumns(dimIdxStart, dimIdxEnd);

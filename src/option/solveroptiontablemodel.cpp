@@ -435,6 +435,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
 
         QList<SolverOptionItem *> itemList;
+        itemList.reserve(newItems.size());
         QList<int> overrideIdRowList;
         for (const QString &text : std::as_const(newItems)) {
             const QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
@@ -769,10 +770,11 @@ void SolverOptionTableModel::on_groupDefinitionReloaded()
 void SolverOptionTableModel::updateRecurrentStatus()
 {
     QList<int> idList;
-    for(SolverOptionItem* item : std::as_const(mOptionItem)) {
+    idList.reserve(mOptionItem.size());
+    for (SolverOptionItem* item : std::as_const(mOptionItem)) {
         idList << item->optionId;
     }
-    for(SolverOptionItem* item : std::as_const(mOptionItem)) {
+    for (SolverOptionItem* item : std::as_const(mOptionItem)) {
         item->recurrent = (!item->disabled && item->optionId != -1 && idList.count(item->optionId) > 1);
     }
     emit headerDataChanged(Qt::Vertical, 0, mOptionItem.size());

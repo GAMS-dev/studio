@@ -31,6 +31,8 @@
 #include <QClipboard>
 #include <QDesktopServices>
 
+using namespace std::chrono_literals;
+
 namespace gams {
 namespace studio {
 namespace engine {
@@ -87,10 +89,10 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     updateLoginStates();
     ui->edUrl->installEventFilter(this);
     mConnectStateUpdater.setSingleShot(true);
-    mConnectStateUpdater.setInterval(100);
+    mConnectStateUpdater.setInterval(100ms);
     connect(&mConnectStateUpdater, &QTimer::timeout, this, &EngineStartDialog::updateConnectStateAppearance);
     mUrlChangedTimer.setSingleShot(true);
-    mUrlChangedTimer.setInterval(200);
+    mUrlChangedTimer.setInterval(200ms);
     connect(&mUrlChangedTimer, &QTimer::timeout, this, [this]() { urlEdited(ui->edUrl->text()); });
 }
 

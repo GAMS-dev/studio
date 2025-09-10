@@ -355,6 +355,7 @@ void GdxSymbolViewState::read(const QVariantMap &map)
         for (const QString &labels: labelLists) {
             QStringList uncheckedLabels;
             const QStringList splitLabels = labels.split(',', Qt::SkipEmptyParts);
+            uncheckedLabels.reserve(splitLabels.size());
             for (const QString &coded : splitLabels) {
                 uncheckedLabels << QByteArray::fromBase64(coded.toUtf8());
             }

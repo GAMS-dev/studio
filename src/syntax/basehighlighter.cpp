@@ -24,6 +24,8 @@
 #include "settings.h"
 #include <QTimer>
 
+using namespace std::chrono_literals;
+
 namespace gams {
 namespace studio {
 namespace syntax {
@@ -165,7 +167,7 @@ void BaseHighlighter::reformatBlocks(int from, int charsRemoved, int charsAdded)
     setDirty(fromBlock, lastBlock);
     QTextBlock endBlock = mDoc->findBlock(from + charsAdded);
     mAddedBlocks = (fromBlock.blockNumber() < mPrevMaxBlockCount) ? endBlock.blockNumber() - fromBlock.blockNumber() : -1;
-    QTimer::singleShot(10, this, &BaseHighlighter::processDirtyParts);
+    QTimer::singleShot(10ms, this, &BaseHighlighter::processDirtyParts);
 }
 
 QTextBlock cutEnd(const QTextBlock& block, int altLine, QTextDocument *doc)
@@ -201,7 +203,7 @@ void BaseHighlighter::blockCountChanged(int newBlockCount)
     mBlockCount = newBlockCount;
     if (mAddedBlocks >= 0) {
         mAddedBlocks = -1;
-        QTimer::singleShot(10, this, &BaseHighlighter::processDirtyParts);
+        QTimer::singleShot(10ms, this, &BaseHighlighter::processDirtyParts);
     }
 }
 

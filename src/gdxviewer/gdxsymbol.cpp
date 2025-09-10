@@ -670,8 +670,9 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     if(column < mDim) {
         std::vector<int> labelCompIdx = mGdxSymbolTable->labelCompIdx();
         QList<QPair<int, int>> l;
+        l.reserve(mRecordCount);
         uint uel;
-        for(int rec=0; rec<mRecordCount; rec++) {
+        for (int rec = 0; rec < mRecordCount; ++rec) {
             uel = mKeys[mRecSortIdx[rec]*mDim + column];
             // bad uels are sorted by their internal number separately from normal UELS
             if (uel >= labelCompIdx.size())
@@ -691,7 +692,8 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     //sort set and alias by explanatory text
     else if (mType == GMS_DT_SET || mType == GMS_DT_ALIAS) {
         QList<QPair<QString, int>> l;
-        for(int rec=0; rec<mRecordCount; rec++)
+        l.reserve(mRecordCount);
+        for (int rec = 0; rec < mRecordCount; ++rec)
             l.append(QPair<QString, int>(mGdxSymbolTable->getElementText(mValues[mRecSortIdx[rec]]), mRecSortIdx[rec]));
 
         if (order == Qt::SortOrder::AscendingOrder)
@@ -707,17 +709,19 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
         QList<QPair<double, int>> l;
         double val=0;
         if (mType == GMS_DT_PAR) {
-            for(int rec=0; rec<mRecordCount; rec++) {
+            l.reserve(mRecordCount);
+            for (int rec = 0; rec < mRecordCount; ++rec) {
                 val = mValues[mRecSortIdx[rec]];
-                if (val>=GMS_SV_UNDEF)
+                if (val >= GMS_SV_UNDEF)
                     val = specVal2SortVal(val);
                 l.append(QPair<double, int>(val, mRecSortIdx[rec]));
             }
         }
         else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU) {
-            for(int rec=0; rec<mRecordCount; rec++) {
+            l.reserve(mRecordCount);
+            for (int rec = 0; rec < mRecordCount; ++rec) {
                 val = mValues[mRecSortIdx[rec]*GMS_VAL_MAX + (column-mDim)];
-                if (val>=GMS_SV_UNDEF)
+                if (val >= GMS_SV_UNDEF)
                     val = specVal2SortVal(val);
                 l.append(QPair<double, int>(val, mRecSortIdx[rec]));
             }

@@ -189,10 +189,10 @@ CleanupFilterItem *CleanupFilterModel::data() const
 
 void CleanupFilterModel::setData(const QList<CleanupFilterItem *> &entries)
 {
-    emit beginResetModel();
+    beginResetModel();
     mRootItem->removeAllItems();
     mRootItem->setItems(entries);
-    emit endResetModel();
+    endResetModel();
 }
 
 QVariant CleanupFilterModel::data(const QModelIndex &index, int role) const
@@ -285,36 +285,37 @@ QModelIndex CleanupFilterModel::parent(const QModelIndex &index) const
 
 void CleanupFilterModel::setSelection(Qt::CheckState checkState)
 {
-    emit beginResetModel();
+    beginResetModel();
     for (int i=0; i<mRootItem->entries(); ++i) {
         mRootItem->item(i)->setChecked(checkState);
     }
-    emit endResetModel();
+    endResetModel();
     emit dataChanged(QModelIndex(), QModelIndex());
 }
 
 bool CleanupFilterModel::insertRows(int position, int rows, const QModelIndex &index)
 {
     Q_UNUSED(index);
-    emit beginInsertRows(QModelIndex(), position, position+rows-1);
+    beginInsertRows(QModelIndex(), position, position+rows-1);
     mRootItem->append(new CleanupFilterItem(Qt::Unchecked, "t.b.d.", QString(), mRootItem));
-    emit endInsertRows();
+    endInsertRows();
     return true;
 }
 
 bool CleanupFilterModel::removeRows(int position, int rows, const QModelIndex &index)
 {
     Q_UNUSED(index);
-    emit beginRemoveRows(QModelIndex(), position, position+rows-1);
+    beginRemoveRows(QModelIndex(), position, position+rows-1);
     mRootItem->remove(position);
-    emit endRemoveRows();
+    endRemoveRows();
     return true;
 }
 
 QStringList CleanupFilterModel::activeFilters() const
 {
     QStringList filters;
-    for (auto item : mRootItem->items()) {
+    const auto items = mRootItem->items();
+    for (auto item : items) {
         if (item->checked() == Qt::Checked)
             filters << item->filter();
     }
@@ -386,18 +387,18 @@ const QList<CleanupWorkspaceItem> &CleanupWorkspaceModel::workspaces() const
 
 void CleanupWorkspaceModel::setWorkspaces(const QList<CleanupWorkspaceItem> &workspaces)
 {
-    emit beginResetModel();
+    beginResetModel();
     mWorkspaces = workspaces;
-    emit endResetModel();
+    endResetModel();
 }
 
 void CleanupWorkspaceModel::setSelection(Qt::CheckState checkState)
 {
-    emit beginResetModel();
+    beginResetModel();
     for (int i=0; i<mWorkspaces.count(); ++i) {
         mWorkspaces[i].CheckState = checkState;
     }
-    emit endResetModel();
+    endResetModel();
     emit dataChanged(QModelIndex(), QModelIndex());
 }
 

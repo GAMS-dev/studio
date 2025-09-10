@@ -37,7 +37,7 @@ struct IncludeLine;
 enum ComFeature {
     cfNoCom     =  0,
     cfRunDebug  =  1,
-    cfStepDebug =  3, // this includes the smRunDebug flag (2+1)
+    cfStepDebug =  2 + cfRunDebug,
     cfProfiler =  4,
 };
 typedef QFlags<ComFeature> ComFeatures;

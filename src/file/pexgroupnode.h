@@ -175,8 +175,8 @@ signals:
     void mainFileChanged();
     void addProcessLog(const QByteArray &data);
     void openInPinView(gams::studio::PExProjectNode *project, QWidget *editInMainTabs);
-    void openFileNode(PExFileNode *node);
-    void switchToTab(FileMeta *fileMeta);
+    void openFileNode(gams::studio::PExFileNode *node);
+    void switchToTab(gams::studio::FileMeta *fileMeta);
     void updateProfilerAction();
 
 public slots:
@@ -184,14 +184,14 @@ public slots:
     void hasHRef(const QString &href, QString &fileName);
     void jumpToHRef(const QString &href);
     void jumpToFile(const QString &filename, int line = 0);
-    void createMarks(const LogParser::MarkData &marks);
+    void createMarks(const gams::studio::LogParser::MarkData &marks);
     void switchLst(const QString &lstFile);
     void registerGeneratedFile(const QString &fileName);
     void addBreakpoint(const QString &filename, int line);
     void delBreakpoint(const QString &filename, int line);
     void delBreakpoints(const QString &filename, int line, bool before);
     void clearBreakpoints();
-    void breakpoints(const QString &filename, SortedIntMap &bps, SortedIntMap &aimedBps) const;
+    void breakpoints(const QString &filename, gams::studio::SortedIntMap &bps, gams::studio::SortedIntMap &aimedBps) const;
     void switchProfiler(bool active);
     void gotoPaused(int contLine);
     void terminate();

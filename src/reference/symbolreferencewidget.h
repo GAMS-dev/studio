@@ -64,8 +64,8 @@ public slots:
     void updateSymbolSelection();
     void resizeColumnToContents();
     void showContextMenu(QPoint p);
-    void selectSymbolReference(const ReferenceItem &item);
-    ReferenceItem currentReferenceItem();
+    void selectSymbolReference(const gams::studio::reference::ReferenceItem &item);
+    gams::studio::reference::ReferenceItem currentReferenceItem();
 
 protected:
     void keyPressEvent(QKeyEvent *e) override;

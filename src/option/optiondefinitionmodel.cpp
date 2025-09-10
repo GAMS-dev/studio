@@ -254,6 +254,8 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
 {
     QList<OptionDefinitionItem*> parents;
     parents << parent;
+    QList<QVariant> columnData;
+    QList<OptionValue> valueList;
 
     auto optList = option->getOption();
     for(auto it = optList.cbegin(); it != optList.cend(); ++it)  {
@@ -264,7 +266,7 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
         if (mOptionGroup > 0 && mOptionGroup != optdef.groupNumber)
             continue;
 
-        QList<QVariant> columnData;
+        columnData.resize(0);
 
         columnData.append(optdef.name);
         columnData.append(optdef.synonym);
@@ -317,7 +319,7 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
         }
         case optTypeEnumStr : {
             QString range("");
-            QList<OptionValue> valueList;
+            valueList.resize(0);
             for(const OptionValue &value : std::as_const(optdef.valueList)) {
                 if (!value.hidden)
                     valueList.append( value );
@@ -344,7 +346,7 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
         }
         case optTypeEnumInt : {
             QString range("");
-            QList<OptionValue> valueList;
+            valueList.resize(0);
             for(const OptionValue &value : std::as_const(optdef.valueList)) {
                 if (!value.hidden)
                     valueList.append( value );

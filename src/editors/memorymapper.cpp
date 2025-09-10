@@ -22,6 +22,8 @@
 #include "logger.h"
 #include "theme.h"
 
+using namespace std::chrono_literals;
+
 namespace gams {
 namespace studio {
 
@@ -34,7 +36,7 @@ static int CKeptRunCount = 5;
 
 MemoryMapper::MemoryMapper(QObject *parent) : ChunkTextMapper (parent)
 {
-    mRunFinishedTimer.setInterval(10);
+    mRunFinishedTimer.setInterval(10ms);
     mRunFinishedTimer.setSingleShot(true);
     mNewLogLines.reserve(CParseLinesMax+1);
     connect(&mRunFinishedTimer, &QTimer::timeout, this, &MemoryMapper::runFinished);
@@ -103,7 +105,7 @@ void MemoryMapper::invalidateSize()
 
 void MemoryMapper::markLastLine()
 {
-    if (!mChunks.size()) return;
+    if (mChunks.isEmpty()) return;
     Chunk *chunk = mChunks.last();
     if (chunk->markedRegion.x() < 0)
         chunk->markedRegion.rx() = chunk->lineCount()-1;
@@ -136,9 +138,9 @@ QVector<bool> MemoryMapper::markedLines(int localLineNrFrom, int lineCount) cons
 ChunkTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
 {
     // IF we already have an empty chunk at the end, take it
-    if (mChunks.size() && !mChunks.last()->size()) {
+    if (!mChunks.isEmpty() && !mChunks.last()->size()) {
         // IF the Unit has content, cut it and append a new Unit
-        if (startUnit && mUnits.size() && mUnits.last().chunkCount > 1) {
+        if (startUnit && !mUnits.isEmpty() && mUnits.last().chunkCount > 1) {
             --mUnits.last().chunkCount;
             mUnits << Unit(mChunks.last());
             ++mUnits.last().chunkCount;
@@ -148,14 +150,14 @@ ChunkTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
     // ELSE create the new chunk
     Chunk *chunk = new Chunk();
     chunk->bArray.resize(chunkSize());
-    chunk->bStart = mChunks.size() ? mChunks.last()->bStart + mChunks.last()->size() : 0;
+    chunk->bStart = !mChunks.isEmpty() ? mChunks.last()->bStart + mChunks.last()->size() : 0;
     chunk->lineBytes << 0;
     chunk->nr = chunkCount();
     chunk->markedRegion = QPoint(-1, -1);
     mChunks << chunk;
     invalidateLineOffsets(chunk);
 
-    if (startUnit || !mUnits.size()) {
+    if (startUnit || mUnits.isEmpty()) {
         mUnits << Unit(mChunks.last());
         mShrinkLineCount = 0;
     }

@@ -137,7 +137,7 @@ QVariantHash getVariantHash(QXmlStreamReader &xml);
 
 QVariant getVariant(QXmlStreamReader &xml)
 {
-    if (xml.name().compare(QLatin1String("value")) != 0) return QVariant();
+    if (xml.name().compare(u"value") != 0) return QVariant();
     if (!xml.readNextStartElement()) return QVariant();
     QVariant res;
     int id = typeTagId(xml.name());
@@ -173,7 +173,7 @@ QVariant getVariant(QXmlStreamReader &xml)
     default:
         break;
     }
-    while (xml.tokenType() != QXmlStreamReader::EndElement || xml.name().compare(QLatin1String("value")) != 0)
+    while (xml.tokenType() != QXmlStreamReader::EndElement || xml.name().compare(u"value") != 0)
         xml.skipCurrentElement();
     return res;
 }
@@ -181,9 +181,9 @@ QVariant getVariant(QXmlStreamReader &xml)
 QVariantList getVariantList(QXmlStreamReader &xml)
 {   // <array><data><value>..</value><value>..</value></data></array>
     QVariantList list;
-    if (xml.name().compare(QLatin1String("array")) != 0) return QVariantList();
+    if (xml.name().compare(u"array") != 0) return QVariantList();
     if (!xml.readNextStartElement()) return QVariantList();
-    if (xml.name().compare(QLatin1String("data")) != 0) return QVariantList();
+    if (xml.name().compare(u"data") != 0) return QVariantList();
     while (xml.readNextStartElement())
         list << getVariant(xml);
     return list;
@@ -192,11 +192,11 @@ QVariantList getVariantList(QXmlStreamReader &xml)
 QVariantHash getVariantHash(QXmlStreamReader &xml)
 {   // <struct><member><name>..</name><value>..</value></member><member>..</member></struct>
     QVariantHash hash;
-    if (xml.name().compare(QLatin1String("struct")) != 0) return QVariantHash();
+    if (xml.name().compare(u"struct") != 0) return QVariantHash();
     while (xml.readNextStartElement()) {
-        if (xml.name().compare(QLatin1String("member")) != 0) return hash;
+        if (xml.name().compare(u"member") != 0) return hash;
         if (!xml.readNextStartElement()) return hash;
-        if (xml.name().compare(QLatin1String("name")) != 0) return QVariantHash();
+        if (xml.name().compare(u"name") != 0) return QVariantHash();
         QString name = xml.readElementText();
         if (!xml.readNextStartElement()) return hash;
         hash.insert(name, getVariant(xml));
@@ -212,24 +212,24 @@ QVariantList XmlRpc::parseParams(QIODevice *device, QString &method)
     method = QString();
     if (xml.readNextStartElement()) {
         // it's a call, read method name
-        if (xml.name().compare(QLatin1String("methodCall")) == 0) {
-            if (xml.readNextStartElement() && xml.name().compare(QLatin1String("methodName")) == 0) {
+        if (xml.name().compare(u"methodCall") == 0) {
+            if (xml.readNextStartElement() && xml.name().compare(u"methodName") == 0) {
                 method = xml.readElementText();
                 xml.readNextStartElement();
             } else return res;
         }
 
         // check for abort states
-        if (xml.name().compare(QLatin1String("methodResponse")) == 0) {
+        if (xml.name().compare(u"methodResponse") == 0) {
             if (!xml.readNextStartElement()) return res; // missing params
         } else if (method.isEmpty()) return res; // neither call nor response
-        if (xml.name().compare(QLatin1String("params")) != 0) {
+        if (xml.name().compare(u"params") != 0) {
             return res;
         }
 
         // read values
         while (xml.readNextStartElement()) {
-            if (xml.name().compare(QLatin1String("param")) != 0) continue;
+            if (xml.name().compare(u"param") != 0) continue;
             if (!xml.readNextStartElement()) break;
             QVariant var = getVariant(xml);
             if (var.isNull())

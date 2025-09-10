@@ -153,7 +153,7 @@ public:
     SyntaxBlock validTail(const QString &line, int index, SyntaxState state, bool &hasContent) override;
 };
 
-constexpr inline uint qHash(SyntaxKind key, uint seed = 0) noexcept { return uint(key) ^ seed; }
+constexpr inline size_t qHash(SyntaxKind key, size_t seed = 0) noexcept { return size_t(key) ^ seed; }
 
 } // namespace syntax
 } // namespace studio

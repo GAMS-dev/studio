@@ -227,6 +227,7 @@ void SchemaDefinitionModel::loadSchemaFromName(const QString &name)
 void SchemaDefinitionModel::addTypeList(QList<SchemaType>& typeList, QList<QVariant> &data)
 {
     QStringList schemaTypeList;
+    schemaTypeList.reserve(typeList.size());
     for(SchemaType t : typeList) {
         schemaTypeList << QString::fromLatin1(ConnectSchema::typeToString(t));
     }
@@ -304,6 +305,7 @@ QStringList SchemaDefinitionModel::gettAllAllowedValues(Schema *schemaHelper)
 {
     QList<ValueWrapper> allvalues(schemaHelper->allowedValues);
     QStringList valueStrList;
+    valueStrList.reserve(allvalues.size()+3);
     for(int i=0; i<allvalues.size(); ++i) {
         const QString value = getValue(allvalues[i]);
         if (!value.isEmpty())

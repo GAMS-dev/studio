@@ -29,7 +29,8 @@ TableViewModel::TableViewModel(GdxSymbol* sym, GdxSymbolTableModel* gdxSymbolTab
     : QAbstractTableModel(parent), mSym(sym), mGdxSymbolTable(gdxSymbolTable)
 {
     mTvColDim = 1;
-    for(int i=0; i<mSym->mDim; i++)
+    mTvDimOrder.reserve(mSym->mDim);
+    for (int i = 0; i < mSym->mDim; ++i)
         mTvDimOrder << i;
     connect(mSym, &GdxSymbol::modelReset, this, &TableViewModel::setTableViewNoArgs);
     connect(mSym, &GdxSymbol::loadFinished, this, &TableViewModel::setTableViewNoArgs);
@@ -253,11 +254,14 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
     for (int i=0; i<lastColHeader.size(); i++)
         lastColHeader[i] = 0;
     int r;
+
+    QVector<uint> rowHeader;
+    QVector<uint> colHeader;
     for (int rec=0; rec<mSym->mFilterRecCount; rec++) {
         r = mSym->mRecSortIdx[size_t(mSym->mRecFilterIdx[size_t(rec)])];
         int keyIdx = r*mSym->mDim;
-        QVector<uint> rowHeader;
-        QVector<uint> colHeader;
+        rowHeader.resize(0);
+        colHeader.resize(0);
 
         for(int i=0; i<mSym->mDim-mTvColDim; i++)
             rowHeader.push_back(mSym->mKeys[size_t(keyIdx+mTvDimOrder[i])]);

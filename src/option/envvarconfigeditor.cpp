@@ -348,6 +348,7 @@ void EnvVarConfigEditor::on_actionInsert_triggered()
     if (isThereAnIndexSelection()) {
         QList<int> rows;
         const auto indexes = ui->EnvVarConfigTableView->selectionModel()->selectedRows();
+        rows.reserve(indexes.size());
         for(const QModelIndex idx : indexes) {
             rows.append( idx.row() );
         }
@@ -410,6 +411,7 @@ void EnvVarConfigEditor::on_actionDelete_triggered()
 
         QList<int> rows;
         const auto indexes = ui->EnvVarConfigTableView->selectionModel()->selectedRows();
+        rows.reserve(indexes.size());
         for(const QModelIndex & index : indexes) {
             rows.append( index.row() );
         }

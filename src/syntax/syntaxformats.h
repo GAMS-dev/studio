@@ -112,10 +112,10 @@ QString syntaxKindName(int kind);
 // TODO(JM) this needs to be more compact, drag disjunct parts to multi-bit regions together:
 //          - check if Table, Model, and preTable can be joined (like done with flavorQuotePart)
 enum FlavorFlag {
-    flavorQuote1 = 1,       // in AssignmentLabel and AssignmentValue
-    flavorQuote2 = 2,       // in AssignmentLabel and AssignmentValue
-    flavorBrace = 3,        // only in SyntaxIdentifierDim
-    flavorQuotePart = 3,
+    flavorQuote1 = 1,                           // in AssignmentLabel and AssignmentValue
+    flavorQuote2 = 2,                           // in AssignmentLabel and AssignmentValue
+    flavorBrace = flavorQuote1 + flavorQuote2,  // only in SyntaxIdentifierDim
+    flavorQuotePart = flavorBrace,
 
     flavorTable = 4,
     flavorModel = 8,

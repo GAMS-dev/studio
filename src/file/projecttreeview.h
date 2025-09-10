@@ -38,7 +38,7 @@ signals:
     void dropFiles(QModelIndex idx, QStringList files, QList<gams::studio::NodeId> knownIds, Qt::DropAction,
                    QList<QModelIndex> &newSelection);
     void openProjectEdit(QModelIndex idx);
-    void getHasRunBlocker(const QList<NodeId> ids, bool &runBlocked);
+    void getHasRunBlocker(const QList<gams::studio::NodeId> ids, bool &runBlocked);
 
 protected:
     void focusOutEvent(QFocusEvent *event) override;

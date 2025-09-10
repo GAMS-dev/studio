@@ -148,6 +148,7 @@ QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr)
     }
 
     QList<int> idList;
+    idList.reserve(commandLineList.size());
     QMultiMap<int, int> idPositionMap;
     int position = 0;
     for (OptionItem& item : commandLineList) {
@@ -482,6 +483,7 @@ QString OptionTokenizer::normalize(const QString &commandLineStr)
 QString OptionTokenizer::normalize(const QList<OptionItem> &items)
 {
     QStringList strList;
+    strList.reserve(items.size() * 2);
     for (const auto &it : items) {
         OptionItem item = it;
         if ( item.key.isEmpty() )
@@ -1353,6 +1355,7 @@ void OptionTokenizer::validateOption(QList<OptionItem> &items)
 {
    mOption->resetModficationFlag();
    QList<int> idList;
+   idList.reserve(items.size());
    for(OptionItem& item : items) {
        idList << item.optionId;
        item.error = OptionErrorType::No_Error;
