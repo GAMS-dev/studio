@@ -59,6 +59,7 @@ void AddOptionHeaderView::mousePressEvent(QMouseEvent* event)
         QTableView* tableView = static_cast<QTableView*>(this->parent());
         tableView->selectionModel()->clearSelection();
         tableView->model()->insertRows(tableView->model()->rowCount(), 1, QModelIndex());
+        tableView->model()->blockSignals(true);
 
         const QModelIndex keyIndex = tableView->model()->index(tableView->model()->rowCount()-1, 0);
         const QModelIndex valueIndex = tableView->model()->index(tableView->model()->rowCount()-1, 1);
@@ -73,7 +74,9 @@ void AddOptionHeaderView::mousePressEvent(QMouseEvent* event)
             tableView->model()->setData( tableView->model()->index(tableView->model()->rowCount()-1, 2),
                                          QVariant("-1"), Qt::EditRole );
         }
+        tableView->model()->setHeaderData(keyIndex.row(), Qt::Vertical, Qt::CheckState(Qt::Checked), Qt::CheckStateRole );
         tableView->selectionModel()->select( keyIndex, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+        tableView->model()->blockSignals(false);
         tableView->edit( keyIndex );
     }
 
