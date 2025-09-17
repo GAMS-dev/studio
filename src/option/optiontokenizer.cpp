@@ -1181,9 +1181,12 @@ QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, c
     }
 
     for(const QChar &ch : mOption->getEOLChars()) {
-        if (value.indexOf(ch, Qt::CaseInsensitive) >= 0)  { // found EOL char
-            value = value.split(getEOLCommentChar(), Qt::SkipEmptyParts).at(0).simplified();
+        if (value.indexOf(ch, Qt::CaseInsensitive) == 0)  { // found EOL char at first position -> no defined value
+            value = "";
             break;
+        } else if (value.indexOf(ch, Qt::CaseInsensitive) > 0)  { // found EOL char
+                  value = value.split(getEOLCommentChar(), Qt::SkipEmptyParts).at(0).simplified();
+                  break;
         }
     }
     return value;
