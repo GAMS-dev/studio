@@ -77,9 +77,10 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
             } else {
                 if (settings && settings->toBool(skSoAddCommentAbove)) {
                     stream << QString("%1 %2").arg(lineComment, parentItem->data(OptionDefinitionModel::COLUMN_DESCIPTION).toString());
-                    stream << QString("%1 %2 - %3").arg(lineComment,
-                                                        data(index, Qt::DisplayRole).toString(),
-                                                        data(descriptionIndex, Qt::DisplayRole).toString());
+                    if (!settings->toBool(skSoAddEOLComment))
+                        stream << QString("%1 %2 - %3").arg(lineComment,
+                                                            data(index, Qt::DisplayRole).toString(),
+                                                            data(descriptionIndex, Qt::DisplayRole).toString());
                 }
                 stream << QString("%1=%2=%3=%4").arg(parentItem->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString(),
                                                      data(index, Qt::DisplayRole).toString(),

@@ -468,10 +468,8 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     ui->solverOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
     if (settings && settings->toBool(skSoAddCommentAbove)) { // insert comment description row
-        const int indexRow = index.row();
-        const int parentIndexRow = parentIndex.row();
-        QModelIndex descriptionIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(indexRow, OptionDefinitionModel::COLUMN_DESCIPTION):
-                                                               ui->solverOptionTreeView->model()->index(parentIndexRow, OptionDefinitionModel::COLUMN_DESCIPTION);
+        QModelIndex descriptionIndex = (parentIndex.row()<0) ? index.siblingAtColumn(OptionDefinitionModel::COLUMN_DESCIPTION):
+                                                               parentIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_DESCIPTION);
         QString descriptionData = ui->solverOptionTreeView->model()->data(descriptionIndex).toString();
 
         ui->solverOptionTableView->model()->insertRows(rowToBeAdded, 1, QModelIndex());
@@ -488,12 +486,11 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
 
         rowToBeAdded++;
-        if (parentIndex.row() >= 0) {  // insert enum comment description row
-            descriptionIndex = ui->solverOptionTreeView->model()->index(indexRow, OptionDefinitionModel::COLUMN_DESCIPTION, parentIndex);
+        if (parentIndex.row() >= 0 && !settings->toBool(skSoAddEOLComment)) {  // insert enum comment description row
+            descriptionIndex = index.siblingAtColumn( OptionDefinitionModel::COLUMN_DESCIPTION ) ;
             QString strData =  selectedValueData;
             strData.append( " - " );
             strData.append( ui->solverOptionTreeView->model()->data(descriptionIndex).toString() );
-
             ui->solverOptionTableView->model()->insertRows(rowToBeAdded, 1, QModelIndex());
 
             insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_OPTION_KEY);
@@ -519,9 +516,8 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     const QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, mOptionTableModel->getColumnEntryNumber());
     ui->solverOptionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
     ui->solverOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
-    if (settings && settings->toBool(skSoAddEOLComment)) {
-        const QModelIndex commentIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION)
-                                                               : ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
+    if (settings && settings->toBool(skSoAddEOLComment) && mOptionTokenizer->getOption()->isEOLCharDefined()) {
+        const QModelIndex commentIndex = index.siblingAtColumn(OptionDefinitionModel::COLUMN_DESCIPTION);
         QString commentData = ui->solverOptionTreeView->model()->data(commentIndex).toString();
         QModelIndex insertEOLCommentIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_EOL_COMMENT);
         ui->solverOptionTableView->model()->setData( insertEOLCommentIndex, commentData, Qt::EditRole);
@@ -1015,7 +1011,6 @@ void SolverOptionWidget::insertOption()
             return;
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
-
     disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
     int rowToBeInserted = -1;
     if (isThereARowSelection()) {
