@@ -1598,9 +1598,10 @@ bool SolverOptionWidget::saveAs(const QString &location)
     return success;
 }
 
-bool SolverOptionWidget::isInFocus(QWidget *focusWidget) const
+bool SolverOptionWidget::isInFocus(QWidget* focusWidget) const
 {
-    return (focusWidget==ui->solverOptionTableView || focusWidget==ui->solverOptionTreeView);
+    return (focusWidget==ui->solverOptionTableView || focusWidget==ui->solverOptionTreeView ||
+            focusWidget==ui->solverOptionSearch);
 }
 
 QString SolverOptionWidget::getSelectedOptionName(QWidget *widget) const

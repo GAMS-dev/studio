@@ -226,9 +226,10 @@ void ParamConfigEditor::initActions()
     ui->actionRemove_This_Parameter->setIcon(Theme::icon(":/%1/delete-all", true));
 }
 
-bool ParamConfigEditor::isInFocus(QWidget *focusWidget) const
+bool ParamConfigEditor::isInFocus(QWidget* focusWidget) const
 {
-    return (focusWidget==ui->paramCfgTableView || focusWidget==ui->paramCfgDefTreeView);
+    return (focusWidget==ui->paramCfgTableView || focusWidget==ui->paramCfgDefTreeView
+                                               || focusWidget==ui->paramCfgDefSearch    );
 }
 
 QList<QHeaderView *> ParamConfigEditor::headers()

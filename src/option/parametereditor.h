@@ -69,7 +69,6 @@ public:
 
     OptionTokenizer *getOptionTokenizer() const;
     bool isAParameterEditorFocused(QWidget* focusWidget) const;
-    bool isAParameterTableFocused(QWidget* focusWidget) const;
 
     QString getSelectedParameterName(QWidget* widget) const;
 

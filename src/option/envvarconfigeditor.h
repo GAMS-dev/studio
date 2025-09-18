@@ -46,6 +46,7 @@ public:
     ~EnvVarConfigEditor() override;
     QList<QHeaderView*> headers();
     bool isModified() const;
+    bool isInFocus(QWidget* focusWidget) const;
 
 signals:
     void modificationChanged(bool modifiedState);
