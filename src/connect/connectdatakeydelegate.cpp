@@ -57,15 +57,20 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
     if (checkstate_index.data( Qt::DisplayRole ).toInt()==static_cast<int>(DataCheckState::SchemaName)) {
         option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
         option->decorationPosition = QStyleOptionViewItem::Right;
-        mSchemaHelpPosition[index.data(Qt::DisplayRole).toString()] =
-                    QRect(option->rect.bottomRight().x()-mIconWidth, option->rect.bottomRight().y()-mIconHeight, mIconWidth , mIconHeight);
+        mSchemaHelpPosition.insert( index.siblingAtColumn(static_cast<int>(DataItemColumn::SchemaKey)).data(Qt::DisplayRole).toString(),
+                                     option->rect );
     } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==static_cast<int>(DataCheckState::ListAppend) ||
                checkstate_index.data( Qt::DisplayRole ).toInt()==static_cast<int>(DataCheckState::MapAppend )    ) {
                option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
-               mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
+               mSchemaAppendPosition[index] = QRect(option->rect);
     } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==static_cast<int>(DataCheckState::SchemaAppend)) {
-        option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
-        mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
+               option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
+               mSchemaAppendPosition[index] = QRect(option->rect);
+    } else  if (checkstate_index.data( Qt::DisplayRole ).toInt()==static_cast<int>(DataCheckState::KeyItem) ||
+                checkstate_index.data( Qt::DisplayRole ).toInt()==static_cast<int>(DataCheckState::ElementValue)) {
+                option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
+                mSchemaHelpPosition.insert( index.siblingAtColumn(static_cast<int>(DataItemColumn::SchemaKey)).data(Qt::DisplayRole).toString(),
+                                            option->rect);
     }
 }
 
@@ -208,13 +213,19 @@ bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *mode
         }
         const QMouseEvent* const mouseevent = static_cast<const QMouseEvent*>( event );
         const QPoint p = mouseevent->pos();  // ->globalPos()
+
         bool found = false;
-        QMap<QString, QRect>::const_iterator it;
-        for (it= mSchemaHelpPosition.cbegin();  it != mSchemaHelpPosition.cend(); ++it) {
-            if (it.value().contains(p)) {
-                emit requestSchemaHelp(it.key());
-                found = true;
-                break;
+        if (checkstate_index.data(Qt::DisplayRole).toInt()!=static_cast<int>(DataCheckState::MapAppend) &&
+            checkstate_index.data(Qt::DisplayRole).toInt()!=static_cast<int>(DataCheckState::ListAppend)     ) {
+            QString schema = index.siblingAtColumn(static_cast<int>(DataItemColumn::SchemaKey)).data().toString();
+            auto i = mSchemaHelpPosition.constFind(schema);
+            while (i != mSchemaHelpPosition.end() && i.key() == schema) {
+                if (i.value().contains(p)) {
+                    emit requestSchemaHelp(i.key());
+                    found = true;
+                    break;
+                }
+                ++i;
             }
         }
         if (!found) {

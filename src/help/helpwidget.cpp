@@ -247,6 +247,13 @@ void HelpWidget::on_helpContentRequested(const DocumentType &type, const QString
         ui->webEngineView->load(url);
         break;
     }
+    case DocumentType::Connect :  {
+        QString indexStr = HelpData::getConnectAnchor(keyword, submoduleName);
+        if (!indexStr.isEmpty())
+            url.setFragment(indexStr);
+        ui->webEngineView->load(url);
+        break;
+    }
     default: break;
     }
 }

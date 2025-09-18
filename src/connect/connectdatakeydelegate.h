@@ -62,7 +62,7 @@ private:
     mutable int mIconHeight;
     mutable int mIconMargin;
 
-    mutable QMap<QString, QRect> mSchemaHelpPosition;
+    mutable QMultiMap<QString, QRect> mSchemaHelpPosition;
     mutable QMap<QModelIndex, QRect> mSchemaAppendPosition;
 
     mutable bool mIsLastEditorClosed;

@@ -2814,9 +2814,10 @@ void MainWindow::on_actionGamsHelp_triggered()
                                                                                help::HelpData::getStudioSectionName(help::StudioSection::GamsUserConfigEditor));
                                      else
                                          mHelpWidget->on_helpContentRequested( help::DocumentType::GamsCall, optionName);
-                            } else if (ViewHelper::toGamsConnectEditor(mRecent.editor())) {
-                                       mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
-                                                                             help::HelpData::getStudioSectionName(help::StudioSection::ConnectEditor));
+                            } else if (connect::ConnectEditor* editor = ViewHelper::toGamsConnectEditor(mRecent.editor())) {
+                                       mHelpWidget->on_helpContentRequested( help::DocumentType::Connect,
+                                                                             editor->getSelectedAgentName(),
+                                                                             editor->getSelectedAttributeName());
                             } else if (ViewHelper::toEfiEditor(mRecent.editor())) {
                                        mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
                                                                              help::HelpData::getStudioSectionName(help::StudioSection::EFIEditor));

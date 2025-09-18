@@ -39,7 +39,10 @@ SchemaListModel::SchemaListModel(const QStringList& schema, QObject *parent)
         sitem->setTextAlignment(Qt::AlignLeft);
         sitem->setForeground(Theme::color(Theme::Normal_Green));
         sitem->setToolTip(
-             QString("<html><head/><body><p>%1 <span style=' font-weight:600;'>%2</span> %3.</p> <p>%4 <span style=' font-weight:600;'>%2</span> %5 from %3.</p> <p>%6 <span style=' font-weight:600;'>%2</span> %5 from %3.</p></body></html>")
+             QString("<html><head/><body><p>%1 <span style=' font-weight:600;'>%2</span> %3. "
+                    "Press <span style=' font-weight:600;'>F1</span> to show documentation for <span style=' font-weight:600;'>%2</span>.</p> "
+                    "<p>%4 <span style=' font-weight:600;'>%2</span> %5 from %3.</p>"
+                    "<p>%6 <span style=' font-weight:600;'>%2</span> %5 from %3.</p> </body></html>")
                  .arg("Select or click to show", mSchema.at(row), "definition", "Double click to append", "data", "Drag and drop to insert")
         );
         setItem(row, 0, sitem);
@@ -78,23 +81,6 @@ QMimeData *SchemaListModel::mimeData(const QModelIndexList &indexes) const
     }
     mimeData->setData( "application/vnd.gams-connect.text", encodedData);
     return mimeData;
-}
-
-void SchemaListModel::setToolTip(const QModelIndex &index)
-{
-    QStandardItem* it = nullptr;
-    for(int row=0; row<mSchema.size(); row++) {
-        QStandardItem *sitem = item(index.row());
-        if (index.row()==row)
-            it=sitem;
-        sitem->setToolTip("");
-    }
-    if (it)
-       it->setToolTip(
-                   QString("<html><head/><body><p>%1 <span style=' font-weight:600;'>%2</span> %3.</p> <p>%4 <span style=' font-weight:600;'>%2</span> %5 from %3.</p> <p>%6 <span style=' font-weight:600;'>%2</span> %5 from %3.</p></body></html>")
-                       .arg("Select or click to show", it->data(Qt::DisplayRole).toString(), "definition", "Double click to append", "data", "Drag and drop to insert")
-          );
-
 }
 
 } // namespace connect

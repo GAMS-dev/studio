@@ -52,6 +52,9 @@ public:
     bool isModified() const;
     void setModified(bool modified);
 
+    QString getSelectedAgentName() const;
+    QString getSelectedAttributeName() const;
+
 signals:
     void modificationChanged(bool modifiedState);
 
@@ -84,6 +87,8 @@ private:
     void restoreExpandedOnLevel(const QModelIndex& index);
 
 private:
+    static QRegularExpression mOneOfPattern;
+
     Ui::ConnectEditor *ui;
     bool        mModified;
     FileId      mFileId;

@@ -32,10 +32,13 @@
 #include "exception.h"
 #include "treecellresizer.h"
 #include "ui_connecteditor.h"
+#include "msgbox.h"
 
 namespace gams {
 namespace studio {
 namespace connect {
+
+QRegularExpression ConnectEditor::mOneOfPattern("\\w+\\[\\d+\\]$");
 
 ConnectEditor::ConnectEditor(const QString& connectDataFileName, const FileId &id,  QWidget *parent) :
     AbstractView(parent),
@@ -103,6 +106,9 @@ bool ConnectEditor::init(bool quiet)
     ui->connectHSplitter->setStretchFactor(0, 4);
     ui->connectHSplitter->setStretchFactor(1, 3);
     ui->connectHSplitter->setStretchFactor(2, 5);
+
+    ui->helpIcon->setPixmap(Theme::icon(":solid/question").pixmap(QSize(12, 12)));
+    ui->helpIcon->setToolTip("<html><head/><body><p>Show help on Connect editor in Studio documentation.</p></body></html>");
 
     ui->dataTreeView->setModel( mDataModel );
     ConnectDataValueDelegate* valuedelegate = new ConnectDataValueDelegate(ui->dataTreeView);
@@ -193,7 +199,6 @@ bool ConnectEditor::init(bool quiet)
 
     connect(ui->schemaControlListView, &QListView::clicked, this,  [=](const QModelIndex &index) {
         defmodel->loadSchemaFromName( schemaItemModel->data( schemaItemModel->index(index.row(),0) ).toString() );
-        schemaItemModel->setToolTip(index);
     });
     connect(ui->schemaControlListView->selectionModel(), &QItemSelectionModel::currentRowChanged, this, [=](const QModelIndex &current, const QModelIndex &previous) {
         Q_UNUSED(previous)
@@ -209,6 +214,10 @@ bool ConnectEditor::init(bool quiet)
     connect(ui->expandAllLabel, &ClickableLabel::clicked, this, [=]() {  ui->dataTreeView->expandAll(); });
     connect(ui->collapseAllLabel, &ClickableLabel::clicked, this, [=]() {  ui->dataTreeView->collapseAll(); });
     connect(ui->collapseAllIcon, &ClickableLabel::clicked, this, [=]() {  ui->dataTreeView->collapseAll(); });
+    connect(ui->helpIcon, &ClickableLabel::clicked, this, [=]() {
+        getMainWindow()->receiveOpenDoc(help::HelpData::getChapterLocation(help::DocumentType::StudioMain),
+                                        help::HelpData::getStudioSectionAnchor(help::HelpData::getStudioSectionName(help::StudioSection::ConnectEditor)));
+    });
 
     connect(mDataModel, &ConnectDataModel::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
     connect(mDataModel, &ConnectDataModel::fromSchemaInserted, this, &ConnectEditor::fromSchemaInserted, Qt::UniqueConnection);
@@ -287,8 +296,39 @@ bool ConnectEditor::isModified() const
 void ConnectEditor::setModified(bool modified)
 {
     mModified = modified;
-    ui->openAsTextButton->setEnabled(!modified);
     emit modificationChanged( mModified );
+}
+
+QString ConnectEditor::getSelectedAgentName() const
+{
+    if (ui->schemaControlListView->selectionModel()->hasSelection()) {
+        QModelIndex index = ui->schemaControlListView->currentIndex();
+        if (index.isValid())
+            return ui->schemaControlListView->model()->data(index, Qt::DisplayRole).toString();
+    }
+    return QString();
+}
+
+QString ConnectEditor::getSelectedAttributeName() const
+{
+    if (ui->helpTreeView->selectionModel()->hasSelection()) {
+        QModelIndex index = ui->helpTreeView->currentIndex();
+        if (index.isValid()) {
+            SchemaDefinitionItem *item = static_cast<SchemaDefinitionItem*>(index.internalPointer());
+            QString attributeName = item->data(static_cast<int>(SchemaItemColumn::Field)).toString();
+            if (QString::compare(attributeName, "schema", Qt::CaseInsensitive)==0) {
+                if (!index.parent().isValid())
+                    return QString();
+                item = static_cast<SchemaDefinitionItem*>(index.parent().internalPointer());
+                attributeName = item->data(static_cast<int>(SchemaItemColumn::Field)).toString();
+            }
+            if (mOneOfPattern.match(attributeName).hasMatch()) {
+                attributeName =  attributeName.mid(0, attributeName.indexOf("["));
+            }
+            return attributeName;
+        }
+    }
+    return QString();
 }
 
 bool ConnectEditor::saveConnectFile(const QString &location)
@@ -299,6 +339,17 @@ bool ConnectEditor::saveConnectFile(const QString &location)
 void ConnectEditor::openAsTextButton_clicked(bool checked)
 {
     Q_UNUSED(checked)
+    if (isModified()) {
+        int answer = MsgBox::warning("File has been modified", QDir::toNativeSeparators(mLocation)+" has been modified. "+
+                                     "Saving file before reopening prevents data from being lost.\n\n"+
+                                     "What do you want to do with the modified file?",
+                                     this, "Discard and Open As Text", "Save and Open As Text", "Cancel", 1, 2);
+        if (answer == 2)
+            return;
+        else if (answer == 1)
+                 saveConnectFile(mLocation);
+    }
+
     MainWindow* main = getMainWindow();
     if (!main) return;
 
@@ -342,21 +393,28 @@ void ConnectEditor::expandAndResizedToContents(const QModelIndex &idx)
 
 void ConnectEditor::schemaHelpRequested(const QString &schemaName)
 {
-   for(int row=0; row<mConnect->getSchemaNames().size(); row++) {
-       QString str = mConnect->getSchemaNames().at(row);
-       if (str.compare(schemaName, Qt::CaseInsensitive)==0) {
-           const QModelIndex index = ui->schemaControlListView->model()->index(row, 0);
-           ui->schemaControlListView->setCurrentIndex( index );
-           emit ui->schemaControlListView->clicked( index );
-           break;
-       }
-   }
+    for(int row=0; row<mConnect->getSchemaNames().size(); row++) {
+        QString str = mConnect->getSchemaNames().at(row);
+        if (str.compare(schemaName.split(":").first(), Qt::CaseInsensitive)==0) {
+            const QModelIndex index = ui->schemaControlListView->model()->index(row, 0);
+            ui->schemaControlListView->setCurrentIndex( index );
+            emit ui->schemaControlListView->clicked( index );
+
+            QModelIndex idx = ui->helpTreeView->model()->index(0, static_cast<int>(SchemaItemColumn::SchemaKey), QModelIndex());
+            if (idx.isValid()) {
+                QModelIndexList indexList = ui->helpTreeView->model()->match(idx, Qt::UserRole, schemaName, -1, Qt::MatchExactly | Qt::MatchRecursive );
+                if (indexList.size() > 0) {
+                    ui->helpTreeView->selectionModel()->select(indexList.first(), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows );
+                    ui->helpTreeView->setCurrentIndex(indexList.first());
+                }
+            }
+            break;
+        }
+    }
 }
 
 void ConnectEditor::appendItemRequested(const QModelIndex &index)
 {
-    setModified(true);
-
     const QModelIndex checkstate_idx = index.sibling(index.row(), static_cast<int>(DataItemColumn::CheckState));
     if (static_cast<int>(DataCheckState::ListAppend)==checkstate_idx.data(Qt::DisplayRole).toInt()) {
         if (index.parent().isValid() &&
@@ -370,10 +428,20 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
             if (schema.last().compare("-")==0)
                 schema.removeLast();
             ConnectData* schemadata = mConnect->createDataHolderFromSchema(schemaname, schema, (ui->onlyRequiredAttribute->checkState()==Qt::Checked), true);
+            YAML::Node node = schemadata->getRootNode();
+            if (!node || node.size()<=0
+                      || node[0].Type()==YAML::NodeType::Null
+                      || node[0].Type()==YAML::NodeType::Undefined) {
+                QString str = (ui->onlyRequiredAttribute->checkState()==Qt::Checked ? "'Add only required options' has been checked. ":"");
+                SysLogLocator::systemLog()->append( str+"No option added for '"+schema.last()+"'." , LogMsgType::Info);
+                return;
+            }
             mDataModel->appendListElement(schemaname, schema, schemadata, index);
+            setModified(true);
         }
     } else if (static_cast<int>(DataCheckState::MapAppend)==checkstate_idx.data(Qt::DisplayRole).toInt()) {
                mDataModel->appendMapElement(index);
+               setModified(true);
     }
 }
 

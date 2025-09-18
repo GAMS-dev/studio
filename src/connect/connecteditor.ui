@@ -129,6 +129,13 @@
             </property>
            </spacer>
           </item>
+          <item>
+           <widget class="gams::studio::connect::ClickableLabel" name="helpIcon">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

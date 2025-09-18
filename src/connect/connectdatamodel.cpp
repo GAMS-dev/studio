@@ -139,14 +139,9 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                                                       : QVariant::fromValue(Theme::color(Theme::Syntax_keyword)) );
                      }
                   } else {
-                      bool deletable = item->data(static_cast<int>(DataItemColumn::Delete)).toBool();
-                      QString str = item->data(static_cast<int>(DataItemColumn::Value)).toString();
-                      if (!deletable) {
-                          if (index.column()==static_cast<int>(DataItemColumn::Value) && QString::compare(str,"[value]",Qt::CaseInsensitive)==0) {
-                              return  QVariant::fromValue(Theme::color(Theme::Normal_Blue));
-                          }
-                      }
-                      return QVariant::fromValue(Theme::color(Theme::Syntax_keyword));
+                      return  (index.column()==static_cast<int>(DataItemColumn::Key)
+                                       ? QVariant::fromValue(QApplication::palette().color(QPalette::Text))
+                                       : QVariant::fromValue(Theme::color(Theme::Syntax_keyword)) );
                   }
                   return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         } else if (state==static_cast<int>(DataCheckState::ElementMap)) {
@@ -155,15 +150,6 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                     return  QVariant::fromValue(Theme::color(Theme::Normal_Red));
                 }
             } else {
-                bool deletable = (item->parentItem() ? item->parentItem()->data(static_cast<int>(DataItemColumn::Delete)).toBool() : true);
-                if (deletable)
-                    deletable = item->data(static_cast<int>(DataItemColumn::Delete)).toBool();
-                if (!deletable) {
-                    if (index.column()==static_cast<int>(DataItemColumn::Key) && QString::compare(item->data(static_cast<int>(DataItemColumn::Key)).toString(), "[key]", Qt::CaseInsensitive)==0)
-                        return  QVariant::fromValue(Theme::color(Theme::Normal_Blue));
-                    if (index.column()==static_cast<int>(DataItemColumn::Value) && QString::compare(item->data(static_cast<int>(DataItemColumn::Value)).toString(), "[value]", Qt::CaseInsensitive)==0)
-                        return  QVariant::fromValue(Theme::color(Theme::Normal_Blue));
-                }
                 return QVariant::fromValue(Theme::color(Theme::Syntax_keyword));
             }
             return  QVariant::fromValue(Theme::color(Theme::Syntax_keyword));
@@ -204,15 +190,23 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
     case Qt::BackgroundRole: {
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
         ConnectDataItem *parentItem = item->parentItem();
-        if (parentItem == mRootItem ) {
+        if (parentItem == mRootItem ||
+            item->data( static_cast<int>(DataItemColumn::CheckState) ).toInt() <= static_cast<int>(DataCheckState::KeyItem) ) {
             return QVariant::fromValue(QApplication::palette().color(QPalette::Window));
+        } else if (item->data( static_cast<int>(DataItemColumn::CheckState) ).toInt() <= static_cast<int>(DataCheckState::ListItem)   ||
+                   item->data( static_cast<int>(DataItemColumn::CheckState) ).toInt() == static_cast<int>(DataCheckState::ListAppend) ||
+                   item->data( static_cast<int>(DataItemColumn::CheckState) ).toInt() == static_cast<int>(DataCheckState::MapAppend)        ) {
+                   return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Window));
+        } else if (index.column() > static_cast<int>(DataItemColumn::Value)) {
+                   return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
+        } else if (index.column()==static_cast<int>(DataItemColumn::Key) &&
+                   item->data( static_cast<int>(DataItemColumn::CheckState)).toInt()==static_cast<int>(DataCheckState::ElementValue) ) {
+                   return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
+        } else if (index.column()==static_cast<int>(DataItemColumn::Value) &&
+                   item->data( static_cast<int>(DataItemColumn::CheckState)).toInt()==static_cast<int>(DataCheckState::ElementKey) ) {
+                   return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
         } else {
-            if (item->data( static_cast<int>(DataItemColumn::CheckState) ).toInt() <= static_cast<int>(DataCheckState::ListItem)   ||
-                item->data( static_cast<int>(DataItemColumn::CheckState) ).toInt() == static_cast<int>(DataCheckState::ListAppend) ||
-                item->data( static_cast<int>(DataItemColumn::CheckState) ).toInt() == static_cast<int>(DataCheckState::MapAppend)        )
-                return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Window));
-            else
-                return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
+            return QVariant::fromValue(QApplication::palette().color(QPalette::AlternateBase));
         }
     }
     case Qt::UserRole: {
@@ -239,18 +233,22 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                            if (item->data( static_cast<int>(DataItemColumn::CheckState) ).toInt()==static_cast<int>(DataCheckState::SchemaName)) {
                                if (!item->data( static_cast<int>(DataItemColumn::Undefined) ).toBool() ) {
                                    if (item->data( static_cast<int>(DataItemColumn::InvalidValue)).toInt()>0)
-                                       return QVariant( QString("%1%2%3%4 may contain an invalid or unknown attribute or miss a required attribute.<br/>Check schema definition for valid attributes.<br/>Note that name is case-sensitive.%5")
+                                       return QVariant( QString("%1%2%3%4 may contain an invalid or unknown option or miss a required option.<br/>"
+                                                                "Click to show agent definition and its valid options. Then press %2 F1 %4 to show documentation for %2%3%4.<br/>"
+                                                                "Note that name is case-sensitive.%5")
                                                              .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter ));
                                    else
-                                         return QVariant( QString("%1 Show help for %2%3%4 schema %5")
-                                                         .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter) );
+                                       return QVariant( QString("%1Click to show definition of %2%3%4. Then press %2 F1 %4 to show documentation for %2%3%4.%5")
+                                                           .arg(TooltipStrHeader, TooltipOpenedBoldStr, data_index.data(Qt::DisplayRole).toString(), TooltipClosedBoldStr, TooltipStrFooter));
                                } else {
-                                   return QVariant( QString("%1 Unknown schema name %2%3%4.<br/>Note that name is case-sensitive.<br/>See %2%5%4 location for known schema definition.%6")
+                                   return QVariant( QString("%1 Unknown agent name %2%3%4.<br/>Note that name is case-sensitive.<br/>"
+                                                            "See %2%5%4 location for known agent definition.%6")
                                                     .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr, CommonPaths::gamsConnectSchemaDir(),TooltipStrFooter ) );
                                }
                            } else if (item->data( static_cast<int>(DataItemColumn::CheckState) ).toInt()==static_cast<int>(DataCheckState::ListAppend)) {
                                       if (item->parentItem() && item->parentItem()->data(static_cast<int>(DataItemColumn::Undefined) ).toBool())
-                                          return QVariant( QString("%1 Unable to add element to the list of the unknown %2%3%4<br/>Check schema definition for valid attribute name or name of its parent.<br/>Note that name is case-sensitive %5")
+                                          return QVariant( QString("%1 Unable to add element to the list of the unknown %2%3%4<br/>"
+                                                                  "Check agent definition for valid option name or name of its parent.<br/>Note that name is case-sensitive %5")
                                                            .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr,TooltipStrFooter) );
                                      return QVariant( QString("%1 Add element to the list of %2%3%4 %5")
                                                       .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr,TooltipStrFooter ) );
@@ -262,7 +260,8 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                                       return QVariant( QString("%1 Select which %2oneof%4 to add element to the list %2%3%4 %5")
                                                        .arg( TooltipStrHeader,TooltipOpenedBoldStr,parentdata.toString(),TooltipClosedBoldStr,TooltipStrFooter ) );
                            } else if (item->data( static_cast<int>(DataItemColumn::Undefined)).toBool()) {
-                                     return QVariant( QString("%1 %2%3%4 attribute is unknown.<br/>Check schema definition for valid attribute name or name of its parent.<br/>Note that name is case-sensitive.%5")
+                                     return QVariant( QString("%1 %2%3%4 option is unknown.<br/>Check agent definition and its valid option name or name of its parent.<br/>"
+                                                              "Note that name is case-sensitive.%5")
                                                            .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr,TooltipStrFooter ));
                            } else if (item->data(static_cast<int>(DataItemColumn::CheckState) ).toInt()==static_cast<int>(DataCheckState::KeyItem) ||
                                       item->data(static_cast<int>(DataItemColumn::CheckState) ).toInt()==static_cast<int>(DataCheckState::ElementValue)) {
@@ -278,22 +277,27 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                                                 int number = schema->getNumberOfOneOfDefined(key);
                                                 QVariant type = index.siblingAtColumn(static_cast<int>(DataItemColumn::SchemaType)).data(Qt::DisplayRole);
                                                 QVariant allowedValue = index.siblingAtColumn(static_cast<int>(DataItemColumn::AllowedValue)).data(Qt::DisplayRole);
-                                                return QVariant( QString("%1%2%3%4 is oneof %2%5%4 schema with type %2%6.%4 %7 %8")
+                                                return QVariant( QString("%1%2%3%4 is oneof %2%5%4 agent with type %2%6.%4 %7 %8")
                                                                     .arg( TooltipStrHeader,TooltipOpenedBoldStr,schemakey.last(),TooltipClosedBoldStr,QString::number(number),type.toStringList().join(","),
                                                                           (allowedValue.toString().isEmpty()?"" : "<br/>Allowed values are "+TooltipOpenedBoldStr+allowedValue.toString()+TooltipClosedBoldStr+"."),
                                                                           TooltipStrFooter));
 
                                             }
                                             if (item->data( static_cast<int>(DataItemColumn::InvalidValue)).toInt()>0) {
-                                                    return QVariant( QString("%1%2%3%4 may be invalid attribute or be excluded from (an)other attribute or contains an invalid value.<br/>Check schema definition for valid and excluded attribute.%5")
+                                                    return QVariant( QString("%1%2%3%4 may be an invalid option or be excluded from (an)other option or contains an invalid value.<br/>"
+                                                                              "Check agent definition for valid and excluded option.%5")
                                                                         .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter ));
+                                            } else {
+                                                return QVariant( QString("%1Click to show definition of %2%3%4. Then press %2 F1 %4 to show documentation for %2%3%4.%5")
+                                                                    .arg(TooltipStrHeader, TooltipOpenedBoldStr, data_index.data(Qt::DisplayRole).toString(), TooltipClosedBoldStr, TooltipStrFooter));
                                             }
                                         }
                                      }
                            } else if (item->data(static_cast<int>(DataItemColumn::CheckState)).toInt()==static_cast<int>(DataCheckState::ElementMap)) {
                                       QString str = item->data(static_cast<int>(DataItemColumn::Key)).toString();
                                       if (QString::compare(str,"[key]",Qt::CaseInsensitive)==0)
-                                          return  QVariant( QString("%1 The key %2%3%4 is created for the dict %2%5%4. <br/>Edit this to change to a wanted or desired dict key. %6")
+                                          return  QVariant( QString("%1 The key %2%3%4 is created for the dict %2%5%4.<br/>"
+                                                                     "Edit this to change to a wanted or desired dict key. %6")
                                                                 .arg(TooltipStrHeader, TooltipOpenedBoldStr, "[key]", TooltipClosedBoldStr, item->parentItem()->data(static_cast<int>(DataItemColumn::Key)).toString(), TooltipStrFooter) );
 
                            }
@@ -303,7 +307,7 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                           if (!deletable) {
                               if (item->data(static_cast<int>(DataItemColumn::CheckState)).toInt()==static_cast<int>(DataCheckState::ElementValue)) {
                                   if (QString::compare(str,"[value]",Qt::CaseInsensitive)==0)
-                                      return  QVariant( QString("%1 %2%3%4 is created for the required attribute %2%5%4. <br/>Edit this value to change to a wanted or desired value. %6")
+                                      return  QVariant( QString("%1 %2%3%4 is created for the required option %2%5%4. <br/>Edit this value to change to a wanted or desired value. %6")
                                                       .arg(TooltipStrHeader, TooltipOpenedBoldStr, "[value]", TooltipClosedBoldStr, item->data(static_cast<int>(DataItemColumn::Key)).toString(), TooltipStrFooter) );
                               }
                           }
@@ -347,10 +351,11 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
             const QModelIndex unknown_index = index.sibling(index.row(), static_cast<int>(DataItemColumn::Undefined) );
             const int checkstate = checkstate_index.data(Qt::DisplayRole).toInt();
             if (checkstate==static_cast<int>(DataCheckState::SchemaName)) {
-               if (unknown_index.data(Qt::DisplayRole).toBool())
+               if (unknown_index.data(Qt::DisplayRole).toBool() ||
+                   item->data(static_cast<int>(DataItemColumn::InvalidValue)).toInt() > 0 )
                   return QVariant::fromValue(Theme::icon(":/solid/kill"));
                else
-                  return QVariant::fromValue(Theme::icon(":/solid/question"));
+                  return QVariant::fromValue(Theme::icon(":/solid/book"));
             } else if (checkstate==static_cast<int>(DataCheckState::ListAppend) ||
                        checkstate==static_cast<int>(DataCheckState::SchemaAppend) ||
                        checkstate==static_cast<int>(DataCheckState::MapAppend)        ) {

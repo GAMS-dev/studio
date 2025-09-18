@@ -46,7 +46,8 @@ enum struct DocumentType {
     APIs,
     Index,
     StudioMain,
-    ModLibs,
+    Connect,
+    ModLibs
 };
 enum struct StudioSection {
     WelcomePage,
@@ -87,7 +88,8 @@ public:
             {DocumentType::APIsMain, docs + "/API_MAIN.html"},
             {DocumentType::ToolsMain, docs + "/T_MAIN.html"},
             {DocumentType::Index, docs + "/keyword.html"},
-            {DocumentType::StudioMain, docs + "/T_STUDIO.html"}
+            {DocumentType::StudioMain, docs + "/T_STUDIO.html"},
+            {DocumentType::Connect, docs + "/UG_GAMSCONNECT.html"}
         };
         return list;
     }
@@ -202,6 +204,13 @@ public:
         QString str = section.toUpper().simplified();
         str.replace(" ", "_");
         return QString("STUDIO_%1").arg(str);
+    }
+
+    inline static QString getConnectAnchor(const QString &agent, const QString &attribute) {
+        if (agent.isEmpty()) return agent;
+
+        return (attribute.isEmpty() ? QString("%1").arg(agent.toUpper())
+                                    : QString("%1_%2").arg(agent.toUpper(), attribute.toUpper()) );
     }
 
     inline static int getURLIndexFrom(const QString &urlStr)  {

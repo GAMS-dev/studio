@@ -80,7 +80,7 @@ QVariant SchemaDefinitionModel::data(const QModelIndex &index, int role) const
                   return  QVariant::fromValue(Theme::color(Theme::Active_Gray));
         else if (index.column()==static_cast<int>(SchemaItemColumn::Field) &&
                  item->data(index.column()).toString().compare("schema")==0)
-                  return  QVariant::fromValue(Theme::color(Theme::Disable_Gray));
+                  return  QVariant::fromValue(QColor(180,180,180));
         else if (index.column()==static_cast<int>(SchemaItemColumn::Field)                      &&
                  item->data(static_cast<int>(SchemaItemColumn::Field)).toString().contains("[") &&
                  item->data(static_cast<int>(SchemaItemColumn::Field)).toString().contains("]")    )
@@ -105,7 +105,9 @@ QVariant SchemaDefinitionModel::data(const QModelIndex &index, int role) const
         SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(idx.internalPointer());
         if (item->data(static_cast<int>(SchemaItemColumn::Field)).toString().compare("schema", Qt::CaseInsensitive)!=0)
             return (
-                QString("<html><head/><body>Drag and drop <span style=' font-weight:600;'>%1</span>  to insert the attribute from definition.</body></html>")
+                QString("<html><head/><body><p>Drag and drop <span style=' font-weight:600;'>%1</span> to insert the attribute from definition.</p>"
+                        "<p>Select and press <span style=' font-weight:600;'>F1</span> to show documentation for <span style=' font-weight:600;'>%1</span>.</p>"
+                        "</body></html>")
                     .arg(item->data(static_cast<int>(SchemaItemColumn::Field)).toString())
             );
         break;

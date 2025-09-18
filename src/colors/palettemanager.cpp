@@ -37,10 +37,22 @@ PaletteManager::PaletteManager()
     QColor back = p.color(QPalette::Highlight);
     p.setColor(QPalette::Active, QPalette::Highlight, p.color(QPalette::Highlight));
     p.setColor(QPalette::Active, QPalette::HighlightedText, p.color(QPalette::HighlightedText));
+    QColor base = p.color(QPalette::Base);
+    QColor lightgray = QColor(230,230,230);
+    QColor shaded = QColor((2*base.red()+lightgray.red())/3,
+                           (2*base.green()+lightgray.green())/3,
+                           (2*base.blue()+lightgray.blue())/3);
+    p.setColor(QPalette::Active, QPalette::AlternateBase, shaded);
     QColor gray = QColor(180,180,180);
-    back = QColor((2*back.red()+gray.red())/3, (2*back.green()+gray.green())/3, (2*back.blue()+gray.blue())/3);
+    back = QColor((2*back.red()+gray.red())/3,
+                  (2*back.green()+gray.green())/3,
+                  (2*back.blue()+gray.blue())/3);
+    shaded = QColor((2*shaded.red()+gray.red())/3,
+                    (2*shaded.green()+gray.green())/3,
+                    (2*shaded.blue()+gray.blue())/3);
     p.setColor(QPalette::Inactive, QPalette::Highlight, back);
     p.setColor(QPalette::Inactive, QPalette::HighlightedText, p.color(QPalette::HighlightedText));
+    p.setColor(QPalette::Inactive, QPalette::AlternateBase, shaded);
 
     mStyles.append(p);
 
