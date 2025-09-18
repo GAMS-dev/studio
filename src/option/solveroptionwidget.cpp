@@ -668,6 +668,17 @@ void SolverOptionWidget::on_messageViewCheckBox_stateChanged(int checkState)
 void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
 {
     Q_UNUSED(checked)
+    if (isModified()) {
+        int answer = MsgBox::warning("File has been modified", QDir::toNativeSeparators(mLocation)+" has been modified. "+
+                                                                   "Saving file before reopening prevents data from being lost.\n\n"+
+                                                                   "What do you want to do with the modified file?",
+                                     this, "Discard and Open As Text", "Save and Open As Text", "Cancel", 1, 2);
+        if (answer == 2)
+            return;
+        else if (answer == 1)
+            saveAs(mLocation);
+    }
+
     MainWindow* main = getMainWindow();
     if (!main) return;
 
@@ -1560,7 +1571,6 @@ void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
 void SolverOptionWidget::setModified(bool modified)
 {
     mModified = modified;
-    updateEditActions(mModified);
     emit modificationChanged( mModified );
 }
 
