@@ -1254,17 +1254,13 @@ OptionTokenizer *ParameterEditor::getOptionTokenizer() const
     return mOptionTokenizer;
 }
 
-bool ParameterEditor::isAParameterEditorFocused(QWidget *focusWidget) const
+bool ParameterEditor::isAParameterEditorFocused(QWidget* focusWidget) const
 {
-    return (focusWidget==ui->gamsParameterTableView || focusWidget==ui->gamsParameterTreeView || focusWidget==ui->gamsParameterCommandLine);
+    return (focusWidget==ui->gamsParameterTableView   || focusWidget==ui->gamsParameterTreeView ||
+            focusWidget==ui->gamsParameterCommandLine || focusWidget==ui->gamsParameterSearch      );
 }
 
-bool ParameterEditor::isAParameterTableFocused(QWidget *focusWidget) const
-{
-      return (focusWidget==ui->gamsParameterTableView);
-}
-
-QString ParameterEditor::getSelectedParameterName(QWidget *widget) const
+QString ParameterEditor::getSelectedParameterName(QWidget* widget) const
 {
     if (widget == ui->gamsParameterTableView) {
         const QModelIndexList selection = ui->gamsParameterTableView->selectionModel()->selectedIndexes();

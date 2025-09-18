@@ -74,6 +74,7 @@ public:
     bool isModified() const;
 
     bool selectSearchField() const;
+    bool isInFocus(QWidget* focusWidget) const;
 
 signals:
     void modificationChanged(bool modifiedState);

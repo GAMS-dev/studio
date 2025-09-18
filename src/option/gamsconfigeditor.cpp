@@ -87,6 +87,11 @@ bool GamsConfigEditor::selectSearchField() const
     return false;
 }
 
+bool GamsConfigEditor::isInFocus(QWidget* focusWidget) const
+{
+    return (mParamConfigEditor->isInFocus(focusWidget) || mEnvVarConfigEditor->isInFocus(focusWidget));
+}
+
 void GamsConfigEditor::setModified(bool modified)
 {
     mModified = modified;

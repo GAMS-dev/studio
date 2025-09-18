@@ -3993,10 +3993,14 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         } else if (mGamsParameterEditor->isAParameterEditorFocused(focusWidget())) {
             mGamsParameterEditor->deSelectParameters();
         } else if (mRecent.editor() != nullptr) {
-            if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+            option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor());
+            if (so && so->isInFocus(focusWidget())) {
                 so->deSelectOptions();
-            } else if (option::GamsConfigEditor *guc = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
-                guc->deSelectAll();
+            } else {
+                option::GamsConfigEditor *guc = ViewHelper::toGamsConfigEditor(mRecent.editor());
+                if (guc && guc->isInFocus(focusWidget())) {
+                    guc->deSelectAll();
+                }
             }
         }
 

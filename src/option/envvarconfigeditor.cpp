@@ -213,6 +213,11 @@ bool EnvVarConfigEditor::isModified() const
     return mModified;
 }
 
+bool EnvVarConfigEditor::isInFocus(QWidget* focusWidget) const
+{
+    return (focusWidget==ui->EnvVarConfigTableView);
+}
+
 QList<EnvVarConfigItem *> EnvVarConfigEditor::envVarConfigItems()
 {
     return mEnvVarTableModel->envVarConfigItems();
