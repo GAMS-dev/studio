@@ -9,6 +9,7 @@ Version 1.22.1
 - Fixed mouse scroll issue in log and lst-viewer on macOS, i.e. the scrolling is smooth now.
 - Fixed horizontal viewer tab scrolling, when one specific project is focused.
 - Fixed directories in project options not changeable when default workdir isn't defined (e.g. when starting with --ignore-settings)
+- Fixed incorrect ESC key behavior in Parameter File Editor, Solver Option Editor, and GAMS User Configuration Editor.
 - Improved the workflow to create a new empty project.
 - Improved dynamic main file selection, i.e. instantly set the main file marker on tab change.
 - Upgraded to Qt 6.9.2.
