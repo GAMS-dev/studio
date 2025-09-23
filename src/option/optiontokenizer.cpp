@@ -1167,10 +1167,13 @@ QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, c
         if (itype==optDataString && ioptsubtype == optsubNoValue)
             return hintValue;
     } else if (itype==optDataString) {
-        if (line.contains(hintValue))
-           return getQuotedStringValue(line, hintValue);
-        else if (line.contains(hintValue, Qt::CaseInsensitive))
-                 return getQuotedStringValue(line.toUpper(), hintValue.toUpper());
+              if (line.indexOf(hintValue, 0, Qt::CaseInsensitive)!=0) { // line not started with hintvalue
+                  if (line.contains(hintValue)) {
+                     return getQuotedStringValue(line, hintValue);
+                  } else if (line.contains(hintValue, Qt::CaseInsensitive)) {
+                           return getQuotedStringValue(line.toUpper(), hintValue.toUpper());
+                  }
+              }
     } else {
         if (line.contains(hintValue)) {
             return  line.mid( line.indexOf(hintValue), hintValue.size() );
