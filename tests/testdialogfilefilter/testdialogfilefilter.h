@@ -20,7 +20,7 @@
 #ifndef TESTDIALOGFILEFILTER_H
 #define TESTDIALOGFILEFILTER_H
 
-#include <QtTest/QTest>
+#include <QTest>
 #include "viewhelper.h"
 
 using namespace gams::studio;

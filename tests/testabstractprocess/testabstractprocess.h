@@ -20,7 +20,7 @@
 #ifndef TESTABSTRACTPROCESS_H
 #define TESTABSTRACTPROCESS_H
 
-#include <QtTest/QTest>
+#include <QTest>
 
 #include "abstractprocess.h"
 

@@ -1776,7 +1776,7 @@ void MainWindow::openRecentFile()
 
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
-    if (!searchDialog()->search()->regex().pattern().isEmpty())
+    if (!searchDialog()->search()->parameters().regex.pattern().isEmpty())
         searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
 

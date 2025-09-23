@@ -20,7 +20,7 @@
 #ifndef TESTCOMPLETER_H
 #define TESTCOMPLETER_H
 
-#include <QtTest/QTest>
+#include <QTest>
 #include "syntaxsimulator.h"
 
 namespace gams {

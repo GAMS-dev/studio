@@ -20,7 +20,7 @@
 #ifndef TESTGAMSUSERCONFIG_H
 #define TESTGAMSUSERCONFIG_H
 
-#include <QtTest/QTest>
+#include <QTest>
 
 class TestGamsUserConfig : public QObject
 {

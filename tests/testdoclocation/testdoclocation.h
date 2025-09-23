@@ -20,7 +20,7 @@
 #ifndef TESTGAMSOPTION_H
 #define TESTGAMSOPTION_H
 
-#include <QtTest/QTest>
+#include <QTest>
 
 #include "help/helpdata.h"
 

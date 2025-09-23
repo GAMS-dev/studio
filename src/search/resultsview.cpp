@@ -22,6 +22,7 @@
 #include "searchdialog.h"
 #include "ui_resultsview.h"
 #include "searchresultmodel.h"
+#include "searchresultviewitemdelegate.h"
 #include "result.h"
 #include "resultitem.h"
 #include "mainwindow.h"
@@ -81,7 +82,8 @@ void ResultsView::jumpToResult(bool focus)
     Result r = item->type() != ResultItem::Entry ? item->child(0)->data() : item->data();
     mMain->searchDialog()->jumpToResult(r);
     emit updateMatchLabel(item->data().logicalIndex()+1, mResultModel->resultCount());
-    if (!focus) setFocus(); // focus stays in results view
+    if (!focus)
+        setFocus(); // focus stays in results view
 }
 
 void ResultsView::expandAll()

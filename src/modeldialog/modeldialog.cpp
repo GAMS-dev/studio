@@ -272,7 +272,7 @@ void ModelDialog::jumpToNonEmptyTab()
         disconnect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::storeSelectedTab);
         ui->tabWidget->setCurrentIndex(mLastTabIndex);
         connect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::storeSelectedTab);
-    } else if (proxyModelList[ui->tabWidget->currentIndex()]->rowCount() == 0){ // jump to the first non-mepty tab in case the current tab runs out of results
+    } else if (proxyModelList[ui->tabWidget->currentIndex()]->rowCount() == 0){ // jump to the first non-empty tab in case the current tab runs out of results
         for (int i=0; i<proxyModelList.size(); i++) {
             if (proxyModelList[i]->rowCount() > 0) {
                 disconnect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::storeSelectedTab);

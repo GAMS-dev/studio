@@ -25,10 +25,6 @@
 
 #include "search.h"
 #include "mainwindow.h"
-#include "search/fileworker.h"
-#include "searchhelpers.h"
-#include "abstractsearchfilehandler.h"
-#include "searchhelpers.h"
 
 namespace gams {
 namespace studio {
@@ -37,6 +33,9 @@ namespace search {
 namespace Ui {
 class SearchDialog;
 }
+
+class FileWorker;
+class AbstractSearchFileHandler;
 
 class SearchDialog : public QDialog
 {
@@ -126,7 +125,7 @@ protected:
 
 private:
     void restoreSettings();
-    QList<SearchFile> getFilesByScope(const SearchParameters &parameters);
+    QList<SearchFile> getFilesByScope(const Parameters &parameters);
     int updateLabelByCursorPos(int lineNr = -1, int colNr = -1);
     void insertHistory();
     void searchParameterChanged();
@@ -143,13 +142,13 @@ private:
     void checkRegex();
     void updateComponentAvailability();
     void updateClearButton();
-    SearchParameters createSearchParameters(bool showResults,
+    Parameters createSearchParameters(bool showResults,
                                             bool ignoreReadonly = false,
                                             bool searchBackwards = false);
-    FileWorker mFileWorker;
 
 private:
     Ui::SearchDialog *ui;
+    FileWorker* mFileWorker;
     QWidget* mCurrentEditor = nullptr;
     MainWindow* mMain = nullptr;
     AbstractSearchFileHandler* mFileHandler = nullptr;

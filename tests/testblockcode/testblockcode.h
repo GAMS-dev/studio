@@ -21,7 +21,7 @@
 #define TESTBLOCKCODE_H
 
 #include "syntax/syntaxhighlighter.h"
-#include <QtTest/QTest>
+#include <QTest>
 
 using gams::studio::syntax::BlockCode;
 

@@ -20,7 +20,7 @@
 #ifndef TESTCODEEDIT_H
 #define TESTCODEEDIT_H
 
-#include <QtTest/QTest>
+#include <QTest>
 
 class TestCodeEdit : public QObject
 {

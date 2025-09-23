@@ -17,24 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SEARCHHELPERS_H
-#define SEARCHHELPERS_H
+#ifndef SEARCHFILE_H
+#define SEARCHFILE_H
 
 #include "file/filemeta.h"
-#include <QRegularExpression>
 
 namespace gams {
 namespace studio {
 namespace search {
-
-enum Scope {
-    Selection,
-    ThisFile,
-    ThisProject,
-    OpenTabs,
-    AllFiles,
-    Folder
-};
 
 class SearchFile
 {
@@ -78,28 +68,8 @@ private:
     FileMeta* mFileMeta;
 };
 
-struct SearchParameters
-{
-    QRegularExpression regex;
-    QString searchTerm;
-    QString replaceTerm;
-
-    FileMeta* currentFile = nullptr;
-
-    bool useRegex;
-    bool caseSensitive;
-    bool searchBackwards;
-    bool showResults;
-    bool ignoreReadOnly;
-    bool includeSubdirs;
-
-    Scope scope;
-    QString path;
-    QStringList excludeFilter;
-    QStringList includeFilter;
-};
 
 }
 }
 }
-#endif // SEARCHHELPERS_H
+#endif // SEARCHFILE_H

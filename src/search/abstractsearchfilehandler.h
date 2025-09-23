@@ -21,12 +21,16 @@
 #define ABSTRACTSEARCHFILEHANDLER_H
 
 #include <QList>
-#include <QWidget>
-#include "file/filemeta.h"
 #include "file/pexfilenode.h"
+
+class QWidget;
 
 namespace gams {
 namespace studio {
+
+class FileMeta;
+class PExProjectNode;
+
 namespace search {
 
 class AbstractSearchFileHandler

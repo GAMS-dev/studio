@@ -22,7 +22,8 @@
 
 #include <QObject>
 #include "search/abstractsearchfilehandler.h"
-#include "searchhelpers.h"
+#include "searchcommon.h"
+#include "searchfile.h"
 
 namespace gams {
 namespace studio {
@@ -36,22 +37,29 @@ namespace search {
 /// or by using SearchDialog::createSearchParameters to extract everything necessary from the Search Dialog  .
 /// Connect the filesCollected signal to further handle the file list once everything is done.
 ///
-class FileWorker : public QObject
+class FileWorker
+        : public QObject
 {
     Q_OBJECT
 
 public:
     FileWorker(AbstractSearchFileHandler *fh);
-    FileWorker(const SearchParameters &params, AbstractSearchFileHandler *fh);
-    void setParameters(const SearchParameters &parameters);
+
+    FileWorker(const Parameters &params, AbstractSearchFileHandler *fh);
+
+    void setParameters(const Parameters &parameters);
+
     QList<SearchFile> collectFilesInFolder();
-    QList<SearchFile> filterFiles(const QList<SearchFile> &files, const SearchParameters &params);
+
+    void filterFiles(const QList<SearchFile> &files,
+                     const Parameters &params,
+                     QList<SearchFile> &matched);
 
 signals:
     void filesCollected(QList<gams::studio::search::SearchFile> files);
 
 private:
-    SearchParameters mParameters;
+    Parameters mParameters;
     AbstractSearchFileHandler* mFileHandler;
 };
 

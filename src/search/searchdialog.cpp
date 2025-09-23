@@ -20,9 +20,10 @@
 #include <QFileDialog>
 #include <QTextDocumentFragment>
 #include <QRegularExpression>
-#include "search/fileworker.h"
+#include "fileworker.h"
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
+#include "abstractsearchfilehandler.h"
 #include "settings.h"
 #include "syntax.h"
 #include "exception.h"
@@ -39,8 +40,8 @@ namespace search {
 
 SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, MainWindow* parent)
     : QDialog(parent)
-    , mFileWorker(fileHandler)
     , ui(new Ui::SearchDialog)
+    , mFileWorker(new FileWorker(fileHandler))
     , mMain(parent)
     , mFileHandler(fileHandler)
     , mSearch(this, fileHandler)
@@ -110,9 +111,9 @@ void SearchDialog::on_btn_Replace_clicked()
     mSearch.replaceNext(ui->txt_replace->text());
 }
 
-SearchParameters SearchDialog::createSearchParameters(bool showResults, bool ignoreReadonly, bool searchBackwards)
+Parameters SearchDialog::createSearchParameters(bool showResults, bool ignoreReadonly, bool searchBackwards)
 {
-    SearchParameters parameters;
+    Parameters parameters;
     parameters.regex = createRegex();
     parameters.searchTerm = searchTerm();
     parameters.replaceTerm = ui->txt_replace->text();
@@ -122,8 +123,6 @@ SearchParameters SearchDialog::createSearchParameters(bool showResults, bool ign
     parameters.searchBackwards = searchBackwards;
     parameters.showResults = showResults;
     parameters.ignoreReadOnly = ignoreReadonly;
-
-    parameters.currentFile = mFileHandler->fileMeta(mCurrentEditor);
 
     parameters.scope = selectedScope();
     parameters.path = ui->combo_path->currentText();
@@ -215,10 +214,10 @@ void SearchDialog::updateDialogState()
     repaint();
 }
 
-QList<SearchFile> SearchDialog::getFilesByScope(const SearchParameters &parameters)
+QList<SearchFile> SearchDialog::getFilesByScope(const Parameters &parameters)
 {
     QList<SearchFile> files;
-    mFileWorker.setParameters(parameters);
+    mFileWorker->setParameters(parameters);
     switch (ui->combo_scope->currentIndex()) {
         case Scope::ThisFile: {
             if (mCurrentEditor)
@@ -232,7 +231,7 @@ QList<SearchFile> SearchDialog::getFilesByScope(const SearchParameters &paramete
                 return QList<SearchFile>();
             for (PExFileNode *f : p->listFiles())
                 files << SearchFile(f->file());
-            files = mFileWorker.filterFiles(files, parameters);
+            mFileWorker->filterFiles(files, parameters, files);
             break;
         }
         case Scope::Selection: {
@@ -245,18 +244,18 @@ QList<SearchFile> SearchDialog::getFilesByScope(const SearchParameters &paramete
             auto metas =  mFileHandler->openFiles();
             for (FileMeta* fm : std::as_const(metas))
                 files << SearchFile(fm);
-            files = mFileWorker.filterFiles(files, parameters);
+            mFileWorker->filterFiles(files, parameters, files);
             break;
         }
         case Scope::AllFiles: {
             auto metas = mFileHandler->fileMetas();
             for (FileMeta* fm : std::as_const(metas))
                 files << SearchFile(fm);
-            files = mFileWorker.filterFiles(files, parameters);
+            mFileWorker->filterFiles(files, parameters, files);
             break;
         }
         case Scope::Folder: {
-            files << mFileWorker.collectFilesInFolder();
+            files << mFileWorker->collectFilesInFolder();
         }
         default: break;
     }
@@ -356,7 +355,7 @@ void SearchDialog::on_btn_clear_clicked()
 
 void SearchDialog::filesChanged()
 {
-    if (mSearch.scope() == Scope::ThisProject)
+    if (mSearch.parameters().scope == Scope::ThisProject)
         mSearch.invalidateCache();
 }
 
@@ -774,10 +773,9 @@ bool SearchDialog::checkSearchTerm()
 }
 
 void SearchDialog::jumpToResult(int index) {
-    if (!mSearch.hasCache() || !(index > -1 && index < mSearch.results().size())) return;
-
-    Result r = mSearch.results().at(index);
-    jumpToResult(r);
+    if (!mSearch.hasCache() || !(index > -1 && index < mSearch.results().size()))
+        return;
+    jumpToResult(mSearch.results().at(index));
 }
 
 void SearchDialog::jumpToResult(Result r)
@@ -788,8 +786,8 @@ void SearchDialog::jumpToResult(Result r)
     }
 
     PExFileNode* fn = mFileHandler->findFileNode(r.filePath());
-    if (!r.parentGroup().isValid()) {
-        if (fn) r.setParentGroup(fn->parentNode()->id());
+    if (!r.parentGroup().isValid() && fn) {
+        r.setParentGroup(fn->parentNode()->id());
     }
 
     // create group for search results
@@ -802,7 +800,9 @@ void SearchDialog::jumpToResult(Result r)
             if (g->name() == name) {
                 mCurrentSearchGroup = g->toProject();
                 break;
-            } else mCurrentSearchGroup = nullptr;
+            } else {
+                mCurrentSearchGroup = nullptr;
+            }
         }
         if (!mCurrentSearchGroup) {
             QFileInfo dir(r.filePath());
@@ -812,12 +812,12 @@ void SearchDialog::jumpToResult(Result r)
 
     if (!fn) {
         fn = mFileHandler->openFile(r.filePath(), mCurrentSearchGroup);
-        if (!fn) EXCEPT() << "File not found: " << r.filePath();
+        if (!fn)
+            EXCEPT() << "File not found: " << r.filePath();
     }
 
     NodeId nodeId = (r.parentGroup().isValid()) ? r.parentGroup() : fn->assignedProject()->id();
     fn->file()->jumpTo(nodeId, true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
-
 }
 
 void SearchDialog::show(QPoint pos)

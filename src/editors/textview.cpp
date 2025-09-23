@@ -27,7 +27,7 @@
 #include "editorhelper.h"
 #include "editors/navigationhistorylocator.h"
 #include "editors/navigationhistory.h"
-#include "search/searchhelpers.h"
+#include "search/searchfile.h"
 #include "search/searchworker.h"
 #include "encoding.h"
 

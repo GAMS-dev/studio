@@ -21,7 +21,7 @@
 #define TESTFILEMAPPER_H
 
 #include "editors/fastfilemapper.h"
-#include <QtTest/QTest>
+#include <QTest>
 
 class TestFileMapper : public QObject
 {

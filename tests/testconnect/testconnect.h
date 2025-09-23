@@ -21,7 +21,7 @@
 #define TESTCONNECT_H
 
 #include "connect/connectdataitem.h"
-#include <QtTest/QTest>
+#include <QTest>
 
 using namespace gams::studio::connect;
 

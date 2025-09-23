@@ -20,7 +20,7 @@
 #ifndef TESTGAMSLICENSEINFO_H
 #define TESTGAMSLICENSEINFO_H
 
-#include <QtTest/QTest>
+#include <QTest>
 
 class TestGamsLicenseInfo : public QObject
 {
