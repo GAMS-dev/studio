@@ -47,48 +47,50 @@ QStringList SolverOptionDefinitionModel::mimeTypes() const
 QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes) const
 {
     QMimeData* mimeData = new QMimeData();
-    if (isViewCompact)
-        return mimeData;
 
     QByteArray encodedData;
     QDataStream stream(&encodedData, QFile::WriteOnly);
 
     Settings* settings = Settings::settings();
+    QString name;
+    QString value;
+    const QString commentChar = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
+    QString EOLComment;
+    QString aboveComment;
+    QString entry;
     for (const QModelIndex &index : indexes) {
-        if (index.isValid()) {
-            if (index.column()>0) {
-                continue;
-            }
-            OptionDefinitionItem *childItem = static_cast<OptionDefinitionItem*>(index.internalPointer());
-            OptionDefinitionItem *parentItem = childItem->parentItem();
-
-            const QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
-            const QModelIndex descriptionIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
-            if (parentItem == rootItem) {
-                if (settings && settings->toBool(skSoAddCommentAbove)) {
-                    stream << QString("%1 %2").arg(lineComment, data(descriptionIndex, Qt::DisplayRole).toString());
-                }
-                const QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
-                const QModelIndex optionIdIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
-                stream << QString("%1=%2=%3=%4").arg(data(index, Qt::DisplayRole).toString(),
-                                                     data(defValueIndex, Qt::DisplayRole).toString(),
-                                                     data(descriptionIndex, Qt::DisplayRole).toString(),
-                                                     data(optionIdIndex, Qt::DisplayRole).toString());
-            } else {
-                if (settings && settings->toBool(skSoAddCommentAbove)) {
-                    stream << QString("%1 %2").arg(lineComment, parentItem->data(OptionDefinitionModel::COLUMN_DESCIPTION).toString());
-                    if (!settings->toBool(skSoAddEOLComment))
-                        stream << QString("%1 %2 - %3").arg(lineComment,
-                                                            data(index, Qt::DisplayRole).toString(),
-                                                            data(descriptionIndex, Qt::DisplayRole).toString());
-                }
-                stream << QString("%1=%2=%3=%4").arg(parentItem->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString(),
-                                                     data(index, Qt::DisplayRole).toString(),
-                                                     data(descriptionIndex, Qt::DisplayRole).toString(),
-                                                     parentItem->data(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).toString());
-            }
+        if (!index.isValid())
+            continue;
+        switch (index.column()) {
+        case OptionDefinitionModel::COLUMN_OPTION_NAME:
+            name = index.parent().isValid() ? index.parent().data().toString() : index.data().toString();
+            break;
+        case OptionDefinitionModel::COLUMN_DEF_VALUE:
+            value = (index.parent().isValid() ? index.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME).data().toString()
+                                              : index.data().toString());
+            break;
+        case OptionDefinitionModel::COLUMN_DESCIPTION:
+            aboveComment = (index.parent().isValid() ? index.parent().siblingAtColumn(OptionDefinitionModel::COLUMN_DESCIPTION).data().toString()
+                                                     : index.data().toString());
+            EOLComment = index.data().toString();
+            break;
+        case OptionDefinitionModel::COLUMN_ENTRY_NUMBER:
+            entry = (index.parent().isValid() ? index.parent().siblingAtColumn(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).data().toString()
+                                              : index.data().toString());
+            break;
+        default: break;
         }
     }
+    if (settings && settings->toBool(skSoAddCommentAbove))
+        stream << QString("%1 %2").arg(commentChar, aboveComment);
+    if (indexes.size()>0) {
+        if (indexes.first().parent().isValid() &&
+            settings && settings->toBool(skSoAddCommentAbove) && !settings->toBool(skSoAddEOLComment))
+            stream << QString("%1 %2 - %3").arg(commentChar, value, EOLComment);
+        if (entry.isEmpty())
+            entry = indexes.first().siblingAtColumn(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).data().toString();
+    }
+    stream << QString("%1=%2=%3=%4").arg(name, value, EOLComment, entry);
 
     mimeData->setData(optionMimeType(OptionDefinitionType::SolverOptionDefinition), encodedData);
     return mimeData;
