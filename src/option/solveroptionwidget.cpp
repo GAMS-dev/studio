@@ -521,6 +521,9 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
         QString commentData = ui->solverOptionTreeView->model()->data(commentIndex).toString();
         QModelIndex insertEOLCommentIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_EOL_COMMENT);
         ui->solverOptionTableView->model()->setData( insertEOLCommentIndex, commentData, Qt::EditRole);
+    } else {
+        QModelIndex insertEOLCommentIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_EOL_COMMENT);
+        ui->solverOptionTableView->model()->setData( insertEOLCommentIndex, "", Qt::EditRole);
     }
     const int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
