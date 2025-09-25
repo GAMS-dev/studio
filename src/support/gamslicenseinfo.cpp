@@ -163,8 +163,11 @@ bool GamsLicenseInfo::isLicenseValid(const QStringList &license)
     for (const auto& line: license) {
         palLicenseRegisterGAMS(mPAL, i++, line.trimmed().toStdString().c_str());
     }
+
     palLicenseRegisterGAMSDone(mPAL);
-    return !palLicenseValidation(mPAL);
+    bool ret = !palLicenseValidation(mPAL);
+    addPalMessagesToSysLog();
+    return ret;
 }
 
 QStringList GamsLicenseInfo::gamsDataLocations()
@@ -333,6 +336,16 @@ int GamsLicenseInfo::errorCallback(int count, const char *message)
     logger->append(InvalidGAMS, LogMsgType::Error);
     logger->append(message, LogMsgType::Error);
     return 0;
+}
+
+void GamsLicenseInfo::addPalMessagesToSysLog()
+{
+    char msg[GMS_SSSIZE];
+    auto logger = SysLogLocator::systemLog();
+    while (palLicenseGetMessage(mPAL, msg, GMS_SSSIZE)) {
+        QString message(msg);
+        logger->append(message.replace('*', "").trimmed(), LogMsgType::Error);
+    }
 }
 
 QStringList GamsLicenseInfo::processLicenseData(const QString &data)
