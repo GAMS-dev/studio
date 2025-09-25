@@ -263,10 +263,7 @@ bool SolverOptionTableModel::setHeaderData(int index, Qt::Orientation orientatio
         return false;
 
     mCheckState[index] = value;
-    if (value.toInt()==Qt::CheckState(Qt::PartiallyChecked))
-        mOptionItem.at(index)->disabled = true;
-    else
-         mOptionItem.at(index)->disabled = false;
+    mOptionItem.at(index)->disabled = (value.toInt()==Qt::CheckState(Qt::PartiallyChecked));
 
     emit headerDataChanged(orientation, index, index);
     return true;
@@ -452,7 +449,19 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                 QModelIndexList indices = match(index(0, getColumnEntryNumber()), Qt::DisplayRole, QVariant(optionid), Qt::MatchRecursive);
 
                 if (settings && settings->toBool(skSoOverrideExisting)) {
-                    for(const QModelIndex &idx : std::as_const(indices)) { overrideIdRowList.append(idx.row()); }
+                    for(const QModelIndex &idx : std::as_const(indices)) {
+                        overrideIdRowList.append(idx.row());
+                    }
+                }
+                if (settings && settings->toBool(skSoDeleteCommentsAbove)) {
+                    for(const QModelIndex &idx : indices) {
+                        for(int r=idx.row()-1; r>=0; --r) {
+                            if (headerData(r, Qt::Vertical, static_cast<int>(Qt::CheckStateRole)).toInt()!=static_cast<int>(Qt::PartiallyChecked))
+                                break;
+                            if (!overrideIdRowList.contains(r))
+                                overrideIdRowList.append(r);
+                        }
+                    }
                 }
             }
         }
@@ -536,13 +545,15 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                     insertRows(beginRow, 1, QModelIndex());
 
                 QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
+                setHeaderData( idx.row(), Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
                 setData(idx, item->key, Qt::EditRole);
                 setData( index(beginRow, COLUMN_OPTION_VALUE), item->value, Qt::EditRole);
                 if (settings && settings->toBool(skSoAddEOLComment)) { //addEOLComment) {
                     setData(index(beginRow, COLUMN_EOL_COMMENT), item->text, Qt::EditRole);
+                } else {
+                    setData(index(beginRow, COLUMN_EOL_COMMENT), "", Qt::EditRole);
                 }
                 setData(index(beginRow, columnEntryNumber), item->optionId, Qt::EditRole);
-                setHeaderData( idx.row(), Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
                 emit newTableRowDropped( idx );
             }
             beginRow++;
