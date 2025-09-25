@@ -390,8 +390,8 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
         ui->solverOptionTableView->clearSelection();
         QItemSelection selection;
         for(const QModelIndex &idx: std::as_const(indices)) {
-            const QModelIndex leftIndex  = ui->solverOptionTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_OPTION_KEY);
-            const QModelIndex rightIndex = ui->solverOptionTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
+            const QModelIndex leftIndex  = ui->solverOptionTableView->model()->index(idx.row(), SolverOptionTableModel::COLUMN_OPTION_KEY);
+            const QModelIndex rightIndex = ui->solverOptionTableView->model()->index(idx.row(), SolverOptionTableModel::COLUMN_EOL_COMMENT);
             const QItemSelection rowSelection(leftIndex, rightIndex);
             selection.merge(rowSelection, QItemSelectionModel::Select);
         }
@@ -799,7 +799,7 @@ void SolverOptionWidget::showOptionRecurrence()
 
     QItemSelection selection = ui->solverOptionTableView->selectionModel()->selection();
     selection.select(ui->solverOptionTableView->model()->index(indexSelection.at(0).row(), 0),
-                     ui->solverOptionTableView->model()->index(indexSelection.at(0).row(), GamsParameterTableModel::COLUMN_ENTRY_NUMBER));
+                     ui->solverOptionTableView->model()->index(indexSelection.at(0).row(), SolverOptionTableModel::COLUMN_EOL_COMMENT));
     ui->solverOptionTableView->selectionModel()->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
 
     QList<int> rowList = getRecurrentOption(indexSelection.at(0));
@@ -811,7 +811,7 @@ void SolverOptionWidget::showOptionRecurrence()
     for(const int row : std::as_const(rowList)) {
         QItemSelection rowSelection = ui->solverOptionTableView->selectionModel()->selection();
         rowSelection.select(ui->solverOptionTableView->model()->index(row, 0),
-                            ui->solverOptionTableView->model()->index(row, GamsParameterTableModel::COLUMN_ENTRY_NUMBER));
+                            ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_EOL_COMMENT));
         ui->solverOptionTableView->selectionModel()->select(rowSelection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
     }
 
@@ -1323,9 +1323,9 @@ QList<int> SolverOptionWidget::getRecurrentOption(const QModelIndex &index)
 
 QString SolverOptionWidget::getOptionTableEntry(int row)
 {
-    const QModelIndex keyIndex = ui->solverOptionTableView->model()->index(row, GamsParameterTableModel::COLUMN_OPTION_KEY);
+    const QModelIndex keyIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_KEY);
     const QVariant optionKey = ui->solverOptionTableView->model()->data(keyIndex, Qt::DisplayRole);
-    const QModelIndex valueIndex = ui->solverOptionTableView->model()->index(row, GamsParameterTableModel::COLUMN_OPTION_VALUE);
+    const QModelIndex valueIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_VALUE);
     const QVariant optionValue = ui->solverOptionTableView->model()->data(valueIndex, Qt::DisplayRole);
     return QString("%1%2%3").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(), optionValue.toString());
 }
