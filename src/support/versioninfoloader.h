@@ -20,7 +20,6 @@
 #ifndef VERSIONINFOLOADER_H
 #define VERSIONINFOLOADER_H
 
-#include <QObject>
 #include <QByteArray>
 #include <QFuture>
 #include <QMap>

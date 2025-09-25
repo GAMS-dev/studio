@@ -20,7 +20,6 @@
 #ifndef CHECKFORUPDATE_H
 #define CHECKFORUPDATE_H
 
-#include <QObject>
 #include <QRegularExpression>
 
 namespace gams {

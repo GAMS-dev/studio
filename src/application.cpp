@@ -273,7 +273,8 @@ void Application::parseCmdArgs()
 void Application::triggerOpenFile(const QString &path)
 {
     mMainWindow->openFiles({path});
-    for (auto window : allWindows()) {
+    auto windows = allWindows();
+    for (auto window : std::as_const(windows)) {
         if (!window->isVisible())
             continue;
         if (window->windowState() & Qt::WindowMinimized) {
