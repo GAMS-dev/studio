@@ -3,6 +3,14 @@ Version 1.22.2
 - Fixed incorrect ESC key behavior in Parameter File Editor, Solver Option Editor, and GAMS User Configuration Editor.
 - Fixed S&R dialog wildcard include and exclude file filters, before they did not match all expected files.
 - Fixed that changes to command line parameters were lost when changing the main file.
+- Fixed incorrect behavior of solver option editor
+   - editing an empty string value for a string option with defined default value no longer replaced by the comment. 
+   - dragging and dropping an option no longer added multiple rows but a single row of option.
+   - replacing an existing option row by drag and drop no longer crashed Studio.
+- Improved behavior of solver option editor and Parameter File Editor
+   - double clicking an enumerated value of an option adds the description of the enumerated value instead of the option to the comment column.
+   - enabling `Open As Text` button always and checking, when clicked, if file has been modified before.
+   - removing unnecessary error messages when pressing `+` icon to add/append new option.
 - Improved license validation log, i.e. all messages of the license validation are written to the system log now.
 
 Version 1.22.1
