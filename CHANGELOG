@@ -2,6 +2,7 @@ Version 1.22.2
 ==================
 - Fixed incorrect ESC key behavior in Parameter File Editor, Solver Option Editor, and GAMS User Configuration Editor.
 - Fixed S&R dialog wildcard include and exclude file filters, before they did not match all expected files.
+- Fixed that changes to command line parameters were lost when changing the main file.
 - Improved license validation log, i.e. all messages of the license validation are written to the system log now.
 
 Version 1.22.1
