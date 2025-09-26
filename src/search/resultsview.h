@@ -20,12 +20,7 @@
 #ifndef RESULTSVIEW_H
 #define RESULTSVIEW_H
 
-#include <QTableWidget>
-#include <QTextCursor>
 #include <QWidget>
-
-#include "searchresultmodel.h"
-#include "searchresultviewitemdelegate.h"
 
 namespace gams {
 namespace studio {
@@ -39,6 +34,9 @@ class ResultsView;
 }
 
 class Result;
+class ResultItem;
+class SearchResultModel;
+class SearchResultViewItemDelegate;
 
 class ResultsView : public QWidget
 {

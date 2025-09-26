@@ -152,6 +152,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->cb_EnableLog, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->rb_openInCurrentProject, &QRadioButton::toggled, this, &SettingsDialog::setModified);
     connect(ui->cb_optionsStore, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+    connect(ui->cb_dynamicMainFile, &QCheckBox::toggled, this, &SettingsDialog::setModified);
     connect(ui->cbGspNeedsMainFile, &QCheckBox::toggled, this, &SettingsDialog::setModified);
     connect(ui->sbGspByFileCount, &QSpinBox::valueChanged, this, [this]() {
         mEvalGspFileCount = true;

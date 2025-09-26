@@ -1776,7 +1776,7 @@ void MainWindow::openRecentFile()
 
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
-    if (!searchDialog()->search()->regex().pattern().isEmpty())
+    if (!searchDialog()->search()->parameters().regex.pattern().isEmpty())
         searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
 
@@ -2261,7 +2261,7 @@ void MainWindow::codecReload(QAction *action)
 
 void MainWindow::loadCommandLines(PExProjectNode* oldProj, PExProjectNode* proj)
 {
-    if (oldProj && oldProj != proj) {
+    if (oldProj && (oldProj != proj || oldProj->dynamicMainFile())) {
         // node changed from valid: store current command-line
         oldProj->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
     }
@@ -4732,7 +4732,8 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
             mNavigationHistory->setCurrentEdit(mRecent.editor(), pinKind);
             if (mStartedUp)
                 mProjectRepo.editorActivated(mRecent.editor(), false);
-            loadCommandLines(projOld, mRecent.project());
+            if (projOld != mRecent.project() || (mRecent.project() && mRecent.project()->dynamicMainFile()))
+                loadCommandLines(projOld, mRecent.project());
             updateRunState();
             break;
         }

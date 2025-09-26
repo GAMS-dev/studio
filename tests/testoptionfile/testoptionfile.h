@@ -20,7 +20,7 @@
 #ifndef TESTOPTIONFILE_H
 #define TESTOPTIONFILE_H
 
-#include <QtTest/QTest>
+#include <QTest>
 
 #include "option/option.h"
 #include "option/optiontokenizer.h"

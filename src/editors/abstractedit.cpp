@@ -394,10 +394,10 @@ void AbstractEdit::findInSelection(QList<Result> &results)
 
     // ignore search direction for cache generation. otherwise results would be in wrong order
     QFlags<QTextDocument::FindFlag> searchOptions;
-    searchOptions.setFlag(QTextDocument::FindCaseSensitively, SearchLocator::search()->caseSensitive());
+    searchOptions.setFlag(QTextDocument::FindCaseSensitively, SearchLocator::search()->parameters().caseSensitive);
 
     do {
-        item = document()->find(SearchLocator::search()->regex(), qMax(startPos, item.position()), searchOptions);
+        item = document()->find(SearchLocator::search()->parameters().regex, qMax(startPos, item.position()), searchOptions);
 
         if (item != lastItem) lastItem = item;
         else break; // mitigate endless loop

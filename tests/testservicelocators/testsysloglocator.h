@@ -20,7 +20,7 @@
 #ifndef TESTCOMMONPATHS_H
 #define TESTCOMMONPATHS_H
 
-#include <QtTest/QTest>
+#include <QTest>
 
 class TestSysLogLocator : public QObject
 {

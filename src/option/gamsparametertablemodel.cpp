@@ -25,6 +25,7 @@
 #include "theme.h"
 #include "gamsparametertablemodel.h"
 #include "msgbox.h"
+#include "settings.h"
 
 namespace gams {
 namespace studio {
@@ -413,7 +414,7 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
         beginRow = rowCount(QModelIndex());
     }
 
-//    StudioSettings* settings = Settings::settings();
+    Settings* settings = Settings::settings();
     if (action ==  Qt::CopyAction) {
 
         QList<OptionItem> itemList;
@@ -425,9 +426,21 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
             itemList.append(OptionItem(optionid, textList.at( COLUMN_OPTION_KEY ), textList.at( COLUMN_OPTION_VALUE )));
             QModelIndexList indices = match(index(GamsParameterTableModel::COLUMN_OPTION_KEY, GamsParameterTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole,
                                             QVariant(optionid), Qt::MatchRecursive);
-//          if (settings && settings->overridExistingOption()) {
-            for(const QModelIndex idx : std::as_const(indices)) { overrideIdRowList.append(idx.row()); }
-//          }
+            if (settings && settings->toBool(skSoOverrideExisting)) {
+                for(const QModelIndex &idx : std::as_const(indices)) {
+                    overrideIdRowList.append(idx.row());
+                }
+            }
+            if (settings && settings->toBool(skSoDeleteCommentsAbove)) {
+                for(const QModelIndex &idx : indices) {
+                    for(int r=idx.row()-1; r>=0; --r) {
+                        if (headerData(r, Qt::Vertical, static_cast<int>(Qt::CheckStateRole)).toInt()!=static_cast<int>(Qt::PartiallyChecked))
+                            break;
+                        if (!overrideIdRowList.contains(r))
+                            overrideIdRowList.append(r);
+                    }
+                }
+            }
          }
          std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
 
@@ -499,10 +512,10 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
                  insertRows(beginRow, 1, QModelIndex());
 
              const QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
+             setHeaderData( idx.row(), Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
              setData(idx, item.key, Qt::EditRole);
              setData( index(beginRow, COLUMN_OPTION_VALUE), item.value, Qt::EditRole);
              setData( index(beginRow, COLUMN_ENTRY_NUMBER), item.optionId, Qt::EditRole);
-             setHeaderData( idx.row(), Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
              emit newTableRowDropped( idx );
              beginRow++;
          }

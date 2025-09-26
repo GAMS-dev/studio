@@ -20,7 +20,8 @@
 #ifndef TESTCHECKFORUPDATE_H
 #define TESTCHECKFORUPDATE_H
 
-#include <QtTest>
+#include <QTest>
+#include <QSignalSpy>
 
 namespace gams {
 namespace studio {

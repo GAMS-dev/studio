@@ -20,6 +20,7 @@ SUBDIRS +=                              \
            testmiro                     \
            testoptionapi                \
            testoptionfile               \
+           testsearchcommon \
            testsettings                 \
            testcompleter                \
            testconnect                  \

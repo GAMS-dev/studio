@@ -20,7 +20,7 @@
 #ifndef TESTSETTINGS_H
 #define TESTSETTINGS_H
 
-#include <QtTest/QTest>
+#include <QTest>
 
 class TestSettings : public QObject
 {

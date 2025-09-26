@@ -20,7 +20,7 @@
 #ifndef TESTOPTIONAPI_H
 #define TESTOPTIONAPI_H
 
-#include <QtTest/QTest>
+#include <QTest>
 
 #include "gclgms.h"
 #include "optcc.h"

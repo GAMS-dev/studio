@@ -21,15 +21,18 @@
 #define SEARCH_H
 
 #include <QObject>
-#include "file/filemeta.h"
-#include "searchhelpers.h"
-#include "searchresultmodel.h"
+#include "searchcommon.h"
+#include "searchfile.h"
 
 namespace gams {
 namespace studio {
+
+class FileMeta;
+
 namespace search {
 
 class SearchDialog;
+class SearchResultModel;
 class AbstractSearchFileHandler;
 
 class Search : public QObject
@@ -61,21 +64,19 @@ public:
     Search& operator=(const Search &) = delete;
     Search& operator=(Search &&) = delete;
 
-    void start(const SearchParameters &parameters);
+    void start(const Parameters &parameters);
     void runSearch(const QList<SearchFile> &files);
     void requestStop();
 
     void findNext(Direction direction);
     void replaceNext(const QString& replacementText);
-    void replaceAll(SearchParameters parameters);
+    void replaceAll(Parameters parameters);
     void selectNextMatch(Direction direction = Direction::Forward, bool firstLevel = true);
 
     bool isSearching() const;
     QList<Result> results() const;
     QList<Result> filteredResultList(const QString &fileLocation);
-    bool caseSensitive() const;
-    const QRegularExpression regex() const;
-    Scope scope() const;
+    const Parameters& parameters() const;
     bool hasSearchSelection();
     void reset();
     void invalidateCache();
@@ -94,8 +95,8 @@ private:
     void findInSelection(bool showResults);
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
 
-    int replaceOpened(FileMeta* fm, const SearchParameters &parameters);
-    int replaceUnopened(FileMeta* fm, const SearchParameters &parameters);
+    int replaceOpened(FileMeta* fm, const Parameters &parameters);
+    int replaceUnopened(FileMeta* fm, const Parameters &parameters);
 
     QPair<int, int> cursorPosition();
     int findNextEntryInCache(Search::Direction direction);
@@ -106,7 +107,7 @@ private:
     void checkFileChanged(const FileId &fileId);
     bool hasResultsForFile(const QString &filePath);
 
-    QFlags<QTextDocument::FindFlag> createFindFlags(const SearchParameters &parameters,
+    QFlags<QTextDocument::FindFlag> createFindFlags(const Parameters &parameters,
                                                     Direction direction = Direction::Forward);
 
 private slots:
@@ -116,7 +117,7 @@ private:
     SearchDialog* mSearchDialog;
     QList<Result> mResults;
     QHash<QString, QList<Result>> mResultHash;
-    SearchParameters mLastSearchParameters;
+    Parameters mParameters;
 
     AbstractSearchFileHandler* mFileHandler;
     FileId mSearchSelectionFile;

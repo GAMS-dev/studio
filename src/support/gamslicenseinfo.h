@@ -110,6 +110,8 @@ public:
 private:
     QString solverCodes(int solverId) const;
 
+    void addPalMessagesToSysLog();
+
     static int errorCallback(int count, const char *message);
 
     QStringList processLicenseData(const QString &data);

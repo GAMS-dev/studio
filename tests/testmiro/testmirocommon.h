@@ -20,7 +20,7 @@
 #ifndef TESTMIROCOMMON_H
 #define TESTMIROCOMMON_H
 
-#include <QtTest/QTest>
+#include <QTest>
 
 class TestMiroCommon : public QObject
 {

@@ -17,7 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QApplication>
 #include <QFlags>
 #include <QTextDocument>
 #include <QMessageBox>
@@ -26,13 +25,14 @@
 #include "search.h"
 #include "searchdialog.h"
 #include "searchworker.h"
+#include "searchresultmodel.h"
 #include "editors/abstractedit.h"
 #include "editors/sysloglocator.h"
 #include "editors/textview.h"
 #include "fileworker.h"
 #include "viewhelper.h"
 #include "file/textfilesaver.h"
-
+#include "file/filemeta.h"
 #include "encoding.h"
 
 namespace gams {
@@ -58,11 +58,11 @@ Search::~Search()
     mSearchThread.deleteLater();
 }
 
-void Search::start(const SearchParameters &parameters)
+void Search::start(const Parameters &parameters)
 {
     if (mSearching) return;
 
-    mLastSearchParameters = parameters;
+    mParameters = parameters;
     mStopRequested = false;
 
     resetResults();
@@ -123,10 +123,13 @@ void Search::runSearch(const QList<SearchFile> &files)
                 continue;
             // sort files by modified, current file first
             if (fm->isModified() && fm->document()) {
-                if (fm == currentFile) modified.insert(0, fm);
-                else modified << fm;
+                if (fm == currentFile)
+                    modified.insert(0, fm);
+                else
+                    modified << fm;
             } else {
-                if (fm == currentFile) unmodified.insert(0, sf);
+                if (fm == currentFile)
+                    unmodified.insert(0, sf);
             }
         } else {
             unmodified << sf;
@@ -138,8 +141,8 @@ void Search::runSearch(const QList<SearchFile> &files)
         findInDoc(sf.fileMeta());
 
     // start background task first
-    SearchWorker* sw = new SearchWorker(unmodified, mLastSearchParameters.regex, &mResults,
-                                        mLastSearchParameters.showResults);
+    SearchWorker* sw = new SearchWorker(unmodified, mParameters.regex, &mResults,
+                                        mParameters.showResults);
     sw->moveToThread(&mSearchThread);
 
     connect(&mSearchThread, &QThread::finished, this, &Search::finished, UniqueConnection);
@@ -175,7 +178,7 @@ void Search::reset()
     mLastMatchInOpt = -1;
     mSearchDialog->setSearchStatus(Status::Clear);
 
-    mLastSearchParameters = SearchParameters();
+    mParameters = Parameters();
 
     mSearchDialog->setSearchedFiles(0);
 
@@ -208,7 +211,7 @@ void Search::findInSelection(bool showResults)
         mSearchDialog->relaySearchResults(showResults, &mResults);
     } else if (TextView* tv = ViewHelper::toTextView(mSearchDialog->currentEditor())) {
         checkFileChanged(tv->edit()->fileId());
-        tv->findInSelection(mLastSearchParameters.regex,
+        tv->findInSelection(mParameters.regex,
                             mSearchDialog->fileHandler()->fileMeta(mSearchSelectionFile),
                             &mResults, showResults);
     }
@@ -232,10 +235,12 @@ void Search::findInDoc(FileMeta* fm)
     QTextCursor lastCursor = QTextCursor(fm->document());
 
     do {
-        cursor = fm->document()->find(mLastSearchParameters.regex, lastCursor,
-                                    createFindFlags(mLastSearchParameters));
-        if (cursor != lastCursor) lastCursor = cursor;
-        else break;
+        cursor = fm->document()->find(mParameters.regex, lastCursor,
+                                    createFindFlags(mParameters));
+        if (cursor != lastCursor)
+            lastCursor = cursor;
+        else
+            break;
 
         if (!cursor.isNull()) {
             mResults.append(Result(cursor.blockNumber()+1,
@@ -245,7 +250,8 @@ void Search::findInDoc(FileMeta* fm)
                                    fm->projectId(),
                                    cursor.block().text()));
         }
-        if (mResults.size() > MAX_SEARCH_RESULTS) break;
+        if (mResults.size() > MAX_SEARCH_RESULTS)
+            break;
     } while (!cursor.isNull());
 }
 
@@ -369,7 +375,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
         emit selectResult(matchNr);
 }
 
-QFlags<QTextDocument::FindFlag> Search::createFindFlags(const SearchParameters &parameters, Direction direction) {
+QFlags<QTextDocument::FindFlag> Search::createFindFlags(const Parameters &parameters, Direction direction) {
     QFlags<QTextDocument::FindFlag> searchOptions;
     searchOptions.setFlag(QTextDocument::FindBackward, direction == Direction::Backward);
     searchOptions.setFlag(QTextDocument::FindCaseSensitively, parameters.caseSensitive);
@@ -381,10 +387,10 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
     int matchNr = -1;
     bool found = false;
 
-    QFlags<QTextDocument::FindFlag> options = createFindFlags(mLastSearchParameters, direction);
+    QFlags<QTextDocument::FindFlag> options = createFindFlags(mParameters, direction);
 
     // do not move cursor in document that is not in scope:
-    if (mSearchDialog->getFilesByScope(mLastSearchParameters).contains(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor()))) {
+    if (mSearchDialog->getFilesByScope(mParameters).contains(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor()))) {
         if (AbstractEdit* e = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
 
             QTextCursor tc = e->textCursor();
@@ -393,7 +399,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
                 else tc.movePosition(QTextCursor::Start);
             }
 
-            QTextCursor ntc = e->document()->find(mLastSearchParameters.regex, direction == Direction::Backward
+            QTextCursor ntc = e->document()->find(mParameters.regex, direction == Direction::Backward
                                                   ? tc.position()-tc.selectedText().length()
                                                   : tc.position(), options);
             found = !ntc.isNull();
@@ -404,7 +410,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
 
         } else if (TextView* t = ViewHelper::toTextView(mSearchDialog->currentEditor())) {
             mSplitSearchContinue = !firstLevel;
-            found = t->findText(mLastSearchParameters.regex, options, mSplitSearchContinue);
+            found = t->findText(mParameters.regex, options, mSplitSearchContinue);
         }
     }
 
@@ -463,7 +469,7 @@ bool Search::hasResultsForFile(const QString &filePath)
 /// \param regex find
 /// \param replaceTerm replace with
 ///
-int Search::replaceUnopened(FileMeta* fm, const SearchParameters &parameters)
+int Search::replaceUnopened(FileMeta* fm, const Parameters &parameters)
 {
     QFile file(fm->location());
     QStringDecoder decoder = Encoding::createDecoder(fm->encoding());
@@ -532,7 +538,7 @@ int Search::replaceUnopened(FileMeta* fm, const SearchParameters &parameters)
 /// \param replaceTerm replace with
 /// \param flags options
 ///
-int Search::replaceOpened(FileMeta* fm, const SearchParameters &parameters)
+int Search::replaceOpened(FileMeta* fm, const Parameters &parameters)
 {
     AbstractEdit* ae = ViewHelper::toAbstractEdit(fm->editors().constFirst());
 
@@ -566,14 +572,9 @@ bool Search::hasCache() const
     return mCacheAvailable;
 }
 
-Scope Search::scope() const
+const Parameters &Search::parameters() const
 {
-    return mLastSearchParameters.scope;
-}
-
-bool Search::caseSensitive() const
-{
-    return mLastSearchParameters.caseSensitive;
+    return mParameters;
 }
 
 bool Search::hasSearchSelection()
@@ -584,11 +585,6 @@ bool Search::hasSearchSelection()
         return tv->edit()->hasSearchSelection();
     }
     return false;
-}
-
-const QRegularExpression Search::regex() const
-{
-    return mLastSearchParameters.regex;
 }
 
 bool Search::isSearching() const
@@ -611,22 +607,23 @@ void Search::replaceNext(const QString& replacementText)
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor());
     if (!edit) return;
 
-    edit->replaceNext(mLastSearchParameters.regex, replacementText, mSearchDialog->selectedScope() == Scope::Selection);
+    edit->replaceNext(mParameters.regex, replacementText, mSearchDialog->selectedScope() == Scope::Selection);
 
     start(mSearchDialog->createSearchParameters(false, true)); // refresh cache
     selectNextMatch();
 }
 
-void Search::replaceAll(SearchParameters parameters)
+void Search::replaceAll(Parameters parameters)
 {
-    if (parameters.regex.pattern().isEmpty()) return;
+    if (parameters.regex.pattern().isEmpty())
+        return;
 
     QList<FileMeta*> opened;
     QList<FileMeta*> unopened;
 
     // sort and filter FMs by editability and modification state
     QList<SearchFile> files = mSearchDialog->getFilesByScope(parameters);
-    mLastSearchParameters = parameters;
+    mParameters = parameters;
 
     int matchedFiles = 0;
 
@@ -637,9 +634,11 @@ void Search::replaceAll(SearchParameters parameters)
             fm = mFileHandler->findFile(file.path());
 
         if (fm && fm->document()) {
-            if (!opened.contains(fm)) opened << fm;
+            if (!opened.contains(fm))
+                opened << fm;
         } else {
-            if (!unopened.contains(fm)) unopened << fm;
+            if (!unopened.contains(fm))
+                unopened << fm;
         }
 
         matchedFiles++;

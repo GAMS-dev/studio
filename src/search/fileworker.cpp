@@ -18,19 +18,26 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "fileworker.h"
+#include "searchcommon.h"
 
 namespace gams {
 namespace studio {
 namespace search {
 
-FileWorker::FileWorker(AbstractSearchFileHandler* fh) : mFileHandler(fh)
-{ }
+FileWorker::FileWorker(AbstractSearchFileHandler* fh)
+    : mFileHandler(fh)
+{
 
-FileWorker::FileWorker(const SearchParameters &params, AbstractSearchFileHandler* fh)
-    : mParameters(params), mFileHandler(fh)
-{ }
+}
 
-void FileWorker::setParameters(const SearchParameters &parameters)
+FileWorker::FileWorker(const Parameters &params, AbstractSearchFileHandler* fh)
+    : mParameters(params)
+    , mFileHandler(fh)
+{
+
+}
+
+void FileWorker::setParameters(const Parameters &parameters)
 {
     mParameters = parameters;
 }
@@ -51,66 +58,62 @@ QList<SearchFile> FileWorker::collectFilesInFolder()
                                              : QDirIterator::NoIteratorFlags;
     QDirIterator it(dir.path(), QDir::Files, options);
     while (it.hasNext()) {
-        if (thread()->isInterruptionRequested()) break;
-
+        if (thread()->isInterruptionRequested())
+            break;
         QString path = it.next();
-        if (path.isEmpty()) break;
-
+        if (path.isEmpty())
+            break;
         files << SearchFile(path);
     }
 
-    QList<SearchFile> filteredList = filterFiles(files, mParameters);
+    QList<SearchFile> filteredList;
+    filterFiles(files, mParameters, filteredList);
     emit filesCollected(filteredList);
     return filteredList;
 }
 
-QList<SearchFile> FileWorker::filterFiles(const QList<SearchFile> &files, const SearchParameters &params)
+void FileWorker::filterFiles(const QList<SearchFile> &files,
+                             const Parameters &params,
+                             QList<SearchFile> &matched)
 {
     bool ignoreWildcard = params.scope == Scope::ThisFile || params.scope == Scope::Selection;
 
     // create list of include filter regexes
     QList<QRegularExpression> includeFilterList;
-    for (const QString &s : std::as_const(params.includeFilter)) {
-        QString pattern = QString(QDir::separator() + s.trimmed() + "$").replace('.', "\\.").replace('?', '.').replace("*", ".*");
-        includeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
-    }
+    SearchCommon::includeFilters(params.includeFilter, includeFilterList);
 
     // create list of exclude filters
-    QStringList excludeFilter = params.excludeFilter;
-    excludeFilter << "*.gdx" << "*.zip";
-
     QList<QRegularExpression> excludeFilterList;
-    for (const QString &s : std::as_const(excludeFilter)) {
-        QString pattern = QString(QDir::separator() + s.trimmed() + "$").replace('.', "\\.").replace('?', '.').replace("*", ".*");
-        excludeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
-    }
+    SearchCommon::excludeFilters(params.excludeFilter, excludeFilterList);
 
     // filter files
-    QList<SearchFile> res;
     for (const SearchFile &sf : std::as_const(files)) {
         bool include = includeFilterList.count() == 0;
-
+        auto file = QDir::toNativeSeparators(sf.path());
+        auto fn =  SearchCommon::fileName(file, QDir::separator());
         // check if file fits inclusion filter
-        for (const QRegularExpression &wildcard : std::as_const(includeFilterList)) {
-            include = wildcard.match(sf.path()).hasMatch();
-            if (include) break; // one match is enough, dont overwrite result
+        for (const QRegularExpression &pattern : std::as_const(includeFilterList)) {
+            include = pattern.match(fn).hasMatch();
+            if (include) {
+                break; // one match is enough, dont overwrite result
+            }
         }
 
         // check if file is included but shall be exlcuded
-        if (include)
-            for (const QRegularExpression &wildcard : std::as_const(excludeFilterList)) {
-                include = !wildcard.match(sf.path()).hasMatch();
-
-                if (!include) break;
+        if (include) {
+            for (const QRegularExpression &pattern : std::as_const(excludeFilterList)) {
+                include = !pattern.match(fn).hasMatch();
+                if (!include)
+                    break;
             }
+        }
 
         // if we can get an fm check if that file is read only
         FileMeta* fm = mFileHandler->findFile(sf.path());
         if ((include || ignoreWildcard) && (!params.ignoreReadOnly || (fm && !fm->isReadOnly()))) {
-            res << ((fm && fm->isModified()) ? sf : sf.path());
+            matched << ((fm && fm->isModified()) ? sf : sf.path());
         }
     }
-    return res;
 }
 
 }

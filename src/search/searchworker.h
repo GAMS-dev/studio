@@ -24,7 +24,7 @@
 #include <QPoint>
 #include <QRegularExpression>
 #include "result.h"
-#include "searchhelpers.h"
+#include "searchfile.h"
 
 namespace gams {
 namespace studio {
@@ -59,6 +59,9 @@ signals:
     void showResults(bool showResults, QList<gams::studio::search::Result> *results);
 
 private:
+    bool allowInsert(int line, int col);
+
+private:
     QList<SearchFile> mFiles;
     QList<Result>* mMatches;
     QRegularExpression mRegex;
@@ -67,7 +70,6 @@ private:
     bool mFindInSelection = true;
     bool mShowResults = false;
 
-    bool allowInsert(int line, int col);
 };
 
 }

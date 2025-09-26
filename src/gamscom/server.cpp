@@ -35,6 +35,7 @@ namespace gamscom {
 
 const quint16 CFirstDebugPort = 3563;
 const quint16 CLastDebugPort = 4563;
+const int CMaxOpenPorts = 100;
 QSet<int> Server::mPortsInUse;
 
 Server::Server(const QString &path, QObject *parent) : QObject(parent), mPath(path)
@@ -87,7 +88,10 @@ bool Server::start(ComFeatures features)
         return true;
     }
 
-    if (mPortsInUse.size() > 10) return false;
+    if (mPortsInUse.size() >= CMaxOpenPorts) {
+        logMessage(QString("GAMScom-Server reached the limit of %1 ports.").arg(CMaxOpenPorts));
+        return false;
+    }
 
     quint16 port = CFirstDebugPort;
     while (mPortsInUse.contains(port) || !mServer->listen(QHostAddress::LocalHost, port)) {

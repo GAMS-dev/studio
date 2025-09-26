@@ -21,7 +21,7 @@
 #define TESTMEMORYMAPPER_H
 
 #include "editors/memorymapper.h"
-#include <QtTest/QTest>
+#include <QTest>
 
 using gams::studio::MemoryMapper;
 

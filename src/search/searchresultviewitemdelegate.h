@@ -46,6 +46,7 @@ private:
     QString elideRichText(const QString &richText, int maxWidth,
                           const QFontMetrics &metrics) const;
 
+private:
     QFont mFont;
     QFontMetrics mFontMetrics;
 };

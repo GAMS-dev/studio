@@ -254,6 +254,7 @@ SOURCES += \
     search/resultsview.cpp \
     search/resulttreeview.cpp \
     search/search.cpp \
+    search/searchcommon.cpp \
     search/searchdialog.cpp \
     search/searchfilehandler.cpp \
     search/searchlocator.cpp \
@@ -492,9 +493,10 @@ HEADERS += \
     search/resultsview.h \
     search/resulttreeview.h \
     search/search.h \
+    search/searchcommon.h \
     search/searchdialog.h \
+    search/searchfile.h \
     search/searchfilehandler.h \
-    search/searchhelpers.h \
     search/searchlocator.h \
     search/searchresultmodel.h \
     search/searchresultviewitemdelegate.h \
