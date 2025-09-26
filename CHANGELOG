@@ -4,6 +4,7 @@ Version 1.22.2
 - Fixed S&R dialog wildcard include and exclude file filters, before they did not match all expected files.
 - Fixed that changes to command line parameters were lost when changing the main file.
 - Fixed that Studio can't start more than 11 GAMS jobs in parallel.
+- Fixed update modification state in setting when 'Dynamic main file' is changed.
 - Fixed incorrect behavior of solver option editor
    - editing an empty string value for a string option with defined default value no longer replaced by the comment. 
    - dragging and dropping an option no longer added multiple rows but a single row of option.
