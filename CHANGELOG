@@ -1,3 +1,7 @@
+Version 1.22.3 *
+==================
+- t.b.d.
+
 Version 1.22.2
 ==================
 - Fixed incorrect ESC key behavior in Parameter File Editor, Solver Option Editor, and GAMS User Configuration Editor.
