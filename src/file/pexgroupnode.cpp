@@ -1372,6 +1372,7 @@ void PExProjectNode::clearParameters()
 
 bool PExProjectNode::startComServer(gamscom::ComFeatures features)
 {
+    if (features == gamscom::cfNoCom) return true;
     if (!mComServer) {
         mComServer = new gamscom::Server(workDir(), this);
         mComServer->setVerbose(mVerbose);
@@ -1395,8 +1396,9 @@ bool PExProjectNode::startComServer(gamscom::ComFeatures features)
                     mComServer->sendStepLine();
                 else
                     mComServer->sendRun();
-            } else
+            } else {
                 mComServer->sendRun();
+            }
         });
 
         connect(mComServer, &gamscom::Server::addProcessLog, this, &PExProjectNode::addProcessLog);

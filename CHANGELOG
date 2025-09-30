@@ -1,6 +1,6 @@
 Version 1.22.3 *
 ==================
-- t.b.d.
+- Removed irritating message when interrupting a GAMS process.
 
 Version 1.22.2
 ==================
