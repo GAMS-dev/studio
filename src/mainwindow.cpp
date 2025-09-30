@@ -2655,7 +2655,7 @@ void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
     }
 
     // add all created files to project explorer
-    project->addNodesForSpecialFiles();
+    project->addNodesForSpecialFiles(exitCode != 0);
 
     FileMeta *runMeta = project->mainFile();
     if (!runMeta) {

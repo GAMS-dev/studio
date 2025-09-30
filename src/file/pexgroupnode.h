@@ -134,7 +134,7 @@ public:
 
     QString parameter(const QString& kind) const;
     bool hasParameter(const QString& kind) const;
-    void addNodesForSpecialFiles();
+    void addNodesForSpecialFiles(bool ignoreMissing);
     void setParameter(const QString& kind, const QString& path);
     void clearParameters();
 
