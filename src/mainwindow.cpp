@@ -2986,30 +2986,31 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
         if (mRecent.project() != lastProject) updateProfilerAction();
         return;
     }
-    PExProjectNode *project = mRecent.project();
 
-    int newIndex = 0;
-    bool closeLater = handleFileChanges(fc, false);
-    searchDialog()->updateDialogState();
-    int visTabs = 0;
-    for (int i = 1; i < ui->mainTabs->count(); ++i) {
-        if (i == index) continue;
-        if (ui->mainTabs->isTabVisible(i)) {
-            ++visTabs;
-            if (newIndex == 0 && project) {
-                FileMeta *meta = mFileMetaRepo.fileMeta(ui->mainTabs->widget(i));
-                if (meta && (project->projectEditFileMeta() == meta || project->findFile(meta)))
-                    newIndex = i;
+    if (!mShutDown) {
+        PExProjectNode *project = mRecent.project();
+        int newIndex = 0;
+        searchDialog()->updateDialogState();
+        int visTabs = 0;
+        for (int i = 1; i < ui->mainTabs->count(); ++i) {
+            if (i == index) continue;
+            if (ui->mainTabs->isTabVisible(i)) {
+                ++visTabs;
+                if (newIndex == 0 && project) {
+                    FileMeta *meta = mFileMetaRepo.fileMeta(ui->mainTabs->widget(i));
+                    if (meta && (project->projectEditFileMeta() == meta || project->findFile(meta)))
+                        newIndex = i;
+                }
             }
         }
-    }
-    if (!mShutDown) {
         if (newIndex)
             ui->mainTabs->setCurrentIndex(newIndex);
         else
             if (!visTabs) ui->mainTabs->setCurrentIndex(0);
     }
-    if (closeLater && fc) closeFileEditors(fc->id(), false);
+
+    bool canClose = handleFileChanges(fc, false);
+    if (canClose && fc) closeFileEditors(fc->id(), false);
 }
 
 int MainWindow::showSaveChangesMsgBox(const QString &text)
@@ -3035,8 +3036,8 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
 
     ui->logTabs->removeTab(index);
 
-    // dont remove syslog and dont delete resultsView
-    if (!(edit == mSyslog || isResults)) {
+    // dont remove syslog
+    if (edit != mSyslog) {
         FileMeta* log = mFileMetaRepo.fileMeta(edit);
         if (log) log->deleteEdit(edit);
         edit->deleteLater();
@@ -3921,6 +3922,11 @@ void MainWindow::closeEvent(QCloseEvent* event)
     mShutDown = true;
     on_actionClose_All_triggered();
     ui->mainTabs->closeTab(0); // Welcome page only gets hidden before, now really close it
+
+    int ind = ui->logTabs->count() - 1;
+    while (ind > 0) // The syslog is kept
+        on_logTabs_tabCloseRequested(ind--);
+
     closeHelpView();
     for (FileMeta *meta: mFileMetaRepo.fileMetas()) {
         if (meta->isOpen()) {
