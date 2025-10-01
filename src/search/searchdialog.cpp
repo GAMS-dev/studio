@@ -216,7 +216,7 @@ void SearchDialog::updateDialogState()
 
 QList<SearchFile> SearchDialog::getFilesByScope(const Parameters &parameters)
 {
-    QList<SearchFile> files;
+    QList<SearchFile> files, matched;
     mFileWorker->setParameters(parameters);
     switch (ui->combo_scope->currentIndex()) {
         case Scope::ThisFile: {
@@ -231,7 +231,7 @@ QList<SearchFile> SearchDialog::getFilesByScope(const Parameters &parameters)
                 return QList<SearchFile>();
             for (PExFileNode *f : p->listFiles())
                 files << SearchFile(f->file());
-            mFileWorker->filterFiles(files, parameters, files);
+            mFileWorker->filterFiles(files, parameters, matched);
             break;
         }
         case Scope::Selection: {
@@ -244,14 +244,14 @@ QList<SearchFile> SearchDialog::getFilesByScope(const Parameters &parameters)
             auto metas =  mFileHandler->openFiles();
             for (FileMeta* fm : std::as_const(metas))
                 files << SearchFile(fm);
-            mFileWorker->filterFiles(files, parameters, files);
+            mFileWorker->filterFiles(files, parameters, matched);
             break;
         }
         case Scope::AllFiles: {
             auto metas = mFileHandler->fileMetas();
             for (FileMeta* fm : std::as_const(metas))
                 files << SearchFile(fm);
-            mFileWorker->filterFiles(files, parameters, files);
+            mFileWorker->filterFiles(files, parameters, matched);
             break;
         }
         case Scope::Folder: {
