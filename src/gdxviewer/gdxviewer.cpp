@@ -268,14 +268,18 @@ bool GdxViewer::dragInProgress()
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     bool ok = selectedSymbol->loadData();
+    QString symName = selectedSymbol->name();
     if (ok) {
-        QTimer::singleShot(0,this, [this, selectedSymbol](){
-            if (selectedSymbol->isDataTruncated()) {
-                auto logger = SysLogLocator::systemLog();
-                QString msg = "GDX symbol '" + selectedSymbol->name() + "' in file '" + mGdxFile + "' exceeds the maximum number of records (~107 million) that can be displayed and might be truncated depending on applied filters reducing the actual number of records to be displayed.";
-                logger->append(msg, LogMsgType::Warning);
+        QTimer::singleShot(0,this, [this, symName](){
+            GdxSymbol* selectedSymbolNew = this->gdxSymbolTable()->getSymbolByName(symName);
+            if (selectedSymbolNew) {
+                if (selectedSymbolNew->isDataTruncated()) {
+                    auto logger = SysLogLocator::systemLog();
+                    QString msg = "GDX symbol '" + selectedSymbolNew->name() + "' in file '" + mGdxFile + "' exceeds the maximum number of records (~107 million) that can be displayed and might be truncated depending on applied filters reducing the actual number of records to be displayed.";
+                    logger->append(msg, LogMsgType::Warning);
+                }
+                applySymbolState(selectedSymbolNew);
             }
-            applySymbolState(selectedSymbol);
         });
     }
 }
@@ -496,12 +500,14 @@ void GdxViewer::applySymbolState(GdxSymbol *sym)
 {
     QString name = sym->name();
     GdxSymbolView* symView = symbolViewByName(name);
-    if (mState && mState->symbolViewState(name)) {
-        GdxSymbolViewState* symViewState = mState->symbolViewState(name);
-        symView->applyState(symViewState);
-        mState->deleteSymbolViewState(name);
-    } else
-        symView->applyDefaults();
+    if (symView) {
+        if (mState && mState->symbolViewState(name)) {
+            GdxSymbolViewState* symViewState = mState->symbolViewState(name);
+            symView->applyState(symViewState);
+            mState->deleteSymbolViewState(name);
+        } else
+            symView->applyDefaults();
+    }
 }
 
 void GdxViewer::applySelectedSymbol()
