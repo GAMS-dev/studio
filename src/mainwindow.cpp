@@ -2209,7 +2209,6 @@ void MainWindow::on_actionClose_All_triggered()
 void MainWindow::on_actionClose_All_Except_triggered()
 {
     int except = ui->mainTabs->currentIndex();
-    if (except < 0)
     while (ui->mainTabs->count() - 1 > except)
         on_mainTabs_tabCloseRequested(ui->mainTabs->count() - 1);
     while (ui->mainTabs->count() > 2)  // keep welcome page
