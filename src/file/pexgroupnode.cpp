@@ -1309,8 +1309,9 @@ bool PExProjectNode::hasParameter(const QString &kind) const
     return mParameterHash.contains(kind);
 }
 
-void PExProjectNode::addNodesForSpecialFiles()
+void PExProjectNode::addNodesForSpecialFiles(bool ignoreMissing)
 {
+    QStringList delKeys;
     for (auto it = mParameterHash.constBegin(); it != mParameterHash.constEnd(); ++it) {
         const QString &loc = it.value();
         if (loc.isEmpty())
@@ -1323,8 +1324,16 @@ void PExProjectNode::addNodesForSpecialFiles()
             if (encoding != node->file()->encoding())
                 setNeedSave();
         } else {
-            SysLogLocator::systemLog()->append("Could not add file " + loc, LogMsgType::Error);
+            if (ignoreMissing)
+                DEB() << "Ignored missing file " << loc;
+            else
+                SysLogLocator::systemLog()->append("Could not add file " + loc, LogMsgType::Error);
+            delKeys << it.key();
         }
+    }
+    if (ignoreMissing) {
+        for (const QString &delKey : delKeys)
+            mParameterHash.remove(delKey);
     }
 }
 
@@ -1372,6 +1381,7 @@ void PExProjectNode::clearParameters()
 
 bool PExProjectNode::startComServer(gamscom::ComFeatures features)
 {
+    if (features == gamscom::cfNoCom) return true;
     if (!mComServer) {
         mComServer = new gamscom::Server(workDir(), this);
         mComServer->setVerbose(mVerbose);
@@ -1395,8 +1405,9 @@ bool PExProjectNode::startComServer(gamscom::ComFeatures features)
                     mComServer->sendStepLine();
                 else
                     mComServer->sendRun();
-            } else
+            } else {
                 mComServer->sendRun();
+            }
         });
 
         connect(mComServer, &gamscom::Server::addProcessLog, this, &PExProjectNode::addProcessLog);
