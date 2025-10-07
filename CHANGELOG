@@ -4,6 +4,7 @@ Version 1.22.3 *
 - Removed irritating message when interrupting a GAMS process.
 - Fixed search result duplicates when using search in `All Files`, `This Project` or `Open Tabs`.
 - Fixed wrong tab kept on 'Close except visible'
+- Upgraded to Qt 6.9.3
 
 Version 1.22.2
 ==================
