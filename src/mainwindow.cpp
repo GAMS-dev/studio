@@ -3475,8 +3475,17 @@ void MainWindow::openProject(const QString &gspFile)
 
 void MainWindow::moveProjectDialog(PExProjectNode *project, bool fullCopy)
 {
-    QFileDialog *dialog = new QFileDialog(this, QString("%1 Project %2").arg(fullCopy ? "Copy" : "Move", project->name()),
-                                          project->fileName());
+    QString projName = project->name();
+    QString projPath = project->fileName();
+    if (project->projectEditFileMeta() && project->projectEditFileMeta()->isOpen()) {
+        project::ProjectEdit *projEdit = ViewHelper::toProjectEdit(project->projectEditFileMeta()->topEditor());
+        if (projEdit) {
+            projName = projEdit->sharedData()->fieldData(project::ProjectData::name);
+            projPath = projEdit->sharedData()->fieldData(project::ProjectData::baseDir) + "/" + projName;
+        }
+    }
+    QFileDialog *dialog = new QFileDialog(this, QString("%1 Project %2").arg(fullCopy ? "Copy" : "Move", projName),
+                                          projPath);
     dialog->setProperty("warned", false);
     dialog->setAcceptMode(QFileDialog::AcceptSave);
     dialog->setNameFilters(ViewHelper::dialogProjectFilter());
@@ -3490,6 +3499,12 @@ void MainWindow::moveProjectDialog(PExProjectNode *project, bool fullCopy)
         }
     });
     connect(dialog, &QFileDialog::fileSelected, this, [this, project, fullCopy](const QString &fileName) {
+        project::ProjectEdit *projEdit = nullptr;
+        if (project->projectEditFileMeta() && project->projectEditFileMeta()->isOpen()) {
+            projEdit = ViewHelper::toProjectEdit(project->projectEditFileMeta()->topEditor());
+            if (projEdit)
+                projEdit->sharedData()->save();
+        }
         bool pathChanged = QFileInfo(project->fileName()).absolutePath().compare(
                     QFileInfo(fileName).absolutePath(), FileType::fsCaseSense()) != 0;
         if (fullCopy && pathChanged) {
@@ -3510,7 +3525,8 @@ void MainWindow::moveProjectDialog(PExProjectNode *project, bool fullCopy)
             SysLogLocator::systemLog()->append("Project file " + QString(fullCopy ? "copied" : "renamed") + " to " + fileName,
                                                LogMsgType::Info);
         }
-
+        if (projEdit)
+            projEdit->sharedData()->save();
     });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);

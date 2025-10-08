@@ -55,10 +55,10 @@ ProjectData::ProjectData(PExProjectNode *project)
     mDataOri.insert(name, mProject->name());
     mDataOri.insert(nameExt, mProject->nameExt());
     QString path = mProject->workDir();
-    if (path.endsWith("/")) path = path.left(path.length() - 1);
+    if (path.endsWith("/")) path.resize(path.length() - 1);
     mDataOri.insert(workDir, QDir::toNativeSeparators(mProject->workDir()));
     path = mProject->location();
-    if (path.endsWith("/")) path = path.left(path.length() - 1);
+    if (path.endsWith("/")) path.resize(path.length() - 1);
     mDataOri.insert(baseDir, QDir::toNativeSeparators(mProject->location()));
     if (mProject->mainFile())
         mDataOri.insert(mainFile, QDir::toNativeSeparators(mProject->mainFile()->location()));
@@ -108,26 +108,28 @@ bool ProjectData::save()
     if (mData.isEmpty()) return true;
     if (mData.contains(baseDir)) {
         QString path = QDir::fromNativeSeparators(mData.value(baseDir)).trimmed();
-        bool adapt = path.endsWith("/");
-        if (adapt) path = path.left(path.length() - 1);
+        if (path.endsWith("/"))
+            path.resize(path.length() - 1);
         if (path.compare(mProject->location(), FileType::fsCaseSense())) {
             mProject->setLocation(path);
             mDataOri.insert(baseDir, QDir::toNativeSeparators(path));
             mData.remove(baseDir);
-            if (adapt) emit changed(baseDir);
         }
     }
+    emit changed(baseDir);
+
     if (mData.contains(workDir)) {
         QString path = QDir::fromNativeSeparators(mData.value(workDir)).trimmed();
-        bool adapt = path.endsWith("/");
-        if (adapt) path = path.left(path.length() - 1);
+        if (path.endsWith("/"))
+            path.resize(path.length() - 1);
         if (path.compare(mProject->workDir(), FileType::fsCaseSense())) {
             mProject->setWorkDir(path);
             mDataOri.insert(workDir, QDir::toNativeSeparators(path));
             mData.remove(workDir);
-            if (adapt) emit changed(workDir);
         }
     }
+    emit changed(workDir);
+
     if (mData.contains(name)) {
         QFileInfo proFile(mProject->fileName());
         if (proFile.completeBaseName().compare(mData.value(name), FileType::fsCaseSense()) != 0) {
@@ -159,6 +161,7 @@ bool ProjectData::save()
     }
     mData.clear();
     mProject->setNeedSave();
+    emit changed(all);
     return mProject->needSave();
 }
 
@@ -335,19 +338,23 @@ void ProjectEdit::on_edWorkDir_textChanged(const QString &text)
 {
     if (mBlockUpdate) return;
     updateEditColor(ui->edWorkDir, text);
-    if (text != mSharedData->fieldData(ProjectData::workDir))
-        mSharedData->setFieldData(ProjectData::workDir, text);
+    QString edPath = text.endsWith(QDir::separator()) ? text.left(text.size()-1) : text;
+    if (edPath != mSharedData->fieldData(ProjectData::workDir))
+        mSharedData->setFieldData(ProjectData::workDir, edPath);
+
     if (mSharedData->fieldData(ProjectData::ownBase) == cOff)
         ui->edBaseDir->setText(text);
-    updateState();
+    else
+        updateState();
 }
 
 void ProjectEdit::on_edBaseDir_textChanged(const QString &text)
 {
     if (mBlockUpdate) return;
     updateEditColor(ui->edBaseDir, text);
-    if (text != mSharedData->fieldData(ProjectData::baseDir))
-        mSharedData->setFieldData(ProjectData::baseDir, text);
+    QString edPath = text.endsWith(QDir::separator()) ? text.left(text.size()-1) : text;
+    if (edPath != mSharedData->fieldData(ProjectData::baseDir))
+        mSharedData->setFieldData(ProjectData::baseDir, edPath);
     updateState();
 }
 
@@ -369,26 +376,33 @@ void ProjectEdit::updateState()
     bool isModified = false;
     if (ui->edName->text().trimmed().compare(pro->name()))
         isModified = true;
+
     QString edPath = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
-    if (edPath.endsWith("/")) edPath = edPath.left(edPath.length()-1);
+    if (edPath.endsWith("/")) edPath.resize(edPath.length()-1);
     if (edPath.compare(pro->location(), FileType::fsCaseSense()))
         isModified = true;
+
     edPath = QDir::fromNativeSeparators(ui->edWorkDir->text()).trimmed();
-    if (edPath.endsWith("/")) edPath = edPath.left(edPath.length()-1);
+    if (edPath.endsWith("/")) edPath.resize(edPath.length()-1);
     if (edPath.compare(pro->workDir(), FileType::fsCaseSense()))
         isModified = true;
+
     QString proPath = pro->mainFile() ? pro->mainFile()->location() : cNone;
     edPath = QDir::fromNativeSeparators(ui->cbMainFile->currentText());
     if (edPath.compare(proPath))
         isModified = true;
+
     if (ui->cbDynamicMainFile->isChecked() != pro->dynamicMainFile())
         isModified = true;
+
     if (ui->cbOwnBaseDir->isChecked() != pro->ownBaseDir())
         isModified = true;
+
     proPath = pro->parameterFile() ? pro->parameterFile()->location() : cNone;
     edPath = QDir::fromNativeSeparators(ui->cbPfFile->currentText());
     if (edPath.compare(proPath))
         isModified = true;
+
     if (isModified != mModified) {
         mModified = isModified;
     }
@@ -430,10 +444,13 @@ void ProjectEdit::updateData(gams::studio::project::ProjectData::Field field)
     }
     if ((field & ProjectData::file) && ui->edProjectFile->text() != mSharedData->fieldData(ProjectData::file))
         ui->edProjectFile->setText(mSharedData->fieldData(ProjectData::file));
+
     if ((field & ProjectData::name) && ui->edName->text() != mSharedData->fieldData(ProjectData::name))
         ui->edName->setText(mSharedData->fieldData(ProjectData::name));
+
     if ((field & ProjectData::dynMain) && ui->cbDynamicMainFile->isChecked() != (mSharedData->fieldData(ProjectData::dynMain) == cOn))
         ui->cbDynamicMainFile->setChecked(mSharedData->fieldData(ProjectData::dynMain) == cOn);
+
     if ((field & ProjectData::ownBase) && ui->cbOwnBaseDir->isChecked() != (mSharedData->fieldData(ProjectData::ownBase) == cOn)) {
         ui->cbOwnBaseDir->setChecked(mSharedData->fieldData(ProjectData::ownBase) == cOn);
         ui->edBaseDir->setEnabled(ui->cbOwnBaseDir->isChecked());
@@ -441,11 +458,14 @@ void ProjectEdit::updateData(gams::studio::project::ProjectData::Field field)
     }
     if ((field & ProjectData::workDir) && ui->edWorkDir->text() != mSharedData->fieldData(ProjectData::workDir))
         ui->edWorkDir->setText(mSharedData->fieldData(ProjectData::workDir));
+
     if ((field & ProjectData::baseDir) && ui->edBaseDir->text() != mSharedData->fieldData(ProjectData::baseDir))
         ui->edBaseDir->setText(mSharedData->fieldData(ProjectData::baseDir));
+
     updateComboboxEntries();
     if ((field & ProjectData::mainFile) && ui->cbMainFile->currentText() != mSharedData->fieldData(ProjectData::mainFile))
         ui->cbMainFile->setCurrentIndex(qMax(0, ui->cbMainFile->findText(mSharedData->fieldData(ProjectData::mainFile))));
+
     if ((field & ProjectData::pfFile) && ui->cbPfFile->currentText() != mSharedData->fieldData(ProjectData::pfFile))
         ui->cbPfFile->setCurrentIndex(qMax(0, ui->cbPfFile->findText(mSharedData->fieldData(ProjectData::pfFile))));
 }
