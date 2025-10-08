@@ -3,6 +3,7 @@ Version 1.22.3 *
 - Improved Studio behavior when files are missing after a GAMS run error.
 - Removed irritating message when interrupting a GAMS process.
 - Fixed search result duplicates when using search in `All Files`, `This Project` or `Open Tabs`.
+- Fixed Studio can't find GAMS when starting MIRO.
 - Fixed wrong tab kept on 'Close except visible'
 - Upgraded to Qt 6.9.3
 
