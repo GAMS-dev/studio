@@ -647,7 +647,7 @@ PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, co
 
     FileMeta* mainFile = nullptr;
     if (!mainFileName.isEmpty() && QFile::exists(mainFileName) && type <= PExProjectNode::tCommon)
-        mFileRepo->findOrCreateFileMeta(mainFileName);
+        mainFile = mFileRepo->findOrCreateFileMeta(mainFileName);
     project = new PExProjectNode(name, path, mainFile, workDir, type);
     if (type <= PExProjectNode::tCommon) {
         connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);

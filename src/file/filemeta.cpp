@@ -909,6 +909,8 @@ void FileMeta::load(QString encoding, bool init)
 ///
 bool FileMeta::save(const QString &newLocation)
 {
+    if (!newLocation.isEmpty())
+        DEB() << "save " << mLocation << "  to  " << newLocation;
     QString location = newLocation.isEmpty() ? mLocation : newLocation;
     QFile file(location);
     if (location == mLocation && !isModified()) return true;
@@ -934,6 +936,7 @@ bool FileMeta::save(const QString &newLocation)
             PExProjectNode *project = mFileRepo->projectRepo()->asProject(projectId());
             if (project && project->needSave())
                 res = false;
+            location = newLocation.isEmpty() ? mLocation : newLocation;
         }
     } else if (kind() == FileKind::Opt || kind() == FileKind::Pf) {
         option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );

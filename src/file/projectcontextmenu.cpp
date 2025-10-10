@@ -28,7 +28,6 @@
 #include "support/solverconfiginfo.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
-#include "editors/sysloglocator.h"
 #include "msgbox.h"
 
 namespace gams {
@@ -214,6 +213,10 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     }
 
     PExFileNode *fileNode = mNodes.size() ? mNodes.first()->toFile() : nullptr;
+    PExProjectNode *directProject = mNodes.size() ? mNodes.first()->toProject() : nullptr;
+    QString fileName = fileNode ? fileNode->location()
+                                : directProject && directProject->type() == PExProjectNode::tCommon ? directProject->fileName() : QString();
+    bool hasFile = !fileName.isEmpty() && QFile::exists(fileName);
     bool isFreeSpace = !fileNode && !isProject;
     bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms;
     bool isMainFile = false;
@@ -276,7 +279,7 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
         isMainFile = fileNode->location() == file;
     }
 
-    mActions[actExplorer]->setEnabled(single);
+    mActions[actExplorer]->setEnabled(single && (hasFile || isGroup));
     mActions[actExplorer]->setVisible(!(isGamsSys && isProject));
     mActions[actOpenTerminal]->setEnabled(single);
     mActions[actOpenTerminal]->setVisible(!isFreeSpace && !(isGamsSys && isProject));
@@ -585,27 +588,32 @@ void ProjectContextMenu::onOpenFileLoc()
 {
     QString openLoc;
     PExFileNode *file = mNodes.first()->toFile();
-    if (file) {
+    QString filePath;
+    if (file)
+        filePath = QFileInfo(file->location()).filePath();
+    else if (PExProjectNode *project = mNodes.first()->toProject())
+        filePath = project->fileName();
+    if (!filePath.isEmpty()) {
 // select file on windows by calling explorer.exe with parameter /select
 #ifdef _WIN64
         QString explorerPath = QStandardPaths::findExecutable("explorer.exe");
         if (explorerPath.isEmpty()) {
-            QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file->location()).path()));
+            QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(filePath).path()));
         } else {
             QProcess proc;
             proc.setProgram(explorerPath);
             QStringList args;
             args << "/select";
             args << ",";
-            args << QDir::toNativeSeparators(QFileInfo(file->location()).filePath());
+            args << QDir::toNativeSeparators(filePath);
             proc.setArguments(args);
             proc.start();
             proc.waitForFinished();
         }
 #else
-        QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file->location()).path()));
+        QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(filePath).path()));
 #endif
-    } else if ((mNodes.first()->type() == NodeType::group) || (mNodes.first()->type() == NodeType::project)){
+    } else if ((mNodes.first()->type() == NodeType::group) || (mNodes.first()->type() == NodeType::project)) {
         PExGroupNode *group = mNodes.first()->toGroup();
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));

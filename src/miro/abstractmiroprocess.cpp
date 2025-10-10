@@ -22,6 +22,7 @@
 #include "editors/sysloglocator.h"
 #include "commonpaths.h"
 
+#include <QStandardPaths>
 #include <QDir>
 
 #ifdef _WIN64
@@ -158,7 +159,7 @@ QString AbstractMiroProcess::nativeAppPath()
     QString systemDir = CommonPaths::systemDir();
     if (systemDir.isEmpty())
         return QString();
-    auto appPath = QDir(systemDir).filePath(AbstractProcess::nativeAppPath());
+    auto appPath = QStandardPaths::findExecutable(AbstractProcess::nativeAppPath(), { systemDir });
     return QDir::toNativeSeparators(appPath);
 }
 

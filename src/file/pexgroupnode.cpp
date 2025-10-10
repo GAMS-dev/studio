@@ -319,6 +319,8 @@ const QString &PExProjectNode::fileName() const
 void PExProjectNode::setFileName(const QString &newProjectFile)
 {
     mProjectFile = newProjectFile;
+    if (mProjectEditFileMeta)
+        mProjectEditFileMeta->setLocation(newProjectFile);
     setName(QFileInfo(mProjectFile).completeBaseName());
     emit changed(id());
 }
@@ -1401,7 +1403,7 @@ bool PExProjectNode::startComServer(gamscom::ComFeatures features)
                         meta->updateBreakpoints();
                 }
                 mComServer->addBreakpoints(mContLineData->bpContinuousLines());
-                if (features & gamscom::cfStepDebug)
+                if ((features & gamscom::cfStepDebug) == gamscom::cfStepDebug)
                     mComServer->sendStepLine();
                 else
                     mComServer->sendRun();
@@ -1445,7 +1447,7 @@ QProcess::ProcessState PExProjectNode::gamsProcessState() const
 
 QString PExProjectNode::tooltip()
 {
-    QString res(QDir::toNativeSeparators(fileName()));
+    QString res(type() == tSmall ? "[internal]" : QDir::toNativeSeparators(fileName()));
     if (mType <= PExProjectNode::tCommon)
         res.append( "\n\nBase directory: " + QDir::toNativeSeparators(location()) +
                     "\nWorking directory: " + QDir::toNativeSeparators(workDir()));
