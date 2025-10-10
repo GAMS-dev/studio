@@ -4,6 +4,7 @@ Version 1.22.3 *
 - Removed irritating message when interrupting a GAMS process.
 - Fixed search result duplicates when using search in `All Files`, `This Project` or `Open Tabs`.
 - Fixed behavior of "Save as ..." for project files (*.gsp).
+- Fixed unintended change of main file on project open.
 - Fixed Studio can't find GAMS when starting MIRO.
 - Fixed wrong tab kept on 'Close except visible'.
 - Fixed a crash of the GDX Viewer.
