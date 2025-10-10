@@ -1403,7 +1403,7 @@ bool PExProjectNode::startComServer(gamscom::ComFeatures features)
                         meta->updateBreakpoints();
                 }
                 mComServer->addBreakpoints(mContLineData->bpContinuousLines());
-                if (features & gamscom::cfStepDebug)
+                if ((features & gamscom::cfStepDebug) == gamscom::cfStepDebug)
                     mComServer->sendStepLine();
                 else
                     mComServer->sendRun();
