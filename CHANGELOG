@@ -1,14 +1,14 @@
-Version 1.22.3 *
+Version 1.22.3
 ==================
 - Fixed search result duplicates when using search in `All Files`, `This Project` or `Open Tabs`.
 - Fixed 'Run with debugger' behaves like 'Step start with debugger'.
 - Fixed behavior of "Save as ..." for project files (*.gsp).
 - Fixed unintended change of main file on project open.
 - Fixed Studio can't find GAMS when starting MIRO.
-- Fixed wrong tab kept on 'Close except visible'.
-- Fixed a crash of the GDX Viewer.
+- Fixed 'Close except visible' tabs, before the tab which shall stay open has been closed.
+- Fixed crash of the GDX Viewer, when GDXDIFF has been used multiple times in a row.
 - Improved Studio behavior when files are missing after a GAMS run error.
-- Removed irritating message when interrupting a GAMS process.
+- Improved log messages when interrupting a GAMS process.
 - Upgraded to Qt 6.9.3.
 
 Version 1.22.2
