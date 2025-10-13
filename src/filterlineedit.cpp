@@ -161,6 +161,7 @@ QAbstractButton *FilterLineEdit::createButton(const QStringList &iconPaths, cons
     button->setToolTip(toolTips.at(0));
     button->setProperty("icons", iconPaths);
     button->setProperty("tips", toolTips);
+    button->setFocusPolicy(Qt::NoFocus);
     return button;
 }
 
@@ -215,11 +216,6 @@ QSize MiniButton::sizeHint() const
 {
     return iconSize() + QSize(2,3);
 }
-
-//void MiniButton::paintEvent(QPaintEvent *event)
-//{
-//    QAbstractButton::paintEvent(event);
-//}
 
 } // namespace studio
 } // namespace gams

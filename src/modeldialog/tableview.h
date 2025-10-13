@@ -29,6 +29,7 @@ namespace modeldialog {
 
 class TableView : public QTableView
 {
+    Q_OBJECT
 public:
     TableView(QWidget *parent = nullptr);
 
@@ -36,10 +37,16 @@ public:
     void zoomOut(int range = 1);
     void resetZoom();
 
+signals:
+    void closeDialog();
+    void confirmCurrent();
+    void tabOut(bool backward);
+    void nextTab(bool backward);
+
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
-
     void keyPressEvent(QKeyEvent *event) override;
+    void focusInEvent(QFocusEvent *event) override;
 
 private:
     void zoom(int range);

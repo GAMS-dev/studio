@@ -22,6 +22,7 @@
 #include <QEvent>
 #include <QHeaderView>
 #include <QWheelEvent>
+#include <QTimer>
 
 namespace gams {
 namespace studio {
@@ -60,6 +61,46 @@ void TableView::keyPressEvent(QKeyEvent *event)
             resetZoom();
         }
     }
+    if (event->modifiers() != Qt::ControlModifier) {
+        if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
+            emit confirmCurrent();
+        } else if (event->key() == Qt::Key_Escape) {
+            emit closeDialog();
+        } else if (event->key() == Qt::Key_Left) {
+            emit nextTab(true);
+        } else if (event->key() == Qt::Key_Right) {
+            emit nextTab(false);
+        } else if (event->key() == Qt::Key_Tab) {
+            emit tabOut(false);
+        } else if (event->key() == Qt::Key_Backtab) {
+            emit tabOut(true);
+        } if (model()->rowCount() > 1) {
+            if (event->key() == Qt::Key_Down) {
+                selectRow(qMin(currentIndex().row() + 1, model()->rowCount() - 1));
+            } else if (event->key() == Qt::Key_Up) {
+                selectRow(qMax(currentIndex().row() - 1, 0));
+            } else if (event->key() == Qt::Key_PageDown) {
+                int visRows = (geometry().height() / rowHeight(0));
+                selectRow(qMin(currentIndex().row() + visRows, model()->rowCount() - 1));
+            } else if (event->key() == Qt::Key_PageUp) {
+                int visRows = (geometry().height() / rowHeight(0));
+                selectRow(qMax(currentIndex().row() - visRows, 0));
+            } else if (event->key() == Qt::Key_Home) {
+                selectRow(0);
+            } else if (event->key() == Qt::Key_End) {
+                selectRow(model()->rowCount() - 1);
+            }
+        }
+    }
+}
+
+void TableView::focusInEvent(QFocusEvent *event)
+{
+    QTableView::focusInEvent(event);
+    QTimer::singleShot(0, this, [this]() {
+        if (!currentIndex().isValid() && model()->rowCount())
+            selectRow(0);
+    });
 }
 
 void TableView::zoomIn(int range)

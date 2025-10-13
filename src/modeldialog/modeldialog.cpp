@@ -101,6 +101,9 @@ ModelDialog::ModelDialog(const QString &userLibPath, QWidget *parent)
     connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, &ModelDialog::clearSelections);
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::storeSelectedTab);
+    setTabOrder(tableViewList.last(), ui->pbLoad);
+    setTabOrder(ui->pbLoad, ui->pbCancel);
+    setTabOrder(ui->pbCancel, ui->pbDescription);
 
     if (mHasGlbErrors) {
         QMessageBox msgBox(this);
@@ -196,6 +199,23 @@ void ModelDialog::addLibrary(const QList<LibraryItem>& items, bool isUserLibrary
     connect(ui->lineEdit, &FilterLineEdit::columnScopeChanged, this, [this, proxyModel]() {
         proxyModel->setFilterKeyColumn(ui->lineEdit->effectiveKeyColumn());
     });
+    connect(tableView, &TableView::closeDialog, this, [this]() {
+        reject();
+    });
+    connect(tableView, &TableView::confirmCurrent, this, [this]() {
+        if (ui->pbLoad->isEnabled())
+            accept();
+    });
+    connect(tableView, &TableView::tabOut, this, [this](bool backwards) {
+        backwards ? ui->tabWidget->setFocus() : ui->pbLoad->isEnabled() ? ui->pbLoad->setFocus()
+                                                                        : ui->pbCancel->setFocus();
+    });
+    connect(tableView, &TableView::nextTab, this, [this](bool backwards) {
+        int index = ui->tabWidget->currentIndex() + (backwards ? -1 : 1);
+        if (index < 0) index = ui->tabWidget->count() - 1;
+        if (index == ui->tabWidget->count()) index = 0;
+        ui->tabWidget->setCurrentIndex(index);
+    });
 
     tableViewList.append(tableView);
     proxyModelList.append(proxyModel);
@@ -207,6 +227,7 @@ void ModelDialog::addLibrary(const QList<LibraryItem>& items, bool isUserLibrary
     tableView->setModel(proxyModel);
     QString label = items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")";
     int tabIdx=0;
+    tableView->setObjectName(label);
     if (isUserLibrary)
         tabIdx = ui->tabWidget->addTab(tableView, Theme::icon(mIconUserLib), label);
     else
