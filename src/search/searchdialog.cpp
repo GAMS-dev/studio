@@ -220,9 +220,10 @@ QList<SearchFile> SearchDialog::getFilesByScope(const Parameters &parameters)
     mFileWorker->setParameters(parameters);
     switch (ui->combo_scope->currentIndex()) {
         case Scope::ThisFile: {
-            if (mCurrentEditor)
+            if (mCurrentEditor) {
                 if (FileMeta* fm = mFileHandler->fileMeta(mCurrentEditor))
-                    files << SearchFile(fm);
+                    matched << SearchFile(fm);
+            }
             break;
         }
         case Scope::ThisProject: {
@@ -235,9 +236,10 @@ QList<SearchFile> SearchDialog::getFilesByScope(const Parameters &parameters)
             break;
         }
         case Scope::Selection: {
-            if (mCurrentEditor)
+            if (mCurrentEditor) {
                 if (FileMeta* fm = mFileHandler->fileMeta(mCurrentEditor))
-                    files << SearchFile(fm);
+                    matched << SearchFile(fm);
+            }
             break;
         }
         case Scope::OpenTabs: {
@@ -255,11 +257,11 @@ QList<SearchFile> SearchDialog::getFilesByScope(const Parameters &parameters)
             break;
         }
         case Scope::Folder: {
-            files << mFileWorker->collectFilesInFolder();
+            matched << mFileWorker->collectFilesInFolder();
         }
         default: break;
     }
-    return files;
+    return matched;
 }
 
 void SearchDialog::on_searchNext()
