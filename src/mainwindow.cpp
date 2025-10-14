@@ -5592,15 +5592,6 @@ void MainWindow::focusProject(PExProjectNode *project)
         ui->mainTabs->setTabVisible(i, visibleList.at(i));
     }
 
-    // workaround for QTBUG-139791
-    int dest = ui->mainTabs->count() - 1;
-    for (int i = dest - 1; i > 0; --i) {
-        if (ui->mainTabs->isTabVisible(i)) {
-            if (i != dest)
-                ui->mainTabs->tabBar()->moveTab(i, dest);
-            --dest;
-        }
-    }
     mainTabs()->setTabText(0, mainTabs()->tabText(0)); // Workaround to trigger readjustment
 
     // update logTabs visibility
