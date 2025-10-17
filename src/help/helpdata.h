@@ -116,6 +116,7 @@ public:
         auto docs = CommonPaths::documentationDir();
         QList<QPair<QString, QString>> list;
         QMap<QString, QString> exceptionlist = {
+            {"conopt", "conopt4"},
             {"decisc", "decis"},
             {"decism", "decis"},
             {"ipopth", "ipopt"},
@@ -187,7 +188,13 @@ public:
         str.replace(" ", "_");
         str.replace("/", "_");
         str.replace(".", "DOT");
-        return QString("%1%2").arg(solvername.toUpper(), str);
+        QMap<QString, QString> solverlist = {
+            {"conopt4", "conopt"},
+        };
+        if (solverlist.contains(solvername.toLower()))
+            return QString("%1%2").arg( solverlist[solvername.toLower()].toUpper(), str);
+        else
+            return QString("%1%2").arg( solvername.toUpper(), str);
     }
 
     inline static QString getSolverChapterLocation(const QString &solverName) {
