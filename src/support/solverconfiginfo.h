@@ -49,6 +49,8 @@ public:
     QString solverOptDefFileName(const QString &solverName) const;
     QMap<QString, QString> solverOptDefFileNames();
 
+    QMap<QString, QString> solverAliasNames();
+
     QMap<int, int> solverIndices();
 
     QString modelTypeName(int modelTypeId) const;

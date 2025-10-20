@@ -125,6 +125,19 @@ QMap<QString, QString> SolverConfigInfo::solverOptDefFileNames()
     return fileNames;
 }
 
+QMap<QString, QString> SolverConfigInfo::solverAliasNames()
+{
+    QMap<QString, QString> alias;
+    // determine alais from option definition file name
+    for (auto [key, value] : solverOptDefFileNames().asKeyValueRange()) {
+        QString optdeffile = QString("opt%1.def").arg(key.toLower());
+        if (QString::compare(optdeffile, value, Qt::CaseInsensitive) != 0) {
+           alias[key.toLower()] =  value.split('.', Qt::SkipEmptyParts).first().mid(3);
+        }
+    }
+    return alias;
+}
+
 QMap<int, int> SolverConfigInfo::solverIndices()
 {
     QMap<int, int> indices;

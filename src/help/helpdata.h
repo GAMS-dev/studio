@@ -112,19 +112,14 @@ public:
         };
         return list;
     }
+
     static const QList<QPair<QString, QString>> solverChaperLocation() {
         auto docs = CommonPaths::documentationDir();
         QList<QPair<QString, QString>> list;
-        QMap<QString, QString> exceptionlist = {
-            {"conopt", "conopt4"},
-            {"decisc", "decis"},
-            {"decism", "decis"},
-            {"ipopth", "ipopt"},
-            {"lindoglobal", "lindo"},
-        };
 
         support::SolverConfigInfo solverInfo;
         auto solverNames = solverInfo.solverNames().values();
+        auto exceptionlist = solverInfo.solverAliasNames();
         for (const QString& s : std::as_const(solverNames)) {
             if (exceptionlist.contains(s.toLower())) {
                 list << QPair<QString,QString>(s.toLower(), docs + "/S_" + exceptionlist.value(s.toLower()).toUpper()+".html");
@@ -188,11 +183,11 @@ public:
         str.replace(" ", "_");
         str.replace("/", "_");
         str.replace(".", "DOT");
-        QMap<QString, QString> solverlist = {
-            {"conopt4", "conopt"},
-        };
-        if (solverlist.contains(solvername.toLower()))
-            return QString("%1%2").arg( solverlist[solvername.toLower()].toUpper(), str);
+
+        support::SolverConfigInfo solverInfo;
+        auto aliaslist = solverInfo.solverAliasNames();
+        if (aliaslist.contains(solvername.toLower()))
+            return QString("%1%2").arg( aliaslist[solvername.toLower()].toUpper(), str);
         else
             return QString("%1%2").arg( solvername.toUpper(), str);
     }
