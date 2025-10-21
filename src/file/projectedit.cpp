@@ -372,6 +372,8 @@ void ProjectEdit::updateEditColor(QLineEdit *edit, const QString &text)
 
 void ProjectEdit::updateState()
 {
+    updateEditColor(ui->edWorkDir, ui->edWorkDir->text());
+    updateEditColor(ui->edBaseDir, ui->edBaseDir->text());
     PExProjectNode *pro = mSharedData->project();
     bool isModified = false;
     if (ui->edName->text().trimmed().compare(pro->name()))

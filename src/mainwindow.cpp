@@ -4762,6 +4762,7 @@ void MainWindow::on_actionCompileWithSelected_triggered()
 
 void MainWindow::on_actionRunDebugger_triggered()
 {
+    if (!ui->actionRunDebugger->isEnabled()) return;
     if (ui->debugWidget->isVisible()) {
         emit ui->debugWidget->sendRun();
     } else {
@@ -4772,6 +4773,7 @@ void MainWindow::on_actionRunDebugger_triggered()
 
 void MainWindow::on_actionStepDebugger_triggered()
 {
+    if (!ui->actionStepDebugger->isEnabled()) return;
     if (ui->debugWidget->isVisible()) {
         emit ui->debugWidget->sendStepLine();
     } else {
