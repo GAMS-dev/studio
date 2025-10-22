@@ -4,9 +4,12 @@ Version 1.23.0 *
 - Added keyboard navigation and selection to the tables of the model library explorer.
 - Improved connect editor workflow by linking agent and option name to corresponding entry in connect document with `F1` hotkey
 
-Version 1.22.4 *
+Version 1.22.4
 ==================
 - Fixed incomplete list of files to search in, e.g. when search in `This Project` was selected.
+- Fixed shortcuts `F11` and `Shift-F11`, i.e. they shouldn't be available when the related buttons are disabled.
+- Fixed empty entries in the Project Explorer when the base directory has been changed.
+- Fixed when the working or base directory doesn't exist, the project options should show the path in red.
 
 Version 1.22.3
 ==================

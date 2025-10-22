@@ -1225,8 +1225,9 @@ void ProjectRepo::reassignFiles(PExProjectNode *project)
 {
     QVector<PExFileNode *> files = project->listFiles();
     FileMeta *runGms = project->mainFile();
-    for (PExFileNode *file: std::as_const(files))
+    for (PExFileNode *file: std::as_const(files)) {
         addToProject(project, file);
+    }
     emit openRecentFile();
     project->setMainFile(runGms);
 }

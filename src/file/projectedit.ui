@@ -112,7 +112,7 @@
       <item row="5" column="1">
        <widget class="QCheckBox" name="cbDynamicMainFile">
         <property name="toolTip">
-         <string>Selects the current file as main file.\n (The file needs to be a GAMS file and part of this project.)</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Selects the current file as main file.&lt;/p&gt;&lt;p  style='white-space:pre'&gt;(The file needs to be a GAMS file and part of this project.)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Dynamic main file</string>
