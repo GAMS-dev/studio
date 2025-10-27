@@ -43,10 +43,6 @@ void TestDocLocation::testSolverAnchor_data()
     QTest::newRow("BARON_BrPtStra")         << "BARON" << "BrPtStra"      << docs + "/S_BARON.html" << "BARONBrPtStra";
     QTest::newRow("BARON_.EquClass")        << "BARON" << ".EquClass"     << docs + "/S_BARON.html" << "BARONDOTEquClass";
 
-    QTest::newRow("CONOPT4_Lim_Dbg_1Drv")       << "CONOPT4" << "Flg_NoPen"         << docs + "/S_CONOPT.html" << "CONOPTFlg_NoPen";
-    QTest::newRow("CONOPT4_Frq_Log_SlpSqp")     << "CONOPT4" << "Flg_Range"         << docs + "/S_CONOPT.html" << "CONOPTFlg_Range";
-    QTest::newRow("CONOPT4_HessianMemFac")      << "CONOPT4" << "Lim_Err_Hessian"   << docs + "/S_CONOPT.html" << "CONOPTLim_Err_Hessian";
-
     QTest::newRow("CONOPT_Lim_Dbg_1Drv")        << "CONOPT"  << "Flg_NoPen"         << docs + "/S_CONOPT.html" << "CONOPTFlg_NoPen";
     QTest::newRow("CONOPT_Frq_Log_SlpSqp")      << "CONOPT"  << "Flg_Range"         << docs + "/S_CONOPT.html" << "CONOPTFlg_Range";
     QTest::newRow("CONOPT_HessianMemFac")       << "CONOPT"  << "Lim_Err_Hessian"   << docs + "/S_CONOPT.html" << "CONOPTLim_Err_Hessian";

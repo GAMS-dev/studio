@@ -197,7 +197,7 @@ public:
             if (QString::compare(solverName, list.first, Qt::CaseInsensitive) ==0)
                 return list.second;
         }
-        return getChapterLocation(DocumentType::Solvers);
+        return getChapterLocation(DocumentType::SolversMain);
     }
 
     inline static QString getStudioSectionAnchor(const QString &section) {
