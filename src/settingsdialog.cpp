@@ -338,6 +338,7 @@ void SettingsDialog::loadSettings()
     ui->cb_userLib->addItems(mSettings->toString(skUserModelLibraryDir).split(',', Qt::SkipEmptyParts));
     ui->cb_userLib->setCurrentIndex(0);
     ui->cleanWsBox->setChecked(mSettings->toBool(skCleanUpWorkspace));
+    ui->enableHelpCheckBox->setChecked(mSettings->toBool(skSupressWebEngine));
 
     // workspace page
     QVariantMap filters = mSettings->toMap(skCleanUpWorkspaceFilter);
@@ -505,6 +506,7 @@ void SettingsDialog::saveSettings()
     ui->edAutoReloadTypes->setText(changeSeparators(ui->edAutoReloadTypes->text(), ", "));
     mSettings->setString(skAutoReloadTypes, changeSeparators(ui->edAutoReloadTypes->text(), ","));
     mSettings->setBool(skCleanUpWorkspace, ui->cleanWsBox->isChecked());
+    mSettings->setBool(skSupressWebEngine, ui->enableHelpCheckBox->isChecked());
 
     // workspace page
     QVariantMap filters;

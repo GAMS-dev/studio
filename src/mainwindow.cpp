@@ -3268,7 +3268,6 @@ void MainWindow::updateAndSaveSettings()
                      (ui->action3_Profiling->isChecked() ? 4 : 0);
     Settings::settings()->setInt(skRunOptions, runOptions);
 
-    Settings::settings()->setBool(skSupressWebEngine, mSupressWebEngine);
 #ifdef QWEBENGINE
     if (mHelpWidget) {
         QVariantList joBookmarks;
@@ -3366,7 +3365,6 @@ void MainWindow::restoreFromSettings()
     ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
 
     // help
-    mSupressWebEngine = Settings::settings()->toBool(skSupressWebEngine);
 #ifdef QWEBENGINE
     if (mHelpWidget) {
         const QVariantList joHelp = settings->toList(skHelpBookmarks);
@@ -4705,7 +4703,7 @@ void MainWindow::initDelayedElements()
     updateAndSaveSettings();
     Settings::settings()->checkSettings();
     QStringList warnings = Settings::settings()->takeInitWarnings();
-    for (const QString &warn : warnings)
+    for (const QString &warn : std::as_const(warnings))
         appendSystemLogWarning(warn);
 
     checkGamsLicense();
@@ -4714,11 +4712,11 @@ void MainWindow::initDelayedElements()
 
     if (QStringConverter::availableCodecs().count() < 16)
         appendSystemLogInfo("ICU inactive: Studio will provide a reduced number of supported encodings.");
-    if (mSupressWebEngine) {
+    if (Settings::settings()->toBool(skSupressWebEngine)) {
         ui->actionGamsHelp->setEnabled(false);
         ui->actionStudioHelp->setEnabled(false);
         mWp->setDocEnabled(false);
-        appendSystemLogInfo("Integrated help inactive (to turn it on start Studio with '--integrated-help on')");
+        appendSystemLogInfo("The Integrated help is inactive. It can be activated via the settings or by starting Studio with '--integrated-help on'.");
     }
 }
 
@@ -6215,25 +6213,13 @@ void MainWindow::extraSelectionsUpdated()
 #ifdef QWEBENGINE
 bool MainWindow::webEnginePermitted()
 {
-    if (mSupressWebEngine) return false;
-    if (mHelpWidget) return true;
-    bool createHelp = true;
-    if (QSysInfo::productType().compare("windows") == 0 && QSysInfo::productVersion().startsWith("10")) {
-        QMessageBox::StandardButton button =
-            QMessageBox::question(this, "Integrated Help on Windows 10",
-                                  "On Windows 10 the integrated help might crash Studio. Turn off integrated help?\n"
-                                  "(Restore with command line parameter '--integrated-help on')");
-        if (button == QMessageBox::StandardButton::Yes) {
-            createHelp = false;
-            mSupressWebEngine = true;
-            Settings::settings()->setBool(skSupressWebEngine, true);
-        }
-    }
-    if (createHelp) {
-        mHelpWidget = new help::HelpWidget(this);
-        ui->dockHelpView->setWidget(mHelpWidget);
-        ui->dockHelpView->hide();
-    }
+    if (Settings::settings()->toBool(skSupressWebEngine))
+        return false;
+    if (mHelpWidget)
+        return true;
+    mHelpWidget = new help::HelpWidget(this);
+    ui->dockHelpView->setWidget(mHelpWidget);
+    ui->dockHelpView->hide();
     return mHelpWidget;
 }
 #endif

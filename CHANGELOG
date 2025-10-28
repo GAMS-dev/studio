@@ -3,8 +3,9 @@ Version 1.23.0 *
 - Added storing of the fold state for known source files.
 - Added keyboard navigation and selection to the tables of the model library explorer.
 - Fix broken links to option document when pressing `F1` in solver option editor.
-- Improved connect editor workflow by linking agent and option name to corresponding entry in connect document with `F1` hotkey
+- Improved connect editor workflow by linking agent and option name to corresponding entry in connect document with `F1` hotkey.
 - Upgraded Studio to Qt 6.10.0
+- Removed Windows 10 message box to disable the Help View to prevent crashes (Windows 10 reached its EOL).
 
 Version 1.22.4
 ==================

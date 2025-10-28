@@ -553,7 +553,6 @@ private:
 #ifdef QWEBENGINE
     help::HelpWidget *mHelpWidget = nullptr;
 #endif
-    bool mSupressWebEngine = false;
     option::ParameterEditor *mGamsParameterEditor = nullptr;
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;
