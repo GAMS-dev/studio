@@ -1,4 +1,4 @@
-Version 1.23.0  *
+Version 1.22.5  *
 ==================
 - Fixed crash on Windows when installing a GAMS license in a user home directory, which has an Unicode name.
 
