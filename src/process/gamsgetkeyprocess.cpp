@@ -57,9 +57,12 @@ void GamsGetKeyProcess::execute()
     if (!mCheckoutDuration.isEmpty()) {
         args << "-c" << mCheckoutDuration;
     }
-    if (!mOnPremSever.isEmpty()) {
+    if (!mOnPremSever.isEmpty()){
         args << "-s" << mOnPremSever;
-        args << "-g" << mOnPremCertPath+"/gamslice.crt";
+        if (mOnPremCertPath.isEmpty())
+            mLogMessages << "Error: On-Prem certificate path is empty. The certificate file will not be saved.";
+        else
+            args << "-g" << mOnPremCertPath+"/gamslice.crt";
     }
     auto app = nativeAppPath();
     if (app.isEmpty()) {

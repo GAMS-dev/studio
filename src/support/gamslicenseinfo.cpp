@@ -407,7 +407,8 @@ QString GamsLicenseInfo::licenseDirectory()
         return fi.dir().absolutePath();
     }
     GamsLicenseInfo licenseInfo;
-    return licenseInfo.gamsDataLocations().constFirst();
+    auto locations = licenseInfo.gamsDataLocations();
+    return locations.count() ? locations.constFirst() : CommonPaths::systemDir();
 }
 
 QString GamsLicenseInfo::licenseLocation()
@@ -415,7 +416,9 @@ QString GamsLicenseInfo::licenseLocation()
     auto liceFile = gamsConfigYamlLicenseLocation();
     if (liceFile.isEmpty()) {
         GamsLicenseInfo licenseInfo;
-        liceFile = licenseInfo.gamsDataLocations().constFirst() + "/" + CommonPaths::licenseFile();
+        auto locations = licenseInfo.gamsDataLocations();
+        liceFile = locations.count() ? licenseInfo.gamsDataLocations().constFirst() + "/" + CommonPaths::licenseFile()
+                                     : CommonPaths::systemDir() + "/" + CommonPaths::licenseFile();
     }
     return liceFile;
 }
