@@ -109,12 +109,7 @@ void GamsConfigEditor::on_reloadGamsUserConfigFile()
              SysLogLocator::systemLog()->append(QString("Reloading GAMS User Configuration from %1").arg(mLocation), LogMsgType::Info);
     } else {
         if (!mGuc->isAvailable()) {
-            SysLogLocator::systemLog()->append(mGuc->getLastErrorMessage(), LogMsgType::Warning);
-            QMessageBox msgBox;
-            msgBox.setText( QString("The contents of %1 does not conform to GAMS Configuration file format.\nThe contents may be lost if continue editing. Try \"Reopen as Text\" to preserve editing the file contents.").arg(mLocation));
-            msgBox.setIcon( QMessageBox::Warning );
-            msgBox.setStandardButtons(QMessageBox::Ok);
-            msgBox.exec();
+            logAndPrompt("Cannot load file", "read");
         }
         return;
     }
@@ -123,12 +118,7 @@ void GamsConfigEditor::on_reloadGamsUserConfigFile()
         mParamConfigEditor->on_reloadGamsUserConfigFile( mGuc->readCommandLineParameters() );
         mEnvVarConfigEditor->on_reloadGamsUserConfigFile( mGuc->readEnvironmentVariables() );
     } else {
-        SysLogLocator::systemLog()->append(mGuc->getLastErrorMessage(), LogMsgType::Warning);
-        QMessageBox msgBox;
-        msgBox.setText( QString("The contents of %1 does not conform to GAMS Configuration file format.\nThe contents may be lost if continue editing. Try \"Reopen as Text\" to preserve editing the file contents.").arg(mLocation));
-        msgBox.setIcon( QMessageBox::Warning );
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.exec();
+        logAndPrompt("Cannot load file", "permission to read from");
     }
 
     setFileChangedExtern(false);
@@ -235,6 +225,27 @@ void GamsConfigEditor::zoomInF(qreal range)
     setFont(f);
 }
 
+void GamsConfigEditor::logAndPrompt(const QString &title, const QString &rwpermission)
+{
+    SysLogLocator::systemLog()->append(mGuc->getLastErrorMessage(), LogMsgType::Warning);
+    QMessageBox msgBox;
+    msgBox.setWindowTitle(title);
+    if (rwpermission.compare("read", Qt::CaseInsensitive)==0) {
+        msgBox.setText( QString("%1Either you may have no permission to %2 from %3, or the file contents does not conform to GAMS Configuration file format.\n"
+                                "The contents may be lost if continue editing.\nTry \"Reopen as Text\" to preserve editing the file contents.")
+                           .arg(mGuc->getLastErrorMessage().isEmpty() ? "" : mGuc->getLastErrorMessage()+".\n", rwpermission, mLocation) );
+    } else if (rwpermission.compare("write", Qt::CaseInsensitive)==0) {
+            msgBox.setText( QString("%1You may have no permission to %2 to %3.\nTry \"Save As\" to different name or location .")
+                               .arg(mGuc->getLastErrorMessage().isEmpty() ? "" : mGuc->getLastErrorMessage()+".\n", rwpermission, mLocation) );
+    } else {
+        msgBox.setText( QString("%1").arg(mGuc->getLastErrorMessage()) );
+    }
+    msgBox.setIcon( QMessageBox::Critical );
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.exec();
+
+}
+
 void GamsConfigEditor::setFileChangedExtern(bool value)
 {
     mFileHasChangedExtern = value;
@@ -250,10 +261,13 @@ bool GamsConfigEditor::saveAs(const QString &location)
        mGuc->updateEnvironmentVariables( mEnvVarConfigEditor->envVarConfigItems());
        mEnvVarConfigEditor->setModified(false);
     }
-    mGuc->writeGamsUserConfigFile(location);
-    setModified(false);
-
-    return true;
+    if (mGuc->writeGamsUserConfigFile(location)) {
+        setModified(false);
+        return true;
+    } else {
+        logAndPrompt("Cannot save file", "write");
+        return false;
+    }
 }
 
 } // namepsace option
