@@ -2,6 +2,8 @@ Version 1.22.5  *
 ==================
 - Fixed crash on Windows when installing a GAMS license in a user home directory, which has an Unicode name.
 - Fixed an unsuccessful write to `gamsconfig.yaml`, e.g. when the permissions are not set properly.
+- Improved clipboard magic to install a GAMS license via the license dialog. Before, random text has been handled as a GAMS license, which produced unexpected error messages.
+- Removed clipboard magic on Studio startup.
 
 Version 1.22.4
 ==================

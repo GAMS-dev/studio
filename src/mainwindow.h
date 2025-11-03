@@ -523,7 +523,6 @@ private:
     bool validMiroPrerequisites();
     void restoreCursorPosition(CursorHistoryItem item);
     bool enabledPrintAction();
-    void checkGamsLicense();
     void checkSslLibrary();
     QString readGucValue(const QString &key);
     void initCompleterActions();
