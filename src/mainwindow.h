@@ -428,6 +428,7 @@ protected:
     void moveEvent(QMoveEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void updateRecentEdit(QWidget *old, QWidget *now);
+    void checkDefaultWorkDir();
     int logTabCount();
     int currentLogTab();
     QTabWidget* mainTabs();

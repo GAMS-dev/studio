@@ -155,6 +155,7 @@ enum SettingsKey {
     skNeosShortPrio,
     skUserGamsTypes,
     skAutoReloadTypes,
+    skSwitchDefaultWorkDir,
     skCleanUpWorkspace,
     skCleanUpWorkspaceFilter,
     skCleanUpWorkspaceDirectories,

@@ -260,6 +260,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileMetaRepo, &FileMetaRepo::setGroupFontSize, this, &MainWindow::setGroupFontSize);
     connect(&mFileMetaRepo, &FileMetaRepo::scrollSynchronize, this, &MainWindow::scrollSynchronize);
     connect(&mFileMetaRepo, &FileMetaRepo::saveProjects, this, [this]() {
+        checkDefaultWorkDir();
         updateAndSaveSettings();
         for (int i = 1; i < mainTabs()->count(); ++i)
             updateTabIcon(nullptr, i);
@@ -1346,6 +1347,7 @@ void MainWindow::openModelFromLibPrepare(const QString &glbFile, const QString &
 
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite)
 {
+    checkDefaultWorkDir();
     bool openInCurrent = Settings::settings()->toBool(skOpenInCurrent) && mRecent.project();
 
     // TODO(JM) remove this when issue is fixed
@@ -4754,9 +4756,23 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
             if (projOld != mRecent.project() || (mRecent.project() && mRecent.project()->dynamicMainFile()))
                 loadCommandLines(projOld, mRecent.project());
             updateRunState();
+            checkDefaultWorkDir();
             break;
         }
         wid = wid->parentWidget();
+    }
+}
+
+void MainWindow::checkDefaultWorkDir()
+{
+    if (Settings::settings()->toBool(skSwitchDefaultWorkDir) && mRecent.project()) {
+        QString currentWorkDir = mRecent.project()->workDir();
+        QString defaultWorkDir = Settings::settings()->toString(skDefaultWorkspace);
+        if (currentWorkDir.compare(defaultWorkDir, FileType::fsCaseSense()) != 0) {
+            CommonPaths::setDefaultWorkingDir(currentWorkDir);
+            Settings::settings()->setString(skDefaultWorkspace, currentWorkDir);
+            updateAndSaveSettings();
+        }
     }
 }
 
@@ -7404,7 +7420,6 @@ void MainWindow::on_actionImport_GPR_project_triggered()
 {
     openFilesDialog(ogImportGpr);
 }
-
 
 
 }

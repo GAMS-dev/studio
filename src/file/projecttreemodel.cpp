@@ -316,7 +316,6 @@ bool ProjectTreeModel::removeChild(PExAbstractNode* child)
     PExGroupNode *parent = child->parentNode();
     QModelIndex parMi = asIndex(parent);
     if (!parMi.isValid()) return false;
-    DEB() << "remove rows: " << data(parMi).toString() << ": " << child->name();
 
     beginRemoveRows(parMi, mi.row(), mi.row());
     child->setParentNode(nullptr);

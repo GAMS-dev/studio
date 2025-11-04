@@ -201,6 +201,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->cbScale, &QCheckBox::checkStateChanged, this, &SettingsDialog::setModified);
 
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
+    connect(ui->cbSwitchDefaultWorkDir, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->cleanWsBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(mCleanupFilterModel, &CleanupFilterModel::dataChanged, this, &SettingsDialog::setModified);
@@ -341,6 +342,7 @@ void SettingsDialog::loadSettings()
     ui->enableHelpCheckBox->setChecked(mSettings->toBool(skSupressWebEngine));
 
     // workspace page
+    ui->cbSwitchDefaultWorkDir->setChecked(mSettings->toBool(skSwitchDefaultWorkDir));
     QVariantMap filters = mSettings->toMap(skCleanUpWorkspaceFilter);
     updateCleanupFilterList(filters);
     QVariantMap workspaces = mSettings->toMap(skCleanUpWorkspaceDirectories);
@@ -509,6 +511,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skSupressWebEngine, ui->enableHelpCheckBox->isChecked());
 
     // workspace page
+    mSettings->setBool(skSwitchDefaultWorkDir, ui->cbSwitchDefaultWorkDir->isChecked());
     QVariantMap filters;
     for (const auto& filter : mCleanupFilterModel->data()->items()) {
         QList<QVariant> values { filter->checked() ? true : false, filter->description() };

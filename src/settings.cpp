@@ -402,6 +402,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skNeosShortPrio, scUser, {"neos","priotity"}, true);
     safelyAdd(res, skUserGamsTypes, scUser, {"misc","userFileTypes"}, QString());
     safelyAdd(res, skAutoReloadTypes, scUser, {"misc","autoReloadTypes"}, true);
+    safelyAdd(res, skSwitchDefaultWorkDir, scUser, {"misc","switchDefaultWorkDir"}, false);
     safelyAdd(res, skCleanUpWorkspace, scUser, {"misc","cleanUpWorkspace"}, false);
     safelyAdd(res, skCleanUpWorkspaceFilter, scUser, {"misc","cleanUpWorkspaceFilter"}, QVariantMap());
     safelyAdd(res, skCleanUpWorkspaceDirectories, scUser, {"misc","cleanUpWorkspaceDirectories"}, QVariantMap());
