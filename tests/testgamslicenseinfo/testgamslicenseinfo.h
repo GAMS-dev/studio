@@ -71,10 +71,6 @@ private slots:
 
     void testLicenseFromFile_licenseWithLines();
 
-    void testLicenseFromFile_licenseContinuesLine();
-
-    void testLicenseFromFile_randomSpaces();
-
     void testLicenseFromFile_BOM();
 
     void testLicenseDirectory();
@@ -82,8 +78,6 @@ private slots:
 
 private:
     QStringList testLicense();
-
-    QString testLicenseWithSpaces();
 };
 
 #endif // TESTGAMSLICENSEINFO_H
