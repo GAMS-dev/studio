@@ -1271,6 +1271,22 @@ const QStringList MainWindow::openedFiles()
     return res;
 }
 
+QSet<FileMeta *> MainWindow::openedFileMetas()
+{
+    QSet<FileMeta *> res;
+    QList<QWidget*> openTabsList = constOpenedEditors();
+    QSet<QWidget*> openTabs = QSet<QWidget*>(openTabsList.begin(), openTabsList.end());
+    for (FileMeta *meta : mFileMetaRepo.fileMetas()) {
+        for (QWidget *edit : meta->editors()) {
+            if (openTabs.contains(edit)) {
+                res << meta;
+                break;
+            }
+        }
+    }
+    return res;
+}
+
 void MainWindow::receiveAction(const QString &action)
 {
     if (action == "createNewFile")
@@ -4708,7 +4724,6 @@ void MainWindow::initDelayedElements()
     for (const QString &warn : std::as_const(warnings))
         appendSystemLogWarning(warn);
 
-    checkGamsLicense();
     checkForEngineJob();
     connect(mSyslog, &SystemLogEdit::newMessage, this, &MainWindow::updateSystemLogTab);
 
@@ -7274,28 +7289,6 @@ bool MainWindow::enabledPrintAction()
     return focusWidget() == mRecent.editor()
             || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLstChild
             || ViewHelper::editorType(recent()->editor()) == EditorType::txtRo;
-}
-
-void MainWindow::checkGamsLicense()
-{
-    const QString errorText = "No GAMS license found. You can install your license by"
-                              " copying the license information from the email you"
-                              " received after purchasing GAMS into your clipboard, and"
-                              " then open the license dialogue (Help / GAMS licensing)."
-                              " The license will be recognized and installed automatically."
-                              " For more options, please check the GAMS documentation.";
-    try {
-        support::GamsLicensingDialog::createLicenseFileFromClipboard(this);
-        auto dataPaths = support::GamsLicenseInfo().gamsDataLocations();
-        auto licenseFile = QDir::toNativeSeparators(CommonPaths::gamsLicenseFilePath(dataPaths));
-        if (QFileInfo::exists(licenseFile)) {
-            appendSystemLogInfo("GAMS license found at " + licenseFile);
-        } else {
-            appendSystemLogError(errorText);
-        }
-    }  catch (Exception *e) {
-        appendSystemLogError(e->what());
-    }
 }
 
 void MainWindow::checkSslLibrary()

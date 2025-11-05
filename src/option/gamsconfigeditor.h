@@ -92,6 +92,7 @@ protected:
 
 private:
     void zoomInF(qreal range);
+    void logAndPrompt(const QString& title, const QString& rwpermission);
 
     Ui::GamsConfigEditor *ui;
 

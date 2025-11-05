@@ -142,6 +142,7 @@ public:
     const QList<QWidget *> constOpenedLogs();
     QList<QWidget *> openedLogs();
     const QStringList openedFiles();
+    QSet<FileMeta*> openedFileMetas();
     search::SearchDialog* searchDialog() const;
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);
@@ -160,7 +161,6 @@ public:
     void toggleFullscreen();
     void execute(const QString &commandLineStr, AbstractProcess* process = nullptr,
                  gamscom::ComFeatures comMode = gams::studio::gamscom::cfNoCom);
-
     void resetHistory();
     void removeFromHistory(const QString &file);
     void historyChanged();
@@ -524,7 +524,6 @@ private:
     bool validMiroPrerequisites();
     void restoreCursorPosition(CursorHistoryItem item);
     bool enabledPrintAction();
-    void checkGamsLicense();
     void checkSslLibrary();
     QString readGucValue(const QString &key);
     void initCompleterActions();

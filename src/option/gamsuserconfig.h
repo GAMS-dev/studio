@@ -72,7 +72,7 @@ public:
     void updateCommandLineParameters(const QList<ConfigItem *> &items);
     void updateEnvironmentVariables(const QList<EnvVarConfigItem *> &items);
 
-    void writeGamsUserConfigFile(const QString &location);
+    bool writeGamsUserConfigFile(const QString &location);
 
     bool reloadGAMSUserConfigFile(const QString &location);
 

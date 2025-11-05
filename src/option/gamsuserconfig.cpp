@@ -200,7 +200,7 @@ void GamsUserConfig::updateEnvironmentVariables(const QList<EnvVarConfigItem *> 
     }
 }
 
-void GamsUserConfig::writeGamsUserConfigFile(const QString &location)
+bool GamsUserConfig::writeGamsUserConfigFile(const QString &location)
 {
     clearLastErrorMessage();
     for (int ipos=0; ipos<gucGetItemCount(mGUCfg); ipos++) {
@@ -213,7 +213,13 @@ void GamsUserConfig::writeGamsUserConfigFile(const QString &location)
             continue;
     }
 
-    gucWriteGAMSConfig(mGUCfg, location.toStdString().c_str());
+    if (gucWriteGAMSConfig(mGUCfg, location.toStdString().c_str()) != 0) {
+        char msg[GMS_SSSIZE];
+        if (gucGetErrorMessage( mGUCfg, msg, sizeof(msg)) == 0)
+            setLastErrorMessage( msg );
+        return false;
+    }
+    return true;
 }
 
 bool GamsUserConfig::reloadGAMSUserConfigFile(const QString &location)

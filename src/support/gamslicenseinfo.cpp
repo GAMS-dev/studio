@@ -38,8 +38,7 @@ namespace studio {
 namespace support {
 
 GamsLicenseInfo::GamsLicenseInfo()
-    : mRegEx(R"(\s|\\.)")
-    , mRegExHome(R"(C:\\Users\\\?+)")
+    : mRegExHome(R"(C:\\Users\\\?+)")
 {
     auto logger = SysLogLocator::systemLog();
     char msg[GMS_SSSIZE];
@@ -351,12 +350,15 @@ void GamsLicenseInfo::addPalMessagesToSysLog()
 QStringList GamsLicenseInfo::processLicenseData(const QString &data)
 {
     QStringList licenseLines;
-    auto str = QString(data).replace(mRegEx, "");
-    // each license line has 65 characters
-    for (int i=0, n=65; i+n<=str.size(); i+=n) {
-        licenseLines << str.sliced(i, n);
+    for (auto& entry : data.split('\n')) {
+        auto line = entry.trimmed();
+        if (line.isEmpty())
+            continue;
+        if (line.size() != 65)
+            return QStringList();
+        licenseLines << line;
     }
-    // a GAMS license has 5 to 8 lines
+    // a GAMS license has 8 lines
     return (licenseLines.size() == 8) ? licenseLines : QStringList();
 }
 
@@ -407,7 +409,8 @@ QString GamsLicenseInfo::licenseDirectory()
         return fi.dir().absolutePath();
     }
     GamsLicenseInfo licenseInfo;
-    return licenseInfo.gamsDataLocations().constFirst();
+    auto locations = licenseInfo.gamsDataLocations();
+    return locations.count() ? locations.constFirst() : CommonPaths::systemDir();
 }
 
 QString GamsLicenseInfo::licenseLocation()
@@ -415,7 +418,9 @@ QString GamsLicenseInfo::licenseLocation()
     auto liceFile = gamsConfigYamlLicenseLocation();
     if (liceFile.isEmpty()) {
         GamsLicenseInfo licenseInfo;
-        liceFile = licenseInfo.gamsDataLocations().constFirst() + "/" + CommonPaths::licenseFile();
+        auto locations = licenseInfo.gamsDataLocations();
+        liceFile = locations.count() ? licenseInfo.gamsDataLocations().constFirst() + "/" + CommonPaths::licenseFile()
+                                     : CommonPaths::systemDir() + "/" + CommonPaths::licenseFile();
     }
     return liceFile;
 }

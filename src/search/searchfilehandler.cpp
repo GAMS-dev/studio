@@ -37,16 +37,21 @@ FileMeta* SearchFileHandler::fileMeta(FileId fileId)
     return mMain->fileRepo()->fileMeta(fileId);
 }
 
-QSet<FileMeta *> SearchFileHandler::fileMetas()
+QSet<FileMeta*> SearchFileHandler::fileMetas()
 {
-    QList<FileMeta*> fileMetas = mMain->fileRepo()->fileMetas();
-    return QSet<FileMeta*>(fileMetas.begin(), fileMetas.end());
+    QSet<FileMeta*> files;
+    auto projects = mMain->projectRepo()->projects();
+    for (auto* project : std::as_const(projects)) {
+        for (auto* file : project->listFiles()) {
+            files << file->file();
+        }
+    }
+    return files;
 }
 
 QSet<FileMeta*> SearchFileHandler::openFiles()
 {
-    auto openFiles = mMain->fileRepo()->openFiles();
-    return QSet<FileMeta*>(openFiles.begin(), openFiles.end());
+    return mMain->openedFileMetas();
 }
 
 PExFileNode* SearchFileHandler::fileNode(QWidget *widget)

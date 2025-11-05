@@ -244,15 +244,17 @@ QList<SearchFile> SearchDialog::getFilesByScope(const Parameters &parameters)
         }
         case Scope::OpenTabs: {
             auto metas =  mFileHandler->openFiles();
-            for (FileMeta* fm : std::as_const(metas))
+            for (FileMeta* fm : std::as_const(metas)) {
                 files << SearchFile(fm);
+            }
             mFileWorker->filterFiles(files, parameters, matched);
             break;
         }
         case Scope::AllFiles: {
             auto metas = mFileHandler->fileMetas();
-            for (FileMeta* fm : std::as_const(metas))
+            for (FileMeta* fm : std::as_const(metas)) {
                 files << SearchFile(fm);
+            }
             mFileWorker->filterFiles(files, parameters, matched);
             break;
         }
