@@ -1270,6 +1270,22 @@ const QStringList MainWindow::openedFiles()
     return res;
 }
 
+QSet<FileMeta *> MainWindow::openedFileMetas()
+{
+    QSet<FileMeta *> res;
+    QList<QWidget*> openTabsList = constOpenedEditors();
+    QSet<QWidget*> openTabs = QSet<QWidget*>(openTabsList.begin(), openTabsList.end());
+    for (FileMeta *meta : mFileMetaRepo.fileMetas()) {
+        for (QWidget *edit : meta->editors()) {
+            if (openTabs.contains(edit)) {
+                res << meta;
+                break;
+            }
+        }
+    }
+    return res;
+}
+
 void MainWindow::receiveAction(const QString &action)
 {
     if (action == "createNewFile")

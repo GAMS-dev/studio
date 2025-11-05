@@ -4,6 +4,7 @@ Version 1.22.5  *
 - Fixed an unsuccessful write to `gamsconfig.yaml`, e.g. when the permissions are not set properly.
 - Improved clipboard magic to install a GAMS license via the license dialog. Before, random text has been handled as a GAMS license, which produced unexpected error messages.
 - Removed clipboard magic on Studio startup.
+- Fixed search results for `Open Tabs` and `All Files`, i.e. unrelated files had be searched and listed.
 
 Version 1.22.4
 ==================

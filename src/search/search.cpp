@@ -109,7 +109,6 @@ void Search::runSearch(const QList<SearchFile> &files)
         return;
     }
 
-    mSearchDialog->setSearchedFiles(files.count());
     mSearchDialog->setSearchStatus(Search::Searching);
 
     QList<SearchFile> unmodified;
@@ -135,6 +134,7 @@ void Search::runSearch(const QList<SearchFile> &files)
             unmodified << sf;
         }
     }
+    mSearchDialog->setSearchedFiles(modified.count() + unmodified.count());
 
     // process modified files before the parallel part starts
     for (const SearchFile &sf : std::as_const(modified))
