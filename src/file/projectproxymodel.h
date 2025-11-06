@@ -37,7 +37,6 @@ public:
     explicit ProjectProxyModel(QObject *parent = nullptr);
 
     void setSourceModel(QAbstractItemModel *sourceModel);
-    QModelIndex rootModelIndex() const;
     QModelIndex current();
     QModelIndex findProject(QModelIndex ind, bool *locked);
     QList<NodeId> selectedIds() const;
@@ -45,13 +44,13 @@ public:
     QModelIndex asIndex(const NodeId &id) const;
     void focusProject(PExProjectNode* project);
     PExProjectNode *focussedProject() const;
+    NodeId nodeId(const QModelIndex &ind) const;
 
 signals:
 
 protected:
     friend class ProjectRepo;
 
-    NodeId nodeId(const QModelIndex &ind) const;
     PExAbstractNode* node(const QModelIndex& index) const;
     bool isSelected(const QModelIndex& ind) const;
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);

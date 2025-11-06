@@ -324,6 +324,7 @@ void FileMetaRepo::fileChanged(const QString &path)
         QTimer::singleShot(100, this, &FileMetaRepo::reviewRemoved);
     } else {
         // changedExternally
+        file->setTimestamp(QDateTime::currentDateTime());
         watch(file); // sometimes the watcher looses the entry
         if (file->compare(path)) {
             FileEvent e(file->id(), FileEventKind::changedExtern);

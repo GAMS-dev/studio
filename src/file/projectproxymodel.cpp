@@ -36,11 +36,6 @@ void ProjectProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     if (!mSourceModel) FATAL() << "Incompatible source model, ProjectTreeModel required.";
 }
 
-QModelIndex ProjectProxyModel::rootModelIndex() const
-{
-    return mapFromSource(mSourceModel->rootModelIndex());
-}
-
 QModelIndex ProjectProxyModel::current()
 {
     return mapFromSource(mSourceModel->current());
@@ -164,23 +159,23 @@ const QList<QModelIndex> ProjectProxyModel::popAddProjects()
 
 bool ProjectProxyModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
 {
-    if (!mFocusProject) return true;
-    if (source_parent != mSourceModel->rootModelIndex()) return true; // allow all non-projects
-    // apply filter to projects
-    QModelIndex proIndex = mSourceModel->index(source_row, 0, source_parent);
-    PExAbstractNode *node = mSourceModel->node(proIndex);
+    if (!mFocusProject)
+        return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
+
+    QModelIndex nodeIndex = sourceModel()->index(source_row, 0, source_parent);
+    PExAbstractNode *node = mSourceModel->node(nodeIndex);
     if (!node) {
         DEB() << "No node assigned to this model index";
-        return true;
+        return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
     }
-    if (node == mFocusProject) return true;
+    PExProjectNode *project = node->assignedProject();
+    if (!project) {
+        DEB() << "No project assigned to node " << node->name(NameModifier::withNameExt);
+        return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
+    }
+    if (node == mFocusProject || project == mFocusProject || project->type() > PExProjectNode::tCommon)
+        return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
 
-    PExProjectNode *project = node->toProject();
-    if (!node) {
-        DEB() << "No project assigned to this model index";
-        return true;
-    }
-    if (project->type() > PExProjectNode::tCommon) return true;
     return false;
 }
 

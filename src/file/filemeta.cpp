@@ -61,6 +61,9 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, const FileId &id, const QString &loca
     connect(&mReloadTimer, &QTimer::timeout, this, &FileMeta::reload);
     mDirtyLinesUpdater.setSingleShot(true);
     connect(&mDirtyLinesUpdater, &QTimer::timeout, this, &FileMeta::updateMarks);
+    QFileInfo fi(location);
+    if (fi.exists())
+        mTimestamp = fi.lastModified();
 }
 
 void FileMeta::setLocation(QString location)
@@ -985,6 +988,8 @@ bool FileMeta::save(const QString &newLocation)
             mFileRepo->watch(this);
         });
     }
+    if (res)
+        mTimestamp = QDateTime::currentDateTime();
     return res;
 }
 
@@ -1290,6 +1295,16 @@ QTextDocument *FileMeta::document() const
     return mDocument;
 }
 
+QDateTime FileMeta::timestamp() const
+{
+    return mTimestamp;
+}
+
+void FileMeta::setTimestamp(const QDateTime &timestamp)
+{
+    mTimestamp = timestamp;
+}
+
 void FileMeta::setEncoding(const QString &encoding)
 {
     mEncoding = encoding;
@@ -1510,6 +1525,9 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
     ViewHelper::setLocation(res, location());
     addEditor(res);
     res->setFont(font);
+    QFileInfo fi(mLocation);
+    if (fi.exists())
+        mTimestamp = fi.lastModified();
     DEB() << "Added editor " << mEditors.count() << " to " << mLocation;
     return res;
 }

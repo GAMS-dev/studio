@@ -33,6 +33,7 @@ public:
     explicit ProjectTreeView(QWidget *parent = nullptr);
     static const QString ItemModelDataType;
     void fixFocus(bool delay = false);
+    void restoreExpansion(const QModelIndex &index = QModelIndex());
 
 signals:
     void dropFiles(QModelIndex idx, QStringList files, QList<gams::studio::NodeId> knownIds, Qt::DropAction,
@@ -58,7 +59,7 @@ private:
     QItemSelection mSelectionBeforeDrag;
     bool mHasRunBlocker = false;
     bool mDelayUpdate = false;
-
+    QSet<NodeId> mExpandedNodes;
 
 };
 

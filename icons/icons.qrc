@@ -118,6 +118,17 @@
         <file alias="search-off">solid/search-off.svg</file>
         <file alias="search-plus">solid/search-plus.svg</file>
         <file alias="show">solid/angle-double-down.svg</file>
+        <file alias="sort-n">solid/sort-n.svg</file>
+        <file alias="sort-n-up">solid/sort-n-up.svg</file>
+        <file alias="sort-n-dn">solid/sort-n-dn.svg</file>
+        <file alias="sort-t">solid/sort-t.svg</file>
+        <file alias="sort-t-up">solid/sort-t-up.svg</file>
+        <file alias="sort-t-dn">solid/sort-t-dn.svg</file>
+        <file alias="sort-u">solid/sort-u.svg</file>
+        <file alias="sort-u-up">solid/sort-u-up.svg</file>
+        <file alias="sort-u-dn">solid/sort-u-dn.svg</file>
+        <file alias="sort-x-up">solid/sort-x-up.svg</file>
+        <file alias="sort-x-dn">solid/sort-x-dn.svg</file>
         <file alias="split-h">solid/split-h.svg</file>
         <file alias="split-v">solid/split-v.svg</file>
         <file alias="step">solid/step.svg</file>

@@ -305,6 +305,9 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEncodings, scSys, {"encodings"}, "");
     safelyAdd(res, skProjects, scSys, {"projects"}, QJsonArray());
     safelyAdd(res, skCurrentFocusProject, scSys, {"currentFocusProject"}, -1);
+    safelyAdd(res, skShowProjectFilter, scSys, {"showProjectFilter"}, true);
+    safelyAdd(res, skProjectFilter, scSys, {"projectFilter"}, "");
+    safelyAdd(res, skProjectSort, scSys, {"projectSort"}, 0);
     safelyAdd(res, skCurrentFileOpenFilter, scSys, {"currentFileOpenFilter"}, "");
     safelyAdd(res, skTabs, scSys, {"tabs"}, QJsonObject());
     safelyAdd(res, skBookmarks, scSys, {"fileBookmarks"}, QJsonArray());

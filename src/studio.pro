@@ -82,12 +82,6 @@ SOURCES += \
     connect/schemadefinitionmodel.cpp \
     connect/schemalistmodel.cpp \
     connect/treecellresizer.cpp \
-    file/gprimporter.cpp \
-    gamscom/continuouslinedata.cpp \
-    gamscom/debugwidget.cpp \
-    gamscom/pincontrol.cpp \
-    gamscom/profiler.cpp \
-    gamscom/server.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
     editors/chunktextmapper.cpp \
@@ -119,6 +113,7 @@ SOURCES += \
     file/filemeta.cpp \
     file/filemetarepo.cpp \
     file/filetype.cpp \
+    file/gprimporter.cpp \
     file/pathrequest.cpp \
     file/pathselect.cpp \
     file/pexabstractnode.cpp \
@@ -127,6 +122,7 @@ SOURCES += \
     file/pexlognode.cpp \
     file/projectcontextmenu.cpp \
     file/projectedit.cpp \
+    file/projectfilterhandler.cpp \
     file/projectproxymodel.cpp \
     file/projectrepo.cpp \
     file/projecttreemodel.cpp \
@@ -138,6 +134,11 @@ SOURCES += \
     filesystemmodel.cpp \
     filesystemwidget.cpp \
     filterlineedit.cpp \
+    gamscom/continuouslinedata.cpp \
+    gamscom/debugwidget.cpp \
+    gamscom/pincontrol.cpp \
+    gamscom/profiler.cpp \
+    gamscom/server.cpp \
     gdxdiffdialog/filepathlineedit.cpp \
     gdxdiffdialog/gdxdiffdialog.cpp \
     gdxdiffdialog/gdxdiffprocess.cpp \
@@ -318,12 +319,6 @@ HEADERS += \
     connect/schemadefinitionmodel.h \
     connect/schemalistmodel.h \
     connect/treecellresizer.h \
-    file/gprimporter.h \
-    gamscom/continuouslinedata.h \
-    gamscom/debugwidget.h \
-    gamscom/pincontrol.h \
-    gamscom/profiler.h \
-    gamscom/server.h \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
     editors/abstracttextmapper.h \
@@ -357,6 +352,7 @@ HEADERS += \
     file/filemeta.h \
     file/filemetarepo.h \
     file/filetype.h \
+    file/gprimporter.h \
     file/pathrequest.h \
     file/pathselect.h \
     file/pexabstractnode.h \
@@ -365,6 +361,7 @@ HEADERS += \
     file/pexlognode.h \
     file/projectcontextmenu.h \
     file/projectedit.h \
+    file/projectfilterhandler.h \
     file/projectproxymodel.h \
     file/projectrepo.h \
     file/projecttreemodel.h \
@@ -376,6 +373,11 @@ HEADERS += \
     filesystemmodel.h \
     filesystemwidget.h \
     filterlineedit.h \
+    gamscom/continuouslinedata.h \
+    gamscom/debugwidget.h \
+    gamscom/pincontrol.h \
+    gamscom/profiler.h \
+    gamscom/server.h \
     gdxdiffdialog/filepathlineedit.h \
     gdxdiffdialog/gdxdiffdialog.h \
     gdxdiffdialog/gdxdiffprocess.h \
@@ -538,7 +540,6 @@ HEADERS += \
 FORMS += \
     confirmdialog.ui \
     connect/connecteditor.ui \
-    gamscom/debugwidget.ui \
     encodingsdialog.ui \
     engine/efieditor.ui \
     engine/enginestartdialog.ui \
@@ -547,6 +548,7 @@ FORMS += \
     file/pathselect.ui \
     file/projectedit.ui \
     filesystemwidget.ui \
+    gamscom/debugwidget.ui \
     gdxdiffdialog/gdxdiffdialog.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/exportdialog.ui \

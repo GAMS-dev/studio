@@ -32,6 +32,14 @@ const QString ProjectTreeView::ItemModelDataType = "application/x-qabstractitemm
 ProjectTreeView::ProjectTreeView(QWidget *parent) : QTreeView(parent)
 {
     setDragDropMode(DragDrop);
+    connect(this, &ProjectTreeView::expanded, this, [this](const QModelIndex &index) {
+        NodeId nodeId = index.data(ProjectTreeModel::NodeIdRole).toInt();
+        mExpandedNodes.insert(nodeId);
+    });
+    connect(this, &ProjectTreeView::collapsed, this, [this](const QModelIndex &index) {
+        NodeId nodeId = index.data(ProjectTreeModel::NodeIdRole).toInt();
+        mExpandedNodes.remove(nodeId);
+    });
 }
 
 void ProjectTreeView::focusOutEvent(QFocusEvent *event)
@@ -54,6 +62,19 @@ void ProjectTreeView::fixFocus(bool delay)
     QModelIndex mi = static_cast<ProjectProxyModel*>(model())->current();
     if (mi.isValid() && currentIndex() != mi)
         setCurrentIndex(mi);
+}
+
+void gams::studio::ProjectTreeView::restoreExpansion(const QModelIndex &index)
+{
+    NodeId nodeId = index.data(ProjectTreeModel::NodeIdRole).toInt();
+    if (mExpandedNodes.contains(nodeId))
+        expand(index);
+    QModelIndex child = model()->index(0, 0, index);
+    int i = 0;
+    while (child.isValid()) {
+        restoreExpansion(child);
+        child = child.sibling(++i, 0);
+    }
 }
 
 void ProjectTreeView::startDrag(Qt::DropActions supportedActions)

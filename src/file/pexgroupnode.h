@@ -68,6 +68,7 @@ public:
     const QVector<PExFileNode *> listFiles() const;
     void moveChildNode(int from, int to);
     const QList<PExAbstractNode*> &childNodes() const { return mChildNodes; }
+    QDateTime timestamp() const override;
 
 public slots:
     void hasFile(const QString &fName, bool &exists);
@@ -99,6 +100,9 @@ public:
     QIcon icon(QIcon::Mode mode = QIcon::Normal, int alpha = 100) override;
     QString name(NameModifier mod = NameModifier::raw) const override;
     void setName(const QString& name) override;
+    QDateTime timestamp() const override;
+    void setTimestamp(const QDateTime &timestamp);
+
     bool hasLogNode() const;
     PExLogNode* logNode();
     FileMeta *mainFile() const;
@@ -115,6 +119,7 @@ public:
     void setProjectEditFileMeta(FileMeta *prOptMeta);
     void unlinkProjectEditFileMeta();
     QString mainModelName(bool stripped = true) const;
+
     QString tooltip() override;
     QString errorText(int lstLine) override;
     void clearErrorTexts();
@@ -212,8 +217,7 @@ protected:
     friend class PExLogNode;
     friend class PExFileNode;
 
-    PExProjectNode(const QString &filePath, const QString &basePath,
-                   FileMeta *mainFileMeta, const QString &workDir, Type type);
+    PExProjectNode(const QString &filePath, const QString &basePath, FileMeta *mainFileMeta, const QString &workDir, Type type);
     void setFileName(const QString &newProjectFile);
     void errorTexts(const QVector<int> &lstLines, QStringList &result);
     void setLogNode(PExLogNode* logNode);
@@ -227,6 +231,7 @@ private:
     QString mWorkDir;
     QString mNameExt;
     Type mType = tCommon;
+    QDateTime mTimestamp;
     QScopedPointer<AbstractProcess> mGamsProcess;
     QString mEngineJobToken;
     QTimer mUpdateEditsTimer;

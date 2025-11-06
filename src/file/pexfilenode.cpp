@@ -81,6 +81,11 @@ FileMeta *PExFileNode::file() const
     return mFileMeta;
 }
 
+QDateTime PExFileNode::timestamp() const
+{
+    return mFileMeta->timestamp();
+}
+
 void PExFileNode::replaceFile(FileMeta *fileMeta)
 {
     if (mFileMeta != fileMeta) {
@@ -97,7 +102,10 @@ QString PExFileNode::location() const
 QString PExFileNode::tooltip()
 {
     QString tip = QDir::toNativeSeparators(location());
-    if (!file()->exists(true)) tip += "\n--missing--";
+    if (!file()->exists(true))
+        tip += "\n--missing--";
+    else
+        tip += "\n  - modified: " + QLocale::system().toString(timestamp(), QLocale::ShortFormat);
     if (!debugMode())
         return tip;
     tip += "\nNodeId: "+QString::number(id());

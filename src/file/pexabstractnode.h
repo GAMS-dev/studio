@@ -77,6 +77,7 @@ public:
     virtual QString tooltip()=0;
     const QString &nameExt() const;
     virtual void setNameExt(const QString &newNameExt);
+    virtual QDateTime timestamp() const = 0;
 
     const PExRootNode *toRoot() const;
     const PExGroupNode* toGroup() const;

@@ -67,6 +67,7 @@ class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
 class NavigatorLineEdit;
+class ProjectFilterHandler;
 
 namespace search {
 class SearchDialog;
@@ -466,12 +467,12 @@ private slots:
     void on_actionStepDebugger_triggered();
 
     void updateSystemLogTab(bool focus);
-    void on_tbProjectSettings_clicked();
+    void on_tbProjectFilter_clicked();
     void cleanGeneratedProjectFiles(gams::studio::NodeId projId, const QString &workspace);
     void on_actionShow_Profiler_toggled(bool showProfiler);
     void updateProfilerAction();
-
     void on_actionImport_GPR_project_triggered();
+    void on_projectSort_clicked();
 
 private:
     void deleteLogFiles(const QString &pattern, const QString &workspace);
@@ -527,6 +528,7 @@ private:
     void checkSslLibrary();
     QString readGucValue(const QString &key);
     void initCompleterActions();
+    void updateProjectSortIcon();
 
     void checkForUpdates(const QString &text);
     QDate nextUpdateCheck();
@@ -568,6 +570,7 @@ private:
     HistoryData mHistory;
     QScopedPointer<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
+    ProjectFilterHandler *mProjectFilterHandler = nullptr;
     MainTabContextMenu mMainTabContextMenu;
     LogTabContextMenu mLogTabContextMenu;
     NavigatorLineEdit* mNavigatorInput = nullptr;

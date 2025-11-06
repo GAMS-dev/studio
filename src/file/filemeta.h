@@ -64,6 +64,7 @@ public:
     QString name(NameModifier mod = NameModifier::raw);
     FontGroup fontGroup(bool forcedAsTextEdit = false);
     QTextDocument* document() const;
+    QDateTime timestamp() const;
 
     QString encoding() {return mEncoding; }
     void setEncoding(const QString &encoding);
@@ -156,6 +157,7 @@ private:
     FileMeta(FileMetaRepo* fileRepo, const FileId &id, const QString &location, FileType *knownType = nullptr);
     QList<QPoint> getEditPositions();
     void setEditPositions(const QList<QPoint> &edPositions);
+    void setTimestamp(const QDateTime &timestamp);
     bool checkActivelySavedAndReset();
     void updateEditsCompleter();
     void linkDocument(QTextDocument *doc = nullptr);
@@ -173,6 +175,7 @@ private:
     FileMetaRepo* mFileRepo;
     QString mLocation;
     QString mName;
+    QDateTime mTimestamp;
     Data mData;
     bool mAutoReload = false;
     bool mActivelySaved = false;

@@ -212,13 +212,23 @@ void PExGroupNode::moveChildNode(int from, int to)
     mChildNodes.move(from, to);
 }
 
+QDateTime PExGroupNode::timestamp() const
+{
+    QDateTime res;
+    for (PExAbstractNode *node : mChildNodes) {
+        QDateTime dTime = node->timestamp();
+        if (res < dTime) res = dTime;
+    }
+    return res;
+}
+
 void PExGroupNode::hasFile(const QString &fName, bool &exists)
 {
     exists = findFile(fName);
 }
 
-PExProjectNode::PExProjectNode(const QString &filePath, const QString &basePath,
-                               FileMeta* mainFileMeta, const QString &workDir, Type type)
+PExProjectNode::PExProjectNode(const QString &filePath, const QString &basePath, FileMeta* mainFileMeta,
+                               const QString &workDir, Type type)
     : PExGroupNode(QFileInfo(filePath).completeBaseName(), basePath, NodeType::project)
     , mProjectFile(filePath)
     , mWorkDir(workDir)
@@ -302,6 +312,16 @@ void PExProjectNode::setName(const QString &name)
 {
     PExGroupNode::setName(name);
     updateLogName(name);
+}
+
+QDateTime PExProjectNode::timestamp() const
+{
+    return mTimestamp;
+}
+
+void PExProjectNode::setTimestamp(const QDateTime &timestamp)
+{
+    mTimestamp = timestamp;
 }
 
 void PExProjectNode::setNameExt(const QString &newNameExt)
@@ -1448,13 +1468,16 @@ QProcess::ProcessState PExProjectNode::gamsProcessState() const
 QString PExProjectNode::tooltip()
 {
     QString res(type() == tSmall ? "[internal]" : QDir::toNativeSeparators(fileName()));
-    if (mType <= PExProjectNode::tCommon)
-        res.append( "\n\nBase directory: " + QDir::toNativeSeparators(location()) +
-                    "\nWorking directory: " + QDir::toNativeSeparators(workDir()));
-    else if (mType == PExProjectNode::tSearch)
+    if (mType <= PExProjectNode::tCommon) {
+        if (mTimestamp.isValid())
+            res.append("\n  - last usage: " + QLocale::system().toString(mTimestamp, QLocale::ShortFormat));
+        res.append("\n\nBase directory: " + QDir::toNativeSeparators(location()) +
+                   "\nWorking directory: " + QDir::toNativeSeparators(workDir()));
+    } else if (mType == PExProjectNode::tSearch) {
         res.append( "\n\nResults from searching in\n" + QDir::toNativeSeparators(location()));
-    else
+    } else {
         res.append( "\n\nContaining special GAMS system files");
+    }
     if (mainFile()) res.append("\nMain GMS file: ").append(mainFile()->name());
     if (!parameter("lst").isEmpty())
         res.append("\nLast output file: ").append(QFileInfo(parameter("lst")).fileName());

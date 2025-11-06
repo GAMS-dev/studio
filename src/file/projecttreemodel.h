@@ -39,6 +39,8 @@ public:
         IsProjectRole = Qt::UserRole + 2,
         NameExtRole = Qt::UserRole + 3,
         IsGamsSys = Qt::UserRole + 4,
+        SuffixRole = Qt::UserRole + 6,
+        UsageRole = Qt::UserRole + 5,
     };
 
 public:
@@ -46,12 +48,11 @@ public:
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const override;
     QModelIndex parent(const QModelIndex &child) const override;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int rowCount(const QModelIndex &index = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &ind, int role = Qt::DisplayRole) const override;
 
     QModelIndex asIndex(const PExAbstractNode *entry) const;
-    QModelIndex rootModelIndex() const;
     PExRootNode *rootNode() const;
     bool removeRows(int row, int count, const QModelIndex &parent) override;
     void setDebugMode(bool debug);

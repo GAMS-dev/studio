@@ -23,7 +23,6 @@
 #include <QPrinter>
 #include <QPrintDialog>
 
-#include "file/treeitemdelegate.h"
 #include "mainwindow.h"
 #include "application.h"
 #include "gamscom/server.h"
@@ -62,7 +61,10 @@
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
 #include "fileeventhandler.h"
+#include "file/treeitemdelegate.h"
 #include "file/pathrequest.h"
+#include "file/pathselect.h"
+#include "file/projectfilterhandler.h"
 #include "engine/enginestartdialog.h"
 #include "neos/neosstartdialog.h"
 #include "option/gamsuserconfig.h"
@@ -73,7 +75,6 @@
 #include "gamscom/continuouslinedata.h"
 #include "headerviewproxy.h"
 #include "pinviewwidget.h"
-#include "file/pathselect.h"
 #include "msgbox.h"
 #include "encoding.h"
 #include "file/gprimporter.h"
@@ -192,7 +193,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Project View Setup
     int iconSize = fontMetrics().lineSpacing() + 1;
     ui->projectView->setModel(mProjectRepo.proxyModel());
-    ui->projectView->setRootIndex(mProjectRepo.proxyModel()->rootModelIndex());
+    ui->projectView->setRootIndex(QModelIndex());
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize, iconSize));
@@ -243,6 +244,8 @@ MainWindow::MainWindow(QWidget *parent)
         mProjectContextMenu.exec(ui->cbFocusProject->mapToGlobal(pos));
     });
     ui->cbFocusProject->setItemDelegate(new TreeItemDelegate(this));
+    mProjectFilterHandler = new ProjectFilterHandler(mProjectRepo.proxyModel(), ui->projectView);
+    connect(ui->projectFilter, &FilterLineEdit::regExpChanged, mProjectFilterHandler, &ProjectFilterHandler::regExpChanged);
 
     mCodecGroupReload = new QActionGroup(this);
     connect(mCodecGroupReload, &QActionGroup::triggered, this, &MainWindow::codecReload);
@@ -590,6 +593,7 @@ MainWindow::~MainWindow()
     delete mSearchDialog;
     delete mNavigatorDialog;
     delete mNavigatorInput;
+    delete mProjectFilterHandler;
     FileType::clear();
     HeaderViewProxy::deleteInstance();
 }
@@ -855,7 +859,7 @@ void MainWindow::initIcons()
     ui->actionChangelog->setIcon(Theme::icon(":/%1/new"));
     ui->actionGoForward->setIcon(Theme::icon(":/%1/forward"));
     ui->actionGoBack->setIcon(Theme::icon(":/%1/backward"));
-    ui->tbProjectSettings->setIcon(Theme::icon(":/%1/cog"));
+    ui->tbProjectFilter->setIcon(Theme::icon(":/%1/hide"));
 }
 
 void MainWindow::initFonts()
@@ -2301,6 +2305,7 @@ void MainWindow::activeMainTabChanged(int index)
     if  (index >= 0) updateTabIcon(nullptr, index);
     mCurrentMainTab = index;
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
+    mProjectRepo.proxyModel()->invalidate();
 
     if (editWidget != mRecent.editor())
         updateRecentEdit(mRecent.editor(), editWidget);
@@ -3311,6 +3316,9 @@ void MainWindow::updateAndSaveSettings()
     if (PExProjectNode *project = mProjectRepo.focussedProject())
         focProId = int(project->id());
     settings->setInt(skCurrentFocusProject, focProId);
+    settings->setBool(skShowProjectFilter, ui->tbProjectFilter->isChecked());
+    settings->setString(skProjectFilter, ui->projectFilter->text());
+    settings->setInt(skProjectSort, mProjectFilterHandler->lastSortType());
     settings->setString(skCurrentFileOpenFilter, mCurrentFileOpenFilter);
 
     // Tabs
@@ -3434,6 +3442,11 @@ void MainWindow::restoreFromSettings()
 
     Theme::instance()->readUserThemes(settings->toList(SettingsKey::skUserThemes));
     Encoding::setDefaultEncoding(settings->toString(skDefaultEncoding));
+    ui->tbProjectFilter->setChecked(settings->toBool(skShowProjectFilter));
+    on_tbProjectFilter_clicked();
+    ui->projectFilter->setText(settings->toString(skProjectFilter));
+    mProjectFilterHandler->setSortCombined(ProjectFilterHandler::SortType(settings->toInt(skProjectSort)));
+    updateProjectSortIcon();
 }
 
 void MainWindow::openProject(const QString &gspFile)
@@ -3688,8 +3701,6 @@ void MainWindow::updateProjectList()
     }
     if (!found)
         ui->cbFocusProject->setCurrentIndex(0);
-    bool hasOptions = focusProject && focusProject->type() < PExProjectNode::tSearch;
-    ui->tbProjectSettings->setEnabled(hasOptions);
     ui->menuFocus_Project->addActions(mActFocusProject->actions());
 }
 
@@ -4625,10 +4636,12 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
 void MainWindow::execution(PExProjectNode *project)
 {
     project->updateProfilerForOpenNodes();
+    project->setTimestamp(QDateTime::currentDateTime());
     qApp->processEvents();
     project->process()->execute();
     ui->toolBar->repaint();
 
+    mProjectFilterHandler->invalidate();
     ui->dockProcessLog->raise();
 }
 
@@ -5343,14 +5356,11 @@ void MainWindow::ensureSizeAndInScreen()
     if (appGeo != geometry()) setGeometry(appGeo);
 }
 
-void MainWindow::on_tbProjectSettings_clicked()
+void MainWindow::on_tbProjectFilter_clicked()
 {
-    int i = ui->cbFocusProject->currentData().toInt();
-    if (i < 0) return;
-    PExProjectNode *project = mProjectRepo.findProject(NodeId(i));
-    if (!project) return;
-    FileMeta *meta = mFileMetaRepo.findOrCreateFileMeta(project->fileName(), &FileType::from(FileKind::Gsp));
-    openFile(meta, true, project);
+    ui->projectFilterWidget->setVisible(ui->tbProjectFilter->isChecked());
+    ui->tbProjectFilter->setToolTip(QString("%1 Project Filter").arg(ui->tbProjectFilter->isChecked() ? "Hide" : "Show"));
+    ui->tbProjectFilter->setIcon(Theme::icon(ui->tbProjectFilter->isChecked() ? ":/%1/hide" : ":/%1/show"));
 }
 
 void MainWindow::cleanGeneratedProjectFiles(NodeId projId, const QString &workspace)
@@ -5594,10 +5604,7 @@ void MainWindow::focusProject(PExProjectNode *project)
 
     // update combobox
     ui->cbFocusProject->setCurrentIndex(index);
-    bool hasOptions = project && project->type() < PExProjectNode::tSearch;
-    ui->tbProjectSettings->setEnabled(hasOptions);
     ui->cbFocusProject->setToolTip(project ? project->tooltip() : "Selector to focus on a single project");
-    ui->tbProjectSettings->setToolTip(hasOptions ? "Opens the project options" : "No project focussed");
 
     if (!project) {
         for (int i = 1; i < ui->mainTabs->count(); ++i)
@@ -7414,6 +7421,75 @@ void MainWindow::on_actionImport_GPR_project_triggered()
     openFilesDialog(ogImportGpr);
 }
 
+void MainWindow::on_projectSort_clicked()
+{
+    QMenu menu;
+    menu.setToolTipsVisible(true);
+    menu.addAction(Theme::icon(":/%1/sort-n"), "Name", this, [this]() {
+        mProjectFilterHandler->setSortKey(ProjectFilterHandler::sortNameAsc);
+        updateProjectSortIcon();
+    });
+    menu.actions().last()->setToolTip("Sort by file name");
+
+    menu.addAction(Theme::icon(":/%1/sort-t"), "Type", this, [this]() {
+        mProjectFilterHandler->setSortKey(ProjectFilterHandler::sortSuffixAsc);
+        updateProjectSortIcon();
+    });
+    menu.actions().last()->setToolTip("Sort by file type");
+
+    menu.addAction(Theme::icon(":/%1/sort-u"), "Usage", this, [this]() {
+        mProjectFilterHandler->setSortKey(ProjectFilterHandler::sortUseAsc);
+        updateProjectSortIcon();
+    });
+    menu.actions().last()->setToolTip("Sort by project execution / file modification");
+
+    menu.addSeparator();
+
+    menu.addAction(Theme::icon(":/%1/sort-x-up"), "Ascending", this, [this]() {
+        mProjectFilterHandler->setSortOrder(Qt::AscendingOrder);
+        updateProjectSortIcon();
+    });
+
+    menu.addAction(Theme::icon(":/%1/sort-x-dn"), "Descending", this, [this]() {
+        mProjectFilterHandler->setSortOrder(Qt::DescendingOrder);
+        updateProjectSortIcon();
+    });
+
+    QActionGroup keyGroup(&menu);
+    keyGroup.setExclusive(true);
+    QActionGroup orderGroup(&menu);
+    orderGroup.setExclusive(true);
+    QActionGroup *currentGroup = &keyGroup;
+    int sepIndex = menu.actions().count();
+    for (int i = 0; i < menu.actions().count(); ++i) {
+        QAction *act = menu.actions().at(i);
+        if (act->isSeparator()) {
+            currentGroup = &orderGroup;
+            sepIndex = i + 1;
+            continue;
+        }
+        act->setCheckable(true);
+        currentGroup->addAction(act);
+        if (i == mProjectFilterHandler->sortKey() || i - sepIndex == mProjectFilterHandler->sortOrder())
+            act->setChecked(true);
+    }
+    menu.exec(ui->projectFilterWidget->mapToGlobal(ui->projectSort->pos()) + QPoint(0, ui->projectSort->height()));
+    ui->projectSort->setChecked(false);
+}
+
+void MainWindow::updateProjectSortIcon()
+{
+    const QStringList iconKey {"-n", "-t", "-u"};
+    const QStringList ttKey {"file Name", "file Type", "project execution / file modification"};
+    const QStringList ttOrder {"ascending", "descending"};
+    QString iconName(":/%1/sort");
+    iconName += iconKey.at(mProjectFilterHandler->sortKey());
+    iconName += (mProjectFilterHandler->sortOrder() == Qt::AscendingOrder ? "-up" : "-dn");
+    ui->projectSort->setIcon(Theme::icon(iconName));
+    QString tt("Sorting by  %1, %2");
+    tt = tt.arg(ttKey.at(mProjectFilterHandler->sortKey()), ttOrder.at(mProjectFilterHandler->sortOrder()));
+    ui->projectSort->setToolTip(tt);
+}
 
 }
 }

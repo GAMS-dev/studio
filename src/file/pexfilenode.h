@@ -63,6 +63,7 @@ public:
     bool isModified() const;
     QTextDocument* document() const;
     FileMeta* file() const;
+    QDateTime timestamp() const override;
     QString location() const;
     QString tooltip() override;
     virtual NodeId projectId() const;

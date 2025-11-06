@@ -46,6 +46,7 @@ const QString CFieldProject("project");
 const QString CFieldFile("file");
 const QString CFieldPf("pf");
 const QString CFieldProjectType("projectType");
+const QString CFieldTimestamp("timestamp");
 const QString CFieldPath("path");
 const QString CFieldWorkDir("workDir");
 const QString CFieldName("name");
@@ -65,6 +66,7 @@ ProjectRepo::ProjectRepo(QObject* parent)
 {
     addToIndex(mTreeModel->rootNode());
     mProxyModel = new ProjectProxyModel(this);
+    mProxyModel->setObjectName("ProjectTreeProxy");
     mProxyModel->setSourceModel(mTreeModel);
     mRunAnimateTimer.setInterval(250);
     runAnimateIcon(QIcon::Normal, 100);
@@ -386,6 +388,10 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile, bool doWa
     QVariantList subChildren = projectData.value(CFieldNodes).toList();
     if (!name.isEmpty() || !projectPath.isEmpty()) {
         if (PExProjectNode* project = createProject(gspFile, baseDir, mainFile, onExist_Project, workDir, type)) {
+            if (projectData.contains(CFieldTimestamp))
+                project->setTimestamp(projectData.value(CFieldTimestamp).toDateTime());
+            else
+                project->setTimestamp(QDateTime::currentDateTime());
             if (projectData.contains(CFieldPf)) {
                 QString pfFile = projectData.value(CFieldPf).toString();
                 if (!pfFile.isEmpty())
@@ -506,6 +512,8 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
     projectObject.insert(CFieldName, project->name());
     projectObject.insert(CFieldOptions, project->getRunParametersHistory());
     projectObject.insert(CFieldDynamicMainFile, project->dynamicMainFile());
+    if (project->timestamp().isValid())
+        projectObject.insert(CFieldTimestamp, project->timestamp());
     projectObject.insert(CFieldOwnBaseDir, project->ownBaseDir());
     if (!project->engineJobToken().isEmpty())
         projectObject.insert(CFieldEngineJobToken, project->engineJobToken());
@@ -759,8 +767,8 @@ void ProjectRepo::closeGroup(PExGroupNode* group)
 {
     if (group->childCount()) EXCEPT() << "Can't close project that isn't empty";
     if (mNodes.contains(group->id())) {
-        mTreeModel->removeChild(group);
         removeFromIndex(group);
+        mTreeModel->removeChild(group);
         group->deleteLater();
     }
 }
@@ -784,8 +792,8 @@ void ProjectRepo::closeNode(PExFileNode *node)
 
     // close actual file and remove repo node
     if (mNodes.contains(node->id())) {
-        mTreeModel->removeChild(node);
         removeFromIndex(node);
+        mTreeModel->removeChild(node);
     }
 
     // if this file is marked as main file remove reference
@@ -825,9 +833,9 @@ void ProjectRepo::sortChildNodes(PExGroupNode *group)
 
 void ProjectRepo::focusProject(PExProjectNode *project)
 {
-    storeExpansionState(mProxyModel->rootModelIndex());
+    storeExpansionState(QModelIndex());
     mProxyModel->focusProject(project);
-    restoreExpansionState(mProxyModel->rootModelIndex());
+    restoreExpansionState(QModelIndex());
 }
 
 PExProjectNode *ProjectRepo::focussedProject() const
