@@ -96,6 +96,7 @@ public:
     QString tabName(NameModifier mod = NameModifier::raw);
     bool isModified() const;
     bool save();
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 signals:
     void modificationChanged(bool modification);
@@ -128,6 +129,7 @@ private:
     void showDirDialog(const QString &title, QLineEdit *lineEdit, const QString &defaultDir);
     QStringList files(FileKind kind);
     void updateChanged(QComboBox *comboBox, const QStringList &data);
+    void saveIfChanged();
 
     Ui::ProjectEdit *ui;
     ProjectData *mSharedData;

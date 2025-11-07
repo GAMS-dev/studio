@@ -235,6 +235,10 @@ ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
+    ui->edName->installEventFilter(this);
+    ui->edWorkDir->installEventFilter(this);
+    ui->edBaseDir->installEventFilter(this);
+
     mBlockUpdate = true;
     mSharedData = sharedData;
 
@@ -299,6 +303,13 @@ bool ProjectEdit::save()
     emit saveProjects();
     updateState();
     return res;
+}
+
+bool ProjectEdit::eventFilter(QObject *watched, QEvent *event)
+{
+    if (event->type() == QEvent::FocusOut)
+        saveIfChanged();
+    return AbstractView::eventFilter(watched, event);
 }
 
 void ProjectEdit::showEvent(QShowEvent *event)
@@ -526,6 +537,16 @@ void ProjectEdit::updateChanged(QComboBox *comboBox, const QStringList &data)
     }
 }
 
+void ProjectEdit::saveIfChanged()
+{
+    bool valid =    !ui->edWorkDir->text().trimmed().isEmpty()
+                 && !ui->edBaseDir->text().trimmed().isEmpty()
+                 && QFile::exists(ui->edWorkDir->text().trimmed())
+                 && QFile::exists(ui->edBaseDir->text().trimmed());
+    if (mModified && valid)
+        save();
+}
+
 void ProjectEdit::showDirDialog(const QString &title, QLineEdit *lineEdit, const QString &defaultDir)
 {
     QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
@@ -533,10 +554,13 @@ void ProjectEdit::showDirDialog(const QString &title, QLineEdit *lineEdit, const
     if (!dir.exists()) path = defaultDir;
     QFileDialog *dialog = new QFileDialog(this, title, path);
     dialog->setFileMode(QFileDialog::Directory);
-    connect(dialog, &QFileDialog::accepted, this, [lineEdit, dialog]() {
+    connect(dialog, &QFileDialog::accepted, this, [lineEdit, dialog, this]() {
         if (dialog->selectedFiles().count() == 1) {
             QDir dir(dialog->selectedFiles().at(0).trimmed());
-            if (dir.exists()) lineEdit->setText(QDir::toNativeSeparators(dir.path()));
+            if (dir.exists()) {
+                lineEdit->setText(QDir::toNativeSeparators(dir.path()));
+                saveIfChanged();
+            }
         }
     });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
@@ -551,6 +575,7 @@ void ProjectEdit::on_cbMainFile_currentIndexChanged(int index)
     if (text != mSharedData->fieldData(ProjectData::mainFile))
         mSharedData->setFieldData(ProjectData::mainFile, text);
     updateState();
+    saveIfChanged();
 }
 
 void ProjectEdit::on_cbDynamicMainFile_toggled(bool checked)
@@ -559,6 +584,7 @@ void ProjectEdit::on_cbDynamicMainFile_toggled(bool checked)
     if (ui->cbDynamicMainFile->isChecked() != (mSharedData->fieldData(ProjectData::dynMain) == cOn))
         mSharedData->setFieldData(ProjectData::dynMain, ui->cbDynamicMainFile->isChecked() ? cOn : cOff);
     updateState();
+    saveIfChanged();
 }
 
 void ProjectEdit::on_cbOwnBaseDir_toggled(bool checked)
@@ -573,6 +599,7 @@ void ProjectEdit::on_cbOwnBaseDir_toggled(bool checked)
         ui->bBaseDir->setEnabled(ui->cbOwnBaseDir->isChecked());
     }
     updateState();
+    saveIfChanged();
 }
 
 void ProjectEdit::on_cbPfFile_currentIndexChanged(int index)
@@ -582,6 +609,7 @@ void ProjectEdit::on_cbPfFile_currentIndexChanged(int index)
     if (text != mSharedData->fieldData(ProjectData::pfFile))
         mSharedData->setFieldData(ProjectData::pfFile, text);
     updateState();
+    saveIfChanged();
 }
 
 
