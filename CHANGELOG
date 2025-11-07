@@ -1,14 +1,14 @@
-Version 1.23.0 *
+Version 1.23.0
 ==================
 - Added storing of the fold state for known source files.
 - Added keyboard navigation and selection to the tables of the model library explorer.
 - Added filter and search capability to the Project Explorer.
-- Added dynamic switching default working directory.
-- Added instant save to the project options as long as the paths for working directory and base directory exists.
+- Added switching of the default working directory when switching the project.
+- Added instant save to the project options as long as the paths for working directory and base directory exist.
 - Fix broken links to option document when pressing `F1` in solver option editor.
 - Improved connect editor workflow by linking agent and option name to corresponding entry in connect document with `F1` hotkey.
-- Upgraded Studio to Qt 6.10.0
 - Removed Windows 10 message box to disable the Help View to prevent crashes (Windows 10 reached its EOL).
+- Upgraded Studio to `Qt 6.10.0`.
 
 Version 1.22.5
 ==================
