@@ -87,7 +87,7 @@ void AbstractView::headerResetAll()
 {
     HeadersData::iterator it = mHeaders.begin();
     while (it != mHeaders.end()) {
-        it.key()->disconnect();
+        disconnect(it.key(), &QObject::destroyed, this, &AbstractView::headerUnregister);
         ++it;
     }
     mHeaders.clear();
