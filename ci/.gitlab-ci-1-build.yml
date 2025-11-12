@@ -4,10 +4,6 @@ build-deg:
   needs: [fetch-ci-scripts, quality-gate]
   variables:
     qtpath: /opt/Qt/${QT_VERSION}/bin
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
-    - if: $PF_WEI_DEBUG == "0"
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-deg]
@@ -28,10 +24,6 @@ build-dac:
   needs: [fetch-ci-scripts, quality-gate]
   variables:
     qtpath: /opt/Qt/${QT_VERSION}/bin
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
-    - if: $PF_WEI_DEBUG == "0"
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-dac]
@@ -55,10 +47,6 @@ build-leg:
     entrypoint: [""]   # prevent startup.sh
   variables:
     DOLLAR_GAMS: $$$$GAMS_DISTRIB
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
-    - if: $PF_WEI_DEBUG == "0"
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-leg]
@@ -81,10 +69,6 @@ build-wei:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-${QT_IMAGE_VERSION}:latest
     entrypoint: [""]
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
-    - if: $PF_WEI_DEBUG == "0"
   script:
     - $env:Path = "C:\Miniconda\Library\bin;C:\Miniconda\DLLs;" + $env:Path
     - $env:Path = "C:\Qt\Tools\icu\bin64;" + $env:PATH
@@ -104,33 +88,3 @@ build-wei:
     name: studio-wei
     expire_in: 2 hours
     paths: [build/*]
-
-build-wei-debug:
-  stage: build
-  tags: [windows]
-  needs: [fetch-ci-scripts, quality-gate]
-  variables:
-     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat
-  image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-${QT_IMAGE_VERSION}-dbg:latest
-  rules:
-    - if: $PF_WEI_DEBUG == "1"
-  script:
-    - $env:Path = "C:\Miniconda\Library\bin;C:\Miniconda\DLLs;" + $env:Path
-    - $env:Path = "C:\Qt\Tools\icu\bin64;" + $env:PATH
-    - !reference [.get-gams-wei]
-    - !reference [.gams-folder-wei]
-    - '& $cmd_vcvars'
-    - $data = 
-      "GAMS_DISTRIB=C:/Cache/gams-installs/$(Get-Content mygmsdir.tmp -Raw)",
-      'GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api',
-      'GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api'
-    - $data | out-file -encoding ascii gamsinclude.pri
-    - mkdir build-debug
-    - cd build-debug
-    - $env:PATH="C:\Qt\Tools\icu\bin64;$env:PATH"; & { qmake.exe ..\gams-studio.pro "CONFIG+=debug" }
-    - nmake.exe
-  artifacts:
-    name: studio-wei-debug
-    expire_in: 2 hours
-    paths: [build-debug/*]

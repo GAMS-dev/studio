@@ -6,8 +6,6 @@ deploy-cloudfront:
     entrypoint: [""]   # prevent startup.sh
   dependencies: [pack-deg, pack-dac, pack-leg, pack-wei]
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
     - if: $CI_COMMIT_TAG =~ /v\d+\.\d+\.\d+.*/
   script:
     - mkdir artifacts
@@ -23,8 +21,6 @@ deploy-github:
     entrypoint: [""]   # prevent startup.sh
   dependencies: [pack-deg, pack-dac, pack-leg, pack-wei]
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
     - if: $CI_COMMIT_TAG =~ /v\d+\.\d+\.\d+.*/
   script:
     - PATH="/opt/github-release:${PATH}"
@@ -40,10 +36,6 @@ deploy-qt:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/deployer:latest
     entrypoint: [""]   # prevent startup.sh
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
-    - if: $PF_WEI_DEBUG == "0"
   script:
     - chmod +x ci/qt-deploy.sh
     - ./ci/qt-deploy.sh
