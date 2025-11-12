@@ -4,10 +4,6 @@ pack-deg:
   variables:
     qtpath: /opt/Qt/${QT_VERSION}/bin
   needs: [build-deg]
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
-    - if: $PF_WEI_DEBUG == "0"
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
@@ -77,10 +73,6 @@ pack-dac:
   variables:
     qtpath: /opt/Qt/${QT_VERSION}/bin
   needs: [build-dac]
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
-    - if: $PF_WEI_DEBUG == "0"
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
@@ -151,10 +143,6 @@ pack-leg:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
   needs: [build-leg]
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
-    - if: $PF_WEI_DEBUG == "0"
   script:
   # create folder structure
   - mkdir -p appdir/usr/bin
@@ -196,10 +184,6 @@ pack-wei:
   variables:
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
     cmd_vcvars: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
-    - if: $PF_WEI_DEBUG == "0"
   script:
     - $env:Path = "C:\Qt\Tools\icu\bin64;" + $env:PATH
     - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
@@ -242,56 +226,4 @@ pack-wei:
     name: "GAMS_Studio-wei-x86_64"
     paths: ['GAMS_Studio-wei-x86_64.zip']
     expose_as: 'GAMS_Studio-wei-x86_64'
-    expire_in: 1 days
-
-pack-wei-debug:
-  stage: pack
-  tags: [windows]
-  image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-${QT_IMAGE_VERSION}-dbg:latest
-  needs: [build-wei-debug]
-  variables:
-    vcinsdir: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC
-    cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat
-  rules:
-    - if: $PF_WEI_DEBUG == "1"
-  script:
-    - $env:Path = "C:\Qt\Tools\icu\bin64;" + $env:PATH
-    - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
-    - $env:VCINSTALLDIR = "$vcinsdir"
-    - '& $cmd_vcvars'
-    # setup and fill studio directory
-    - mkdir studio
-    - cp build-debug/src/bin/* studio
-    - cp "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Redist/MSVC/14.44.35112/x64/Microsoft.VC143.CRT/*" "studio"
-    - cp "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Redist/MSVC/14.44.35112/vc_redist.x64.exe" "studio"
-    - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libcrypto-3-x64.*" "studio"
-    - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libssl-3-x64.*" "studio"
-    - cd studio
-    - mkdir -p support/doc/fonts
-    - cp ../fonts/*-License.txt support/doc/fonts
-    - windeployqt --debug --compiler-runtime --pdb --force studio.exe
-    - cp ../CHANGELOG "resources/Changelog"
-    # sign and verify studio
-    - |+
-      try {
-        $bytes = $([System.Convert]::FromBase64String($GAMS_COMODO_CERT))
-        Set-Content comodo_cert.p12 -Value $bytes -Encoding Byte
-        signtool sign /v /f comodo_cert.p12 /p $GAMS_COMODO_CERT_PASSWORD /t http://timestamp.comodoca.com studio.exe
-        signtool verify /v /pa studio.exe
-        rm comodo_cert.p12
-      } catch {
-        $_
-      } finally {
-        if (Test-Path -Path "comodo_cert.p12" -PathType Leaf) {
-          rm comodo_cert.p12
-        }
-      }
-    # zip studio directory... for MR artifact exposure
-    - cd ..
-    - C:\7zip\7z.exe a -tzip "GAMS_Studio-wei-debug-x86_64.zip" studio
-  artifacts:
-    name: "GAMS_Studio-wei-debug-x86_64"
-    paths: ['GAMS_Studio-wei-debug-x86_64.zip']
-    expose_as: 'GAMS_Studio-wei-debug-x86_64'
     expire_in: 1 days
