@@ -3,7 +3,7 @@ Closes #TICKETNUMBER
 **Please test the MR on**
 
 - [ ] Linux (@jparnjai @afust)
-- [ ] macOS (@jmonki)
+- [ ] macOS (@jmonki @afust)
 - [ ] Windows (@cwestphal @jmonki)
 - [ ] T.b.d. add the reporter and his platform to test the issue
 
