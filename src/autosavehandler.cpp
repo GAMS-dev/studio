@@ -125,12 +125,13 @@ void AutosaveHandler::saveChangedFiles()
         QString autosaveFile = filepath+"/"+mAutosavedFileMarker+node->name();
         if (node->isModified() && (node->file()->kind() == FileKind::Gms || node->file()->kind() == FileKind::Txt)) {
             QFile file(tempFile);
-            file.open(QFile::WriteOnly);
-            QTextStream out(&file);
-            out << node->document()->toPlainText();
-            out.flush();
-            file.close();
-            file.rename(autosaveFile);
+            if (file.open(QFile::WriteOnly)) {
+                QTextStream out(&file);
+                out << node->document()->toPlainText();
+                out.flush();
+                file.close();
+                file.rename(autosaveFile);
+            }
         } else if (QFileInfo::exists(autosaveFile)) {
             QFile::remove(autosaveFile);
         }

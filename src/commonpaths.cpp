@@ -94,7 +94,7 @@ void CommonPaths::setSystemDir(const QString &sysdir)
     SystemDir = MacOSPathFinder::systemDir();
 #else
     QString gamsPath;
-    const QString subPath = QString(QDir::separator()).append("..");
+    const QString subPath = "/..";
 
 #ifdef __unix__
     QFileInfo fileInfo(qgetenv("APPIMAGE"));

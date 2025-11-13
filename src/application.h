@@ -65,6 +65,11 @@ public:
     void init();
 
     ///
+    /// \brief Initialize the PATH environment variable
+    ///
+    void initEnvironment();
+
+    ///
     /// \brief Get the server name.
     /// \return Returns the server name.
     ///

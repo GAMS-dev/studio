@@ -111,7 +111,6 @@ MainWindow::MainWindow(QWidget *parent)
       mMiroDeployDialog(new miro::MiroDeployDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
-    initEnvironment();
     initFonts();
 
     ui->setupUi(this);
@@ -695,25 +694,6 @@ void MainWindow::initSettingsDialog()
         if (mSettingsDialog->miroSettingsEnabled())
             updateMiroEnabled();
     });
-}
-
-void MainWindow::initEnvironment()
-{
-    QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
-    QString gamsDir = QDir::toNativeSeparators(CommonPaths::systemDir());
-    QByteArray gamsArr = (gamsDir + QDir::listSeparator() + gamsDir + QDir::separator() + "gbin").toLatin1();
-
-    QByteArray curPath = qgetenv("PATH");
-    qputenv("PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
-
-#ifndef _WIN64
-    curPath = qgetenv("LD_LIBRARY_PATH");
-    qputenv("LD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
-#endif
-#ifdef __APPLE__
-    curPath = qgetenv("DYLD_LIBRARY_PATH");
-    qputenv("DYLD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
-#endif
 }
 
 void MainWindow::adjustFonts()

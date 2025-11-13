@@ -482,7 +482,6 @@ private:
     void initSettingsDialog();
     void initIcons();
     void initFonts();
-    void initEnvironment();
     void initNavigator();
     void adjustFonts();
     void processMainFileDynamics();
