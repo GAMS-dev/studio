@@ -562,10 +562,11 @@ bool FilterCompleterModel::test(int type, int flagPattern) const
 
 void FilterCompleterModel::setTypeFilter(int completerTypeFilter, int subType, bool needDot)
 {
+    beginFilterChange();
     mTypeFilter = completerTypeFilter;
     mSubType = subType;
     mNeedDot = needDot;
-    invalidateFilter();
+    endFilterChange(Direction::Rows);
 }
 
 bool FilterCompleterModel::lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const
