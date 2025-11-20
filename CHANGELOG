@@ -1,3 +1,8 @@
+Version 1.23.1
+==================
+- Fixed dragging schematic list and dictionary from definitions and dropping to the instructions in Connect Editor.
+- Improved view and edit experience with tooltip and different color scheme in Connect Editor.
+
 Version 1.23.0
 ==================
 - Added storing of the fold state for known source files.
