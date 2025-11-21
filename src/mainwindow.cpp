@@ -4572,17 +4572,17 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     FileMeta *runMeta = mFileMetaRepo.fileMeta(gmsFilePath);
     PExFileNode *runNode = project->findFile(runMeta);
     logNode->file()->setEncoding(runNode ? runNode->file()->encoding() : QString());
-    QString workDir = project->workDir();
+    QString workDirName = project->workDir();
+    QDir workDir(workDirName);
 
     // prepare the options and process and run it
     QList<option::OptionItem> itemList;
     itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     if (project->parameterFile()) {
-        QDir wDir(workDir);
 #ifdef _WIN64
-        itemList.prepend(option::OptionItem("parmFile", '"'+wDir.relativeFilePath(project->parameterFile()->location())+'"',-1,-1));
+        itemList.prepend(option::OptionItem("parmFile", '"'+workDir.relativeFilePath(project->parameterFile()->location())+'"',-1,-1));
 #else
-        itemList.prepend(option::OptionItem("parmFile", wDir.relativeFilePath(project->parameterFile()->location()),-1,-1));
+        itemList.prepend(option::OptionItem("parmFile", workDir.relativeFilePath(project->parameterFile()->location()),-1,-1));
 #endif
     }
     option::Option *opt = mGamsParameterEditor->getOptionTokenizer()->getOption();
@@ -4591,8 +4591,8 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     AbstractProcess* projectProc = project->process();
     int logOption = 0;
     logNode->linkToProcess(projectProc);
-    projectProc->setParameters(project->analyzeParameters(gmsFilePath, projectProc->defaultParameters(), itemList, opt
-                                                          , comMode, logOption));
+    projectProc->setParameters(project->analyzeParameters(workDir.relativeFilePath(gmsFilePath), projectProc->defaultParameters()
+                                                          , itemList, opt , comMode, logOption));
     if (projectProc->parameters().isEmpty())
         return false;
 
@@ -4600,7 +4600,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     logNode->setJumpToLogEnd(true);
 
     projectProc->setProjectId(project->id());
-    projectProc->setWorkingDirectory(workDir);
+    projectProc->setWorkingDirectory(workDirName);
 
     // disable MIRO menus
     if (dynamic_cast<miro::AbstractMiroProcess*>(projectProc) ) {
