@@ -1,5 +1,6 @@
 Version 1.23.1
 ==================
+- Added release overview page to the GAMS Studio welcome page.
 - Fixed dragging schematic list and dictionary from definitions and dropping to the instructions in Connect Editor.
 - Improved view and edit experience with tooltip and different color scheme in Connect Editor.
 - On a GAMS run use the relative path to the GMS file (from Working Directory perspective) if possible.

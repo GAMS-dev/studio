@@ -172,6 +172,10 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
 
     initDefault();
 
+    // On ignore-setting suppress release overview showing up again
+    if (ignore)
+        setInt(skReleaseOverviewVersion, GAMS_DISTRIB_MAJOR);
+
     // QSettings only needed if we want to write
     if (mCanWrite || mCanRead) {
         // create basic non versionized application settings
@@ -320,6 +324,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skLastRun, scSys, {"lastRun"}, 0);
     safelyAdd(res, skRunOptions, scSys, {"runOptions"}, 3);
     safelyAdd(res, skSupressWebEngine, scSys, {"supressWebEngine"}, false);
+    safelyAdd(res, skReleaseOverviewVersion, scSys, {"releaseOverviewVersion"}, 0);
 
     // user model library directory
     safelyAdd(res, skUserModelLibraryDir, scUser, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir());

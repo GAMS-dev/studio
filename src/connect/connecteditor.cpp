@@ -214,10 +214,12 @@ bool ConnectEditor::init(bool quiet)
     connect(ui->expandAllLabel, &ClickableLabel::clicked, this, [=]() {  ui->dataTreeView->expandAll(); });
     connect(ui->collapseAllLabel, &ClickableLabel::clicked, this, [=]() {  ui->dataTreeView->collapseAll(); });
     connect(ui->collapseAllIcon, &ClickableLabel::clicked, this, [=]() {  ui->dataTreeView->collapseAll(); });
+#ifdef QWEBENGINE
     connect(ui->helpIcon, &ClickableLabel::clicked, this, [=]() {
         getMainWindow()->receiveOpenDoc(help::HelpData::getChapterLocation(help::DocumentType::StudioMain),
                                         help::HelpData::getStudioSectionAnchor(help::HelpData::getStudioSectionName(help::StudioSection::ConnectEditor)));
     });
+#endif
 
     connect(mDataModel, &ConnectDataModel::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
     connect(mDataModel, &ConnectDataModel::fromSchemaInserted, this, &ConnectEditor::fromSchemaInserted, Qt::UniqueConnection);
