@@ -125,6 +125,7 @@ void Application::init()
     }
     if (mCmdParser.activeHelpView() >= 0)
         Settings::settings()->setBool(skSupressWebEngine, !mCmdParser.activeHelpView());
+    initEnvironment();
 
     mMainWindow = QSharedPointer<MainWindow>(new MainWindow());
     if (Settings::settings()->toBool(skCleanUpWorkspace)) {
@@ -147,6 +148,27 @@ void Application::init()
     listen();
     DEB() << GAMS_PRODUCTNAME_STR << " " << applicationVersion() << " on " << QSysInfo::prettyProductName() << " "
           << QSysInfo::currentCpuArchitecture() << " build " << QSysInfo::kernelVersion();
+}
+
+void Application::initEnvironment()
+{
+    QString gamsDir = QDir::toNativeSeparators(CommonPaths::systemDir());
+    if (gamsDir.isEmpty())
+        DEB() << "ERROR: GAMS could not be found. Please check your installation of GAMS and GAMS Studio.";
+
+    QByteArray gamsArr = (gamsDir + QDir::listSeparator() + gamsDir + QDir::separator() + "gbin").toLatin1();
+
+    QByteArray curPath = qgetenv("PATH");
+    qputenv("PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
+
+#ifndef _WIN64
+    curPath = qgetenv("LD_LIBRARY_PATH");
+    qputenv("LD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
+#endif
+#ifdef __APPLE__
+    curPath = qgetenv("DYLD_LIBRARY_PATH");
+    qputenv("DYLD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
+#endif
 }
 
 QString Application::serverName() const

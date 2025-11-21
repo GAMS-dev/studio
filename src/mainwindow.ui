@@ -285,6 +285,7 @@
     <addaction name="separator"/>
     <addaction name="gamsLicensing"/>
     <addaction name="separator"/>
+    <addaction name="actionWhat_s_new_in_GAMS"/>
     <addaction name="actionChangelog"/>
     <addaction name="separator"/>
     <addaction name="actionUpdate"/>
@@ -1449,10 +1450,10 @@
   <action name="actionChangelog">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/solid/new</normaloff>:/solid/new</iconset>
+     <normaloff>:/solid/scroll</normaloff>:/solid/scroll</iconset>
    </property>
    <property name="text">
-    <string>What's New</string>
+    <string>Studio Changelog</string>
    </property>
   </action>
   <action name="actionCleanAllWs">
@@ -1850,6 +1851,18 @@
    </property>
    <property name="toolTip">
     <string>Imports a GAMS IDE project (.gpr)</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionWhat_s_new_in_GAMS">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/new</normaloff>:/solid/new</iconset>
+   </property>
+   <property name="text">
+    <string>What's New in GAMS</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

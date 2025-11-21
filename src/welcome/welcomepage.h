@@ -21,6 +21,7 @@
 #define WELCOMEPAGE_H
 
 #include "abstractview.h"
+#include <QPushButton>
 
 namespace Ui {
 class WelcomePage;
@@ -31,8 +32,15 @@ class QLabel;
 namespace gams {
 namespace studio {
 
+#ifdef QWEBENGINE
+class Overview;
+#endif
+
+enum FileState { fsMiss, fsOther, fsExist };
+
 struct HistoryData;
 class MainWindow;
+class Overview;
 
 class WelcomePage : public AbstractView
 {
@@ -42,6 +50,9 @@ public:
     ~WelcomePage() override;
     void zoomReset();
     void setDocEnabled(bool enabled);
+    bool canShowReleaseOverview();
+    bool showReleaseOverview();
+    FileState getChangelogPath(QString &path);
 
 signals:
     void openFilePath(const QString &filePath);
@@ -50,12 +61,14 @@ signals:
     void relayActionWp(const QString &action);
     void relayModLibLoad(const QString &lib, bool forceOverwrite = false);
     void relayDocOpen(const QString &doc, const QString &anchor);
+    void openHelp(const QUrl &url);
 
 public slots:
     void historyChanged();
     void on_relayAction(const QString &action);
     void on_relayModLibLoad(const QString &lib);
     void on_relayOpenDoc(const QString &doc, const QString &anchor);
+    void setDarkMode(bool dark);
 
 private slots:
     void handleZoom(int delta);
@@ -65,11 +78,20 @@ protected:
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
     void setupIcons();
+    void initReleaseOverview();
+    QString docPath(bool &replaced);
+    FileState checkReleaseNotes();
 
 private:
     Ui::WelcomePage *ui;
     MainWindow *mMain;
     bool mOutputVisible;
+    bool mMissRnWarned = false;
+#ifdef QWEBENGINE
+    Overview *mOverview = nullptr;
+    bool mHideTOC = false;
+    bool mIsDarkMode = false;
+#endif
 };
 
 }

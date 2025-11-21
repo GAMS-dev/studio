@@ -270,26 +270,34 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                                         ConnectSchema* schema = mConnect->getSchema(schemakey.first());
                                         if (schema) {
                                             schemakey.removeFirst();
+                                            QVariant type = index.siblingAtColumn(static_cast<int>(DataItemColumn::SchemaType)).data(Qt::DisplayRole);
+                                            QVariant allowedValue = index.siblingAtColumn(static_cast<int>(DataItemColumn::AllowedValue)).data(Qt::DisplayRole);
                                             QString schemastr = schemakey.join(":");
                                             QString key = schemastr.left(schemastr.lastIndexOf("["));
                                             bool oneof = (schema->isOneOfDefined(key));
                                             if (oneof) {
-                                                int number = schema->getNumberOfOneOfDefined(key);
-                                                QVariant type = index.siblingAtColumn(static_cast<int>(DataItemColumn::SchemaType)).data(Qt::DisplayRole);
-                                                QVariant allowedValue = index.siblingAtColumn(static_cast<int>(DataItemColumn::AllowedValue)).data(Qt::DisplayRole);
-                                                return QVariant( QString("%1%2%3%4 is oneof %2%5%4 agent with type %2%6.%4 %7 %8")
-                                                                    .arg( TooltipStrHeader,TooltipOpenedBoldStr,schemakey.last(),TooltipClosedBoldStr,QString::number(number),type.toStringList().join(","),
-                                                                          (allowedValue.toString().isEmpty()?"" : "<br/>Allowed values are "+TooltipOpenedBoldStr+allowedValue.toString()+TooltipClosedBoldStr+"."),
-                                                                          TooltipStrFooter));
-
+                                                if (schemakey.last().contains("[")) {
+                                                    int number = schema->getNumberOfOneOfDefined(key);
+                                                    return QVariant( QString("%1%2%3%4 is oneof %2%5%4 schema with type %2%6.%4 %7 %8 %9")
+                                                                        .arg( TooltipStrHeader,TooltipOpenedBoldStr,schemakey.last(),TooltipClosedBoldStr,
+                                                                              QString::number(number),
+                                                                              type.toStringList().join(","),
+                                                                              (allowedValue.toString().isEmpty()?"" : "<br/>Allowed values are "+TooltipOpenedBoldStr+allowedValue.toString()+TooltipClosedBoldStr+"."),
+                                                                              (number<=1 ?"" : "<br/><br/>Switch to another oneof schema by deleting the current instruction and dragging-dropping another schema from Definitions."),
+                                                                              TooltipStrFooter));
+                                                }
                                             }
                                             if (item->data( static_cast<int>(DataItemColumn::InvalidValue)).toInt()>0) {
                                                     return QVariant( QString("%1%2%3%4 may be an invalid option or be excluded from (an)other option or contains an invalid value.<br/>"
                                                                               "Check agent definition for valid and excluded option.%5")
                                                                         .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter ));
                                             } else {
-                                                return QVariant( QString("%1Click to show definition of %2%3%4. Then press %2 F1 %4 to show documentation for %2%3%4.%5")
-                                                                    .arg(TooltipStrHeader, TooltipOpenedBoldStr, data_index.data(Qt::DisplayRole).toString(), TooltipClosedBoldStr, TooltipStrFooter));
+                                                return QVariant( QString("%1%2%3%4 is of type %2%5%4.%6 %7 %8")
+                                                                        .arg( TooltipStrHeader,TooltipOpenedBoldStr,schemakey.last(),TooltipClosedBoldStr,
+                                                                             type.toStringList().join(","),
+                                                                             (allowedValue.toString().isEmpty()?"" : "<br/>Allowed values are "+TooltipOpenedBoldStr+allowedValue.toString()+TooltipClosedBoldStr+"."),
+                                                                             "<br/><br/>Click to show definition. Then press "+TooltipOpenedBoldStr+ "F1" +TooltipClosedBoldStr+" to show documentation.",
+                                                                             TooltipStrFooter));
                                             }
                                         }
                                      }
@@ -791,6 +799,15 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
                existsUnderSameParent(schemastrlist[1],  parent)) {
                return false;
            }
+        }
+        QModelIndex checkStateIndex = index(row, static_cast<int>(DataItemColumn::CheckState), parent);
+        if (!checkStateIndex.isValid()) {
+            return false;
+        } else {
+            if (data(checkStateIndex, Qt::DisplayRole).toInt() != static_cast<int>(DataCheckState::KeyItem) &&
+                data(checkStateIndex, Qt::DisplayRole).toInt() != static_cast<int>(DataCheckState::ElementValue) ) {
+                return false;
+            }
         }
     }
 
@@ -1457,9 +1474,11 @@ bool ConnectDataModel::existsUnderSameParent(const QString& tobeinsertSchema, co
                                                     :schemaKey);
         if (tobeinsertedname.compare(keyname)==0)
             return true;
-        if (schemaKey.endsWith("]"))
-            if (tobeinsertedname.startsWith( schemaKey.left(schemaKey.indexOf("[")) ))
+        if (schemaKey.endsWith("]")) {
+            if (tobeinsertedname.startsWith( schemaKey.left(schemaKey.lastIndexOf("[")) )) {
                return true;
+            }
+        }
         const int keylevel = schemakeylist.size();
         if (!samelevel && qAbs(level-keylevel) != 1 )
             return false;
@@ -1632,12 +1651,14 @@ int ConnectDataModel::whichOneOfSchema(const YAML::Node &data, ConnectSchema *sc
                     if (data.Type()==YAML::NodeType::Scalar) {
                         data.as<float>();
                         validType = true;
+                        break;
                     } else
                         continue;
                 } else if (type==SchemaType::Boolean) {
                     if (data.Type()==YAML::NodeType::Scalar) {
                         data.as<bool>();
                         validType = true;
+                        break;
                     } else
                         continue;
                 } else if (type==SchemaType::String) {
@@ -1646,16 +1667,19 @@ int ConnectDataModel::whichOneOfSchema(const YAML::Node &data, ConnectSchema *sc
                         if (str.compare("false")==0 || str.compare("true")==0)
                             continue;
                         validType = true;
+                        break;
                     } else
                         continue;
                 } else if (type==SchemaType::List) {
                           if (data.Type()==YAML::NodeType::Sequence) {
                              validType = true;
+                              break;
                           } else
                               continue; // TODO
                 } else if (type==SchemaType::Dict) {
                     if (data.Type()==YAML::NodeType::Map) {
                         validType = true;
+                        break;
                     } else {
                         continue; // TODO
                     }
@@ -2068,7 +2092,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                            QList<QVariant> mapitemData;
                            mapitemData << mapkey;
                            mapitemData << QVariant(dmit->second.as<std::string>().c_str());
-                           mapitemData << QVariant(static_cast<int>(DataCheckState::ElementMap));
+                           mapitemData << (schema ? (schema->contains(checkKeys.join(":")) ? QVariant(static_cast<int>(DataCheckState::ElementValue))
+                                                                                           : QVariant(static_cast<int>(DataCheckState::ElementMap))   )
+                                                  : QVariant(static_cast<int>(DataCheckState::ElementMap)) );
                            mapitemData << (schema ? QVariant(schema->getTypeAsStringList(checkKeys.join(":")).join(",")) : QVariant());
                            mapitemData << (schema ? QVariant(schema->getAllowedValueAsStringList(checkKeys.join(":")).join(",")) : QVariant());
                            mapitemData << (schema ? (schema->isRequired(checkKeys.join(":")) || (k==0 && !empty) ? QVariant(false) : QVariant(true))
@@ -2094,7 +2120,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                   QList<QVariant> mapitemData;
                                   mapitemData << mapkey;
                                   mapitemData << "null";
-                                  mapitemData << QVariant(static_cast<int>(DataCheckState::ElementMap));
+                                  mapitemData << (schema ? (schema->contains(checkKeys.join(":")) ? QVariant(static_cast<int>(DataCheckState::ElementValue))
+                                                                                                  : QVariant(static_cast<int>(DataCheckState::ElementMap))   )
+                                                         : QVariant(static_cast<int>(DataCheckState::ElementMap)) );
                                   mapitemData << (schema ? QVariant(schema->getTypeAsStringList(checkKeys.join(":")).join(",")) : QVariant());
                                   mapitemData << (schema ? QVariant(schema->getAllowedValueAsStringList(checkKeys.join(":")).join(",")) : QVariant());
                                   mapitemData << (schema ? QVariant(!schema->isRequired(checkKeys.join(":"))) : QVariant());
@@ -2441,7 +2469,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                                QList<QVariant> mapSeqData;
                                                mapSeqData << mmmit->first.as<std::string>().c_str();
                                                mapSeqData << mmmit->second.as<std::string>().c_str();  // can be int/bool/double
-                                               mapSeqData << QVariant(static_cast<int>(DataCheckState::ElementMap));
+                                               mapSeqData << (schema ? (schema->contains(dataKeys.join(":")) ? QVariant(static_cast<int>(DataCheckState::ElementValue))
+                                                                                                             : QVariant(static_cast<int>(DataCheckState::ElementMap))   )
+                                                                     : QVariant(static_cast<int>(DataCheckState::ElementMap)) );
                                                mapSeqData << (schema ? QVariant(schema->getTypeAsStringList(dataKeys.join(":")).join(",")): QVariant());
                                                mapSeqData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":")).join(",")): QVariant());
                                                mapSeqData << (schema ? QVariant(!schema->isRequired(dataKeys.join(":"))): QVariant());

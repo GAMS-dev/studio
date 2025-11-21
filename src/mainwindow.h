@@ -191,6 +191,7 @@ public slots:
     void receiveAction(const QString &action);
     void receiveModLibLoad(const QString &gmsFile, bool forceOverwrite = false);
     void receiveOpenDoc(const QString &doc, const QString &anchor);
+    void openHelp(const QUrl &url);
     void updateRunState();
     void updateStatusFile();
     void updateStatusPos();
@@ -393,6 +394,7 @@ private slots:
     void on_actionPreviousBookmark_triggered();
     void on_actionRemoveBookmarks_triggered();
     void on_actionCleanAllWs_triggered();
+    void on_actionWhat_s_new_in_GAMS_triggered();
     void on_actionChangelog_triggered();
     void on_actionGoBack_triggered();
     void on_actionGoForward_triggered();
@@ -478,11 +480,11 @@ private:
     void deleteLogFiles(const QString &pattern, const QString &workspace);
     void deleteScratchDirectories(const QString &workspace);
     void zoomWidget(QWidget * widget, int range);
+    bool showReleaseOverview();
     void initWelcomePage();
     void initSettingsDialog();
     void initIcons();
     void initFonts();
-    void initEnvironment();
     void initNavigator();
     void adjustFonts();
     void processMainFileDynamics();

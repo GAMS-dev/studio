@@ -289,8 +289,8 @@ SOURCES += \
     theme.cpp \
     themewidget.cpp \
     viewhelper.cpp \
-    welcomepage.cpp \
-    wplabel.cpp
+    welcome/welcomepage.cpp \
+    welcome/wplabel.cpp
 
 HEADERS += \
     abstractview.h \
@@ -534,8 +534,8 @@ HEADERS += \
     themewidget.h \
     version.h \
     viewhelper.h \
-    welcomepage.h \
-    wplabel.h
+    welcome/welcomepage.h \
+    welcome/wplabel.h
 
 FORMS += \
     confirmdialog.ui \
@@ -578,7 +578,7 @@ FORMS += \
     support/updatewidget.ui \
     tabdialog.ui \
     themewidget.ui \
-    welcomepage.ui
+    welcome/welcomepage.ui
 
 RESOURCES += \
     ../fonts/fonts.qrc \
@@ -594,13 +594,17 @@ SOURCES += help/bookmarkdialog.cpp \
     help/helppage.cpp \
     help/helptoolbar.cpp \
     help/helpview.cpp \
-    help/helpwidget.cpp
+    help/helpwidget.cpp \
+    welcome/overview.cpp
+
 HEADERS += help/bookmarkdialog.h \
     help/helpdata.h \
     help/helppage.h \
     help/helptoolbar.h \
     help/helpview.h \
-    help/helpwidget.h
+    help/helpwidget.h \
+    welcome/overview.h
+
 FORMS += help/bookmarkdialog.ui \
     help/helpwidget.ui
 } else {

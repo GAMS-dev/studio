@@ -77,6 +77,7 @@ enum SettingsKey {
     skLastRun,
     skRunOptions,
     skSupressWebEngine,
+    skReleaseOverviewVersion,
 
     // settings of help page
     skHelpBookmarks,

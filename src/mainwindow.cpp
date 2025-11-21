@@ -32,7 +32,7 @@
 #include "editors/abstractedit.h"
 #include "editors/systemlogedit.h"
 #include "encodingsdialog.h"
-#include "welcomepage.h"
+#include "welcome/welcomepage.h"
 #include "modeldialog/modeldialog.h"
 #include "navigator/navigatordialog.h"
 #include "navigator/navigatorlineedit.h"
@@ -111,7 +111,6 @@ MainWindow::MainWindow(QWidget *parent)
       mMiroDeployDialog(new miro::MiroDeployDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
-    initEnvironment();
     initFonts();
 
     ui->setupUi(this);
@@ -649,9 +648,10 @@ void MainWindow::initWelcomePage()
         removeFromHistory(path);
     });
     ui->mainTabs->insertTab(0, mWp, QString("Welcome"));
-    if (Settings::settings()->toBool(skSkipWelcomePage))
+
+    if (Settings::settings()->toBool(skSkipWelcomePage) && !showReleaseOverview()) {
         ui->mainTabs->setTabVisible(0, false);
-    else {
+    } else {
         showWelcomePage();
     }
 }
@@ -695,25 +695,6 @@ void MainWindow::initSettingsDialog()
         if (mSettingsDialog->miroSettingsEnabled())
             updateMiroEnabled();
     });
-}
-
-void MainWindow::initEnvironment()
-{
-    QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
-    QString gamsDir = QDir::toNativeSeparators(CommonPaths::systemDir());
-    QByteArray gamsArr = (gamsDir + QDir::listSeparator() + gamsDir + QDir::separator() + "gbin").toLatin1();
-
-    QByteArray curPath = qgetenv("PATH");
-    qputenv("PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
-
-#ifndef _WIN64
-    curPath = qgetenv("LD_LIBRARY_PATH");
-    qputenv("LD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
-#endif
-#ifdef __APPLE__
-    curPath = qgetenv("DYLD_LIBRARY_PATH");
-    qputenv("DYLD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
-#endif
 }
 
 void MainWindow::adjustFonts()
@@ -856,7 +837,8 @@ void MainWindow::initIcons()
     ui->actionShowToolbar->setIcon(Theme::icon(":/%1/hammer"));
     ui->actionGamsHelp->setIcon(Theme::icon(":/%1/book"));
     ui->actionStudioHelp->setIcon(Theme::icon(":/%1/book"));
-    ui->actionChangelog->setIcon(Theme::icon(":/%1/new"));
+    ui->actionWhat_s_new_in_GAMS->setIcon(Theme::icon(":/%1/new"));
+    ui->actionChangelog->setIcon(Theme::icon(":/%1/scroll"));
     ui->actionGoForward->setIcon(Theme::icon(":/%1/forward"));
     ui->actionGoBack->setIcon(Theme::icon(":/%1/backward"));
     ui->tbProjectFilter->setIcon(Theme::icon(":/%1/hide"));
@@ -972,8 +954,8 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
     // if no config file exists, create the default
     if (confFilesToOpen.isEmpty() && metas.isEmpty()) {
         QFile file(CommonPaths::defaultGamsUserConfigFile());
-        file.open(QFile::WriteOnly); // create empty file
-        file.close();
+        if (file.open(QFile::WriteOnly)) // create empty file
+            file.close();
         confFilesToOpen << file.fileName();
     }
 
@@ -1297,8 +1279,6 @@ void MainWindow::receiveAction(const QString &action)
         on_actionNew_triggered();
     else if(action == "browseModLib")
         on_actionGAMS_Library_triggered();
-    else if(action == "openWhatsNew")
-        on_actionChangelog_triggered();
 }
 
 void MainWindow::openModelFromLib(const QString &glbFile, modeldialog::LibraryItem* model)
@@ -1450,11 +1430,15 @@ void MainWindow::receiveOpenDoc(const QString &doc, const QString &anchor)
 
     if (!anchor.isEmpty())
         result = QUrl(result.toString() + "#" + anchor);
+    openHelp(result);
+}
+
+void MainWindow::openHelp(const QUrl &url)
+{
 #ifdef QWEBENGINE
     if (mHelpWidget)
-        mHelpWidget->on_urlOpened(result);
+        mHelpWidget->on_urlOpened(url);
 #endif
-
     on_actionHelp_View_triggered(true);
 }
 
@@ -1936,15 +1920,15 @@ void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const Q
                 if (FileMeta *destFM = mFileMetaRepo.fileMeta(filePath))
                    closeFileEditors(destFM->id());
             }
-            file.open(QFile::WriteOnly); // create empty file
-            file.close();
+            if (file.open(QFile::WriteOnly)) // create empty file
+                file.close();
             break;
         default:
             return;
         }
     } else if (!suffix.isEmpty()) {
-        file.open(QFile::WriteOnly); // create empty file
-        file.close();
+        if (file.open(QFile::WriteOnly)) // create empty file
+            file.close();
     }
 
     if (projectOnly) {
@@ -2218,8 +2202,8 @@ void MainWindow::on_actionClose_Tab_triggered()
 void MainWindow::on_actionClose_All_triggered()
 {
     disconnect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeMainTabChanged);
-    if (ui->mainTabs->count() > 1)
-        ui->mainTabs->tabBar()->moveTab(ui->mainTabs->currentIndex(), ui->mainTabs->count()-1);
+    if (ui->mainTabs->count() > 1 && ui->mainTabs->currentIndex() > 0)
+        ui->mainTabs->tabBar()->moveTab(ui->mainTabs->currentIndex(), 1);
 
     while (ui->mainTabs->count() > 1) // keep welcome page
         on_mainTabs_tabCloseRequested(ui->mainTabs->count() - 1);
@@ -2902,25 +2886,19 @@ void MainWindow::on_actionAbout_Qt_triggered()
     QMessageBox::aboutQt(this, "About Qt");
 }
 
+void MainWindow::on_actionWhat_s_new_in_GAMS_triggered()
+{
+    if (!mWp->canShowReleaseOverview()) return;
+    if (mWp->showReleaseOverview())
+        showWelcomePage();
+}
+
 void MainWindow::on_actionChangelog_triggered()
 {
-    QString filePath = CommonPaths::changelog();
-    QFileInfo fi(filePath);
-    if (!fi.exists()) {
-        QMessageBox msgBox;
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.setTextFormat(Qt::RichText);
-        msgBox.setText("Changelog file was not found. You can find all the information on https://www.gams.com/latest/docs/");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.exec();
-        return;
-    }
-    FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(filePath);
-    fm->setKind(FileKind::TxtRO);
-
-    PExProjectNode *project = mProjectRepo.createProject("", "", "", onExist_Project, "", PExProjectNode::tGams);
-    mProjectRepo.findOrCreateFileNode(fm, project);
-    openFile(fm, true, project);
+    QString dummy;
+    if (mWp->getChangelogPath(dummy) == fsMiss) return;
+    mWp->relayActionWp("openChangelog");
+    showWelcomePage();
 }
 
 void MainWindow::on_actionTerminal_triggered()
@@ -2991,7 +2969,7 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
         return;
     }
     if (ui->mainTabs->widget(index) == mWp) {
-        DEB() << "WelcomePage at wrong position";
+        DEB() << "WelcomePage at wrong position (" << index << ")";
     }
     QWidget* widget = ui->mainTabs->widget(index);
     if (!widget) {
@@ -4592,17 +4570,17 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     FileMeta *runMeta = mFileMetaRepo.fileMeta(gmsFilePath);
     PExFileNode *runNode = project->findFile(runMeta);
     logNode->file()->setEncoding(runNode ? runNode->file()->encoding() : QString());
-    QString workDir = project->workDir();
+    QString workDirName = project->workDir();
+    QDir workDir(workDirName);
 
     // prepare the options and process and run it
     QList<option::OptionItem> itemList;
     itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     if (project->parameterFile()) {
-        QDir wDir(workDir);
 #ifdef _WIN64
-        itemList.prepend(option::OptionItem("parmFile", '"'+wDir.relativeFilePath(project->parameterFile()->location())+'"',-1,-1));
+        itemList.prepend(option::OptionItem("parmFile", '"'+workDir.relativeFilePath(project->parameterFile()->location())+'"',-1,-1));
 #else
-        itemList.prepend(option::OptionItem("parmFile", wDir.relativeFilePath(project->parameterFile()->location()),-1,-1));
+        itemList.prepend(option::OptionItem("parmFile", workDir.relativeFilePath(project->parameterFile()->location()),-1,-1));
 #endif
     }
     option::Option *opt = mGamsParameterEditor->getOptionTokenizer()->getOption();
@@ -4611,8 +4589,8 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     AbstractProcess* projectProc = project->process();
     int logOption = 0;
     logNode->linkToProcess(projectProc);
-    projectProc->setParameters(project->analyzeParameters(gmsFilePath, projectProc->defaultParameters(), itemList, opt
-                                                          , comMode, logOption));
+    projectProc->setParameters(project->analyzeParameters(workDir.relativeFilePath(gmsFilePath), projectProc->defaultParameters()
+                                                          , itemList, opt , comMode, logOption));
     if (projectProc->parameters().isEmpty())
         return false;
 
@@ -4620,7 +4598,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     logNode->setJumpToLogEnd(true);
 
     projectProc->setProjectId(project->id());
-    projectProc->setWorkingDirectory(workDir);
+    projectProc->setWorkingDirectory(workDirName);
 
     // disable MIRO menus
     if (dynamic_cast<miro::AbstractMiroProcess*>(projectProc) ) {
@@ -4725,7 +4703,14 @@ void MainWindow::initDelayedElements()
         action->trigger();
 
     PExFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
-    if (node) openFileNode(node, true);
+    if (node)
+        openFileNode(node, true);
+    if (showReleaseOverview() && mWp->canShowReleaseOverview()) {
+        if (mWp->showReleaseOverview()) {
+            Settings::settings()->setInt(skReleaseOverviewVersion, GAMS_DISTRIB_MAJOR);
+            ui->mainTabs->setCurrentIndex(0);
+        }
+    }
     historyChanged();
     connect(&mSaveSettingsTimer, &QTimer::timeout, this, [this]() {
         mSaveSettingsTimer.stop();
@@ -4745,9 +4730,18 @@ void MainWindow::initDelayedElements()
     if (Settings::settings()->toBool(skSupressWebEngine)) {
         ui->actionGamsHelp->setEnabled(false);
         ui->actionStudioHelp->setEnabled(false);
+        ui->actionWhat_s_new_in_GAMS->setEnabled(false);
+        ui->actionChangelog->setEnabled(false);
         mWp->setDocEnabled(false);
         appendSystemLogInfo("The Integrated help is inactive. It can be activated via the settings or by starting Studio with '--integrated-help on'.");
     }
+    if (!mWp->canShowReleaseOverview()) {
+        ui->actionWhat_s_new_in_GAMS->setEnabled(false);
+    }
+    QString dummy;
+    if (mWp->getChangelogPath(dummy) == fsMiss)
+        ui->actionChangelog->setEnabled(false);
+
 }
 
 void MainWindow::openDelayedFiles()
@@ -6644,6 +6638,13 @@ void MainWindow::zoomWidget(QWidget *widget, int range)
     setGroupFontSize(fg, fontSize);
 }
 
+bool MainWindow::showReleaseOverview()
+{
+    if (GAMS_DISTRIB_MINOR == 0) return false;
+    int shownMajorVersion = Settings::settings()->toInt(skReleaseOverviewVersion);
+    return (GAMS_DISTRIB_MAJOR > shownMajorVersion);
+}
+
 void MainWindow::convertLowerUpper(bool toUpper)
 {
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
@@ -7490,6 +7491,7 @@ void MainWindow::updateProjectSortIcon()
     tt = tt.arg(ttKey.at(mProjectFilterHandler->sortKey()), ttOrder.at(mProjectFilterHandler->sortOrder()));
     ui->projectSort->setToolTip(tt);
 }
+
 
 }
 }
