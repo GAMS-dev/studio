@@ -111,6 +111,7 @@ private:
 private:
     Ui::HelpWidget *ui;
 
+    bool mFirstPageLoaded;
     QMap<QString, QString> mBookmarkMap;
     QMenu* mBookmarkMenu;
     QLabel mStatusBarLabel;
