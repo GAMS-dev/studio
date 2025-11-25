@@ -640,6 +640,7 @@ void MainWindow::initWelcomePage()
                 project = nullptr;
         }
         PExFileNode *node = openFilePath(filePath, project, ogNone, true);
+        if (!node) return;
         if (!project) project = node->assignedProject();
         if (project && mProjectRepo.focussedProject())
             focusProject(project);
@@ -4266,7 +4267,7 @@ void MainWindow::openFilesProcess(const QStringList &files, OpenGroupOption opt)
             // detect if the file is already present at the scope
             fileNode = openFilePath(fileName, nullptr, opt, true, false);
             if (!firstNode) firstNode = fileNode;
-            if (PExProjectNode *project = fileNode->assignedProject())
+            if (PExProjectNode *project = fileNode ? fileNode->assignedProject() : nullptr)
                 openedProjects << project;
         }
     }
