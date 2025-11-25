@@ -342,13 +342,13 @@ void HelpWidget::on_loadFinished(bool ok)
         if (!mFirstPageLoaded) { // only when the first page is loaded
             if (Theme::instance()->isDark()) { // if dark theme
                 ui->webEngineView->page()->runJavaScript( QString(
-                    "if (!DoxygenAwesomeDarkModeToggle.darkModeIcon) {"
+                    "if (!DoxygenAwesomeDarkModeToggle.darkModeEnabled) {"
                     "    $('doxygen-awesome-dark-mode-toggle').click();"
                     "}")
                 );
             } else { // else light theme
                 ui->webEngineView->page()->runJavaScript( QString(
-                    "if (DoxygenAwesomeDarkModeToggle.darkModeIcon) {"
+                    "if (DoxygenAwesomeDarkModeToggle.darkModeEnabled) {"
                     "    $('doxygen-awesome-dark-mode-toggle').click();"
                     "}")
                 );
