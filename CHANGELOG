@@ -1,3 +1,7 @@
+Version 1.23.2
+==================
+- Fixed crash on open a non-gms file.
+
 Version 1.23.1
 ==================
 - Added release overview page to the GAMS Studio welcome page.
