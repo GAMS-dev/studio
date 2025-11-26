@@ -109,7 +109,9 @@ HelpWidget::HelpWidget(QWidget *parent)
 
     setupToolbar(bookmarkToolButton, helpToolButton);
 
-    if (!isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
+    if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
+        ui->webEngineView->page()->setUrl( getStartPageUrl() );
+    } else {
         QString htmlText;
         getErrorHTMLText( htmlText, getStartPageUrl());
         ui->webEngineView->setHtml( htmlText );
