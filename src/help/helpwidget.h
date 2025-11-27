@@ -97,6 +97,8 @@ public slots:
     QWebEngineView *createHelpView();
     void on_webActionTriggered(QWebEnginePage::WebAction webAction, bool checked);
 
+    void setDarkMode(bool darkEnabled);
+
 signals:
     void webActionEnabledChanged(QWebEnginePage::WebAction webAction, bool enabled);
 
