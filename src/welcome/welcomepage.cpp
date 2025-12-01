@@ -46,6 +46,7 @@ WelcomePage::WelcomePage(MainWindow *parent)
     if (!Settings::settings()->toBool(skSupressWebEngine))
         initReleaseOverview();
     checkReleaseNotes();
+    ui->textBrowserChangelog->document()->setIndentWidth(16);
 
     connect(this, &WelcomePage::relayActionWp, mMain, [this](const QString &action) {
         if (action == "whatsNew") {

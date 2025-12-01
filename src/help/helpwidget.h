@@ -97,6 +97,8 @@ public slots:
     QWebEngineView *createHelpView();
     void on_webActionTriggered(QWebEnginePage::WebAction webAction, bool checked);
 
+    void setDarkMode(bool darkEnabled);
+
 signals:
     void webActionEnabledChanged(QWebEnginePage::WebAction webAction, bool enabled);
 
@@ -111,6 +113,7 @@ private:
 private:
     Ui::HelpWidget *ui;
 
+    bool mFirstPageLoaded;
     QMap<QString, QString> mBookmarkMap;
     QMenu* mBookmarkMenu;
     QLabel mStatusBarLabel;

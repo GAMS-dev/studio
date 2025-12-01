@@ -110,14 +110,21 @@ HelpWidget::HelpWidget(QWidget *parent)
     setupToolbar(bookmarkToolButton, helpToolButton);
 
     if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
-        ui->webEngineView->load( getStartPageUrl() );
+        ui->webEngineView->page()->setUrl( getStartPageUrl() );
     } else {
         QString htmlText;
         getErrorHTMLText( htmlText, getStartPageUrl());
         ui->webEngineView->setHtml( htmlText );
     }
+    mFirstPageLoaded = false;
+
     connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
     connect(ui->webEngineView->page(), &QWebEnginePage::loadFinished, this, &HelpWidget::on_loadFinished);
+    connect(Theme::instance(), &Theme::changed, this, [this]() {
+        if (mFirstPageLoaded) {
+            setDarkMode(Theme::isDark());
+        }
+    });
 
     connect(ui->searchLineEdit, &QLineEdit::textChanged, this, &HelpWidget::searchText);
     connect(ui->backButton, &QToolButton::clicked, this, &HelpWidget::on_backButtonTriggered);
@@ -339,6 +346,10 @@ void HelpWidget::on_loadFinished(bool ok)
     ui->actionOnlineHelp->setEnabled( true );
     ui->actionOnlineHelp->setChecked( false );
     if (ok) {
+       if (!mFirstPageLoaded) {
+           setDarkMode(Theme::isDark());
+           mFirstPageLoaded = true;
+       }
        if (ui->webEngineView->page()->url().host().compare("www.gams.com", Qt::CaseInsensitive) == 0 ) {
            if (onlineStartPageUrl.isValid()) {
                if (ui->webEngineView->page()->url().path().contains( onlineStartPageUrl.path()))
@@ -354,11 +365,7 @@ void HelpWidget::on_loadFinished(bool ok)
            if (ui->webEngineView->page()->url().scheme().compare("file", Qt::CaseSensitive) !=0 )
                ui->actionOnlineHelp->setEnabled( false );
        }
-   } /*else {
-        QString htmlText;
-        getErrorHTMLText( htmlText, ui->webEngineView->page()->requestedUrl());
-        ui->webEngineView->setHtml( htmlText );
-    }*/
+   }
 }
 
 void HelpWidget::linkHovered(const QString &url)
@@ -610,6 +617,23 @@ QWebEngineView *HelpWidget::createHelpView()
 void HelpWidget::on_webActionTriggered(QWebEnginePage::WebAction webAction, bool checked)
 {
     ui->webEngineView->page()->triggerAction(webAction, checked);
+}
+
+void HelpWidget::setDarkMode(bool darkEnabled)
+{
+    if (darkEnabled) { // if dark theme
+        ui->webEngineView->page()->runJavaScript( QString(
+            "if (!DoxygenAwesomeDarkModeToggle.darkModeEnabled) {"
+            "    $('doxygen-awesome-dark-mode-toggle').click();"
+            "}")
+                                                 );
+    } else { // else light theme
+        ui->webEngineView->page()->runJavaScript( QString(
+            "if (DoxygenAwesomeDarkModeToggle.darkModeEnabled) {"
+            "    $('doxygen-awesome-dark-mode-toggle').click();"
+            "}")
+                                                 );
+    }
 }
 
 void HelpWidget::createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction webAction, const QIcon &icon)

@@ -1,3 +1,9 @@
+Version 1.23.2  *
+==================
+- Fixed crash on open a non-gms file.
+- Adjust help document theme according to Studio light/dark theme when starting Studio or changing Studio theme.
+- Upgraded ti Qt 6.10.1
+
 Version 1.23.1
 ==================
 - Added release overview page to the GAMS Studio welcome page.
@@ -53,13 +59,13 @@ Version 1.22.2
 - Fixed that Studio can't start more than 11 GAMS jobs in parallel.
 - Fixed update modification state when the 'Dynamic main file' setting has changed.
 - Fixed incorrect behavior of solver option editor
-   - editing an empty string value for a string option with a defined default value no longer replaced by the comment. 
-   - dragging and dropping an option no longer adding multiple rows but a single row of options.
-   - replacing an existing option row by drag and drop no longer crashed Studio.
+  - editing an empty string value for a string option with a defined default value no longer replaced by the comment. 
+  - dragging and dropping an option no longer adding multiple rows but a single row of options.
+  - replacing an existing option row by drag and drop no longer crashed Studio.
 - Improved behavior of solver option editor and Parameter File Editor
-   - double clicking an enumerated value of an option adds the description of the enumerated value instead of the option to the comment column.
-   - enabling the `Open As Text` button always and checking, when clicked, if a file has been modified before.
-   - removing unnecessary error messages when pressing `+` icon to add/append new option.
+  - double clicking an enumerated value of an option adds the description of the enumerated value instead of the option to the comment column.
+  - enabling the `Open As Text` button always and checking, when clicked, if a file has been modified before.
+  - removing unnecessary error messages when pressing `+` icon to add/append new option.
 - Improved license validation log, i.e. all messages of the license validation are written to the system log now.
 
 Version 1.22.1
