@@ -55,7 +55,7 @@ private:
     std::function<void()> mFunction;
 };
 
-inline uint qHash(const NavigatorContent &key, size_t seed) {
+inline size_t qHash(const NavigatorContent &key, size_t seed) {
     return qHash(key.text(), seed) ^ qHash(key.fileMeta(), seed+1);
 }
 
