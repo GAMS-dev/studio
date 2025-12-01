@@ -44,6 +44,10 @@ public:
 
     void clearState();
 
+    QString curDir() const;
+
+    void setCurDir(const QString &path);
+
 signals:
     void finished(int exitCode);
 
@@ -63,6 +67,7 @@ private:
     QStringList mLogMessages;
     QStringList mContent;
     QMutex mOutputMutex;
+    QString mCurDir;
 };
 
 }

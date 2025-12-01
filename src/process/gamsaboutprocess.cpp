@@ -22,7 +22,7 @@
 #include "editors/sysloglocator.h"
 #include "commonpaths.h"
 
-#include <QStandardPaths>
+
 #include <QDir>
 
 namespace gams {
@@ -46,9 +46,11 @@ GamsAboutProcess::~GamsAboutProcess()
 
 void GamsAboutProcess::execute()
 {
-    QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    QStringList args({"/??", "lo=3", "procTreeMemMonitor=0", "curdir=\"" + tempDir + "\""});
+    QStringList args({"/??", "lo=3", "procTreeMemMonitor=0", "curdir=\"" + mCurDir + "\""});
     QString app = nativeAppPath();
+
+    QString msg = QString("GAMS licensing running: %1 %2").arg(application(), args.join(" "));
+    SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
 
 #if defined(__unix__) || defined(__APPLE__)
     mProcess.start(app, args);
@@ -78,6 +80,16 @@ void GamsAboutProcess::clearState()
 {
     mContent.clear();
     mLogMessages.clear();
+}
+
+QString GamsAboutProcess::curDir() const
+{
+    return mCurDir;
+}
+
+void GamsAboutProcess::setCurDir(const QString &path)
+{
+    mCurDir = path;
 }
 
 bool GamsAboutProcess::isAppAvailable(const QString &app)

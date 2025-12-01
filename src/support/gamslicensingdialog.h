@@ -65,6 +65,8 @@ private:
 
     void setSolverLines(QStringList &about);
 
+    QString getCurdirForAboutProcess();
+
     static void writeLicenseFile(QStringList &license, QWidget *parent, bool clipboard);
 
     static void showInvalidGamsPyMessageBox(QWidget *parent);

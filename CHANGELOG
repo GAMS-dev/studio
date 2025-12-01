@@ -2,6 +2,7 @@ Version 1.23.2  *
 ==================
 - Fixed crash on open a non-gms file.
 - Adjust help document theme according to Studio light/dark theme when starting Studio or changing Studio theme.
+- Improved GAMS Licensing dialog behaviour on Windows, i.e. when Studio or GAMS is used in a director with a Unicode name.
 - Upgraded ti Qt 6.10.1
 
 Version 1.23.1
