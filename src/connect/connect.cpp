@@ -665,12 +665,12 @@ YAML::Node Connect::getDefaultValueByType(Schema* schemaHelper)
         break;
     }
     case SchemaType::Dict: {
-        if (strcmp(defaultValue.value.stringval, "null")!=0)
+        if (strcmp(defaultValue.value.stringval ? defaultValue.value.stringval : "", "null") != 0)
             node = "[value]";
         break;
     }
     case SchemaType::List: {
-        if (strcmp(defaultValue.value.stringval, "null")!=0)
+        if (strcmp(defaultValue.value.stringval ? defaultValue.value.stringval : "", "null") != 0)
             node = "[value]";
         break;
     }

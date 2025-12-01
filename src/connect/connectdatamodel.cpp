@@ -1081,7 +1081,7 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
             itemData << (schema ? (schema->contains(dataKeysforTypes.join(":")) ? QVariant(false) : QVariant(true))
                                                                                 : QVariant(true));
             itemData << QVariant(0);
-            QStringList excluded = schema->getExcludedKeys(dataKeysforTypes.join(":"));
+            QStringList excluded = schema ? schema->getExcludedKeys(dataKeysforTypes.join(":")) : QStringList();
             itemData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
                                 : QVariant());
             itemData << (schema ? (schema->getDefaultValue(dataKeysforTypes.join(":")))
@@ -1144,7 +1144,7 @@ void ConnectDataModel::insertLastListElement(const QString &schemaname, QStringL
             mapSeqData << QVariant(schemaKeys);
             mapSeqData << (schema ?  QVariant(false) : QVariant(true));
             mapSeqData << QVariant(0);
-            QStringList excluded = schema->getExcludedKeys(keys.join(":"));
+            QStringList excluded = schema ? schema->getExcludedKeys(keys.join(":")) : QStringList();
             mapSeqData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
                                   : QVariant());
             mapSeqData << (schema ? (schema->getDefaultValue(keys.join(":")))
@@ -1158,7 +1158,7 @@ void ConnectDataModel::insertLastListElement(const QString &schemaname, QStringL
             mapSeqData << QVariant(schemaKeys);
             mapSeqData << (schema ?  QVariant(false) : QVariant(true));
             mapSeqData << QVariant(0);
-            QStringList excluded = schema->getExcludedKeys(keys.join(":"));
+            QStringList excluded = schema ? schema->getExcludedKeys(keys.join(":")) : QStringList();
             mapSeqData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
                                   : QVariant());
             mapSeqData << (schema ? (schema->getDefaultValue(keys.join(":")))
@@ -2063,7 +2063,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                    itemData << (schema ? (schema->contains(dataKeys.join(":")) ? QVariant(false) : QVariant(true))
                                        : QVariant(true));
                    itemData << QVariant(0);
-                   QStringList excluded = schema->getExcludedKeys(dataKeys.join(":"));
+                   QStringList excluded = schema ? schema->getExcludedKeys(dataKeys.join(":")) : QStringList();
                    itemData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
                                        : QVariant());
                    itemData << (schema ? schema->getDefaultValue(dataKeys.join(":"))
@@ -2263,7 +2263,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              itemData << (schema ? (schema->contains(dataKeys.join(":")) ? QVariant(false) : QVariant(true))
                                  : QVariant(true));
              itemData << QVariant(0);
-             QStringList excluded = schema->getExcludedKeys(dataKeys.join(":"));
+             QStringList excluded = schema ? schema->getExcludedKeys(dataKeys.join(":")) : QStringList();
              itemData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
                                  : QVariant());
              itemData << (schema ? (schema->getDefaultValue(dataKeys.join(":")))
