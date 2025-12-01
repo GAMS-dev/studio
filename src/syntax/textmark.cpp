@@ -171,7 +171,7 @@ QString TextMark::dump()
     for (TextMark* mark: std::as_const(mBackRefs)) {
         refs << QString::number(mark->mId);
     }
-    return QString("(%3,%4,%5)[%1%2] ").arg(mId)
+    return QString("(%3,%4,%5)[%1%2] ").arg(int(mId))
             .arg(mReference ? "->"+QString::number(mReference->mId) : "")
             .arg(mLine).arg(mColumn).arg(mSize);
 }
