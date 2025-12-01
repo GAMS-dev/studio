@@ -99,7 +99,10 @@ CodeEdit::~CodeEdit()
     if (mProfilerHeader) delete mProfilerHeader;
     mProfilerArea = nullptr;
     mProfilerHeader = nullptr;
-    if (mBlockEdit) endBlockEdit();
+    if (mBlockEdit) {
+        delete mBlockEdit;
+        mBlockEdit = nullptr;
+    }
     if (mBlockEditSelection) {
         BlockEdit *ed = mBlockEditSelection;
         mBlockEditSelection = nullptr;

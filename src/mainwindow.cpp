@@ -2716,7 +2716,7 @@ void MainWindow::postGamsLibRun()
     if (!node)
         node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile(), project);
     if (node) mFileMetaRepo.watch(node->file());
-    if (node && !node->file()->editors().isEmpty()) {
+    if (node && node->file() && !node->file()->editors().isEmpty()) {
         if (node->file()->kind() != FileKind::Log && node->file()->kind() != FileKind::Gsp)
             node->file()->load(node->file()->encoding());
     }
