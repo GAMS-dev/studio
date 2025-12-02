@@ -20,8 +20,10 @@
 #ifndef GAMS_STUDIO_PATH_PATHREQUEST_H
 #define GAMS_STUDIO_PATH_PATHREQUEST_H
 
-#include <QDialog>
+#include <QObject>
 #include <QLineEdit>
+
+class QMessageBox;
 
 namespace gams {
 namespace studio {
@@ -30,29 +32,27 @@ class ProjectRepo;
 
 namespace path {
 
-namespace Ui {
-class PathRequest;
-}
-
-class PathRequest : public QDialog
+class PathRequest : public QObject
 {
     Q_OBJECT
 public:
     explicit PathRequest(QWidget *parent = nullptr);
     ~PathRequest() override;
-    void init(ProjectRepo *repo, const QString &name, const QString &baseDir, const QVariantMap &data);
-    bool checkProject();
+    void init(ProjectRepo *repo, const QString &baseDir, const QVariantMap &data);
+    bool checkProject(const QString &gspName);
 
 signals:
     void warning(const QString &message);
+    void acceptOpen();
+    void done();
 
 private:
-    Ui::PathRequest *ui;
+    QWidget *mParent = nullptr;
+    QMessageBox *mMsgBox = nullptr;
     ProjectRepo *mProjectRepo = nullptr;
     QString mBaseDir;
     QVariantMap mData;
     QString mInitialText;
-
 };
 
 

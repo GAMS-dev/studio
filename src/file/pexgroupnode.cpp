@@ -101,11 +101,15 @@ void PExGroupNode::appendChild(PExAbstractNode* child)
 {
     if (!child || mChildNodes.contains(child)) return;
     mChildNodes.append(child);
+    if (assignedProject())
+        assignedProject()->setNeedSave(true);
 }
 
 void PExGroupNode::removeChild(PExAbstractNode* child)
 {
     mChildNodes.removeOne(child);
+    if (assignedProject())
+        assignedProject()->setNeedSave(true);
 }
 
 QString PExGroupNode::location() const

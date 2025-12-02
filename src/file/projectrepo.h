@@ -201,7 +201,8 @@ private:
     friend class PExProjectNode;
 
     QVariantMap parseProjectFile(const QString &gspFile) const;
-    bool readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &baseDir = QString(), bool doWarn = true);
+    bool readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &mainFile,
+                          const QString &baseDir = QString(), bool doWarn = true);
     void writeProjectFiles(const PExProjectNode *project, QVariantList &childList, bool relativePaths = false) const;
     void addToProject(PExProjectNode *project, PExFileNode *file);
     QString uniqueNameExt(PExGroupNode *parentNode, const QString &name, PExAbstractNode *node = nullptr);
