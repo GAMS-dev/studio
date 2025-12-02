@@ -2709,7 +2709,7 @@ void ConnectDataModel::updateInvalidExcludedItem(ConnectDataItem *item)
 {
     ConnectDataItem* schemaitem = getSchemaParentItem(item);
     ConnectDataItem *parentitem = (schemaitem==mRootItem ? item : item->parentItem());
-    if (parentitem->childCount() > 1) {
+    if (schemaitem && parentitem && parentitem->childCount() > 1) {
         QStringList childrenNameList;
         for (int i=0; i<parentitem->childCount(); ++i) {
             if (parentitem->child(i)->data(static_cast<int>(DataItemColumn::ExcludedKeys)).toStringList().isEmpty())
@@ -2743,7 +2743,6 @@ void ConnectDataModel::updateInvalidExcludedItem(ConnectDataItem *item)
             while(pitem && pitem != schemaitem) {
                 int value = pitem->data(static_cast<int>(DataItemColumn::InvalidValue)).toInt();
                 pitem->setData(static_cast<int>(DataItemColumn::InvalidValue), QVariant(addedvalue+value));
-                parentvalue = pitem->data(static_cast<int>(DataItemColumn::InvalidValue)).toInt();
                 pitem = pitem->parentItem();
             }
             if (schemaitem==pitem) {
@@ -2758,8 +2757,10 @@ bool ConnectDataModel::updateInvaldItem(int column, ConnectDataItem *item)
 {
     bool valid = isIndexValueValid(column, item);
     if (!valid) {
-        int value = item->data(static_cast<int>(DataItemColumn::InvalidValue)).toInt();
         ConnectDataItem* schemaitem = getSchemaParentItem(item);
+        if (!schemaitem)
+            return valid;
+        int value = item->data(static_cast<int>(DataItemColumn::InvalidValue)).toInt();
         ConnectDataItem* parentitem = item->parentItem();
         while(parentitem && parentitem != schemaitem && parentitem != mRootItem) {
             int parentvalue = parentitem->data(static_cast<int>(DataItemColumn::InvalidValue)).toInt();
