@@ -198,7 +198,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         if (PExProjectNode *project = aNode->toProject()) {
             return project->type();
         }
-    }
+    }   break;
     case UsageRole: {
         PExAbstractNode *aNode = node(ind);
         if (!aNode)
