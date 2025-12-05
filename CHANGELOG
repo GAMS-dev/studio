@@ -2,7 +2,7 @@ Version 1.23.2
 ==================
 - Fixed crash on open a non-gms file.
 - Fixed missing project save when adding/removing files to subfolders of a project.
-- Fixed persistent collapse and expand state of projects, when studio is resarted. Before Studio did not store the information in all the cases.
+- Fixed persistent collapse and expanded state of projects, when studio is restarted. Before Studio did not store the information in all the cases.
 - Improved Help View document theme according to the Studio light/dark theme, when starting Studio or changing Studio theme.
 - Improved GAMS Licensing dialog behaviour on Windows, i.e. when Studio or GAMS is used in a directory with a Unicode name.
 - Upgraded ti Qt 6.10.1
