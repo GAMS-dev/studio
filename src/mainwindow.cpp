@@ -215,6 +215,13 @@ MainWindow::MainWindow(QWidget *parent)
         PExProjectNode * project = mProjectRepo.node(idx)->toProject();
         if (project) openFileNode(project);
     });
+    connect(ui->projectView, &ProjectTreeView::expandedChanged, this, [this](NodeId id, bool expanded) {
+        PExGroupNode *group = mProjectRepo.node(id)->toGroup();
+        if (!group) return;
+        group->setExpanded(expanded);
+        PExProjectNode *project = group->assignedProject();
+        if (project) project->setNeedSave();
+    });
 
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
@@ -4721,7 +4728,6 @@ void MainWindow::initDelayedElements()
     QString dummy;
     if (mWp->getChangelogPath(dummy) == fsMiss)
         ui->actionChangelog->setEnabled(false);
-
 }
 
 void MainWindow::openDelayedFiles()

@@ -404,8 +404,8 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile, bool doWa
                 SysLogLocator::systemLog()->append("Project incomplete: " + proName);
                 res = false;
             }
-            bool expand = projectData.contains(CFieldExpand) ? projectData.value(CFieldExpand).toBool() : true;
-            mTreeView->setExpanded(mProxyModel->asIndex(project), expand);
+            QString expandStates = projectData.value(CFieldExpand).toString();
+            applyExpandStates(project, expandStates);
             if (projectChangedMarker)
                 project->setNeedSave();
             if (projectData.contains(CFieldEngineJobToken))
@@ -416,6 +416,19 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile, bool doWa
         }
     }
     return res;
+}
+
+void ProjectRepo::applyExpandStates(PExGroupNode *group, QString &states)
+{
+    if (states.size()) {
+        group->setExpanded(states.at(0) == '1');
+        mTreeView->setExpanded(mProxyModel->asIndex(group), states.at(0) == '1');
+        states.removeFirst();
+    }
+    for (int i = 0; i < group->childCount(); ++i) {
+        if (PExGroupNode *subGroup = group->childNode(i)->toGroup())
+            applyExpandStates(subGroup, states);
+    }
 }
 
 bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &mainFile,
@@ -508,7 +521,6 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
 {
     if (!project) return QVariantMap();
     QVariantMap projectObject;
-    bool expand = true;
     QDir dir(QFileInfo(project->fileName()).absolutePath());
     if (FileMeta *meta = project->mainFile()) {
         if (project->findFile(meta)) { // ensure the file is part of the project
@@ -539,16 +551,22 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
     projectObject.insert(CFieldOwnBaseDir, project->ownBaseDir());
     if (!project->engineJobToken().isEmpty())
         projectObject.insert(CFieldEngineJobToken, project->engineJobToken());
-    QModelIndex mi = mProxyModel->asIndex(project);
-    bool ok = true;
-    expand = isExpanded(project->id(), &ok);
-    if (!ok)
-        expand = mTreeView->isExpanded(mi);
-    if (!expand) projectObject.insert(CFieldExpand, false);
+    QString expandStates = gatherExpandStates(project);
+    projectObject.insert(CFieldExpand, expandStates);
     QVariantList subArray;
     writeProjectFiles(project, subArray, relativePaths);
     projectObject.insert(CFieldNodes, subArray);
     return projectObject;
+}
+
+QString ProjectRepo::gatherExpandStates(const PExGroupNode *group) const
+{
+    QString res = group->expanded() ? "1" : "0";
+    for (int i = 0; i < group->childCount(); ++i) {
+        if (PExGroupNode *subGroup = group->childNode(i)->toGroup())
+            res += gatherExpandStates(subGroup);
+    }
+    return res;
 }
 
 void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList& childList, bool relativePaths) const
@@ -696,7 +714,7 @@ PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, co
     mTreeModel->insertChild(root->childCount(), root, project);
     connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
     emit changed();
-    mTreeView->setExpanded(mProxyModel->asIndex(project), true);
+    mTreeView->setExpanded(mProxyModel->asIndex(project), false);
     sortChildNodes(root);
     return project;
 }
@@ -854,7 +872,7 @@ void ProjectRepo::sortChildNodes(PExGroupNode *group)
 
 void ProjectRepo::focusProject(PExProjectNode *project)
 {
-    storeExpansionState(QModelIndex());
+    // storeExpansionState(QModelIndex());
     mProxyModel->focusProject(project);
     restoreExpansionState(QModelIndex());
 }
@@ -864,45 +882,20 @@ PExProjectNode *ProjectRepo::focussedProject() const
     return mProxyModel->focussedProject();
 }
 
-void ProjectRepo::storeExpansionState(QModelIndex parent)
-{
-    for (int row = 0; row < mProxyModel->rowCount(parent); ++row) {
-        QModelIndex mi = mProxyModel->index(row, 0, parent);
-        if (mProxyModel->hasChildren(mi)) {
-            NodeId id = mProxyModel->nodeId(mi);
-            if (id.isValid()) {
-                mIsExpanded.insert(id, mTreeView->isExpanded(mi));
-                storeExpansionState(mi);
-            }
-        }
-    }
-}
-
 void ProjectRepo::restoreExpansionState(QModelIndex parent)
 {
     for (int row = 0; row < mProxyModel->rowCount(parent); ++row) {
         QModelIndex mi = mProxyModel->index(row, 0, parent);
         if (mProxyModel->hasChildren(mi)) {
             NodeId id = mProxyModel->nodeId(mi);
-            if (id.isValid() && mIsExpanded.contains(id)) {
-                if (mIsExpanded.value(id))
-                    mTreeView->expand(mi);
-                else
-                    mTreeView->collapse(mi);
-                restoreExpansionState(mi);
-            }
+            PExGroupNode *group = asGroup(id);
+            if (group && group->expanded())
+                mTreeView->expand(mi);
+            else
+                mTreeView->collapse(mi);
+            restoreExpansionState(mi);
         }
     }
-}
-
-bool ProjectRepo::isExpanded(NodeId id, bool *ok) const
-{
-    if (id.isValid() && mIsExpanded.contains(id)) {
-        if (ok) *ok = true;
-        return mIsExpanded.value(id);
-    }
-    if (ok) *ok = false;
-    return false;
 }
 
 PExFileNode *ProjectRepo::findOrCreateFileNode(QString location, PExProjectNode *project, FileType *knownType,

@@ -70,6 +70,9 @@ public:
     const QList<PExAbstractNode*> &childNodes() const { return mChildNodes; }
     QDateTime timestamp() const override;
 
+    bool expanded() const;
+    void setExpanded(bool newExpanded);
+
 public slots:
     void hasFile(const QString &fName, bool &exists);
 
@@ -87,6 +90,7 @@ protected:
 private:
     QList<PExAbstractNode*> mChildNodes;
     QString mLocation;
+    bool mExpanded = false;
 };
 
 class PExProjectNode : public PExGroupNode

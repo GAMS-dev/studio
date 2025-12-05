@@ -124,6 +124,16 @@ void PExGroupNode::setLocation(const QString& newLocation)
     emit changed(id());
 }
 
+bool PExGroupNode::expanded() const
+{
+    return mExpanded;
+}
+
+void PExGroupNode::setExpanded(bool newExpanded)
+{
+    mExpanded = newExpanded;
+}
+
 QString PExGroupNode::tooltip()
 {
     QString res = QDir::toNativeSeparators(location());

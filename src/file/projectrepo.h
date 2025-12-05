@@ -151,9 +151,7 @@ public:
     void sortChildNodes(PExGroupNode *group);
     void focusProject(PExProjectNode *project);
     PExProjectNode *focussedProject() const;
-    void storeExpansionState(QModelIndex parent);
     void restoreExpansionState(QModelIndex parent);
-    bool isExpanded(NodeId id, bool *ok) const;
 
     void setDebugMode(bool debug);
     bool debugMode() const;
@@ -207,6 +205,8 @@ private:
     void addToProject(PExProjectNode *project, PExFileNode *file);
     QString uniqueNameExt(PExGroupNode *parentNode, const QString &name, PExAbstractNode *node = nullptr);
     void uniqueProjectFile(PExGroupNode *parentNode, QString &name);
+    void applyExpandStates(PExGroupNode *group, QString &states);
+    QString gatherExpandStates(const PExGroupNode *group) const;
 
     inline void addToIndex(PExAbstractNode* node) {
         mNodes.insert(node->id(), node);
@@ -230,7 +230,6 @@ private:
     int mRunIconCount = 1;
     int mRunAnimateIndex = 0;
     bool mDebugMode = false;
-    QHash<NodeId, bool> mIsExpanded;
 
     static const QString CIgnoreSuffix;
 
