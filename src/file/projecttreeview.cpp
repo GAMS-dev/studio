@@ -35,10 +35,12 @@ ProjectTreeView::ProjectTreeView(QWidget *parent) : QTreeView(parent)
     connect(this, &ProjectTreeView::expanded, this, [this](const QModelIndex &index) {
         NodeId nodeId = index.data(ProjectTreeModel::NodeIdRole).toInt();
         mExpandedNodes.insert(nodeId);
+        emit expandedChanged(nodeId, true);
     });
     connect(this, &ProjectTreeView::collapsed, this, [this](const QModelIndex &index) {
         NodeId nodeId = index.data(ProjectTreeModel::NodeIdRole).toInt();
         mExpandedNodes.remove(nodeId);
+        emit expandedChanged(nodeId, false);
     });
 }
 

@@ -1528,7 +1528,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
     QFileInfo fi(mLocation);
     if (fi.exists())
         mTimestamp = fi.lastModified();
-    DEB() << "Added editor " << mEditors.count() << " to " << mLocation;
+    DEB() << "Added editor " << mEditors.count() << " to " << QDir::toNativeSeparators(mLocation);
     return res;
 }
 

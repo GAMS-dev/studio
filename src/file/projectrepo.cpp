@@ -270,12 +270,13 @@ bool ProjectRepo::checkRead(const QVariantMap &map, int &count, int &ignored, QS
     count = 0;
     ignored = 0;
     if (basePath.isEmpty()) {
-        addWarning("Missing base path. Can't open project " + map.value(CFieldName).toString());
+        addWarning("Missing base path. Can't open project " + QDir::toNativeSeparators(map.value(CFieldName).toString()));
         return false;
     }
     QDir baseDir(basePath);
     if (!baseDir.exists() || !baseDir.isAbsolute()) {
-        addWarning("Base path '" +basePath + "' not valid. Can't open project " + map.value(CFieldName).toString());
+        addWarning("Base path '" + QDir::toNativeSeparators(basePath) + "' not valid. Can't open project "
+                   + QDir::toNativeSeparators(map.value(CFieldName).toString()));
         return false;
     }
 
@@ -298,10 +299,8 @@ bool ProjectRepo::checkRead(const QVariantMap &map, int &count, int &ignored, QS
             ++count;
         }
     }
-    if (!runPath.isEmpty()) {
-        missed << runPath + " (main file missing in file list)";
+    if (!runPath.isEmpty())
         ++count;
-    }
     return missed.isEmpty();
 }
 
@@ -350,11 +349,11 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile, bool doWa
             QStringList missed;
             checkRead(projectMap, count, ignored, missed, projectPath);
             if (count == ignored + missed.count()) {
-                message = "Couldn't restore missing project " + gspFile;
+                message = "Couldn't restore missing project " + QDir::toNativeSeparators(gspFile);
                 SysLogLocator::systemLog()->append(message);
                 return false;
             } else {
-                message = "Restoring missing project:\n" + gspFile;
+                message = "Restoring missing project:\n" + QDir::toNativeSeparators(gspFile);
                 SysLogLocator::systemLog()->append(message, LogMsgType::Info);
             }
             projectChangedMarker = true;
@@ -383,7 +382,9 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile, bool doWa
     if (workDir.isEmpty())
         workDir = projectPath;
 
-    QString mainFile = QDir::cleanPath(projectDir.absoluteFilePath(projectData.value(CFieldFile).toString()));
+    QString mainFile = projectData.value(CFieldFile).toString();
+    if (!mainFile.isEmpty())
+        mainFile = QDir::cleanPath(projectDir.absoluteFilePath(mainFile));
 
     QVariantList subChildren = projectData.value(CFieldNodes).toList();
     if (!name.isEmpty() || !projectPath.isEmpty()) {
@@ -398,10 +399,13 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile, bool doWa
                     pfFile = projectDir.absoluteFilePath(pfFile);
                 project->setParameterFile(pfFile);
             }
-            if (!readProjectFiles(project, subChildren, projectPath, doWarn))
+            if (!readProjectFiles(project, subChildren, mainFile, projectPath, doWarn)) {
+                QString proName = gspFile.isEmpty() ? project->name() : QDir::toNativeSeparators(gspFile);
+                SysLogLocator::systemLog()->append("Project incomplete: " + proName);
                 res = false;
-            bool expand = projectData.contains(CFieldExpand) ? projectData.value(CFieldExpand).toBool() : true;
-            mTreeView->setExpanded(mProxyModel->asIndex(project), expand);
+            }
+            QString expandStates = projectData.value(CFieldExpand).toString();
+            applyExpandStates(project, expandStates);
             if (projectChangedMarker)
                 project->setNeedSave();
             if (projectData.contains(CFieldEngineJobToken))
@@ -409,25 +413,38 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile, bool doWa
             project->setMainFileParameterHistory(FileId(), projectData.value(CFieldOptions).toStringList());
             project->setDynamicMainFile(projectData.value(CFieldDynamicMainFile).toBool());
             project->setOwnBaseDir(projectData.value(CFieldOwnBaseDir, false).toBool());
-
-            if (!project->childCount()) {
-                closeGroup(project);
-            }
         }
     }
     return res;
 }
 
-bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &baseDir, bool doWarn)
+void ProjectRepo::applyExpandStates(PExGroupNode *group, QString &states)
+{
+    if (states.size()) {
+        group->setExpanded(states.at(0) == '1');
+        mTreeView->setExpanded(mProxyModel->asIndex(group), states.at(0) == '1');
+        states.removeFirst();
+    }
+    for (int i = 0; i < group->childCount(); ++i) {
+        if (PExGroupNode *subGroup = group->childNode(i)->toGroup())
+            applyExpandStates(subGroup, states);
+    }
+}
+
+bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &mainFile,
+                                   const QString &baseDir, bool doWarn)
 {
     bool res = true;
     if (!project)
         EXCEPT() << "Missing project node, can't add file nodes";
     QDir localBaseDir(baseDir);
+    bool addMain = !mainFile.isEmpty();
     for (int i = 0; i < children.size(); ++i) {
         QVariantMap child = children.at(i).toMap();
         QString name = child.value(CFieldName).toString();
         QString file = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value(CFieldFile).toString()));
+        if (file.compare(mainFile, FileType::fsCaseSense()) == 0)
+            addMain = false;
         if (!name.isEmpty() || !file.isEmpty()) {
             QString suf = child[CFieldType].toString();
             if (suf == "gms") suf = QFileInfo(name).fileName();
@@ -446,12 +463,22 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
                 project->setMainFileParameterHistory(node->file()->id(), optList);
             } else if (!CIgnoreSuffix.contains('.'+QFileInfo(file).suffix()+'.')) {
                 if (doWarn)
-                    emit addWarning("File not found: " + file);
+                    emit addWarning("File not found: " + QDir::toNativeSeparators(file));
                 res = false;
             }
         }
     }
     project->setNeedSave(false);
+
+    if (addMain) {
+        if (QFileInfo::exists(mainFile)) {
+            addWarning("Incomplete data for main file fixed: " + QDir::toNativeSeparators(mainFile));
+            findOrCreateFileNode(mainFile, project);
+            project->setNeedSave(true);
+        } else if (!mainFile.isEmpty())
+            addWarning("Missing main file: " + QDir::toNativeSeparators(mainFile));
+    }
+
     return res;
 }
 
@@ -459,7 +486,8 @@ void ProjectRepo::write(QVariantList &projects) const
 {
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
         PExProjectNode *project = mTreeModel->rootNode()->childNode(i)->toProject();
-        if (!project) continue;
+        if (!project || !project->childCount())
+            continue;
         if (project->type() == PExProjectNode::tCommon && project->needSave()) {
             // store to file with relative paths
             QVariantMap proData = getProjectMap(project, true);
@@ -484,7 +512,8 @@ void ProjectRepo::save(PExProjectNode *project, const QVariantMap &data) const
         if (file.close())
             project->setNeedSave(false);
     } else {
-        SysLogLocator::systemLog()->append("Couldn't write project to " + fileName, LogMsgType::Error);
+        SysLogLocator::systemLog()->append("Couldn't write project to " + QDir::toNativeSeparators(fileName)
+                                           , LogMsgType::Error);
     }
 }
 
@@ -492,17 +521,22 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
 {
     if (!project) return QVariantMap();
     QVariantMap projectObject;
-    bool expand = true;
     QDir dir(QFileInfo(project->fileName()).absolutePath());
-    if (project->mainFile()) {
-        QString filePath = project->mainFile()->location();
-        projectObject.insert(CFieldFile, relativePaths ? dir.relativeFilePath(filePath) : filePath);
+    if (FileMeta *meta = project->mainFile()) {
+        if (project->findFile(meta)) { // ensure the file is part of the project
+            QString filePath = meta->location();
+            projectObject.insert(CFieldFile, relativePaths ? dir.relativeFilePath(filePath) : filePath);
+        } else
+            DEB() << "Project doesn't contain main file " + QDir::toNativeSeparators(meta->location());
     }
     if (project->hasParameterFile()) {
         QString pfPath;
         if (FileMeta * meta = project->parameterFile()) {
-            QString filePath = meta->location();
-            pfPath = relativePaths ? dir.relativeFilePath(filePath) : filePath;
+            if (project->findFile(meta)) { // ensure the file is part of the project
+                QString filePath = meta->location();
+                pfPath = relativePaths ? dir.relativeFilePath(filePath) : filePath;
+            } else
+                DEB() << "Project doesn't contain parameter file " + QDir::toNativeSeparators(meta->location());
         }
         projectObject.insert(CFieldPf, pfPath);
     }
@@ -517,16 +551,22 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
     projectObject.insert(CFieldOwnBaseDir, project->ownBaseDir());
     if (!project->engineJobToken().isEmpty())
         projectObject.insert(CFieldEngineJobToken, project->engineJobToken());
-    QModelIndex mi = mProxyModel->asIndex(project);
-    bool ok = true;
-    expand = isExpanded(project->id(), &ok);
-    if (!ok)
-        expand = mTreeView->isExpanded(mi);
-    if (!expand) projectObject.insert(CFieldExpand, false);
+    QString expandStates = gatherExpandStates(project);
+    projectObject.insert(CFieldExpand, expandStates);
     QVariantList subArray;
     writeProjectFiles(project, subArray, relativePaths);
     projectObject.insert(CFieldNodes, subArray);
     return projectObject;
+}
+
+QString ProjectRepo::gatherExpandStates(const PExGroupNode *group) const
+{
+    QString res = group->expanded() ? "1" : "0";
+    for (int i = 0; i < group->childCount(); ++i) {
+        if (PExGroupNode *subGroup = group->childNode(i)->toGroup())
+            res += gatherExpandStates(subGroup);
+    }
+    return res;
 }
 
 void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList& childList, bool relativePaths) const
@@ -627,8 +667,8 @@ void ProjectRepo::uniqueProjectFile(PExGroupNode *parentNode, QString &filePath)
     filePath = res;
 }
 
-PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, const QString &mainFileName, ProjectExistFlag mode,
-                                           const QString &workDir, PExProjectNode::Type type)
+PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, const QString &mainFileName,
+                                           ProjectExistFlag mode, const QString &workDir, PExProjectNode::Type type)
 {
     PExGroupNode *root = mTreeModel->rootNode();
     if (!root) FATAL() << "Can't get tree-model root-node";
@@ -674,7 +714,7 @@ PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, co
     mTreeModel->insertChild(root->childCount(), root, project);
     connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
     emit changed();
-    mTreeView->setExpanded(mProxyModel->asIndex(project), true);
+    mTreeView->setExpanded(mProxyModel->asIndex(project), false);
     sortChildNodes(root);
     return project;
 }
@@ -758,7 +798,6 @@ PExGroupNode *ProjectRepo::findOrCreateFolder(const QString &folderName, PExGrou
     addToIndex(folder);
     mTreeModel->insertChild(parentNode->childCount(), parentNode, folder);
     connect(folder, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
-    emit changed();
     sortChildNodes(parentNode);
     return folder;
 }
@@ -833,7 +872,7 @@ void ProjectRepo::sortChildNodes(PExGroupNode *group)
 
 void ProjectRepo::focusProject(PExProjectNode *project)
 {
-    storeExpansionState(QModelIndex());
+    // storeExpansionState(QModelIndex());
     mProxyModel->focusProject(project);
     restoreExpansionState(QModelIndex());
 }
@@ -843,45 +882,20 @@ PExProjectNode *ProjectRepo::focussedProject() const
     return mProxyModel->focussedProject();
 }
 
-void ProjectRepo::storeExpansionState(QModelIndex parent)
-{
-    for (int row = 0; row < mProxyModel->rowCount(parent); ++row) {
-        QModelIndex mi = mProxyModel->index(row, 0, parent);
-        if (mProxyModel->hasChildren(mi)) {
-            NodeId id = mProxyModel->nodeId(mi);
-            if (id.isValid()) {
-                mIsExpanded.insert(id, mTreeView->isExpanded(mi));
-                storeExpansionState(mi);
-            }
-        }
-    }
-}
-
 void ProjectRepo::restoreExpansionState(QModelIndex parent)
 {
     for (int row = 0; row < mProxyModel->rowCount(parent); ++row) {
         QModelIndex mi = mProxyModel->index(row, 0, parent);
         if (mProxyModel->hasChildren(mi)) {
             NodeId id = mProxyModel->nodeId(mi);
-            if (id.isValid() && mIsExpanded.contains(id)) {
-                if (mIsExpanded.value(id))
-                    mTreeView->expand(mi);
-                else
-                    mTreeView->collapse(mi);
-                restoreExpansionState(mi);
-            }
+            PExGroupNode *group = asGroup(id);
+            if (group && group->expanded())
+                mTreeView->expand(mi);
+            else
+                mTreeView->collapse(mi);
+            restoreExpansionState(mi);
         }
     }
-}
-
-bool ProjectRepo::isExpanded(NodeId id, bool *ok) const
-{
-    if (id.isValid() && mIsExpanded.contains(id)) {
-        if (ok) *ok = true;
-        return mIsExpanded.value(id);
-    }
-    if (ok) *ok = false;
-    return false;
 }
 
 PExFileNode *ProjectRepo::findOrCreateFileNode(QString location, PExProjectNode *project, FileType *knownType,
@@ -962,7 +976,7 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
     QList<PExFileNode*> destNodes;
     if (destFM) {
         if (destFM->isOpen()) {
-            SysLogLocator::systemLog()->append("Editor must not be open for " + target);
+            SysLogLocator::systemLog()->append("Editor must not be open for " + QDir::toNativeSeparators(target));
             return;
         }
         destNodes << fileNodes(destFM->id());
@@ -1249,7 +1263,8 @@ QVariantMap ProjectRepo::parseProjectFile(const QString &gspFile) const
         json = QJsonDocument::fromJson(file.readAll(), &parseResult);
         if (parseResult.error) {
             if (SysLogLocator::systemLog())
-                SysLogLocator::systemLog()->append("Couldn't parse project from " + gspFile, LogMsgType::Error);
+                SysLogLocator::systemLog()->append("Couldn't parse project from " + QDir::toNativeSeparators(gspFile)
+                                                   , LogMsgType::Error);
             return QVariantMap();
         }
         file.close();
@@ -1260,7 +1275,8 @@ QVariantMap ProjectRepo::parseProjectFile(const QString &gspFile) const
         }
         return map;
     } else if (SysLogLocator::systemLog()) {
-        SysLogLocator::systemLog()->append("Couldn't open project " + gspFile, LogMsgType::Error);
+        SysLogLocator::systemLog()->append("Couldn't open project " + QDir::toNativeSeparators(gspFile)
+                                           , LogMsgType::Error);
     }
     return QVariantMap();
 }

@@ -34,6 +34,7 @@
 #include <QMessageBox>
 #include <QRegularExpressionValidator>
 #include <QSortFilterProxyModel>
+#include <QStandardPaths>
 #include <QFontDatabase>
 #include <QFileDialog>
 #include <QTextDocument>
@@ -49,6 +50,7 @@ GamsLicensingDialog::GamsLicensingDialog(const QString &title, QWidget *parent)
     , mGamsGetKeyProc(new GamsGetKeyProcess(this))
 {
     ui->setupUi(this);
+    mGamsAboutProc->setCurDir(getCurdirForAboutProcess());
     createLicenseFileFromClipboard(parent);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle(title);
@@ -119,6 +121,23 @@ void GamsLicensingDialog::setSolverLines(QStringList& about)
         about << QString("<li>Expired: %2</li>").arg(groups["Expired"].join(", "));
     }
     about << "</ul><br/>";
+}
+
+QString GamsLicensingDialog::getCurdirForAboutProcess()
+{// TODO (AF): Remove workaround when gams curdir param has Unicode support
+    QString curdir;
+#ifdef _WIN64
+    GamsLicenseInfo liceInfo;
+    auto dataLocations = liceInfo.gamsDataLocations();
+    if (dataLocations.isEmpty())
+        curdir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+    else
+        curdir = dataLocations.first();
+#else
+    curdir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+#endif
+    SysLogLocator::systemLog()->append("CURDIR: "+curdir, LogMsgType::Info);
+    return curdir;
 }
 
 void GamsLicensingDialog::writeLicenseFile(QStringList &license, QWidget *parent, bool clipboard)
@@ -334,7 +353,7 @@ void GamsLicensingDialog::updateAboutLabel(int exitCode)
 
     bool licenseLines = false;
     auto lines = mGamsAboutProc->content().split('\n', Qt::SkipEmptyParts, Qt::CaseInsensitive);
-    if (lines.size() >= 3) {
+    if (!exitCode && lines.size() >= 3) {
         lines.removeFirst();
         lines.removeLast();
         lines.removeLast();

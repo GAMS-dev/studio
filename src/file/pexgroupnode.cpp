@@ -101,11 +101,15 @@ void PExGroupNode::appendChild(PExAbstractNode* child)
 {
     if (!child || mChildNodes.contains(child)) return;
     mChildNodes.append(child);
+    if (assignedProject())
+        assignedProject()->setNeedSave(true);
 }
 
 void PExGroupNode::removeChild(PExAbstractNode* child)
 {
     mChildNodes.removeOne(child);
+    if (assignedProject())
+        assignedProject()->setNeedSave(true);
 }
 
 QString PExGroupNode::location() const
@@ -118,6 +122,16 @@ void PExGroupNode::setLocation(const QString& newLocation)
     mLocation = mLocation.contains('\\') ? QDir::fromNativeSeparators(newLocation) : newLocation;
     if (mLocation.endsWith('/')) mLocation.remove(mLocation.length()-1, 1);
     emit changed(id());
+}
+
+bool PExGroupNode::expanded() const
+{
+    return mExpanded;
+}
+
+void PExGroupNode::setExpanded(bool newExpanded)
+{
+    mExpanded = newExpanded;
 }
 
 QString PExGroupNode::tooltip()

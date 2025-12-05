@@ -664,18 +664,8 @@ YAML::Node Connect::getDefaultValueByType(Schema* schemaHelper)
                               : defaultValue.value.boolval );
         break;
     }
-    case SchemaType::Dict: {
-        if (strcmp(defaultValue.value.stringval, "null")!=0)
-            node = "[value]";
-        break;
-    }
-    case SchemaType::List: {
-        if (strcmp(defaultValue.value.stringval, "null")!=0)
-            node = "[value]";
-        break;
-    }
-    default: { // string
-        node = "[value]";
+    default: { // empty string node
+        node = "";
         break;
     }
     }

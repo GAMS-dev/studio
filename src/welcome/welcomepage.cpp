@@ -79,7 +79,8 @@ WelcomePage::WelcomePage(MainWindow *parent)
         ui->label_changelog->setEnabled(false);
     } else if (fState == fsOther) {
         QTimer::singleShot(0, this, [this, clPath]() {
-            mMain->appendSystemLogWarning("Studio changelog from GAMS installation: '" + clPath + "'");
+            mMain->appendSystemLogWarning("Studio changelog from GAMS installation: '"
+                                          + QDir::toNativeSeparators(clPath) + "'");
         });
     }
 

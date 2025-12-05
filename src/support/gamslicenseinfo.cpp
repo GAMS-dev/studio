@@ -127,7 +127,6 @@ QString GamsLicenseInfo::solverLicense(const QString &name, int id) const
             return "Community";
         return "Demo";
     }
-
     if (days == 0)
         return "Full";
     if (days > 0)
@@ -162,7 +161,6 @@ bool GamsLicenseInfo::isLicenseValid(const QStringList &license)
     for (const auto& line: license) {
         palLicenseRegisterGAMS(mPAL, i++, line.trimmed().toStdString().c_str());
     }
-
     palLicenseRegisterGAMSDone(mPAL);
     bool ret = !palLicenseValidation(mPAL);
     addPalMessagesToSysLog();
@@ -203,7 +201,6 @@ QStringList GamsLicenseInfo::gamsDataLocations()
         dataPaths << buffer+offset[i];
     }
 #endif
-
     return dataPaths;
 }
 
@@ -410,7 +407,8 @@ QString GamsLicenseInfo::licenseDirectory()
     }
     GamsLicenseInfo licenseInfo;
     auto locations = licenseInfo.gamsDataLocations();
-    return locations.count() ? locations.constFirst() : CommonPaths::systemDir();
+    auto dir = locations.count() ? locations.constFirst() : CommonPaths::systemDir();
+    return dir;
 }
 
 QString GamsLicenseInfo::licenseLocation()

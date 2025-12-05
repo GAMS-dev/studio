@@ -63,8 +63,9 @@ QModelIndex ProjectProxyModel::asIndex(const NodeId &id) const
 
 void ProjectProxyModel::focusProject(PExProjectNode *project)
 {
+    beginFilterChange();
     mFocusProject = project;
-    invalidateRowsFilter();
+    endFilterChange(Direction::Rows);
 }
 
 PExProjectNode *ProjectProxyModel::focussedProject() const

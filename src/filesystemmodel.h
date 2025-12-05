@@ -42,8 +42,8 @@ class FilteredFileSystemModel : public QSortFilterProxyModel
 public:
     FilteredFileSystemModel(QObject *parent = nullptr);
     bool isDir(const QModelIndex &index) const;
-    void setHideUncommonFiles(bool hide) { mHideUncommon = hide; invalidateFilter(); }
-    void setUncommonRegExp(const QRegularExpression &rex) { mUncommonRegEx = rex; invalidateFilter(); }
+    void setHideUncommonFiles(bool hide);
+    void setUncommonRegExp(const QRegularExpression &rex);
     void setSourceModel(QAbstractItemModel *sourceModel) override;
 protected:
     bool filterAcceptsColumn(int source_column, const QModelIndex& source_parent) const override;

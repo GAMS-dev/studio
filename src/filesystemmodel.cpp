@@ -36,6 +36,20 @@ bool FilteredFileSystemModel::isDir(const QModelIndex &index) const
     return static_cast<FileSystemModel*>(sourceModel())->isDir(mapToSource(index));
 }
 
+void FilteredFileSystemModel::setHideUncommonFiles(bool hide)
+{
+    beginFilterChange();
+    mHideUncommon = hide;
+    endFilterChange(Direction::Rows);
+}
+
+void FilteredFileSystemModel::setUncommonRegExp(const QRegularExpression &rex)
+{
+    beginFilterChange();
+    mUncommonRegEx = rex;
+    endFilterChange(Direction::Rows);
+}
+
 void FilteredFileSystemModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
     QSortFilterProxyModel::setSourceModel(sourceModel);

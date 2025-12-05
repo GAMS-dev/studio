@@ -65,6 +65,10 @@ void TestGamsAboutProcess::test_getset()
 {
     QVERIFY(mProcess->content().isEmpty());
     QVERIFY(mProcess->logMessages().isEmpty());
+    QVERIFY(mProcess->curDir().isEmpty());
+    QString path("/some/path");
+    mProcess->setCurDir(path);
+    QCOMPARE(mProcess->curDir(), path);
 }
 
 QTEST_APPLESS_MAIN(TestGamsAboutProcess)

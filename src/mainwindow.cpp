@@ -215,6 +215,13 @@ MainWindow::MainWindow(QWidget *parent)
         PExProjectNode * project = mProjectRepo.node(idx)->toProject();
         if (project) openFileNode(project);
     });
+    connect(ui->projectView, &ProjectTreeView::expandedChanged, this, [this](NodeId id, bool expanded) {
+        PExGroupNode *group = mProjectRepo.node(id)->toGroup();
+        if (!group) return;
+        group->setExpanded(expanded);
+        PExProjectNode *project = group->assignedProject();
+        if (project) project->setNeedSave();
+    });
 
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
@@ -605,15 +612,8 @@ void MainWindow::initWelcomePage()
     //    When the labels have been recalculated, the string that belongs to the label becomes invalid.
     connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
         PExProjectNode *project = mProjectRepo.findProject(projectPath);
-        if (!project && QFile::exists(projectPath)) {
-            mProjectRepo.read(QVariantMap(), projectPath);
-            project = mProjectRepo.findProject(projectPath);
-        }
-        if (project && project->mainFile()) {
-            openFile(project->mainFile(), true, project);
-        }
-        if (project && mProjectRepo.focussedProject())
-            focusProject(project);
+        if (!project && QFile::exists(projectPath))
+            openProject(projectPath);
     });
 
     connect(mWp, &WelcomePage::openFilePath, this, [this](const QString &filePath) {
@@ -2723,7 +2723,7 @@ void MainWindow::postGamsLibRun()
     if (!node)
         node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile(), project);
     if (node) mFileMetaRepo.watch(node->file());
-    if (node && !node->file()->editors().isEmpty()) {
+    if (node && node->file() && !node->file()->editors().isEmpty()) {
         if (node->file()->kind() != FileKind::Log && node->file()->kind() != FileKind::Gsp)
             node->file()->load(node->file()->encoding());
     }
@@ -3463,34 +3463,22 @@ void MainWindow::openProject(const QString &gspFile)
                 updateSystemLogTab(true);
             });
             QString basePath = QFileInfo(gspFile).path();
-            dialog->init(&mProjectRepo, gspFile, basePath, map);
-
-            if (dialog->checkProject()) {
+            dialog->init(&mProjectRepo, basePath, map);
+            mOpenPermission = opNoGsp;
+            connect(dialog, &path::PathRequest::done, this, [this, dialog]() {
                 dialog->deleteLater();
+                mOpenPermission = opAll;
+                QTimer::singleShot(0, this, &MainWindow::openDelayedFiles);
+            });
+            connect(dialog, &path::PathRequest::acceptOpen, this, [this, map, gspFile]() {
                 bool hasProjectFocus = mProjectRepo.focussedProject();
-                mProjectRepo.read(map, gspFile);
+                mProjectRepo.read(map, gspFile, false);
+                mOpenPermission = opAll;
                 if (hasProjectFocus)
                     focusProject(mProjectRepo.findProject(gspFile));
-            } else {
-                connect(dialog, &path::PathRequest::finished, this, [this, dialog]() {
-                    dialog->deleteLater();
-                    mOpenPermission = opAll;
-                    QTimer::singleShot(0, this, &MainWindow::openDelayedFiles);
-                });
-                connect(dialog, &path::PathRequest::accepted, this, [this, map, gspFile]() {
-                    bool hasProjectFocus = mProjectRepo.focussedProject();
-                    mProjectRepo.read(map, gspFile, false);
-                    if (hasProjectFocus)
-                        focusProject(mProjectRepo.findProject(gspFile));
-                });
-                mOpenPermission = opNoGsp;
-                dialog->open();
-#ifdef __APPLE__
-                dialog->show();
-                dialog->raise();
-#endif
-            }
+            });
 
+            dialog->checkProject(gspFile);
         }
     } else {
         appendSystemLogError("Couldn't open project " + gspFile);
@@ -4170,18 +4158,16 @@ PExFileNode* MainWindow::openFilePath(const QString filePath, PExProjectNode* kn
         if (project)
             fileNode = project->findFile(fileMeta);
     }
-    // create the destination group if necessary
+    // create the destination project if necessary
     if (!project && !fileNode) {
         QFileInfo fi(filePath);
         QString proFile = fi.path() + "/" + fi.completeBaseName() + ".gsp";
         if (QFile::exists(proFile)) {
-            bool hasProjectFocus = mProjectRepo.focussedProject();
-            mProjectRepo.read(QVariantMap(), proFile);
+            openProject(proFile);
             project = mProjectRepo.findProject(proFile);
-            if (hasProjectFocus)
-                focusProject(project);
-        } else
+        } else {
             project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "", onExist_Project);
+        }
     }
 
     // create node if missing
@@ -4742,7 +4728,6 @@ void MainWindow::initDelayedElements()
     QString dummy;
     if (mWp->getChangelogPath(dummy) == fsMiss)
         ui->actionChangelog->setEnabled(false);
-
 }
 
 void MainWindow::openDelayedFiles()
