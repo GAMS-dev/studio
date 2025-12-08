@@ -255,8 +255,8 @@ ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
     ui->bWorkDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
     ui->bWorkDir->setToolTip("Browse for working directory");
 
-    ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files/n"
-                              "Equals the Working directory by default. Check to assign a different path.");
+    ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files\n"
+                              "Similar to the Working directory by default. Check to assign a different path.");
     ui->cbOwnBaseDir->setToolTip(ui->edBaseDir->toolTip());
     ui->bBaseDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
     ui->bBaseDir->setToolTip("Browse for base directory");

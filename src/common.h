@@ -182,6 +182,11 @@ enum OpenGroupOption {
     ogImportGpr
 };
 
+enum OpenPathScope {
+    opProject,
+    opFile
+};
+
 typedef QMap<int, int> SortedIntMap; // also used as int-set to handle sort and avoid double entries
 
 //template <typename T>

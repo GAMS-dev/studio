@@ -1824,7 +1824,7 @@ void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const Q
             FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
             if (fm) path = QFileInfo(fm->location()).path();
         }
-        if (path.isEmpty()) path = currentPath();
+        if (path.isEmpty()) path = currentPath(opFile);
         if (path.isEmpty()) path = CommonPaths::defaultWorkingDir();
     }
     if (!QFile::exists(path)) {
@@ -1959,7 +1959,7 @@ void MainWindow::on_actionNew_triggered()
     QVector<PExProjectNode*> project;
     if (Settings::settings()->toBool(skOpenInCurrent) && mRecent.project())
         project << mRecent.project();
-    newFileDialogPrepare(project);
+    newFileDialogPrepare(project, currentPath(opFile));
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -1974,7 +1974,7 @@ void MainWindow::on_actionOpenAlternative_triggered()
 
 void MainWindow::on_actionOpen_Folder_triggered()
 {
-    const QString folder = QFileDialog::getExistingDirectory(this, "Open Folder", currentPath(),
+    const QString folder = QFileDialog::getExistingDirectory(this, "Open Folder", currentPath(opFile),
                                                                 QFileDialog::ShowDirsOnly);
     openFolder(folder);
 }
@@ -2645,7 +2645,7 @@ void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
     if (exitCode == ecTooManyScratchDirs) {
         FileMeta *fm = mRecent.fileMeta();
         PExProjectNode* project = fm ? mProjectRepo.findProject(fm->projectId()) : nullptr;
-        QString path = project ? QDir::toNativeSeparators(project->workDir()) : currentPath();
+        QString path = project ? QDir::toNativeSeparators(project->workDir()) : currentPath(opProject);
 
         // TODO fix QDialog::exec() issue
         QMessageBox msgBox;
@@ -2904,7 +2904,7 @@ void MainWindow::on_actionChangelog_triggered()
 
 void MainWindow::on_actionTerminal_triggered()
 {
-    auto workingDir = currentPath();
+    auto workingDir = currentPath(opFile);
     actionTerminalTriggered(workingDir);
 }
 
@@ -3671,13 +3671,20 @@ void MainWindow::updateProjectList()
     ui->menuFocus_Project->addActions(mActFocusProject->actions());
 }
 
-QString MainWindow::currentPath()
+QString MainWindow::currentPath(OpenPathScope scope)
 {
     if (currentEdit() != nullptr) {
         if (ViewHelper::toProjectEdit(currentEdit())) {
             if (PExProjectNode *pro = mRecent.project(false))
-                return pro->workDir();
-        } else return mRecent.path();
+                return pro->location();
+        } else {
+            if (scope == opProject)
+                if (PExProjectNode *pro = mRecent.project(true))
+                    return pro->location();
+            if (FileMeta *meta = mRecent.fileMeta())
+                return QFileInfo(meta->location()).absolutePath();
+            return mRecent.path();
+        }
     }
     return CommonPaths::defaultWorkingDir();
 
@@ -3697,7 +3704,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
 void MainWindow::on_actionGDX_Diff_triggered()
 {
-    QString path = currentPath();
+    QString path = currentPath(opFile);
     actionGDX_Diff_triggered(path);
 }
 
@@ -4211,7 +4218,8 @@ int MainWindow::pinViewTabIndex()
 
 void MainWindow::openFilesDialog(OpenGroupOption opt)
 {
-    QString path = currentPath();
+    OpenPathScope pathScope = opt == ogCurrentGroup ? opProject : opFile;
+    QString path = currentPath(pathScope);
     QString text = (opt == ogProjects ? "Open project(s)" : opt == ogImportGpr ? "Import GPR project" : "Open file(s)");
     QString filter = (opt == ogProjects ? ViewHelper::dialogProjectFilter()
                                         : opt == ogImportGpr ? ViewHelper::dialogImportGprFilter()

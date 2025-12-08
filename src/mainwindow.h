@@ -498,7 +498,7 @@ private:
     void addToHistory(const QString &filePath);
     bool terminateProcessesConditionally(const QVector<PExProjectNode *> &projects);
     void restoreFromSettings();
-    QString currentPath();
+    QString currentPath(OpenPathScope scope);
     neos::NeosProcess *createNeosProcess();
     bool executePrepare(PExProjectNode *project, const QString &commandLineStr, AbstractProcess* process = nullptr
                         , gamscom::ComFeatures comMode = gamscom::cfNoCom);
