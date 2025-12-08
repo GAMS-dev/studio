@@ -1,3 +1,8 @@
+Version 1.24.0 *
+==================
+- Improved search and replace file pattern, i.e. the default pattern has been changed from `*` to `*.gms`. The change is applied to all the cases where a file pattern can be configured.
+
+
 Version 1.23.2
 ==================
 - Fixed crash on open a non-gms file.
