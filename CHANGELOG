@@ -1,6 +1,6 @@
 Version 1.23.3 *
 ==================
-- t.b.d.
+- Fixed a rare crash in the context menu of Project Explorer.
 
 Version 1.23.2
 ==================
