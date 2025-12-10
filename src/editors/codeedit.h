@@ -120,6 +120,7 @@ public:
     EditorType type() const override;
     QString wordUnderCursor() const;
     virtual bool hasSelection() const;
+    QString currentFindSelection();
     void disconnectTimers() override;
     int foldStart(int line, bool &folded, QString *closingSymbol = nullptr, const QString *usedParenheses = nullptr) const;
     void foldAll(bool onlyDCO = false);
@@ -132,6 +133,7 @@ public:
     void setSearchSelectionActive(bool active) override;
     void updateSearchSelection() override;
     void findInSelection(QList<search::Result> &results) override;
+    bool findLoop(const QRegularExpression &rex, QTextDocument::FindFlags options);
     void replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope) override;
     int replaceAll(FileMeta *fm, const QRegularExpression &regex, const QString &replaceText,
                    QFlags<QTextDocument::FindFlag> options, bool selectionScope) override;
@@ -184,8 +186,8 @@ signals:
     void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax, int pos = -1);
     void syntaxDocAt(QTextBlock block, int pos, QStringList &syntaxDoc);
     void syntaxFlagData(QTextBlock block, syntax::SyntaxFlag flag, QString &value);
-    void searchFindNextPressed();
-    void searchFindPrevPressed();
+    void continueFindPressed(bool backwards);
+    void continueSearchPressed(bool backwards);
     void requestAdvancedActions(QList<QAction*>* actions);
     void hasHRef(const QString &href, QString &fileName);
     void jumpToHRef(const QString &href);

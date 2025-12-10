@@ -187,6 +187,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
     ui->findWidget->setVisible(false);
+    connect(ui->findWidget, &find::FindWidget::find, this, &MainWindow::findInCurrentTab);
 
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
@@ -5529,18 +5530,13 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         CodeEdit* ce = ViewHelper::toCodeEdit(edit);
         connect(ce, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
         connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
-        connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, [this] {
-            mSearchDialog->on_searchNext();
-        });
-        connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, [this] {
-            mSearchDialog->on_searchPrev();
-        });
+        connect(ce, &CodeEdit::continueFindPressed, this, &MainWindow::continueFind);
+        connect(ce, &CodeEdit::continueSearchPressed, this, &MainWindow::continueSearch);
         ce->addAction(ui->actionRun);
     }
     if (TextView *tv = ViewHelper::toTextView(edit)) {
-        connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
-        connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
-
+        connect(tv, &TextView::continueFindPressed, this, &MainWindow::continueFind);
+        connect(tv, &TextView::continueSearchPressed, this, &MainWindow::continueSearch);
     }
     if (ViewHelper::toCodeEdit(edit)) {
         AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
@@ -6016,15 +6012,26 @@ void MainWindow::on_actionSettings_triggered()
     mSettingsDialog->open();
 }
 
-void MainWindow::on_actionSearch_triggered()
+void MainWindow::on_actionFind_triggered()
 {
     if (ViewHelper::toCodeEdit(ui->mainTabs->currentWidget()) || ViewHelper::toTextView(ui->mainTabs->currentWidget())) {
-        ui->findWidget->toggleActive();
-        ui->findWidget->setVisible(!ui->findWidget->active());
+        QString term;
+        if (CodeEdit *edit = ViewHelper::toCodeEdit(ui->mainTabs->currentWidget()))
+            term = edit->currentFindSelection();
+        else if (TextView *view = ViewHelper::toTextView(ui->mainTabs->currentWidget()))
+            term = view->currentFindSelection();
+        if (!term.isEmpty())
+            ui->findWidget->setFindText(term);
+        ui->findWidget->setActive(true);
+        ui->findWidget->setVisible(ui->findWidget->active());
         if (ui->findWidget->isVisible())
             ui->findWidget->setFocus();
-    } else
-        toggleSearchDialog();
+    }
+}
+
+void MainWindow::on_actionSearch_triggered()
+{
+    toggleSearchDialog();
 }
 
 void MainWindow::toggleSearchDialog()
@@ -6120,6 +6127,32 @@ void MainWindow::updateResults(search::SearchResultModel* model)
     ui->logTabs->setCurrentWidget(mResultsView);
 
     mResultsView->resizeColumnsToContent();
+}
+
+void MainWindow::findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options)
+{
+    if (CodeEdit *edit = ViewHelper::toCodeEdit(ui->mainTabs->currentWidget())) {
+        edit->findLoop(rex, options);
+        edit->setFocus();
+    }
+    else if (TextView *view = ViewHelper::toTextView(ui->mainTabs->currentWidget())) {
+        bool continuedFind = false;
+        view->findText(rex, options, continuedFind);
+        view->edit()->setFocus();
+    }
+}
+
+void MainWindow::continueFind(bool backwards)
+{
+    emit ui->findWidget->triggerFind(backwards);
+}
+
+void MainWindow::continueSearch(bool backwards)
+{
+    if (backwards)
+        mSearchDialog->on_searchPrev();
+    else
+        mSearchDialog->on_searchNext();
 }
 
 void MainWindow::closeResultsView()
@@ -7517,6 +7550,9 @@ void MainWindow::updateProjectSortIcon()
     tt = tt.arg(ttKey.at(mProjectFilterHandler->sortKey()), ttOrder.at(mProjectFilterHandler->sortOrder()));
     ui->projectSort->setToolTip(tt);
 }
+
+
+
 
 
 }

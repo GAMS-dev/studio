@@ -221,6 +221,7 @@
     <addaction name="actionOverwrite_Mode"/>
     <addaction name="separator"/>
     <addaction name="menuEncoding"/>
+    <addaction name="actionFind"/>
     <addaction name="actionSearch"/>
     <addaction name="actionGo_To"/>
     <addaction name="actionNavigator"/>
@@ -1038,7 +1039,7 @@
     <string>&amp;Search &amp;&amp; Replace</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+F</string>
+    <string>Ctrl+Shift+F</string>
    </property>
   </action>
   <action name="actionOption_View">
@@ -1872,6 +1873,21 @@
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionFind">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/search</normaloff>:/solid/search</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Find &amp;&amp; Replace</string>
+   </property>
+   <property name="toolTip">
+    <string>Quick Find &amp; Replace</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
    </property>
   </action>
  </widget>

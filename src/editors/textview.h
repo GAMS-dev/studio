@@ -60,6 +60,7 @@ public:
     void copySelection();
     QString selectedText() const;
     QString wordUnderCursor() const;
+    QString currentFindSelection() const;
     void selectAllText();
     void clearSelection();
     AbstractEdit *edit();
@@ -85,8 +86,8 @@ signals:
     void blockCountChanged();
     void loadAmountChanged(int knownLineCount);
     void selectionChanged();
-    void searchFindNextPressed();
-    void searchFindPrevPressed();
+    void continueFindPressed(bool backwards);
+    void continueSearchPressed(bool backwards);
     void hasHRef(const QString &href, QString &fileName);
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);

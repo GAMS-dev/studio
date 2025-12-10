@@ -346,6 +346,16 @@ bool CodeEdit::hasSelection() const
     return textCursor().hasSelection();
 }
 
+QString CodeEdit::currentFindSelection()
+{
+    if (textCursor().hasSelection() && !textCursor().hasComplexSelection()) {
+        if (textCursor().block() == document()->findBlock(textCursor().anchor()))
+            return textCursor().selectedText();
+    }
+    recalcWordUnderCursor();
+    return mWordUnderCursor;
+}
+
 void CodeEdit::disconnectTimers()
 {
     AbstractEdit::disconnectTimers();
@@ -598,10 +608,14 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         }
     }
 
-    if (e == Hotkey::SearchFindPrev)
-        emit searchFindPrevPressed();
+    if (e == Hotkey::FindPrev)
+        emit continueFindPressed(true);
+    else if (e == Hotkey::FindNext)
+        emit continueFindPressed(false);
+    else if (e == Hotkey::SearchFindPrev)
+        emit continueSearchPressed(true);
     else if (e == Hotkey::SearchFindNext)
-        emit searchFindNextPressed();
+        emit continueSearchPressed(false);
 
     // smart typing:
     if (Settings::settings()->toBool(skEdAutoCloseBraces) && !isReadOnly())  {
@@ -2221,6 +2235,18 @@ void CodeEdit::findInSelection(QList<search::Result> &results)
             break;
         block = block.next();
     }
+}
+
+bool CodeEdit::findLoop(const QRegularExpression &rex, QTextDocument::FindFlags options)
+{
+    if (!find(rex, options)) {
+        int pos = options.testFlag(QTextDocument::FindBackward) ? document()->characterCount()-1 : 0;
+        QTextCursor cur = document()->find(rex, pos, options);
+        if (cur.isNull())
+            return false;
+        setTextCursor(cur);
+    }
+    return true;
 }
 
 void CodeEdit::replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope)

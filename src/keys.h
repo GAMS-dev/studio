@@ -59,10 +59,12 @@ enum struct Hotkey {
     BlockEditStart = 51,
     BlockEditEnd = 52,
     SearchOpen = 60,
-    SearchFindNext = 61,
-    SearchFindPrev = 62,
-    ToggleBlockFolding = 63,
-    OpenHelp = 64,
+    FindNext = 61,
+    FindPrev = 62,
+    SearchFindNext = 63,
+    SearchFindPrev = 64,
+    ToggleBlockFolding = 65,
+    OpenHelp = 66,
 
     // configurable key-sequences > 100
     MinConfigurable = 100,

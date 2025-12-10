@@ -205,9 +205,15 @@ void Keys::reset()
     setHotkey(Hotkey::SearchOpen, seq);
 
     seq = new KeySeqList("F3", "Find Next");
-    setHotkey(Hotkey::SearchFindNext, seq);
+    setHotkey(Hotkey::FindNext, seq);
 
     seq = new KeySeqList("Shift+F3", "Find Previous");
+    setHotkey(Hotkey::FindPrev, seq);
+
+    seq = new KeySeqList("F4", "Complex Find Next");
+    setHotkey(Hotkey::SearchFindNext, seq);
+
+    seq = new KeySeqList("Shift+F4", "Complex Find Previous");
     setHotkey(Hotkey::SearchFindPrev, seq);
 
     seq = new KeySeqList("Ctrl+D","duplicate line");

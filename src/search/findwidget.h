@@ -2,6 +2,8 @@
 #define FINDWIDGET_H
 
 #include <QWidget>
+#include <QRegularExpression>
+#include <QTextDocument>
 
 namespace gams {
 namespace studio {
@@ -20,15 +22,25 @@ public:
     ~FindWidget();
     bool active() const;
     void setActive(bool newActive);
-    void toggleActive();
+    void setFindText(const QString &text);
+    void setReadonly(bool readonly = true);
+    QRegularExpression termRexEx();
+    QTextDocument::FindFlags findFlags(bool backwards = false);
+    void triggerFind(bool backwards = false);
+
+signals:
+    void find(const QRegularExpression &rex, QTextDocument::FindFlags options = QTextDocument::FindFlags());
 
 protected:
     void focusInEvent(QFocusEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+
+private slots:
+    void on_bClose_clicked();
 
 private:
     Ui::FindWidget *ui;
     bool mActive = false;
-
 };
 
 } // namespace find

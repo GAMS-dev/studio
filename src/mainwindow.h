@@ -214,6 +214,9 @@ public slots:
     void closeProject(gams::studio::PExProjectNode *project);
     void closeFileEditors(const FileId &fileId, bool willReopen = false);
     void updateResults(search::SearchResultModel* model);
+    void findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options = QTextDocument::FindFlags());
+    void continueFind(bool backwards);
+    void continueSearch(bool backwards);
     void closeResultsView();
     void openPinView(int tabIndex, Qt::Orientation orientation);
     void openInPinView(PExProjectNode *project, QWidget *editInMainTabs);
@@ -350,6 +353,7 @@ private slots:
     void on_projectView_activated(const QModelIndex &index);
 
     void on_actionSettings_triggered();
+    void on_actionFind_triggered();
     void on_actionSearch_triggered();
     void on_actionRedo_triggered();
     void on_actionUndo_triggered();
@@ -553,6 +557,7 @@ private:
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;
     search::ResultsView *mResultsView = nullptr;
+    SearchBind mSeachBind = sbNoSearch;
     NavigatorDialog *mNavigatorDialog = nullptr;
 #ifdef QWEBENGINE
     help::HelpWidget *mHelpWidget = nullptr;

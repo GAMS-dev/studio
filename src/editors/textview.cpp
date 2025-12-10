@@ -83,8 +83,8 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     connect(mEdit->horizontalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::horizontalScrollAction);
     connect(mEdit, &TextViewEdit::keyPressed, this, &TextView::editKeyPressEvent);
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
-    connect(mEdit, &TextViewEdit::searchFindNextPressed, this, &TextView::searchFindNextPressed);
-    connect(mEdit, &TextViewEdit::searchFindPrevPressed, this, &TextView::searchFindPrevPressed);
+    connect(mEdit, &TextViewEdit::continueFindPressed, this, &TextView::continueFindPressed);
+    connect(mEdit, &TextViewEdit::continueSearchPressed, this, &TextView::continueSearchPressed);
     connect(mEdit, &TextViewEdit::hasHRef, this, &TextView::hasHRef);
     connect(mEdit, &TextViewEdit::jumpToHRef, this, &TextView::jumpToHRef);
     connect(mEdit, &TextViewEdit::topLineMoved, this, &TextView::updateView);
@@ -250,6 +250,13 @@ QString TextView::selectedText() const
 QString TextView::wordUnderCursor() const
 {
     return mEdit->wordUnderCursor();
+}
+
+QString TextView::currentFindSelection() const
+{
+    if (mMapper->position().y() == mMapper->anchor().y())
+        return selectedText();
+    return wordUnderCursor();
 }
 
 void TextView::selectAllText()
