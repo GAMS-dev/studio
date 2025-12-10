@@ -186,6 +186,7 @@ MainWindow::MainWindow(QWidget *parent)
             }
         }
     });
+    ui->findWidget->setVisible(false);
 
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
@@ -2301,10 +2302,17 @@ void MainWindow::activeMainTabChanged(int index)
 
     if (editWidget != mRecent.editor())
         updateRecentEdit(mRecent.editor(), editWidget);
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(editWidget))
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(editWidget)) {
         ce->updateExtraSelections();
-    else if (TextView* tv = ViewHelper::toTextView(editWidget))
+        if (ui->findWidget->active())
+            ui->findWidget->setVisible(true);
+    }
+    else if (TextView* tv = ViewHelper::toTextView(editWidget)) {
         tv->updateExtraSelections();
+        if (ui->findWidget->active())
+            ui->findWidget->setVisible(true);
+    } else
+        ui->findWidget->setVisible(false);
 
     PExFileNode* node = mProjectRepo.findFileNode(editWidget);
     if (node) {
@@ -5521,8 +5529,12 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         CodeEdit* ce = ViewHelper::toCodeEdit(edit);
         connect(ce, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
         connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
-        connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
-        connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
+        connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, [this] {
+            mSearchDialog->on_searchNext();
+        });
+        connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, [this] {
+            mSearchDialog->on_searchPrev();
+        });
         ce->addAction(ui->actionRun);
     }
     if (TextView *tv = ViewHelper::toTextView(edit)) {
@@ -6006,7 +6018,13 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::on_actionSearch_triggered()
 {
-    toggleSearchDialog();
+    if (ViewHelper::toCodeEdit(ui->mainTabs->currentWidget()) || ViewHelper::toTextView(ui->mainTabs->currentWidget())) {
+        ui->findWidget->toggleActive();
+        ui->findWidget->setVisible(!ui->findWidget->active());
+        if (ui->findWidget->isVisible())
+            ui->findWidget->setFocus();
+    } else
+        toggleSearchDialog();
 }
 
 void MainWindow::toggleSearchDialog()

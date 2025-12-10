@@ -37,6 +37,9 @@
     <enum>Qt::ContextMenuPolicy::NoContextMenu</enum>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
+    <property name="spacing">
+     <number>4</number>
+    </property>
     <property name="leftMargin">
      <number>0</number>
     </property>
@@ -93,6 +96,9 @@
        </property>
       </widget>
      </widget>
+    </item>
+    <item>
+     <widget class="gams::studio::find::FindWidget" name="findWidget" native="true"/>
     </item>
     <item>
      <widget class="gams::studio::gamscom::DebugWidget" name="debugWidget" native="true"/>
@@ -1903,6 +1909,12 @@
    <class>gams::studio::FilterLineEdit</class>
    <extends>QLineEdit</extends>
    <header>filterlineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>gams::studio::find::FindWidget</class>
+   <extends>QWidget</extends>
+   <header>search/findwidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
