@@ -41,7 +41,7 @@ public:
     explicit DebugWidget(QWidget *parent = nullptr);
     ~DebugWidget();
 
-    void setText(const QString &text);
+    void setProject(const QString &name);
     void setDebugServer(Server *server);
 
 signals:
@@ -49,6 +49,9 @@ signals:
     void sendStepLine();
     void sendPause();
     void sendStop();
+
+public slots:
+    void setContLine(int contLine);
 
 private slots:
     void on_tbRun_clicked();

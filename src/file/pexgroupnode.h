@@ -178,6 +178,8 @@ public:
     bool isProfilerVisible() const;
     void setProfilerVisible(bool profilerVisible);
     void updateProfilerForOpenNodes();
+    int currentContLine() const;
+    void resetCurrentContLine();
 
 signals:
     void gamsProcessStateChanged(gams::studio::PExProjectNode* project);
@@ -189,6 +191,7 @@ signals:
     void openFileNode(gams::studio::PExFileNode *node);
     void switchToTab(gams::studio::FileMeta *fileMeta);
     void updateProfilerAction();
+    void updateContLine(int contLine);
 
 public slots:
     void setErrorText(int lstLine, const QString &text);
@@ -252,6 +255,7 @@ private:
     QString mTempGdx;
     gamscom::Profiler *mProfiler;
     bool mDoProfile = false;
+    int mCurrentContLine = -1;
     bool mProfilerVisible = false;
     bool mVerbose = false;
     gamscom::ContinuousLineData *mContLineData;

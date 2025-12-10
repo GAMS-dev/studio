@@ -393,6 +393,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::toggle, this, &MainWindow::toggleSearchDialog);
     connect(&mProjectRepo, &ProjectRepo::mainFileChanged, this, &MainWindow::mainFileChanged);
     connect(&mProjectRepo, &ProjectRepo::updateProfilerAction, this, &MainWindow::updateProfilerAction);
+    connect(&mProjectRepo, &ProjectRepo::updateContLine, ui->debugWidget, &gamscom::DebugWidget::setContLine);
     connect(&mProjectRepo, &ProjectRepo::getConfigPaths, this, [](QStringList &configPaths) {
         configPaths = CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath);
     });
@@ -4625,7 +4626,8 @@ void MainWindow::updateRunState()
     gamscom::Server *debugServer = nullptr;
     if (PExProjectNode *project = currentProject()) {
         debugServer = project->comServer();
-        ui->debugWidget->setText("Project: " + project->name());
+        ui->debugWidget->setProject(project->name());
+        ui->debugWidget->setContLine(project->currentContLine());
         mPinControl.projectSwitched(project);
     }
     ui->debugWidget->setDebugServer(debugServer);

@@ -168,6 +168,7 @@ signals:
     void changed();
     void mainFileChanged();
     void updateProfilerAction();
+    void updateContLine(int contLine);
     void childrenChanged();
     void logTabRenamed(QWidget *wid, const QString &newName);
     void refreshProjectTabName(QWidget *wid);

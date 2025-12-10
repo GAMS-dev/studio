@@ -704,6 +704,7 @@ PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, co
         connect(project, &PExProjectNode::baseDirChanged, this, &ProjectRepo::reassignFiles);
         connect(project, &PExProjectNode::mainFileChanged, this, &ProjectRepo::mainFileChanged);
         connect(project, &PExProjectNode::updateProfilerAction, this, &ProjectRepo::updateProfilerAction);
+        connect(project, &PExProjectNode::updateContLine, this, &ProjectRepo::updateContLine);
         connect(project, &PExProjectNode::openInPinView, this, &ProjectRepo::openInPinView);
         connect(project, &PExProjectNode::openFileNode, this, [this](PExFileNode *node) {
             emit openFile(node->file(), true, node->assignedProject());

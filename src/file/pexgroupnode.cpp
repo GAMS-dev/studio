@@ -532,6 +532,17 @@ QString PExProjectNode::resolveHRef(const QString &href, PExFileNode *&node, int
     return res;
 }
 
+int PExProjectNode::currentContLine() const
+{
+    return mCurrentContLine;
+}
+
+void PExProjectNode::resetCurrentContLine()
+{
+    mCurrentContLine = -1;
+    updateContLine(mCurrentContLine);
+}
+
 bool PExProjectNode::dynamicMainFile() const
 {
     return mDynamicMainFile;
@@ -1527,6 +1538,8 @@ void PExProjectNode::openDebugGdx(const QString &gdxFile)
 
 void PExProjectNode::gotoPaused(int contLine)
 {
+    mCurrentContLine = contLine;
+    updateContLine(mCurrentContLine);
     QString file = mContLineData->filename(contLine);
     int fileLine = mContLineData->fileLine(contLine);
 

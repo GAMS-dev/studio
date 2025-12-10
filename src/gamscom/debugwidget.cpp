@@ -29,6 +29,7 @@ DebugWidget::DebugWidget(QWidget *parent) :
     ui(new Ui::DebugWidget)
 {
     ui->setupUi(this);
+    setContLine(-1);
 }
 
 DebugWidget::~DebugWidget()
@@ -36,9 +37,14 @@ DebugWidget::~DebugWidget()
     delete ui;
 }
 
-void DebugWidget::setText(const QString &text)
+void DebugWidget::setProject(const QString &name)
 {
-    ui->laInfo->setText(text);
+    ui->laInfo->setText(QString("&nbsp; Project: <b>%1</b> &nbsp;").arg(name));
+}
+
+void DebugWidget::setContLine(int contLine)
+{
+    ui->laContLine->setText(contLine < 0 ? QString() : QString("&nbsp; LST line:  <b>%1</b>").arg(contLine));
 }
 
 void DebugWidget::setDebugServer(Server *server)
