@@ -232,21 +232,10 @@ void SolverOptionEditor::showOptionContextMenu(const QPoint &pos)
     for(const QModelIndex &index : std::as_const(indexSelection)) {
         ui->optionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
-
-    QModelIndexList selection = ui->optionTableView->selectionModel()->selectedRows();
-    const bool thereIsARowSelection = isThereARowSelection();
-    const bool viewIsCompact = isViewCompact();
-    bool thereIsAnOptionSelection = false;
-    for (const QModelIndex &s : std::as_const(selection)) {
-        const QVariant data = ui->optionTableView->model()->headerData(s.row(), Qt::Vertical,  Qt::CheckStateRole);
-        if (Qt::CheckState(data.toUInt())!=Qt::PartiallyChecked) {
-            thereIsAnOptionSelection = true;
-            break;
-        }
-    }
+    updateActionsState();
 
     QMenu menu(this);
-    if ( thereIsARowSelection ) {
+    if ( isThereARowSelection() ) {
         QList<QAction*> ret;
         getMainWindow()->getAdvancedActions(&ret);
         for(QAction *action : std::as_const(ret)) {
@@ -257,42 +246,20 @@ void SolverOptionEditor::showOptionContextMenu(const QPoint &pos)
             }
         }
     }
-    const auto actions = ui->optionTableView->actions();
-    for(QAction* action : actions) {
-        if (action->objectName().compare("actionInsert_option")==0) {
-            if ( !viewIsCompact && (!isThereARow() || isThereARowSelection()) )
-                menu.addAction(action);
-        } else if (action->objectName().compare("actionInsert_comment")==0) {
-            if ( !viewIsCompact && (!isThereARow() || isThereARowSelection()) )
-                menu.addAction(action);
-            menu.addSeparator();
-        } else if (action->objectName().compare("actionDelete_option")==0) {
-            if ( thereIsARowSelection )
-                menu.addAction(action);
-            menu.addSeparator();
-        } else if (action->objectName().compare("actionMoveUp_option")==0) {
-            if ( !viewIsCompact && thereIsARowSelection && (selection.first().row() > 0) )
-                menu.addAction(action);
-        } else if (action->objectName().compare("actionMoveDown_option")==0) {
-            if ( !viewIsCompact && thereIsARowSelection && (selection.last().row() < mOptionModel->rowCount()-1) )
-                menu.addAction(action);
-            menu.addSeparator();
-        } else if (action->objectName().compare("actionSelect_all")==0) {
-            if ( !viewIsCompact && isThereARow() )
-                menu.addAction(action);
-            menu.addSeparator();
-        } else if (action->objectName().compare("actionShowDefinition_option")==0) {
-            if ( thereIsAnOptionSelection )
-                menu.addAction(action);
-        } else if (action->objectName().compare("actionShowRecurrence_option")==0) {
-            if ( indexSelection.size()>=1 && thereIsAnOptionSelection && getRecurrentOption(indexSelection.at(0)).size()>0 )
-                menu.addAction(action);
-            menu.addSeparator();
-        } else if (action->objectName().compare("actionResize_columns")==0) {
-            if ( isThereARow() )
-                menu.addAction(action);
-        }
-    }
+    menu.addAction(ui->actionInsert);
+    menu.addAction(ui->actionInsert_Comment);
+    menu.addAction(ui->actionDelete);
+    menu.addSeparator();
+    menu.addAction(ui->actionMoveUp);
+    menu.addAction(ui->actionMoveDown);
+    menu.addSeparator();
+    menu.addAction(ui->actionSelect_Current_Row);
+    menu.addAction(ui->actionSelectAll);
+    menu.addSeparator();
+    menu.addAction(ui->actionShow_Option_Definition);
+    menu.addAction(ui->actionShowRecurrence);
+    menu.addSeparator();
+    menu.addAction(ui->actionResize_Columns_To_Contents);
 
     menu.exec(ui->optionTableView->viewport()->mapToGlobal(pos));
 }
@@ -300,45 +267,15 @@ void SolverOptionEditor::showOptionContextMenu(const QPoint &pos)
 void SolverOptionEditor::showDefinitionContextMenu(const QPoint &pos)
 {
     QModelIndexList selection = ui->definitionTreeView->selectionModel()->selectedRows();
-    bool hasSelectionBeenAdded = (selection.size()>0);
-    if (!hasSelectionBeenAdded)
+    if (selection.count() <= 0)
         return;
-    qDebug() << "306";
-    // assume single selection
-    for (const QModelIndex &idx : std::as_const(selection)) {
-        const QModelIndex parentIdx = ui->definitionTreeView->model()->parent(idx);
-        const QVariant data = (parentIdx.row() < 0) ?  ui->definitionTreeView->model()->data(idx, Qt::CheckStateRole)
-                                                    : ui->definitionTreeView->model()->data(parentIdx, Qt::CheckStateRole);
-        hasSelectionBeenAdded = (Qt::CheckState(data.toInt()) == Qt::Checked);
-    }
-    updateActionsState();
 
     QMenu menu(this);
-    const auto actions = ui->definitionTreeView->actions();
-    for(QAction* action : actions) {
-        if (action->objectName().compare("actionAddThisOption")==0) {
-            if ( !hasSelectionBeenAdded && ui->optionTableView->selectionModel()->selectedRows().size() <= 0 )
-                menu.addAction(action);
-            menu.addSeparator();
-        } else if (action->objectName().compare("actionDeleteThisOption")==0) {
-            if ( hasSelectionBeenAdded && ui->optionTableView->selectionModel()->selectedRows().size() > 0)
-                menu.addAction(action);
-            menu.addSeparator();
-        } else if (action->objectName().compare("actionCopyDefinitionOptionName")==0) {
-            menu.addAction(action);
-        } else if (action->objectName().compare("actionCopyDefinitionOptionDescription")==0) {
-            menu.addAction(action);
-        } else if (action->objectName().compare("actionCopyDefinitionText")==0) {
-            menu.addAction(action);
-            menu.addSeparator();
-        }  else if (action->objectName().compare("actionResize_columns")==0) {
-            if ( ui->definitionTreeView->model()->rowCount()>0 )
-                menu.addAction(action);
-        }
-    }
-
+    menu.addAction(ui->actionAdd_This_Parameter);
+    menu.addAction(ui->actionRemove_This_Parameter);
+    menu.addSeparator();
+    menu.addAction(ui->actionResize_Columns_To_Contents);
     menu.exec(ui->definitionTreeView->viewport()->mapToGlobal(pos));
-
 }
 
 void SolverOptionEditor::addOptionFromDefinition(const QModelIndex &index)

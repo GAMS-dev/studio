@@ -71,19 +71,21 @@ protected:
    MainWindow* getMainWindow() const;
 
 public slots:
-   void selectAllOptions();
-   void deSelectOptions();
+    void selectAllOptions();
+    void deSelectOptions();
 
-   int getItemCount() const;
-   bool isInFocus(QWidget* focusWidget) const;
+    int getItemCount() const;
+    bool isInFocus(QWidget* focusWidget) const;
 
-   QString getSelectedOptionName(QWidget* widget) const;
-   QStringList getEnabledContextActions();
+    QString getSelectedOptionName(QWidget* widget) const;
+    QStringList getEnabledContextActions();
 
-   void selectSearchField() const;
-   void copyAction();
+    void selectSearchField() const;
+    void copyAction();
 
 protected slots:
+    virtual bool isCommentToggleable() = 0;
+
     virtual void insertOption() = 0;
     virtual void insertComment() = 0;
     virtual void deleteCommentsBeforeOption(int row) = 0;
@@ -119,6 +121,7 @@ protected slots:
     void showOptionRecurrence();
 
     void on_actionInsert_triggered() { insertOption(); }
+    void on_actionInsert_Comment_triggered() { insertComment(); }
     void on_actionDelete_triggered() { deleteOption(); }
     void on_actionMoveUp_triggered() { moveOptionUp(); }
     void on_actionMoveDown_triggered() { moveOptionDown(); }

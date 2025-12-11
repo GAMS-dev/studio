@@ -235,10 +235,10 @@
      <normaloff>:/solid/plus</normaloff>:/solid/plus</iconset>
    </property>
    <property name="text">
-    <string>Insert</string>
+    <string>Insert new option</string>
    </property>
    <property name="toolTip">
-    <string>Add/Insert new paramaeter</string>
+    <string>Add/Insert new option</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Ins</string>
@@ -366,6 +366,21 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+B</string>
+   </property>
+  </action>
+  <action name="actionInsert_Comment">
+   <property name="icon">
+    <iconset resource="../../../icons/icons.qrc">
+     <normaloff>:/solid/plus</normaloff>:/solid/plus</iconset>
+   </property>
+   <property name="text">
+    <string>Insert new comment</string>
+   </property>
+   <property name="toolTip">
+    <string>Add/Insert new comment</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Ins</string>
    </property>
   </action>
  </widget>

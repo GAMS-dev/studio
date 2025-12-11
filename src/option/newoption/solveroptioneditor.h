@@ -99,6 +99,8 @@ protected slots:
     void moveOptionUp() override;
     void moveOptionDown() override;
 
+    bool isCommentToggleable() override { return false; }
+
 protected:
     OptionTableModel* optionModel() override;
     void setOptionTableModel( OptionTableModel* model ) override;

@@ -59,6 +59,7 @@ OptionWidget::~OptionWidget()
 void OptionWidget::initActions()
 {
     ui->actionInsert->setEnabled(true);
+    ui->actionInsert_Comment->setEnabled(true);
     ui->actionDelete->setEnabled(false);
     ui->actionMoveUp->setEnabled(false);
     ui->actionMoveDown->setEnabled(false);
@@ -75,85 +76,13 @@ void OptionWidget::initActions()
     ui->actionResize_Columns_To_Contents->setEnabled(true);
 
     ui->actionInsert->setIcon(Theme::icon(":/%1/plus", true));
+    ui->actionInsert_Comment->setIcon(Theme::icon(":/%1/plus", true));
     ui->actionDelete->setIcon(Theme::icon(":/%1/delete-all", true));
     ui->actionMoveUp->setIcon(Theme::icon(":/%1/move-up", true));
     ui->actionMoveDown->setIcon(Theme::icon(":/%1/move-down", true));
 
     ui->actionAdd_This_Parameter->setIcon(Theme::icon(":/%1/plus", true));
     ui->actionRemove_This_Parameter->setIcon(Theme::icon(":/%1/delete-all", true));
-
-    QAction* insertOptionAction = mContextMenu.addAction(Theme::icon(":/%1/insert"), "Insert new option", [this]() { insertOption(); });
-    insertOptionAction->setObjectName("actionInsert_option");
-    insertOptionAction->setShortcut( QKeySequence("Ctrl+Return") );
-    insertOptionAction->setShortcutVisibleInContextMenu(true);
-    insertOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->optionTableView->addAction(insertOptionAction);
-
-    QAction* insertCommentAction = mContextMenu.addAction(Theme::icon(":/%1/insert"), "Insert new comment", [this]() { insertComment(); });
-    insertCommentAction->setObjectName("actionInsert_comment");
-    insertCommentAction->setShortcut( QKeySequence("Ctrl+Shift+Return") );
-    insertCommentAction->setShortcutVisibleInContextMenu(true);
-    insertCommentAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->optionTableView->addAction(insertCommentAction);
-
-    QAction* deleteAction = mContextMenu.addAction(Theme::icon(":/%1/delete-all"), "Delete selection", [this]() { deleteOption(); });
-    deleteAction->setObjectName("actionDelete_option");
-    deleteAction->setShortcut( QKeySequence("Ctrl+Delete") );
-    deleteAction->setShortcutVisibleInContextMenu(true);
-    deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->optionTableView->addAction(deleteAction);
-
-    QAction* moveUpAction = mContextMenu.addAction(Theme::icon(":/%1/move-up"), "Move up", [this]() { moveOptionUp(); });
-    moveUpAction->setObjectName("actionMoveUp_option");
-    moveUpAction->setShortcut( QKeySequence("Ctrl+Up") );
-    moveUpAction->setShortcutVisibleInContextMenu(true);
-    moveUpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->optionTableView->addAction(moveUpAction);
-
-    QAction* moveDownAction = mContextMenu.addAction(Theme::icon(":/%1/move-down"), "Move down", [this]() { moveOptionDown(); });
-    moveDownAction->setObjectName("actionMoveDown_option");
-    moveDownAction->setShortcut( QKeySequence("Ctrl+Down") );
-    moveDownAction->setShortcutVisibleInContextMenu(true);
-    moveDownAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->optionTableView->addAction(moveDownAction);
-
-    QAction* selectAll = mContextMenu.addAction("Select all", ui->optionTableView, [this]() { selectAllOptions(); });
-    selectAll->setObjectName("actionSelect_all");
-    selectAll->setShortcut( QKeySequence("Ctrl+A") );
-    selectAll->setShortcutVisibleInContextMenu(true);
-    selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->optionTableView->addAction(selectAll);
-
-    QAction* anotehrSelectAll = mContextMenu.addAction("Select All", ui->definitionTreeView, [this]() { selectAllOptions(); });
-    anotehrSelectAll->setObjectName("actionSelect_all");
-    anotehrSelectAll->setShortcut( QKeySequence("Ctrl+A") );
-    anotehrSelectAll->setShortcutVisibleInContextMenu(true);
-    anotehrSelectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->definitionTreeView->addAction(anotehrSelectAll);
-
-    QAction* addThisOptionAction = mContextMenu.addAction(Theme::icon(":/%1/plus"), "Add this option", [this]() {
-        const QModelIndexList selection = ui->definitionTreeView->selectionModel()->selectedRows();
-        if (!selection.isEmpty()) {
-            ui->optionTableView->clearSelection();
-            ui->definitionTreeView->clearSelection();
-            addOptionFromDefinition(selection.at(0));
-        }
-    });
-    addThisOptionAction->setObjectName("actionAddThisOption");
-    addThisOptionAction->setShortcut( QKeySequence(Qt::Key_Return) );
-    addThisOptionAction->setShortcutVisibleInContextMenu(true);
-    addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->definitionTreeView->addAction(addThisOptionAction);
-
-    QAction* deleteThisOptionAction = mContextMenu.addAction(Theme::icon(":/%1/delete-all"), "Remove this option", [this]() {
-        findAndSelectionOptionFromDefinition();
-        deleteOption();
-    });
-    deleteThisOptionAction->setObjectName("actionDeleteThisOption");
-    deleteThisOptionAction->setShortcut( QKeySequence(Qt::Key_Delete) );
-    deleteThisOptionAction->setShortcutVisibleInContextMenu(true);
-    deleteThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->definitionTreeView->addAction(deleteThisOptionAction);
 }
 
 void OptionWidget::initToolBar()
@@ -376,7 +305,6 @@ QStringList OptionWidget::getEnabledContextActions()
     }
     return res;
 }
-
 
 void OptionWidget::selectSearchField() const
 {
@@ -715,6 +643,7 @@ void OptionWidget::updateActionsState()
     std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() < b.row(); });
 
     ui->actionInsert->setEnabled( true );
+    ui->actionInsert_Comment->setEnabled( true );
     ui->actionDelete->setEnabled(  thereIsSelection ? idxSelection.first().row() < optionModel()->rowCount() : false );
 
     ui->actionMoveUp->setEnabled( thereIsSelection ? idxSelection.first().row() > 0 : false );
@@ -723,11 +652,15 @@ void OptionWidget::updateActionsState()
     ui->actionSelect_Current_Row->setEnabled( thereIsSelection );
     ui->actionSelectAll->setEnabled( thereIsSelection );
 
-    ui->actionShow_Option_Definition->setEnabled( thereIsSelection ? idxSelection.first().row() < optionModel()->rowCount() : false );
+    ui->actionShow_Option_Definition->setEnabled( thereIsSelection
+                                                     ? (idxSelection.first().row() < optionModel()->rowCount() && optionModel()->data(idxSelection.first().siblingAtColumn(optionModel()->column_id())).toInt()!=-1)
+                                                     : false );
     ui->actionResize_Columns_To_Contents->setEnabled( thereIsSelection ? idxSelection.first().row() < optionModel()->rowCount() : false);
     ui->actionShowRecurrence->setEnabled( thereIsSelection ? idxSelection.first().row() < optionModel()->rowCount()
                                                                 && getRecurrentOption(idxSelection.first()).size() >0 : false );
     ui->actionInsert->icon().pixmap( QSize(16, 16), ui->actionInsert->isEnabled() ? QIcon::Selected : QIcon::Disabled,
+                                    QIcon::Off);
+    ui->actionInsert_Comment->icon().pixmap( QSize(16, 16), ui->actionInsert_Comment->isEnabled() ? QIcon::Selected : QIcon::Disabled,
                                     QIcon::Off);
     ui->actionDelete->icon().pixmap( QSize(16, 16), ui->actionDelete->isEnabled() ? QIcon::Selected : QIcon::Disabled,
                                     QIcon::Off);
@@ -766,6 +699,7 @@ void OptionWidget::updateActionsState(const QModelIndex &index)
     }
 
     ui->actionInsert->setEnabled( true );
+    ui->actionInsert_Comment->setEnabled( true );
     ui->actionDelete->setEnabled( thereIsSelection && idxSelection.first().row() < optionModel()->rowCount() );
     ui->actionMoveUp->setEnabled(   (singleSelection || singleSelectionIsRow || multiSelectionIsRow || multiSelectionIsCell_sameRow) && idxSelection.first().row() > 0 );
     ui->actionMoveDown->setEnabled( (singleSelection || singleSelectionIsRow || multiSelectionIsRow || multiSelectionIsCell_sameRow) && idxSelection.last().row() < optionModel()->rowCount()-1 );
@@ -776,6 +710,8 @@ void OptionWidget::updateActionsState(const QModelIndex &index)
     ui->actionShowRecurrence->setEnabled( false );
 
     ui->actionInsert->icon().pixmap( QSize(16, 16), ui->actionInsert->isEnabled() ? QIcon::Selected : QIcon::Disabled,
+                                    QIcon::Off);
+    ui->actionInsert_Comment->icon().pixmap( QSize(16, 16), ui->actionInsert_Comment->isEnabled() ? QIcon::Selected : QIcon::Disabled,
                                     QIcon::Off);
     ui->actionDelete->icon().pixmap( QSize(16, 16), ui->actionDelete->isEnabled() ? QIcon::Selected : QIcon::Disabled,
                                     QIcon::Off);
