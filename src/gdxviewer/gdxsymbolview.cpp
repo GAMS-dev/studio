@@ -801,7 +801,7 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 
 void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
 {
-    applyFilters(symViewState);
+    //applyFilters(symViewState);
 
     ui->tvListView->horizontalHeader()->restoreState(symViewState->listViewHeaderState());
 
