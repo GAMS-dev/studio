@@ -41,6 +41,8 @@ public:
     ~FindWidget();
     bool active() const;
     void setActive(bool newActive);
+    void setLastMatch(const QString &text);
+    QString getFindText() const;
     void setFindText(const QString &text);
     void setReadonly(bool readonly = true);
     QRegularExpression termRexEx();
@@ -57,9 +59,16 @@ protected:
 private slots:
     void on_bClose_clicked();
 
+    void on_bNext_clicked();
+
+    void on_bPrev_clicked();
+
+    void on_bReplace_clicked();
+
 private:
     Ui::FindWidget *ui;
     bool mActive = false;
+    QString mLastMatch;
 };
 
 } // namespace find

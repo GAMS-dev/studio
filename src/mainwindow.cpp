@@ -5530,6 +5530,7 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         CodeEdit* ce = ViewHelper::toCodeEdit(edit);
         connect(ce, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
         connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
+        connect(ce, &CodeEdit::endFind, this, [this] { ui->findWidget->setActive(false); });
         connect(ce, &CodeEdit::continueFindPressed, this, &MainWindow::continueFind);
         connect(ce, &CodeEdit::continueSearchPressed, this, &MainWindow::continueSearch);
         ce->addAction(ui->actionRun);
@@ -6020,6 +6021,7 @@ void MainWindow::on_actionFind_triggered()
             term = edit->currentFindSelection();
         else if (TextView *view = ViewHelper::toTextView(ui->mainTabs->currentWidget()))
             term = view->currentFindSelection();
+
         if (!term.isEmpty())
             ui->findWidget->setFindText(term);
         ui->findWidget->setActive(true);
@@ -6131,15 +6133,20 @@ void MainWindow::updateResults(search::SearchResultModel* model)
 
 void MainWindow::findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options)
 {
+    QString match;
     if (CodeEdit *edit = ViewHelper::toCodeEdit(ui->mainTabs->currentWidget())) {
         edit->findLoop(rex, options);
         edit->setFocus();
+        match = edit->textCursor().selectedText();
     }
     else if (TextView *view = ViewHelper::toTextView(ui->mainTabs->currentWidget())) {
-        bool continuedFind = false;
-        view->findText(rex, options, continuedFind);
+        bool dummy = false;
+        view->findText(rex, options, dummy);
         view->edit()->setFocus();
+        match = view->selectedText();
     }
+    if (!match.isEmpty())
+        ui->findWidget->setLastMatch(match);
 }
 
 void MainWindow::continueFind(bool backwards)

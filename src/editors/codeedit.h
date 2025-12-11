@@ -140,6 +140,7 @@ public:
     QStringList getEnabledContextActions() override;
     void setHasProfiler(bool hasProfiler);
 
+
 protected:
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *e) override;
@@ -167,7 +168,8 @@ protected:
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
     bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
-    virtual void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
+    virtual void extraSelFindMatches(QList<QTextEdit::ExtraSelection> &selections);
+    virtual void extraSelSearchMatches(QList<QTextEdit::ExtraSelection> &selections);
     void extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections);
     void extraSelSearchSelection(QList<QTextEdit::ExtraSelection>& selections) override;
     QTimer &wordDelayTimer() { return mWordDelay; }
@@ -186,6 +188,7 @@ signals:
     void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax, int pos = -1);
     void syntaxDocAt(QTextBlock block, int pos, QStringList &syntaxDoc);
     void syntaxFlagData(QTextBlock block, syntax::SyntaxFlag flag, QString &value);
+    void endFind();
     void continueFindPressed(bool backwards);
     void continueSearchPressed(bool backwards);
     void requestAdvancedActions(QList<QAction*>* actions);
@@ -361,6 +364,7 @@ private:
     QString mBlockEditInsText;
     QVector<BlockEditPos*> mBlockEditPos;
     bool mSmartType = false;
+    QRegularExpression *mFindREx = nullptr;
     int mIconCols = 0;
     const QString mOpening = "([{'\""; // characters that will be auto closed if mSmartType is true
     const QString mClosing = ")]}'\""; // and their corresponding partner

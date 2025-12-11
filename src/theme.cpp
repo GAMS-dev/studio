@@ -130,7 +130,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_currentLineBg,             QColor(255, 250, 170));
     mColorThemes[sNr].insert(Edit_errorBg,                   QColor(255, 220, 200));
     mColorThemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
-    mColorThemes[sNr].insert(Edit_matchesBg,                 QColor(22,164,25));
+    mColorThemes[sNr].insert(Edit_matchesBg,                 QColor(92,194,75));
     mColorThemes[sNr].insert(Edit_foldLineBg,                QColor(200,200,200));
     mColorThemes[sNr].insert(Edit_foldLineFg,                QColor(255,255,255));
     mColorThemes[sNr].insert(Edit_parenthesesValidFg,        QColor(Qt::red));

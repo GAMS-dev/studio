@@ -48,9 +48,20 @@ void FindWidget::setActive(bool newActive)
     if (!mActive) hide();
 }
 
+void FindWidget::setLastMatch(const QString &text)
+{
+    mLastMatch = text;
+}
+
+QString FindWidget::getFindText() const
+{
+    return ui->edFind->text();
+}
+
 void FindWidget::setFindText(const QString &text)
 {
-    ui->edFind->setText(text);
+    if (mLastMatch.isEmpty() || text != mLastMatch)
+        ui->edFind->setText(text);
 }
 
 void FindWidget::setReadonly(bool readonly)
@@ -76,18 +87,21 @@ QTextDocument::FindFlags FindWidget::findFlags(bool backwards)
         res |= QTextDocument::FindBackward;
     if (ui->edFind->exactMatch())
         res |= QTextDocument::FindWholeWords;
-    // TODO(JM) Do we want to add case sensitivity to ui->edFind
+    // TODO(JM) Add case sensitivity to ui->edFind
     return res;
 }
 
 void FindWidget::triggerFind(bool backwards)
 {
+    if (!mLastMatch.isEmpty())
+        mLastMatch = QString();
     emit find(termRexEx(), findFlags(backwards));
 }
 
 void FindWidget::focusInEvent(QFocusEvent *event)
 {
     QWidget::focusInEvent(event);
+    ui->edFind->selectAll();
     ui->edFind->setFocus();
 }
 
@@ -95,12 +109,8 @@ void FindWidget::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape)
         setActive(false);
-    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
-        QTextDocument::FindFlags options = QTextDocument::FindFlags();
-        if (event->modifiers().testFlag(Qt::ShiftModifier))
-            options |= QTextDocument::FindBackward;
-        triggerFind(options);
-    }
+    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return || event->key() == Qt::Key_F3)
+        triggerFind(event->modifiers().testFlag(Qt::ShiftModifier));
     QWidget::keyPressEvent(event);
 }
 
@@ -108,6 +118,24 @@ void FindWidget::on_bClose_clicked()
 {
     setActive(false);
 }
+
+void FindWidget::on_bNext_clicked()
+{
+    triggerFind(false);
+}
+
+void FindWidget::on_bPrev_clicked()
+{
+    triggerFind(true);
+}
+
+void FindWidget::on_bReplace_clicked()
+{
+
+}
+
+
+
 
 
 } // namespace find

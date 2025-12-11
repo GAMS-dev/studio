@@ -488,7 +488,15 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             mBlockEdit->keyPressEvent(e);
             return;
         }
+    } else if (e->key() == Qt::Key_Escape) {
+        if (mFindREx) {
+            delete mFindREx;
+            mFindREx = nullptr;
+            updateExtraSelections();
+            emit endFind();
+        }
     }
+
     if (mCompleter && mCompleter->isVisible()) {
         QSet<int> completerKeys;
         completerKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
@@ -2246,6 +2254,10 @@ bool CodeEdit::findLoop(const QRegularExpression &rex, QTextDocument::FindFlags 
             return false;
         setTextCursor(cur);
     }
+    if (mFindREx)
+        delete mFindREx;
+    mFindREx = new QRegularExpression(rex);
+    updateExtraSelections();
     return true;
 }
 
@@ -2531,7 +2543,8 @@ void CodeEdit::updateExtraSelections()
             extraSelCurrentWord(selections);
         }
     }
-    extraSelMatches(selections);
+    extraSelFindMatches(selections);
+    extraSelSearchMatches(selections);
     extraSelBlockEdit(selections);
     extraSelIncludeLink(selections);
 
@@ -2631,7 +2644,34 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
     return true;
 }
 
-void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
+void CodeEdit::extraSelFindMatches(QList<QTextEdit::ExtraSelection> &selections)
+{
+    if (!mFindREx) return;
+
+    QTextBlock block = firstVisibleBlock();
+    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+    while (block.isValid() && top < viewport()->height()) {
+        top += qRound(blockBoundingRect(block).height());
+        QRegularExpressionMatchIterator i = mFindREx->globalMatch(block.text());
+
+        while (i.hasNext()) {
+            QRegularExpressionMatch m = i.next();
+            QTextEdit::ExtraSelection selection;
+            QTextCursor tc(document());
+            tc.setPosition(block.position() + int(m.capturedStart(0)));
+            tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, int(m.capturedLength(0)));
+
+            selection.cursor = tc;
+            selection.format.setForeground(Qt::white);
+            selection.format.setBackground(toColor(Theme::Edit_matchesBg));
+            selections << selection;
+        }
+
+        block = block.next();
+    }
+}
+
+void CodeEdit::extraSelSearchMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
     search::Search* search = search::SearchLocator::search();
     if (search->parameters().regex.pattern().isEmpty() || search->filteredResultList(ViewHelper::location(this)).isEmpty())
