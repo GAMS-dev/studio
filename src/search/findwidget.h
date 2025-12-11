@@ -47,10 +47,12 @@ public:
     void setReadonly(bool readonly = true);
     QRegularExpression termRexEx();
     QTextDocument::FindFlags findFlags(bool backwards = false);
-    void triggerFind(bool backwards = false);
+    void triggerFind(bool focusEditor, bool backwards = false);
+    QString replacementText() const;
 
 signals:
-    void find(const QRegularExpression &rex, QTextDocument::FindFlags options = QTextDocument::FindFlags());
+    void find(const QRegularExpression &rex, QTextDocument::FindFlags options, bool focusEditor);
+    void replace(const QString &replacement);
 
 protected:
     void focusInEvent(QFocusEvent *event);
@@ -64,6 +66,8 @@ private slots:
     void on_bPrev_clicked();
 
     void on_bReplace_clicked();
+
+    void on_edFind_textEdited(const QString &term);
 
 private:
     Ui::FindWidget *ui;

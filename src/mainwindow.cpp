@@ -6131,18 +6131,20 @@ void MainWindow::updateResults(search::SearchResultModel* model)
     mResultsView->resizeColumnsToContent();
 }
 
-void MainWindow::findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options)
+void MainWindow::findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options, bool focusEditor)
 {
     QString match;
     if (CodeEdit *edit = ViewHelper::toCodeEdit(ui->mainTabs->currentWidget())) {
         edit->findLoop(rex, options);
+        if (focusEditor)
         edit->setFocus();
         match = edit->textCursor().selectedText();
     }
     else if (TextView *view = ViewHelper::toTextView(ui->mainTabs->currentWidget())) {
         bool dummy = false;
         view->findText(rex, options, dummy);
-        view->edit()->setFocus();
+        if (focusEditor)
+            view->edit()->setFocus();
         match = view->selectedText();
     }
     if (!match.isEmpty())
@@ -6151,7 +6153,7 @@ void MainWindow::findInCurrentTab(const QRegularExpression &rex, QTextDocument::
 
 void MainWindow::continueFind(bool backwards)
 {
-    emit ui->findWidget->triggerFind(backwards);
+    emit ui->findWidget->triggerFind(true, backwards);
 }
 
 void MainWindow::continueSearch(bool backwards)

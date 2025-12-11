@@ -214,7 +214,7 @@ public slots:
     void closeProject(gams::studio::PExProjectNode *project);
     void closeFileEditors(const FileId &fileId, bool willReopen = false);
     void updateResults(search::SearchResultModel* model);
-    void findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options = QTextDocument::FindFlags());
+    void findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options, bool focusEditor);
     void continueFind(bool backwards);
     void continueSearch(bool backwards);
     void closeResultsView();
