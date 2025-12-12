@@ -28,32 +28,24 @@
 #include "option/definitionitemdelegate.h"
 #include "option/optionsortfilterproxymodel.h"
 #include "option/optiondefinitionmodel.h"
-#include "option/newoption/optionitemdelegate.h"
 
 namespace gams {
 namespace studio {
 namespace option {
 namespace newoption {
 
-OptionWidget::OptionWidget(const QString &optionFilePath,
-                           const QString &optDefFileName,
-                           const QString &encodingName,
-                           bool isFileEditor,
-    /*OptionTableModel *optionModel, OptionDefinitionModel *definitionModel, */
-                           QWidget *parent) :
+OptionWidget::OptionWidget(bool isFileEditor, QWidget *parent) :
     AbstractView(parent),
     ui(new Ui::OptionWidget),
-    mLocation(optionFilePath),
     mIsFileEditor(isFileEditor)
 {
     ui->setupUi(this);
-
 }
 
 OptionWidget::~OptionWidget()
 {
+    delete mToolBar;
     delete ui;
-//    delete mOptionCompleter;
 }
 
 void OptionWidget::initActions()
@@ -101,9 +93,9 @@ void OptionWidget::initTableView()
 {
     ui->optionTableView->setModel( optionModel() );
 
-    mOptionCompleter = new OptionItemDelegate(mOptionTokenizer, ui->optionTableView);
-    ui->optionTableView->setItemDelegate( mOptionCompleter );
-//    connect(mOptionCompleter, &QStyledItemDelegate::commitData, this, &ParamConfigEditor::parameterItemCommitted);
+    setOptionCompleter( new OptionItemDelegate(optionTokenizer(), ui->optionTableView) );
+    ui->optionTableView->setItemDelegate( optionCompleter() );
+//    connect(optionCompleter(), &QStyledItemDelegate::commitData, this, &ParamConfigEditor::parameterItemCommitted);
 
     ui->optionTableView->setEditTriggers(QAbstractItemView::DoubleClicked
                                            | QAbstractItemView::SelectedClicked
@@ -139,7 +131,7 @@ void OptionWidget::initTableView()
 
 void OptionWidget::initTreeView()
 {
-    QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
+    QList<OptionGroup> optionGroupList = optionTokenizer()->getOption()->getOptionGroupList();
     int groupsize = 0;
     for(const OptionGroup &group : std::as_const(optionGroupList)) {
         if (group.hidden || group.name.compare("deprecated", Qt::CaseInsensitive)==0)
@@ -187,7 +179,7 @@ void OptionWidget::initTreeView()
     ui->definitionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_SYNONYM);
     ui->definitionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_DEF_VALUE);
     ui->definitionTreeView->setExpandsOnDoubleClick(false);
-    if (!mOptionTokenizer->getOption()->isSynonymDefined())
+    if (!optionTokenizer()->getOption()->isSynonymDefined())
         ui->definitionTreeView->setColumnHidden( 1, true);
     ui->definitionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true);
 
@@ -211,7 +203,7 @@ void OptionWidget::initMessageControl(bool isFileEditor)
 {
     mLogEdit = new SystemLogEdit(this);
     mLogEdit->setObjectName("log-edit");
-    mOptionTokenizer->provideLogger(mLogEdit);
+    optionTokenizer()->provideLogger(mLogEdit);
 
     if (isFileEditor)
         ui->messageTabWidget->addTab( mLogEdit, "Messages" );
@@ -265,10 +257,10 @@ QString OptionWidget::getSelectedOptionName(QWidget *widget) const
                 return "";
             }
             const QVariant data = ui->optionTableView->model()->data( index.sibling(index.row(),0) );
-            if (mOptionTokenizer->getOption()->isValid(data.toString()))
+            if (optionTokenizer()->getOption()->isValid(data.toString()))
                 return data.toString();
-            else if (mOptionTokenizer->getOption()->isASynonym(data.toString()))
-                return mOptionTokenizer->getOption()->getNameFromSynonym(data.toString());
+            else if (optionTokenizer()->getOption()->isASynonym(data.toString()))
+                return optionTokenizer()->getOption()->getNameFromSynonym(data.toString());
             else
                 return "";
         }
@@ -308,9 +300,8 @@ QStringList OptionWidget::getEnabledContextActions()
 
 void OptionWidget::selectSearchField() const
 {
-    if (!ui->messageCtrlWidget->isVisible())
-        return;
-
+//    if (!ui->messageCtrlWidget->isVisible())
+//        return;
     ui->definitionSearch->setFocus();
 }
 

@@ -46,12 +46,7 @@ class OptionWidget : public AbstractView
 {
     Q_OBJECT
 public:
-    OptionWidget(const QString &optionFilePath,
-                 const QString &optDefFileName,
-                 const QString &encodingName,
-                 bool isFileEditor,
-                  /*OptionTableModel* optionModel, OptionDefinitionModel* definitionModel,*/
-                 QWidget* parent = nullptr) ;
+    OptionWidget(bool isFileEditor, QWidget* parent = nullptr);
     ~OptionWidget() override;
 
 protected:
@@ -80,8 +75,9 @@ public slots:
     QString getSelectedOptionName(QWidget* widget) const;
     QStringList getEnabledContextActions();
 
-    void selectSearchField() const;
     void copyAction();
+
+    void selectSearchField() const;
 
 protected slots:
     virtual bool isCommentToggleable() = 0;
@@ -114,6 +110,7 @@ protected slots:
         if (!mIsFileEditor)
             return;
     }
+
 
     void completeEditingOption(QWidget *editor, QAbstractItemDelegate::EndEditHint hint = QStyledItemDelegate::NoHint);
 
@@ -152,29 +149,24 @@ signals:
    void modificationChanged(bool modifiedState);
 
 protected:
-    virtual OptionTableModel* optionModel() = 0;
-    virtual void setOptionTableModel( OptionTableModel* model ) = 0;
-
-    virtual OptionSortFilterProxyModel* definitionProxymodel() = 0;
-    virtual void setDefintionProxyModel( OptionSortFilterProxyModel* model ) = 0;
-
-    virtual OptionDefinitionModel* definitionModel() = 0;
-    virtual void setDefinitionModel( OptionDefinitionModel* definitionModel ) = 0;
-
-    virtual QStandardItemModel* definitionGroupModel() = 0;
-    virtual void setDefinitionGroupModel( QStandardItemModel* model ) = 0;
-
     Ui::OptionWidget *ui;
-
-    OptionTokenizer* mOptionTokenizer;
-    OptionItemDelegate* mOptionCompleter;
-
-    QMenu mContextMenu;
     QToolBar* mToolBar;
 
-    QString mLocation;
-    bool mIsFileEditor = false;
+    virtual OptionTokenizer* optionTokenizer() const = 0;
+    virtual OptionTableModel* optionModel() const = 0;
 
+    virtual OptionSortFilterProxyModel* definitionProxymodel() const = 0;
+    virtual void setDefintionProxyModel(OptionSortFilterProxyModel *model) = 0;
+
+    virtual OptionDefinitionModel* definitionModel() const = 0;
+
+    virtual QStandardItemModel* definitionGroupModel() const = 0;
+    virtual void setDefinitionGroupModel( QStandardItemModel* model) = 0;
+
+    virtual OptionItemDelegate* optionCompleter() const = 0;
+    virtual void setOptionCompleter(OptionItemDelegate* completer) = 0;
+
+    bool mIsFileEditor = false;
     SystemLogEdit *mLogEdit = nullptr;
 };
 

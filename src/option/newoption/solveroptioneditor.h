@@ -20,7 +20,7 @@
 #ifndef SOLVEROPTIONEDITOR_H
 #define SOLVEROPTIONEDITOR_H
 
-#include "optionwidget.h"
+#include "option/newoption/optionwidget.h"
 #include "option/newoption/solveroptiontablemodel.h"
 #include "option/solveroptiondefinitionmodel.h"
 
@@ -51,14 +51,12 @@ public:
     inline FileId fileId() const     { return mFileId;   }
 
     inline bool isModified() const   { return mModified; }
-    inline void setModified(bool modified) {
+    inline void setModified(bool modified)
+    {
         mModified = modified;
         emit modificationChanged( mModified );
     }
-
-    inline void setFileChangedExtern(bool value) {
-        mFileHasChangedExtern = value;
-    }
+    inline void setFileChangedExtern(bool value) { mFileHasChangedExtern = value;  }
 
     bool saveAs(const QString &location);
 
@@ -102,17 +100,20 @@ protected slots:
     bool isCommentToggleable() override { return false; }
 
 protected:
-    OptionTableModel* optionModel() override;
-    void setOptionTableModel( OptionTableModel* model ) override;
+    OptionTokenizer* optionTokenizer() const override { return mOptionTokenizer; }
+    OptionTableModel* optionModel() const override    { return mOptionModel; }
 
-    OptionSortFilterProxyModel* definitionProxymodel() override;
-    void setDefintionProxyModel( OptionSortFilterProxyModel* model ) override;
+    OptionSortFilterProxyModel* definitionProxymodel() const override        { return mDefinitionProxymodel;  }
+    void setDefintionProxyModel(OptionSortFilterProxyModel *model) override  { mDefinitionProxymodel = model; }
 
-    OptionDefinitionModel* definitionModel() override;
-    void setDefinitionModel( OptionDefinitionModel* definitionModel ) override;
+    OptionDefinitionModel* definitionModel() const override { return mDefinitionModel; }
 
-    QStandardItemModel* definitionGroupModel() override;
-    void setDefinitionGroupModel( QStandardItemModel* model ) override;
+    QStandardItemModel* definitionGroupModel() const override          { return mDefinitionGroupModel;  }
+    void setDefinitionGroupModel( QStandardItemModel* model ) override { mDefinitionGroupModel = model; }
+
+
+    OptionItemDelegate* optionCompleter() const override            { return mOptionCompleter;      }
+    void setOptionCompleter(OptionItemDelegate* completer) override { mOptionCompleter = completer; }
 
     QString getOptionTableEntry(int row);
     bool isEditing();
@@ -120,21 +121,24 @@ protected:
     void refreshOptionTableModel(bool hideAllComments);
     void updateTableColumnSpan();
 
-private:
     SolverOptionTableModel* mOptionModel;
     OptionSortFilterProxyModel* mDefinitionProxymodel;
     SolverOptionDefinitionModel* mDefinitionModel;
     QStandardItemModel* mDefinitionGroupModel;
 
-    QString mEncoding = "UTF-8";
+    OptionTokenizer* mOptionTokenizer;
+    OptionItemDelegate* mOptionCompleter;
 
     QString mSolverName;
+    QString mEncoding = "UTF-8";
+    QString mLocation;
+    QString mDefinitionFileName;
+
     FileKind mFileKind = FileKind::None;
     FileId mFileId = 0;
 
     bool mModified = false;
     bool mFileHasChangedExtern = false;
-
 };
 
 } // namepsace newoption

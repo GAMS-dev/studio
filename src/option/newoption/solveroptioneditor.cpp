@@ -20,11 +20,12 @@
 #include <QFileInfo>
 #include <QClipboard>
 
-#include "exception.h"
 #include "option/newoption/solveroptiontablemodel.h"
 #include "option/newoption/solveroptioneditor.h"
 #include "option/solveroptiondefinitionmodel.h"
 #include "file/filetype.h"
+
+#include "exception.h"
 #include "msgbox.h"
 #include "settings.h"
 #include "ui_optionwidget.h"
@@ -40,23 +41,25 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
                                        const FileKind &kind,
                                        const FileId &id,
                                        const QString &encodingName,
-                                       QWidget *parent)
-    :
-    OptionWidget(optionFilePath, optDefFileName, encodingName, true, parent),
-    mEncoding(encodingName.isEmpty() ? "UTF-8" : encodingName),
+                                       QWidget *parent) :
+    OptionWidget(true, parent),
     mSolverName(solverName),
+    mEncoding(encodingName.isEmpty() ? "UTF-8" : encodingName),
+    mLocation(optionFilePath),
+    mDefinitionFileName(optDefFileName),
     mFileKind(kind),
-    mFileId(id)
+    mFileId(id),
+    mModified(false),
+    mFileHasChangedExtern(false)
 {
-    qDebug() << "50 SolverOptionEditor ";
-
-    mOptionTokenizer = new OptionTokenizer(optDefFileName);
+    mOptionTokenizer = new OptionTokenizer(mDefinitionFileName);
     if (!mOptionTokenizer->getOption()->available())
         EXCEPT() << "Could not find or load OPT library for opening '" << mLocation << "'. Please check your GAMS installation.";
 
     const QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(optionFilePath, encodingName);
     mOptionModel = new SolverOptionTableModel(optionItem, mOptionTokenizer,  this);
 
+    mOptionCompleter = new OptionItemDelegate(optionTokenizer(), ui->optionTableView);
     mDefinitionModel = new SolverOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
 
     initToolBar();
@@ -74,7 +77,6 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
         const QString msg2 = QString("'%1' is not a valid solver name").arg(mSolverName);
         mOptionTokenizer->logger()->append(QString("%1. %2").arg(msg1, msg2), LogMsgType::Error);
         mOptionTokenizer->logger()->append(QString("An operation on the file contents might not be saved. Try 'Save As' or 'Open As Text' instead."), LogMsgType::Warning);
-
 //        return false;
     }
     else {
@@ -115,10 +117,18 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
 
 SolverOptionEditor::~SolverOptionEditor()
 {
-    delete mOptionModel;
-    delete mDefinitionProxymodel;
-    delete mDefinitionModel;
-    delete mDefinitionGroupModel;
+    if (mOptionTokenizer)
+        delete mOptionTokenizer;
+    if (mOptionCompleter)
+        delete mOptionCompleter;
+    if (mDefinitionGroupModel)
+        delete mDefinitionGroupModel;
+    if (mDefinitionModel)
+        delete mDefinitionModel;
+    if (mDefinitionGroupModel)
+        delete mDefinitionProxymodel;
+    if (mOptionModel)
+        delete mOptionModel;
 }
 
 bool SolverOptionEditor::saveAs(const QString &location)
@@ -184,46 +194,6 @@ void SolverOptionEditor::toggleCommentOption()
     if (modified) {
         setModified(modified);
     }
-}
-
-OptionTableModel *SolverOptionEditor::optionModel()
-{
-    return mOptionModel;
-}
-
-void SolverOptionEditor::setOptionTableModel(OptionTableModel *model)
-{
-    mOptionModel = dynamic_cast<SolverOptionTableModel*>(model);
-}
-
-OptionSortFilterProxyModel *SolverOptionEditor::definitionProxymodel()
-{
-    return mDefinitionProxymodel;
-}
-
-void SolverOptionEditor::setDefintionProxyModel(OptionSortFilterProxyModel *model)
-{
-    mDefinitionProxymodel = model;
-}
-
-OptionDefinitionModel *SolverOptionEditor::definitionModel()
-{
-    return mDefinitionModel;
-}
-
-void SolverOptionEditor::setDefinitionModel(OptionDefinitionModel *definitionModel)
-{
-    mDefinitionModel = dynamic_cast<SolverOptionDefinitionModel*>(definitionModel);
-}
-
-QStandardItemModel *SolverOptionEditor::definitionGroupModel()
-{
-    return mDefinitionGroupModel;
-}
-
-void SolverOptionEditor::setDefinitionGroupModel(QStandardItemModel *model)
-{
-    mDefinitionGroupModel = model;
 }
 
 void SolverOptionEditor::showOptionContextMenu(const QPoint &pos)
