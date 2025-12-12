@@ -30,6 +30,7 @@ namespace option {
 
 struct OptionItem;
 struct SolverOptionItem;
+struct ConfigItem;
 
 namespace newoption {
 
