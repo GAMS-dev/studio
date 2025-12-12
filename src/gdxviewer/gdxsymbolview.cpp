@@ -825,6 +825,8 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
         }
         if (!mAutoResizeTV)
             restoreTableViewHeaderState(symViewState);
+        else
+            autoResizeTableViewColumns();
         ui->tvTableViewFilter->horizontalHeader()->restoreState(symViewState->tableViewFilterHeaderState());
         ui->tvTableViewFilter->resizeColumnsToContents();
         mTVFirstInit = false;
