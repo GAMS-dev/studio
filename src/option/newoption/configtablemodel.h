@@ -65,9 +65,7 @@ public:
     const QList<ParamConfigItem *> parameterConfigItems();
 
 signals:
-    void newTableRowDropped(const QModelIndex &index);
     void configParamModelChanged(const QList<ParamConfigItem *> &optionItem);
-    void configParamItemRemoved();
 
 public slots:
     void on_groupDefinitionReloaded() override;

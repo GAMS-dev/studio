@@ -46,7 +46,7 @@ class OptionWidget : public AbstractView
 {
     Q_OBJECT
 public:
-    OptionWidget(bool isFileEditor, QWidget* parent = nullptr);
+    explicit OptionWidget(bool isFileEditor, QWidget* parent = nullptr);
     ~OptionWidget() override;
 
 protected:
@@ -117,6 +117,20 @@ protected slots:
     void showOptionDefinition(bool selectRow = true);
     void showOptionRecurrence();
 
+    void on_selectRow(int logicalIndex) const;
+    void selectAnOption() const;
+
+    bool isViewCompact() const;
+
+    void updateActionsState();
+    void updateActionsState(const QModelIndex &index);
+    void updateDefinitionActionsState(const QModelIndex &index);
+
+    QList<int> getRecurrentOption(const QModelIndex &index);
+
+    void copyDefinitionToClipboard(int column);
+
+public slots:
     void on_actionInsert_triggered() { insertOption(); }
     void on_actionInsert_Comment_triggered() { insertComment(); }
     void on_actionDelete_triggered() { deleteOption(); }
@@ -131,19 +145,6 @@ protected slots:
 
     void on_actionAdd_This_Parameter_triggered();
     void on_actionRemove_This_Parameter_triggered();
-
-    void on_selectRow(int logicalIndex) const;
-    void selectAnOption() const;
-
-    bool isViewCompact() const;
-
-    void updateActionsState();
-    void updateActionsState(const QModelIndex &index);
-    void updateDefinitionActionsState(const QModelIndex &index);
-
-    QList<int> getRecurrentOption(const QModelIndex &index);
-
-    void copyDefinitionToClipboard(int column);
 
 signals:
    void modificationChanged(bool modifiedState);

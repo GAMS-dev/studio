@@ -66,7 +66,7 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
     initActions();
     initTableView();
     initTreeView();
-    initTabNavigation();
+    initTabNavigation( mIsFileEditor );
     initMessageControl( mIsFileEditor );
 
     if (!mOptionTokenizer->getOption()->available())  {

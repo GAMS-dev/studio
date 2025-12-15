@@ -37,7 +37,7 @@ class ConfigParamEditor : public OptionWidget
 {
     Q_OBJECT
 public:
-    ConfigParamEditor(const QList<ParamConfigItem *> &initParamItems,
+    ConfigParamEditor(const QList<ConfigItem *> &initParamItems,
                       const QString &encodingName,
                       QWidget *parent = nullptr);
     ~ConfigParamEditor() override;
@@ -59,9 +59,9 @@ public slots:
     void addOptionFromDefinition(const QModelIndex &index) override;
 
     void parameterItemCommitted(QWidget *editor);
-    void on_reloadGamsUserConfigFile(const QList<ParamConfigItem  *> &initParams);
+    void on_reloadGamsUserConfigFile(const QList<ConfigItem  *> &initParams);
 
-//    QList<ParamConfigItem *> parameterConfigItems();
+    QList<ConfigItem *> parameterConfigItems();
 
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_newTableRowDropped(const QModelIndex &index);
@@ -75,6 +75,8 @@ protected slots:
     void deleteOption() override;
     void moveOptionUp() override;
     void moveOptionDown() override;
+
+    bool isCommentToggleable() override { return false; }
 
     void findAndSelectionOptionFromDefinition() override;
 

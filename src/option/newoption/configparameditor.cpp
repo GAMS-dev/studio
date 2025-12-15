@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "option/configoptiondefinitionmodel.h"
+#include "option/gamsuserconfig.h"
 #include "option/optiondefinitionmodel.h"
 #include "option/newoption/configparameditor.h"
 #include "msgbox.h"
@@ -28,17 +29,17 @@ namespace studio {
 namespace option {
 namespace newoption {
 
-ConfigParamEditor::ConfigParamEditor(const QList<ParamConfigItem *> &initParamItems, const QString &encodingName, QWidget *parent) :
+ConfigParamEditor::ConfigParamEditor(const QList<ConfigItem *> &initParamItems, const QString &encodingName, QWidget *parent) :
     OptionWidget(true, parent),
     mEncoding(encodingName.isEmpty() ? "UTF-8" : encodingName),
-//    mFileKind(kind),
-//    mFileId(id),
     mModified(false),
     mFileHasChangedExtern(false)
 {
+    mOptionTokenizer = new OptionTokenizer(GamsOptDefFile);
+
     QList<ParamConfigItem *> optionItem;
     optionItem.reserve(initParamItems.size());
-    for(ParamConfigItem* item: initParamItems) {
+    for(ConfigItem* item: initParamItems) {
         optionItem.append( new ParamConfigItem(-1, item->key, item->value, item->minVersion, item->maxVersion) );
     }
     mParameterTableModel = new ConfigTableModel(optionItem, mOptionTokenizer, this);
@@ -51,6 +52,7 @@ ConfigParamEditor::ConfigParamEditor(const QList<ParamConfigItem *> &initParamIt
     initTableView();
     initTreeView();
     initTabNavigation( false );
+    initMessageControl( false );
 
     connect(ui->optionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &ConfigParamEditor::on_selectRow, Qt::UniqueConnection);
     connect(ui->optionTableView, &QTableView::customContextMenuRequested,this, &ConfigParamEditor::showOptionContextMenu, Qt::UniqueConnection);
@@ -69,7 +71,7 @@ ConfigParamEditor::ConfigParamEditor(const QList<ParamConfigItem *> &initParamIt
     connect(mParameterTableModel, &QAbstractTableModel::dataChanged, this, &ConfigParamEditor::on_dataItemChanged, Qt::UniqueConnection);
     connect(mParameterTableModel, &QAbstractTableModel::dataChanged, mParameterTableModel, &ConfigTableModel::on_updateConfigParamItem, Qt::UniqueConnection);
     connect(mParameterTableModel, &ConfigTableModel::configParamModelChanged, mDefinitionModel, &ConfigOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
-    connect(mParameterTableModel, &ConfigTableModel::configParamItemRemoved, mParameterTableModel, &ConfigTableModel::on_removeConfigParamItem, Qt::UniqueConnection);
+    connect(mParameterTableModel, &ConfigTableModel::optionItemRemoved, mParameterTableModel, &ConfigTableModel::on_removeConfigParamItem, Qt::UniqueConnection);
 
     connect(this, &ConfigParamEditor::modificationChanged, this, &ConfigParamEditor::setModified, Qt::UniqueConnection);
     emit mParameterTableModel->configParamModelChanged(optionItem);
@@ -267,13 +269,13 @@ void ConfigParamEditor::addOptionFromDefinition(const QModelIndex &index)
                                       "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
         switch(answer) {
         case 0: // delete and replace
-            disconnect( mParameterTableModel, &ConfigTableModel::configParamItemRemoved, mParameterTableModel, &ConfigTableModel::on_removeConfigParamItem);
+            disconnect( mParameterTableModel, &ConfigTableModel::optionItemRemoved, mParameterTableModel, &ConfigTableModel::on_removeConfigParamItem);
             ui->optionTableView->selectionModel()->clearSelection();
             for(int i=1; i<indices.size(); i++) {
                 ui->optionTableView->selectionModel()->select( indices.at(i), QItemSelectionModel::Select|QItemSelectionModel::Rows );
             }
             deleteOption();
-            connect( mParameterTableModel, &ConfigTableModel::configParamItemRemoved,
+            connect( mParameterTableModel, &ConfigTableModel::optionItemRemoved,
                     mParameterTableModel, &ConfigTableModel::on_removeConfigParamItem, Qt::UniqueConnection);
             replaceExistingEntry = true;
             indices = ui->optionTableView->model()->match(ui->optionTableView->model()->index(0, ConfigTableModel::COLUMN_ID),
@@ -362,11 +364,21 @@ void ConfigParamEditor::parameterItemCommitted(QWidget *editor)
     }
 }
 
-void ConfigParamEditor::on_reloadGamsUserConfigFile(const QList<ParamConfigItem *> &initParams)
+QList<ConfigItem *> ConfigParamEditor::parameterConfigItems()
+{
+    QList<ConfigItem *> itemList;
+    itemList.reserve(mParameterTableModel->parameterConfigItems().size());
+    for(ParamConfigItem* item : mParameterTableModel->parameterConfigItems()) {
+        itemList.append( new ConfigItem(item->key, item->value, item->minVersion, item->maxVersion) );
+    }
+    return itemList;
+}
+
+void ConfigParamEditor::on_reloadGamsUserConfigFile(const QList<ConfigItem *> &initParams)
 {
     QList<ParamConfigItem *> optionItem;
     optionItem.reserve(initParams.size());
-    for(ParamConfigItem* item: initParams) {
+    for(ConfigItem* item: initParams) {
         optionItem.append( new ParamConfigItem(-1, item->key, item->value, item->minVersion, item->maxVersion) );
     }
     mParameterTableModel->on_reloadConfigParamModel(optionItem);

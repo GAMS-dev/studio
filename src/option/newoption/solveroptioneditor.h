@@ -65,7 +65,6 @@ public:
     void toggleCommentOption();
 
 signals:
-    void modificationChanged(bool modifiedState);
     void itemCountChanged(int newItemCount);
     void compactViewChanged(bool compact);
 

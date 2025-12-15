@@ -205,10 +205,9 @@ void OptionWidget::initMessageControl(bool isFileEditor)
     mLogEdit->setObjectName("log-edit");
     optionTokenizer()->provideLogger(mLogEdit);
 
-    if (isFileEditor)
-        ui->messageTabWidget->addTab( mLogEdit, "Messages" );
-
+    ui->messageTabWidget->addTab( mLogEdit, "Messages" );
     ui->messageCtrlWidget->setVisible( isFileEditor );
+    ui->messageTabWidget->setVisible( isFileEditor );
     ui->optionFileCtrlwidget->setVisible( isFileEditor );
 }
 
