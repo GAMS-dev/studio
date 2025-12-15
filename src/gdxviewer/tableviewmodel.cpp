@@ -32,8 +32,6 @@ TableViewModel::TableViewModel(GdxSymbol* sym, GdxSymbolTableModel* gdxSymbolTab
     mTvDimOrder.reserve(mSym->mDim);
     for (int i = 0; i < mSym->mDim; ++i)
         mTvDimOrder << i;
-    connect(mSym, &GdxSymbol::modelReset, this, &TableViewModel::setTableViewNoArgs);
-    connect(mSym, &GdxSymbol::loadFinished, this, &TableViewModel::setTableViewNoArgs);
 }
 
 TableViewModel::~TableViewModel()
