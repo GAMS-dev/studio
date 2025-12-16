@@ -417,24 +417,18 @@ void OptionWidget::showOptionRecurrence()
         return;
     }
 
-    QItemSelection selection = ui->optionTableView->selectionModel()->selection();
-    selection.select(ui->optionTableView->model()->index(indexSelection.at(0).row(), 0),
-                     ui->optionTableView->model()->index(indexSelection.at(0).row(), optionModel()->columnCount()));
-    ui->optionTableView->selectionModel()->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
-
     QList<int> rowList = getRecurrentOption(indexSelection.at(0));
     if (rowList.size() <= 0) {
         showOptionDefinition();
         return;
     }
 
+    QItemSelection selection = ui->optionTableView->selectionModel()->selection();
     for(const int row : std::as_const(rowList)) {
-        QItemSelection rowSelection = ui->optionTableView->selectionModel()->selection();
-        rowSelection.select(ui->optionTableView->model()->index(row, 0),
-                            ui->optionTableView->model()->index(row, optionModel()->columnCount()));
-        ui->optionTableView->selectionModel()->select(rowSelection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
+        selection.select(ui->optionTableView->model()->index(row, 0), ui->optionTableView->model()->index(row, 0));
     }
 
+    ui->optionTableView->selectionModel()->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
     showOptionDefinition();
 }
 
@@ -464,31 +458,7 @@ void OptionWidget::on_actionShowRecurrence_triggered()
     if (!ui->actionShowRecurrence->isEnabled())
         return;
 
-    const QModelIndexList indexSelection = ui->optionTableView->selectionModel()->selectedIndexes();
-    if (indexSelection.size() <= 0) {
-        showOptionDefinition();
-        return;
-    }
-
-    QItemSelection selection = ui->optionTableView->selectionModel()->selection();
-    selection.select(ui->optionTableView->model()->index(indexSelection.at(0).row(), 0),
-                     ui->optionTableView->model()->index(indexSelection.at(0).row(), optionModel()->columnCount()));
-    ui->optionTableView->selectionModel()->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
-
-    QList<int> rowList = getRecurrentOption(indexSelection.at(0));
-    if (rowList.size() <= 0) {
-        showOptionDefinition();
-        return;
-    }
-
-    for(const int row : std::as_const(rowList)) {
-        QItemSelection rowSelection = ui->optionTableView->selectionModel()->selection();
-        rowSelection.select(ui->optionTableView->model()->index(row, 0),
-                            ui->optionTableView->model()->index(row, optionModel()->columnCount()));
-        ui->optionTableView->selectionModel()->select(rowSelection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
-    }
-
-    showOptionDefinition();
+    showOptionRecurrence();
 }
 
 void OptionWidget::on_actionResize_Columns_To_Contents_triggered()

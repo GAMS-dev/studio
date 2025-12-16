@@ -77,6 +77,7 @@ ConfigParamEditor::ConfigParamEditor(const QList<ConfigItem *> &initParamItems, 
     emit mParameterTableModel->configParamModelChanged(optionItem);
 
     QTimer::singleShot(0, this, [this]() {
+        mParameterTableModel->updateRecurrentStatus();
         ui->optionTableView->horizontalHeader()->setSectionResizeMode(ConfigTableModel::COLUMN_KEY, QHeaderView::Interactive);
         ui->optionTableView->horizontalHeader()->setSectionResizeMode(ConfigTableModel::COLUMN_VALUE, QHeaderView::Interactive);
     });
