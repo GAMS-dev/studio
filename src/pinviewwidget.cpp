@@ -23,6 +23,7 @@
 #include "exception.h"
 #include "logger.h"
 #include "settings.h"
+#include "viewhelper.h"
 
 #include <QTimer>
 #include <QMouseEvent>
@@ -62,11 +63,15 @@ PinViewWidget::PinViewWidget(QWidget *parent) :
     connect(mActClose, &QAction::triggered, this, &PinViewWidget::onClose);
     ui->toolBar->addAction(mActClose);
     ui->laFile->installEventFilter(this);
+
+    mFindWidget = new find::FindWidget(this);
+    connect(mFindWidget, &find::FindWidget::find, this, &PinViewWidget::find);
 }
 
 PinViewWidget::~PinViewWidget()
 {
     delete ui;
+    delete mFindWidget;
 }
 
 void PinViewWidget::setOrientation(Qt::Orientation orientation)
@@ -92,7 +97,11 @@ Qt::Orientation PinViewWidget::orientation()
 
 bool PinViewWidget::setWidget(QWidget *widget)
 {
+    bool isFindFocus = mFindWidget->active() && mFindWidget->focusWidget() == qApp->focusWidget();
+    QWidget *lastFindFocus = isFindFocus ? mFindWidget->focusWidget() : nullptr;
+
     if (mWidget) {
+        layout()->removeWidget(mFindWidget);
         layout()->removeWidget(mWidget);
         mWidget->setParent(nullptr);
         mWidget = nullptr;
@@ -103,6 +112,10 @@ bool PinViewWidget::setWidget(QWidget *widget)
     widget->setSizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::MinimumExpanding);
     layout()->addWidget(widget);
     mWidget = widget;
+    layout()->addWidget(mFindWidget);
+    mFindWidget->setVisible(mFindWidget->active() && (ViewHelper::toCodeEdit(widget) || ViewHelper::toTextView(widget)));
+    if (lastFindFocus)
+        lastFindFocus->setFocus();
     return true;
 }
 
@@ -156,6 +169,11 @@ QList<int> PinViewWidget::sizes()
     return { mSplitter->width() - mSplitter->handleWidth() - splitSize, splitSize };
 }
 
+find::FindWidget *PinViewWidget::findWidget() const
+{
+    return mFindWidget;
+}
+
 bool PinViewWidget::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == ui->laFile && event->type() == QEvent::MouseButtonRelease) {
@@ -177,6 +195,27 @@ void PinViewWidget::splitterMoved(int pos, int index)
     else
         mPrefSize.setHeight(mSplitter->sizes().at(index));
     Settings::settings()->setSize(skPinViewSize, preferredSize());
+}
+
+void PinViewWidget::find(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool focusEditor)
+{
+    QString match;
+    if (CodeEdit *edit = ViewHelper::toCodeEdit(mWidget)) {
+        edit->findLoop(rex, options, continued);
+        if (focusEditor)
+            edit->setFocus();
+        match = edit->textCursor().selectedText();
+    }
+    else if (TextView *view = ViewHelper::toTextView(mWidget)) {
+        bool dummy = false;
+        view->findText(rex, options, dummy);
+        if (focusEditor)
+            view->edit()->setFocus();
+        match = view->selectedText();
+    }
+    if (!match.isEmpty())
+        mFindWidget->setLastMatch(match);
+
 }
 
 void PinViewWidget::onSwitchOrientation()

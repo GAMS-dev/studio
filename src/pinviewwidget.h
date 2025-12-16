@@ -24,6 +24,7 @@
 #include <QSplitter>
 
 #include "common.h"
+#include "search/findwidget.h"
 
 namespace gams {
 namespace studio {
@@ -52,6 +53,7 @@ public:
     QSize preferredSize();
     void showAndAdjust(Qt::Orientation orientation);
     QList<int> sizes();
+    find::FindWidget *findWidget() const;
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 signals:
@@ -59,6 +61,7 @@ signals:
 
 private slots:
     void splitterMoved(int pos, int index);
+    void find(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool focusEditor);
 
     void onSwitchOrientation();
     void onSyncScroll(bool checked);
@@ -75,6 +78,7 @@ private:
     QSplitter *mSplitter = nullptr;
     QWidget *mWidget = nullptr;
     QSize mPrefSize;
+    find::FindWidget *mFindWidget = nullptr;
 };
 
 

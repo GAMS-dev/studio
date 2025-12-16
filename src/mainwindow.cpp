@@ -6020,26 +6020,24 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::on_actionFind_triggered()
 {
-    if (ViewHelper::toCodeEdit(ui->mainTabs->currentWidget()) || ViewHelper::toTextView(ui->mainTabs->currentWidget())) {
+    QWidget *ed = currentEdit();
+    if (ViewHelper::toCodeEdit(ed) || ViewHelper::toTextView(ed)) {
+        find::FindWidget *findWid = ed == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
         QString term;
-        bool keep = !ui->findWidget->getFindText().isEmpty();
-        if (CodeEdit *edit = ViewHelper::toCodeEdit(ui->mainTabs->currentWidget())) {
-            QString term = edit->currentFindSelection(keep);
-            if (!keep)
-            ui->findWidget->setFindText(term);
-
-        } else if (TextView *view = ViewHelper::toTextView(ui->mainTabs->currentWidget())) {
+        bool keep = !findWid->getFindText().isEmpty();
+        if (CodeEdit *edit = ViewHelper::toCodeEdit(ed)) {
+            term = edit->currentFindSelection(keep);
+        } else if (TextView *view = ViewHelper::toTextView(ed)) {
             term = view->currentFindSelection();
         }
 
-        if (!term.isEmpty()) {
-            if (ui->findWidget->setFindText(term))
-                ;
-        }
-        ui->findWidget->setActive(true);
-        ui->findWidget->setVisible(ui->findWidget->active());
-        if (ui->findWidget->isVisible())
-            ui->findWidget->setFocus();
+        if (!term.isEmpty())
+            findWid->setFindText(term);
+
+        findWid->setActive(true);
+        findWid->setVisible(findWid->active());
+        if (findWid->isVisible())
+            findWid->setFocus();
     }
 }
 
@@ -6145,12 +6143,11 @@ void MainWindow::updateResults(search::SearchResultModel* model)
 
 void MainWindow::findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool focusEditor)
 {
-    DEB() << "findInCurrentTab";
     QString match;
     if (CodeEdit *edit = ViewHelper::toCodeEdit(ui->mainTabs->currentWidget())) {
         edit->findLoop(rex, options, continued);
         if (focusEditor)
-        edit->setFocus();
+            edit->setFocus();
         match = edit->textCursor().selectedText();
     }
     else if (TextView *view = ViewHelper::toTextView(ui->mainTabs->currentWidget())) {
@@ -6166,7 +6163,11 @@ void MainWindow::findInCurrentTab(const QRegularExpression &rex, QTextDocument::
 
 void MainWindow::continueFind(bool backwards)
 {
-    emit ui->findWidget->triggerFind(true, backwards, true);
+    QWidget *edit = currentEdit();
+    if (!ViewHelper::toCodeEdit(edit) && !ViewHelper::toTextView(edit))
+        return;
+    find::FindWidget *fw = edit == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
+    emit fw->triggerFind(true, backwards, true);
 }
 
 void MainWindow::continueSearch(bool backwards)
@@ -7511,19 +7512,19 @@ void MainWindow::on_projectSort_clicked()
         mProjectFilterHandler->setSortKey(ProjectFilterHandler::sortNameAsc);
         updateProjectSortIcon();
     });
-    menu.actions().last()->setToolTip("Sort by file name");
+    menu.actions().constLast()->setToolTip("Sort by file name");
 
     menu.addAction(Theme::icon(":/%1/sort-t"), "Type", this, [this]() {
         mProjectFilterHandler->setSortKey(ProjectFilterHandler::sortSuffixAsc);
         updateProjectSortIcon();
     });
-    menu.actions().last()->setToolTip("Sort by file type");
+    menu.actions().constLast()->setToolTip("Sort by file type");
 
     menu.addAction(Theme::icon(":/%1/sort-u"), "Usage", this, [this]() {
         mProjectFilterHandler->setSortKey(ProjectFilterHandler::sortUseAsc);
         updateProjectSortIcon();
     });
-    menu.actions().last()->setToolTip("Sort by project execution / file modification");
+    menu.actions().constLast()->setToolTip("Sort by project execution / file modification");
 
     menu.addSeparator();
 
