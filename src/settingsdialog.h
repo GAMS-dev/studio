@@ -106,6 +106,7 @@ private slots:
     void on_cb_writeLog_toggled(bool checked);
     void on_sb_nrLogBackups_valueChanged(int value);
     void on_miroBrowseButton_clicked();
+    void on_gamsBrowseButton_clicked();
     void miroPathTextChanged(const QString &text);
     void on_btn_resetHistory_clicked();
     void on_btRenameTheme_clicked();
@@ -127,6 +128,7 @@ private slots:
     void on_rb_decSepStudio_toggled(bool checked);
     void updateNumericalPrecision();
 
+    void gamsSystemDirChanged();
     void checkForUpdates();
 
 private:

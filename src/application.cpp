@@ -98,13 +98,13 @@ Application::~Application()
 
 void Application::init()
 {
-    CommonPaths::setSystemDir(mCmdParser.gamsDir());
     setOrganizationName(GAMS_ORGANIZATION_STR);
     setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
     setApplicationName(GAMS_PRODUCTNAME_STR);
     Settings::createSettings(mCmdParser.ignoreSettings(),
                              mCmdParser.resetSettings(),
                              mCmdParser.resetView());
+    setSystemDirectory();
     if (Settings::settings()->toBool(skEnableLog) && mCmdParser.logFile().isEmpty())
         vCustomLogFile = CommonPaths::studioDocumentsDir() + "/studio.log";
     else if (!mCmdParser.logFile().isEmpty() && mCmdParser.logFile() != "-")
@@ -235,6 +235,30 @@ void Application::listen()
 {
     mServer.removeServer(mServerName);
     mServer.listen(mServerName);
+}
+
+void Application::setSystemDirectory()
+{
+    QString path;
+    if (!mCmdParser.gamsDir().isEmpty()) {
+        path = mCmdParser.gamsDir();
+    } else if (!Settings::settings()->toString(skSystemDirectory).isEmpty()) {
+        path = Settings::settings()->toString(skSystemDirectory);
+    }
+    if (path.isEmpty()) {
+        CommonPaths::setSystemDir();
+        Settings::settings()->setString(skSystemDirectory, CommonPaths::systemDir());
+        return;
+    }
+    QDir dir(path);
+    QFileInfo fi(path+"/gamsstmp.txt");
+    if (dir.exists() && fi.exists()) {
+        CommonPaths::setSystemDir(path);
+        Settings::settings()->setString(skSystemDirectory, path);
+    } else {
+        CommonPaths::setSystemDir();
+        Settings::settings()->setString(skSystemDirectory, CommonPaths::systemDir());
+    }
 }
 
 void Application::newConnection()

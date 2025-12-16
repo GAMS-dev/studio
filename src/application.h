@@ -114,6 +114,8 @@ private:
     ///
     void listen();
 
+    void setSystemDirectory();
+
 private:
     QSharedPointer<MainWindow> mMainWindow;
     CommandLineParser mCmdParser;

@@ -48,7 +48,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 {
     ui->setupUi(this);
     setCheckForUpdateState();
-    // ui->fontComboBox->addItems(QFontDatabase::families());
+    ui->gamsEdit->setText(CommonPaths::systemDir());
     auto app = qobject_cast<Application*>(qApp);
     if (app && app->skipCheckForUpdate()) {
         mC4U.reset(new support::CheckForUpdate(!app->skipCheckForUpdate(), this));
@@ -228,6 +228,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
         ui->nextCheckLabel->setText(nextCheckDate().toString());
         setModifiedStatus(true);
     });
+    connect(ui->gamsEdit, &QLineEdit::textChanged, this, &SettingsDialog::gamsSystemDirChanged);
 
     ui->edUserGamsTypes->installEventFilter(this);
     ui->edAutoReloadTypes->installEventFilter(this);
@@ -296,7 +297,6 @@ void SettingsDialog::loadSettings()
     ui->cbEngineExpireType->setCurrentIndex(mEngineInitialExpire % (60*24) ? mEngineInitialExpire % 60 ? 0 : 1 : 2);
     ui->sbEngineExpireValue->setValue(mEngineInitialExpire / (mEngineInitialExpire % (60*24) ? mEngineInitialExpire % 60 ? 1 : 60 : (60*24)));
 
-
     // color page
     Theme::instance()->readUserThemes(mSettings->toList(SettingsKey::skUserThemes));
     disconnect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::appearanceIndexChanged);
@@ -361,6 +361,9 @@ void SettingsDialog::loadSettings()
     mLastCheckDate = mSettings->toDate(skLastUpdateCheckDate);
     ui->lastCheckLabel->setText(mLastCheckDate.toString());
     ui->nextCheckLabel->setText(nextCheckDate().toString());
+
+    // GAMS system directory
+    auto sysdir = mSettings->toString(skSystemDirectory);
 
     QTimer::singleShot(0, this, &SettingsDialog::afterLoad);
 }
@@ -545,6 +548,20 @@ void SettingsDialog::saveSettings()
     mSettings->setInt(skUpdateInterval, ui->updateIntervalBox->currentIndex());
     mSettings->setDate(skLastUpdateCheckDate, mLastCheckDate);
     mSettings->setDate(skNextUpdateCheckDate, nextCheckDate());
+
+    // GAMS system directory
+    QDir gamsDir(ui->gamsEdit->text());
+    QFileInfo fi(ui->gamsEdit->text()+"/gamsstmp.txt");
+
+    if (gamsDir.exists() && fi.exists() && gamsDir.path() != mSettings->toString(skSystemDirectory)) {
+        QString msg("The GAMS system directory has changed. Please restart Studio.");
+        mMain->appendSystemLogWarning(msg);
+        mSettings->setString(skSystemDirectory, ui->gamsEdit->text());
+        CommonPaths::setSystemDir(ui->gamsEdit->text());
+    } else {
+        ui->gamsEdit->setText(mSettings->toString(skSystemDirectory));
+        ui->gamsLabel->setText(QString());
+    }
 
     // done
     mSettings->unblock();
@@ -857,7 +874,7 @@ void SettingsDialog::on_miroBrowseButton_clicked()
         dir = CommonPaths::defaultWorkingDir();
     else
         dir = mSettings->toString(skMiroInstallPath);
-    auto miro = QFileDialog::getOpenFileName(this, tr("MIRO location"), dir);
+    auto miro = QFileDialog::getOpenFileName(this, "MIRO location", dir);
 
     if (miro.isEmpty()) return;
 
@@ -867,6 +884,25 @@ void SettingsDialog::on_miroBrowseButton_clicked()
         path.append(miro::MIRO_MACOS_APP_BUNDLE_POSTFIX);
 #endif
     ui->miroEdit->setText(path);
+}
+
+void SettingsDialog::on_gamsBrowseButton_clicked()
+{
+    QString dir;
+    if (mSettings->toString(skSystemDirectory).isEmpty()) {
+        dir = CommonPaths::systemDir();
+        mSettings->setString(skSystemDirectory, dir);
+    } else {
+        dir = mSettings->toString(skSystemDirectory);
+    }
+    auto gams = QFileDialog::getExistingDirectory(this,
+                                                  "Open Directory",
+                                                  dir,
+                                                  QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (gams.isEmpty())
+        return;
+    setModifiedStatus(true);
+    ui->gamsEdit->setText(gams);
 }
 
 void SettingsDialog::miroPathTextChanged(const QString &text)
@@ -1225,6 +1261,19 @@ void SettingsDialog::updateNumericalPrecision()
     mRestoreSqZeroes = gdxviewer::NumericalFormatController::update(ui->cbFormat, ui->sbPrecision, ui->cbSqueezeTrailingZeroes, mRestoreSqZeroes);
 }
 
+void SettingsDialog::gamsSystemDirChanged()
+{
+    setModifiedStatus(true);
+    QDir dir(ui->gamsEdit->text());
+    QFileInfo fi(ui->gamsEdit->text()+"/gamsstmp.txt");
+    if (!dir.exists())
+        ui->gamsLabel->setText("The given directory does not exist. Please update the system directory path; otherwise the previous value will be restored.");
+    else if (!fi.exists())
+        ui->gamsLabel->setText("The given directory does not seem to be a valid GAMS system directory. Please update the system directory path; otherwise the previous value will be restored.");
+    else
+        ui->gamsLabel->setText("<b>The GAMS system directory has changed. Please restart Studio.</b>");
+}
+
 void SettingsDialog::checkForUpdates()
 {
     mLastCheckDate = QDate::currentDate();
@@ -1240,14 +1289,14 @@ QStringList SettingsDialog::cleanupWorkspaces(bool dryRun)
     QStringList workspaces = mWorkspaceModel->activeWorkspaces();
 
     QStringList files, dirs;
-    for (const auto& ws : workspaces) {
+    for (const auto& ws : std::as_const(workspaces)) {
         QDir dir(ws);
         auto fList = dir.entryList(filters, QDir::Files | QDir::NoDotAndDotDot);
-        for (const auto& f : fList) {
+        for (const auto& f : std::as_const(fList)) {
             files << QDir::toNativeSeparators(ws + "/" + f);
         }
         auto dList = dir.entryList(filters, QDir::Dirs | QDir::NoDotAndDotDot);
-        for (const auto& d : dList) {
+        for (const auto& d : std::as_const(dList)) {
             dirs << QDir::toNativeSeparators(ws + "/" + d);
         }
     }
@@ -1262,11 +1311,11 @@ QStringList SettingsDialog::cleanupWorkspaces(bool dryRun)
         mMain->appendSystemLogInfo(dirMsg + dirs.join("\n"));
     if (dryRun)
         return files + dirs;
-    for (const auto& file : files) {
+    for (const auto& file : std::as_const(files)) {
         if (!QFile::remove(file))
             mMain->appendSystemLogError("Failed deleting file: " + file);
     }
-    for (const auto& dir : dirs) {
+    for (const auto& dir : std::as_const(dirs)) {
         QDir d(dir);
         if (!d.removeRecursively())
             mMain->appendSystemLogError("Failed deleting scrtach directory: " + dir);

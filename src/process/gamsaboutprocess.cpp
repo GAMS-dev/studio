@@ -49,7 +49,7 @@ void GamsAboutProcess::execute()
     QStringList args({"/??", "lo=3", "procTreeMemMonitor=0", "curdir=\"" + mCurDir + "\""});
     QString app = nativeAppPath();
 
-    QString msg = QString("GAMS licensing running: %1 %2").arg(application(), args.join(" "));
+    QString msg = QString("GAMS licensing running: %1 %2").arg(app, args.join(" "));
     SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
 
 #if defined(__unix__) || defined(__APPLE__)

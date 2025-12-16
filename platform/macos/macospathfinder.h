@@ -25,7 +25,7 @@
 class MacOSPathFinder
 {
 private:
-    MacOSPathFinder() {};
+    MacOSPathFinder() {}
 
 public:
     static QString systemDir();

@@ -223,8 +223,6 @@ QString CommonPaths::defaultWorkingDir(bool createMissing)
                 FATAL() << "Error: No write access to user documents location";
         }
     }
-
-
     return defWorkingDir.path();
 }
 
