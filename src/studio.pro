@@ -469,7 +469,6 @@ HEADERS += \
     option/solveroptioneditor.h \
     option/gamsparameterwidget.h \
     pinviewwidget.h \
-    process.h \
     process/abstractprocess.h \
     process/connectprocess.h \
     process/gamsaboutprocess.h \

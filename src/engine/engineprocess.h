@@ -20,7 +20,7 @@
 #ifndef GAMS_STUDIO_ENGINE_ENGINEPROCESS_H
 #define GAMS_STUDIO_ENGINE_ENGINEPROCESS_H
 
-#include "process.h"
+#include "process/abstractprocess.h"
 #include "enginemanager.h"
 
 #include <QTimer>

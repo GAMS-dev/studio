@@ -42,6 +42,7 @@ namespace gams {
 namespace studio {
 
 using namespace search;
+using namespace std::chrono_literals;
 
 QHash<ProfilerColumn, QString> CodeEdit::mProfilerHeaderToolTip
     {{pcTime, "Elapsed Time"}, {pcMemory, "Memory Usage"}, {pcRows, "Number of Assignments"}, {pcSteps, "Execution Steps"}};
@@ -346,14 +347,21 @@ bool CodeEdit::hasSelection() const
     return textCursor().hasSelection();
 }
 
-QString CodeEdit::currentFindSelection()
+QString CodeEdit::currentFindSelection(bool &keep)
 {
     if (textCursor().hasSelection() && !textCursor().hasComplexSelection()) {
-        if (textCursor().block() == document()->findBlock(textCursor().anchor()))
+        if (textCursor().block() == document()->findBlock(textCursor().anchor())) {
+            keep = false;
             return textCursor().selectedText();
+        }
     }
-    recalcWordUnderCursor();
-    return mWordUnderCursor;
+    recalcWordUnderCursor(!keep);
+    if (!mWordUnderCursor.isEmpty())
+        return mWordUnderCursor;
+    keep = true;
+    if (!textCursor().atBlockEnd())
+        return textCursor().block().text().at(textCursor().positionInBlock());
+    return QString();
 }
 
 void CodeEdit::disconnectTimers()
@@ -489,12 +497,8 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             return;
         }
     } else if (e->key() == Qt::Key_Escape) {
-        if (mFindREx) {
-            delete mFindREx;
-            mFindREx = nullptr;
-            updateExtraSelections();
-            emit endFind();
-        }
+        clearFindings();
+        e->accept();
     }
 
     if (mCompleter && mCompleter->isVisible()) {
@@ -1010,7 +1014,7 @@ QString CodeEdit::getIncludeFile(int line, int col, qsizetype &fileStart, QStrin
                 }
                 while (parStart < parEnd) {
                     QRegularExpressionMatch match2 = mRexYamlFile.match(block.text(), parStart);
-                    if (match2.captured(3).length() && match2.capturedStart(3) <= col && match2.capturedEnd(3) >= col) {
+                    if (!match2.captured(3).isEmpty() && match2.capturedStart(3) <= col && match2.capturedEnd(3) >= col) {
                         fileStart = match2.capturedStart(3);
                         QString file = match2.captured(3);
                         if (file.startsWith('\"')) {
@@ -1502,29 +1506,29 @@ void CodeEdit::profilerHeaderContextMenuEvent(QContextMenuEvent *e)
             mSettings->setInt(skEdProfilerCols, visibleCols & 1 ? visibleCols - 1 : visibleCols + 1);
             emit profilerSettingsChanged();
         });
-        menu.actions().last()->setCheckable(true);
-        menu.actions().last()->setChecked(visibleCols & 1);
+        menu.actions().constLast()->setCheckable(true);
+        menu.actions().constLast()->setChecked(visibleCols & 1);
 
         menu.addAction("&Memory Usage", this, [this, visibleCols]() {
             mSettings->setInt(skEdProfilerCols, visibleCols & 2 ? visibleCols - 2 : visibleCols + 2);
             emit profilerSettingsChanged();
         });
-        menu.actions().last()->setCheckable(true);
-        menu.actions().last()->setChecked(visibleCols & 2);
+        menu.actions().constLast()->setCheckable(true);
+        menu.actions().constLast()->setChecked(visibleCols & 2);
 
         menu.addAction("Number of &Assignments", this, [this, visibleCols]() {
             mSettings->setInt(skEdProfilerCols, visibleCols & 4 ? visibleCols - 4 : visibleCols + 4);
             emit profilerSettingsChanged();
         });
-        menu.actions().last()->setCheckable(true);
-        menu.actions().last()->setChecked(visibleCols & 4);
+        menu.actions().constLast()->setCheckable(true);
+        menu.actions().constLast()->setChecked(visibleCols & 4);
 
         menu.addAction("Execution &Steps", this, [this, visibleCols]() {
             mSettings->setInt(skEdProfilerCols, visibleCols & 8 ? visibleCols - 8 : visibleCols + 8);
             emit profilerSettingsChanged();
         });
-        menu.actions().last()->setCheckable(true);
-        menu.actions().last()->setChecked(visibleCols & 8);
+        menu.actions().constLast()->setCheckable(true);
+        menu.actions().constLast()->setChecked(visibleCols & 8);
     } else {
         QStringList timeUnits;
         QStringList memUnits;
@@ -1538,9 +1542,9 @@ void CodeEdit::profilerHeaderContextMenuEvent(QContextMenuEvent *e)
                     emit setProfilerCurrentUnits(i, uMem);
                     emit profilerSettingsChanged();
                 });
-                menu.actions().last()->setCheckable(true);
-                menu.actions().last()->setChecked(i == uTime);
-                group.addAction(menu.actions().last());
+                menu.actions().constLast()->setCheckable(true);
+                menu.actions().constLast()->setChecked(i == uTime);
+                group.addAction(menu.actions().constLast());
             }
         } else if (mProfilerHeaderContext == pcMemory) {
             for (int i = 0; i < memUnits.size(); ++i) {
@@ -1548,9 +1552,9 @@ void CodeEdit::profilerHeaderContextMenuEvent(QContextMenuEvent *e)
                     emit setProfilerCurrentUnits(uTime, i);
                     emit profilerSettingsChanged();
                 });
-                menu.actions().last()->setCheckable(true);
-                menu.actions().last()->setChecked(i == uMem);
-                group.addAction(menu.actions().last());
+                menu.actions().constLast()->setCheckable(true);
+                menu.actions().constLast()->setChecked(i == uMem);
+                group.addAction(menu.actions().constLast());
             }
         }
     }
@@ -2178,6 +2182,16 @@ void CodeEdit::setCompleter(CodeCompleter *completer)
     mCompleter = completer;
 }
 
+void CodeEdit::clearFindings()
+{
+    if (mFindREx) {
+        delete mFindREx;
+        mFindREx = nullptr;
+        updateExtraSelections();
+        emit endFind();
+    }
+}
+
 void CodeEdit::clearSearchSelection()
 {
     if (mBlockEditSelection) {
@@ -2245,15 +2259,20 @@ void CodeEdit::findInSelection(QList<search::Result> &results)
     }
 }
 
-bool CodeEdit::findLoop(const QRegularExpression &rex, QTextDocument::FindFlags options)
+bool CodeEdit::findLoop(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued)
 {
-    if (!find(rex, options)) {
-        int pos = options.testFlag(QTextDocument::FindBackward) ? document()->characterCount()-1 : 0;
-        QTextCursor cur = document()->find(rex, pos, options);
-        if (cur.isNull())
-            return false;
-        setTextCursor(cur);
+    int pos = textCursor().hasSelection() ? textCursor().anchor() : textCursor().position();
+    if (continued)
+        pos += options.testFlag(QTextDocument::FindBackward) ? -1 : 1;
+    QTextCursor cur = document()->find(rex, pos, options);
+    if (cur.isNull()) {
+        pos = options.testFlag(QTextDocument::FindBackward) ? document()->characterCount()-1 : 0;
+        cur = document()->find(rex, pos, options);
     }
+    if (cur.isNull())
+        textCursor().clearSelection();
+    else
+        setTextCursor(cur);
     if (mFindREx)
         delete mFindREx;
     mFindREx = new QRegularExpression(rex);
@@ -2458,18 +2477,22 @@ bool CodeEdit::overwriteMode() const
     return AbstractEdit::overwriteMode();
 }
 
-void CodeEdit::recalcWordUnderCursor()
+void CodeEdit::recalcWordUnderCursor(bool gotoStart)
 {
     mWordUnderCursor = "";
-    QTextEdit::ExtraSelection selection;
-    selection.cursor = textCursor();
-    QString text = selection.cursor.block().text();
-    int start = qMin(selection.cursor.position(), selection.cursor.anchor()) - selection.cursor.block().position();
+    QTextCursor cursor = textCursor();
+    QString text = cursor.block().text();
+    int start = qMin(cursor.position(), cursor.anchor()) - cursor.block().position();
     int from = findAlphaNum(text, start, true);
     int to = findAlphaNum(text, from, false);
     if (from >= 0 && from <= to) {
-        if (!textCursor().hasSelection() || text.mid(from, to-from+1) == textCursor().selectedText())
-            mWordUnderCursor = text.mid(from, to-from+1);
+        if (!textCursor().hasSelection() || text.mid(from, to - from + 1) == textCursor().selectedText()) {
+            mWordUnderCursor = text.mid(from, to - from + 1);
+            if (gotoStart) {
+                cursor.setPosition(cursor.block().position() + from);
+                setTextCursor(cursor);
+            }
+        }
     }
 }
 
@@ -2481,7 +2504,7 @@ void CodeEdit::recalcExtraSelections()
         extraSelLineMarks(selections);
         extraSelCurrentLine(selections);
         recalcWordUnderCursor();
-        mParenthesesDelay.start(100);
+        mParenthesesDelay.start(100ms);
         int wordDelay = 10;
         if (mSettings->toBool(skEdWordUnderCursor)) wordDelay = 500;
         mWordDelay.start(wordDelay);
@@ -2497,7 +2520,7 @@ void CodeEdit::startCompleterTimer()
         if (mCompleter && mCompleter->isVisible())
             showCompleter();
         else
-            mCompleterTimer.start(500);
+            mCompleterTimer.start(500ms);
     } else if (mCompleter) {
         mCompleter->suppressOpenStop();
     }
@@ -3087,7 +3110,7 @@ void CodeEdit::profilerPaintHeaderEvent(QPaintEvent *event)
         painter.drawText(rect, "↻", optC);
     }
 
-    int left = mProfilerCol.size() ? mProfilerCol.last() + 4 : 4;
+    int left = mProfilerCol.isEmpty() ? 4 : mProfilerCol.last() + 4;
     QRect rect(left, top, height-1, height-1);
     if (mProfilerHeaderContext == pcNone)
         painter.fillRect(rect, highlight);
@@ -3454,7 +3477,7 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
     } else if (e == Hotkey::Outdent) {
         mEdit->indent(-mEdit->mSettings->toInt(skEdTabSize));
         return;
-    } else if (e->text().length()) {
+    } else if (!e->text().isEmpty()) {
         mEdit->mBlockEditRealPos = mEdit->textCursor().position();
         QTextCursor cur = mEdit->textCursor();
         cur.joinPreviousEditBlock();

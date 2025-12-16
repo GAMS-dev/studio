@@ -19,7 +19,7 @@
  */
 #include <QDir>
 #include "file.h"
-#include "process.h"
+#include "process/abstractprocess.h"
 #include "lxiviewer.h"
 #include "lxiparser.h"
 #include "lxitreemodel.h"

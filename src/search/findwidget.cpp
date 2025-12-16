@@ -30,6 +30,7 @@ FindWidget::FindWidget(QWidget *parent)
     , ui(new Ui::FindWidget)
 {
     ui->setupUi(this);
+    ui->edFind->showOptions(FilterLineEdit::foCaSens);
 }
 
 FindWidget::~FindWidget()
@@ -45,7 +46,10 @@ bool FindWidget::active() const
 void FindWidget::setActive(bool newActive)
 {
     mActive = newActive;
-    if (!mActive) hide();
+    if (!mActive) {
+        hide();
+        emit leaving();
+    }
 }
 
 void FindWidget::setLastMatch(const QString &text)
@@ -58,10 +62,14 @@ QString FindWidget::getFindText() const
     return ui->edFind->text();
 }
 
-void FindWidget::setFindText(const QString &text)
+bool FindWidget::setFindText(const QString &text)
 {
-    if (mLastMatch.isEmpty() || text != mLastMatch)
+    if (mLastMatch.isEmpty() || text != mLastMatch) {
         ui->edFind->setText(text);
+        triggerFind(false, false, false);
+        return true;
+    }
+    return false;
 }
 
 void FindWidget::setReadonly(bool readonly)
@@ -87,15 +95,16 @@ QTextDocument::FindFlags FindWidget::findFlags(bool backwards)
         res |= QTextDocument::FindBackward;
     if (ui->edFind->exactMatch())
         res |= QTextDocument::FindWholeWords;
-    // TODO(JM) Add case sensitivity to ui->edFind
+    if (ui->edFind->isCaseSensitive())
+        res |= QTextDocument::FindCaseSensitively;
     return res;
 }
 
-void FindWidget::triggerFind(bool focusEditor, bool backwards)
+void FindWidget::triggerFind(bool focusEditor, bool backwards, bool continued)
 {
     if (!mLastMatch.isEmpty())
         mLastMatch = QString();
-    emit find(termRexEx(), findFlags(backwards), focusEditor);
+    emit find(termRexEx(), findFlags(backwards), continued, focusEditor);
 }
 
 QString FindWidget::replacementText() const
@@ -112,11 +121,14 @@ void FindWidget::focusInEvent(QFocusEvent *event)
 
 void FindWidget::keyPressEvent(QKeyEvent *event)
 {
-    if (event->key() == Qt::Key_Escape)
-        setActive(false);
-    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return || event->key() == Qt::Key_F3)
-        triggerFind(true, event->modifiers().testFlag(Qt::ShiftModifier));
-    QWidget::keyPressEvent(event);
+    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return || event->key() == Qt::Key_F3) {
+        triggerFind(true, event->modifiers().testFlag(Qt::ShiftModifier), event->key() == Qt::Key_F3);
+        event->accept();
+    } else if (event->key() == Qt::Key_Escape) {
+        emit leaving();
+        event->accept();
+    } else
+        QWidget::keyPressEvent(event);
 }
 
 void FindWidget::on_bClose_clicked()
@@ -126,12 +138,12 @@ void FindWidget::on_bClose_clicked()
 
 void FindWidget::on_bNext_clicked()
 {
-    triggerFind(true, false);
+    triggerFind(true, false, true);
 }
 
 void FindWidget::on_bPrev_clicked()
 {
-    triggerFind(true, true);
+    triggerFind(true, true, true);
 }
 
 void FindWidget::on_bReplace_clicked()
@@ -149,7 +161,7 @@ void FindWidget::on_edFind_textEdited(const QString &term)
     if (ui->edFind->isRegEx() && !ui->edFind->regExp().isValid())
         return;
 
-    triggerFind(false, false);
+    triggerFind(false, false, false);
 }
 
 

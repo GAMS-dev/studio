@@ -48,6 +48,7 @@ public:
         foExact  = 0x02,
         foRegEx  = 0x04,
         foColumn = 0x08,
+        foCaSens = 0x10,
     };
     Q_DECLARE_FLAGS(FilterLineEditFlags, FilterLineEditFlag)
     Q_FLAG(FilterLineEditFlags)
@@ -59,9 +60,11 @@ public:
     void setOptionState(FilterLineEditFlag option, int state);
     void setKeyColumn(int column);
     void hideOptions(FilterLineEditFlags options);
+    void showOptions(FilterLineEditFlags options);
     int effectiveKeyColumn();
     bool exactMatch();
     bool isRegEx();
+    bool isCaseSensitive();
 
 signals:
     void regExpChanged(QRegularExpression regExp);
@@ -81,6 +84,7 @@ private:
 
 private:
     QAbstractButton *mClearButton = nullptr;
+    QAbstractButton *mCaseSenseButton = nullptr;
     QAbstractButton *mExactButton = nullptr;
     QAbstractButton *mRegExButton = nullptr;
     QAbstractButton *mAllColButton = nullptr;

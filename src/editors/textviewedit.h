@@ -61,7 +61,7 @@ protected:
 
     void keyPressEvent(QKeyEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
-    void recalcWordUnderCursor() override;
+    void recalcWordUnderCursor(bool select = false) override;
     int absoluteBlockNr(const int &localBlockNr) const override;
     int localBlockNr(const int &absoluteBlockNr) const override;
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;

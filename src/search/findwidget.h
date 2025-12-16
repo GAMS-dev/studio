@@ -43,16 +43,17 @@ public:
     void setActive(bool newActive);
     void setLastMatch(const QString &text);
     QString getFindText() const;
-    void setFindText(const QString &text);
+    bool setFindText(const QString &text);
     void setReadonly(bool readonly = true);
     QRegularExpression termRexEx();
     QTextDocument::FindFlags findFlags(bool backwards = false);
-    void triggerFind(bool focusEditor, bool backwards = false);
+    void triggerFind(bool focusEditor, bool backwards, bool continued);
     QString replacementText() const;
 
 signals:
-    void find(const QRegularExpression &rex, QTextDocument::FindFlags options, bool focusEditor);
+    void find(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool focusEditor);
     void replace(const QString &replacement);
+    void leaving();
 
 protected:
     void focusInEvent(QFocusEvent *event);
@@ -60,13 +61,9 @@ protected:
 
 private slots:
     void on_bClose_clicked();
-
     void on_bNext_clicked();
-
     void on_bPrev_clicked();
-
     void on_bReplace_clicked();
-
     void on_edFind_textEdited(const QString &term);
 
 private:

@@ -223,10 +223,10 @@ void TextViewEdit::contextMenuEvent(QContextMenuEvent *e)
     delete menu;
 }
 
-void TextViewEdit::recalcWordUnderCursor()
+void TextViewEdit::recalcWordUnderCursor(bool select)
 {
     if (!mKeepWordUnderCursor) {
-        CodeEdit::recalcWordUnderCursor();
+        CodeEdit::recalcWordUnderCursor(select);
     }
 }
 

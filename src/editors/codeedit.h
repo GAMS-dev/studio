@@ -120,7 +120,7 @@ public:
     EditorType type() const override;
     QString wordUnderCursor() const;
     virtual bool hasSelection() const;
-    QString currentFindSelection();
+    QString currentFindSelection(bool &keep);
     void disconnectTimers() override;
     int foldStart(int line, bool &folded, QString *closingSymbol = nullptr, const QString *usedParenheses = nullptr) const;
     void foldAll(bool onlyDCO = false);
@@ -129,11 +129,12 @@ public:
     QTextBlock findFoldStart(QTextBlock block) const;
     void jumpTo(int line, int column = 0) override;
     void setCompleter(CodeCompleter *completer);
+    void clearFindings();
     void clearSearchSelection() override;
     void setSearchSelectionActive(bool active) override;
     void updateSearchSelection() override;
     void findInSelection(QList<search::Result> &results) override;
-    bool findLoop(const QRegularExpression &rex, QTextDocument::FindFlags options);
+    bool findLoop(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued);
     void replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope) override;
     int replaceAll(FileMeta *fm, const QRegularExpression &regex, const QString &replaceText,
                    QFlags<QTextDocument::FindFlag> options, bool selectionScope) override;
@@ -164,7 +165,7 @@ protected:
     virtual bool showLineNr() const;
     virtual bool showFolding() const;
     void setAllowBlockEdit(bool allow);
-    virtual void recalcWordUnderCursor();
+    virtual void recalcWordUnderCursor(bool gotoStart = false);
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
     bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);

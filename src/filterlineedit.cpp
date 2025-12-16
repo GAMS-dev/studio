@@ -58,9 +58,20 @@ void FilterLineEdit::setKeyColumn(int column)
 void FilterLineEdit::hideOptions(FilterLineEditFlags options)
 {
     if (options.testFlag(foClear)) mCanClear = false;
+    if (options.testFlag(foCaSens)) mCaseSenseButton->setVisible(false);
     if (options.testFlag(foExact)) mExactButton->setVisible(false);
     if (options.testFlag(foRegEx)) mRegExButton->setVisible(false);
     if (options.testFlag(foColumn)) mAllColButton->setVisible(false);
+    updateRegExp();
+}
+
+void FilterLineEdit::showOptions(FilterLineEditFlags options)
+{
+    if (options.testFlag(foClear)) mCanClear = true;
+    if (options.testFlag(foCaSens)) mCaseSenseButton->setVisible(true);
+    if (options.testFlag(foExact)) mExactButton->setVisible(true);
+    if (options.testFlag(foRegEx)) mRegExButton->setVisible(true);
+    if (options.testFlag(foColumn)) mAllColButton->setVisible(true);
     updateRegExp();
 }
 
@@ -77,6 +88,11 @@ bool FilterLineEdit::exactMatch()
 bool FilterLineEdit::isRegEx()
 {
     return buttonState(mRegExButton);
+}
+
+bool FilterLineEdit::isCaseSensitive()
+{
+    return buttonState(mCaseSenseButton);
 }
 
 void FilterLineEdit::resizeEvent(QResizeEvent *event)
@@ -96,6 +112,12 @@ void FilterLineEdit::init()
     connect(mClearButton, &QAbstractButton::clicked, this, [this](){ clear(); });
     lay->addWidget(mClearButton);
     mClearButton->setVisible(false);
+
+    mCaseSenseButton = createButton(QStringList() << ":/img/t-ca-insens" << ":/img/t-ca-sens",
+                                    QStringList() << "Turn ON case sensitivity" << "Turn OFF case sensitivity");
+    connect(mCaseSenseButton, &QAbstractButton::clicked, this, [this](){ nextButtonState(mCaseSenseButton); });
+    lay->addWidget(mCaseSenseButton);
+    mCaseSenseButton->setVisible(false);
 
     mExactButton = createButton(QStringList() << ":/img/tpart" << ":/img/twhole",
                                 QStringList() << "Allow substring matches" << "Only allow exact matches");
@@ -212,6 +234,7 @@ QAbstractButton *FilterLineEdit::button(FilterLineEditFlag option)
     case foExact: return mExactButton;
     case foRegEx: return mRegExButton;
     case foColumn: return mAllColButton;
+    case foCaSens: return mCaseSenseButton;
     default: return nullptr;
     }
 }

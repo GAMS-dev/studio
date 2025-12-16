@@ -39,7 +39,8 @@
 #include "navigator/navigatorlineedit.h"
 #include "exception.h"
 #include "commonpaths.h"
-#include "process.h"
+#include "process/gamsprocess.h"
+#include "process/gamslibprocess.h"
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "editors/sysloglocator.h"
@@ -188,6 +189,10 @@ MainWindow::MainWindow(QWidget *parent)
     });
     ui->findWidget->setVisible(false);
     connect(ui->findWidget, &find::FindWidget::find, this, &MainWindow::findInCurrentTab);
+    connect(ui->findWidget, &find::FindWidget::leaving, this, [this] {
+        if (ui->mainTabs->currentWidget())
+            ui->mainTabs->currentWidget()->setFocus();
+    });
 
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
@@ -6017,13 +6022,20 @@ void MainWindow::on_actionFind_triggered()
 {
     if (ViewHelper::toCodeEdit(ui->mainTabs->currentWidget()) || ViewHelper::toTextView(ui->mainTabs->currentWidget())) {
         QString term;
-        if (CodeEdit *edit = ViewHelper::toCodeEdit(ui->mainTabs->currentWidget()))
-            term = edit->currentFindSelection();
-        else if (TextView *view = ViewHelper::toTextView(ui->mainTabs->currentWidget()))
-            term = view->currentFindSelection();
-
-        if (!term.isEmpty())
+        bool keep = !ui->findWidget->getFindText().isEmpty();
+        if (CodeEdit *edit = ViewHelper::toCodeEdit(ui->mainTabs->currentWidget())) {
+            QString term = edit->currentFindSelection(keep);
+            if (!keep)
             ui->findWidget->setFindText(term);
+
+        } else if (TextView *view = ViewHelper::toTextView(ui->mainTabs->currentWidget())) {
+            term = view->currentFindSelection();
+        }
+
+        if (!term.isEmpty()) {
+            if (ui->findWidget->setFindText(term))
+                ;
+        }
         ui->findWidget->setActive(true);
         ui->findWidget->setVisible(ui->findWidget->active());
         if (ui->findWidget->isVisible())
@@ -6131,11 +6143,12 @@ void MainWindow::updateResults(search::SearchResultModel* model)
     mResultsView->resizeColumnsToContent();
 }
 
-void MainWindow::findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options, bool focusEditor)
+void MainWindow::findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool focusEditor)
 {
+    DEB() << "findInCurrentTab";
     QString match;
     if (CodeEdit *edit = ViewHelper::toCodeEdit(ui->mainTabs->currentWidget())) {
-        edit->findLoop(rex, options);
+        edit->findLoop(rex, options, continued);
         if (focusEditor)
         edit->setFocus();
         match = edit->textCursor().selectedText();
@@ -6153,7 +6166,7 @@ void MainWindow::findInCurrentTab(const QRegularExpression &rex, QTextDocument::
 
 void MainWindow::continueFind(bool backwards)
 {
-    emit ui->findWidget->triggerFind(true, backwards);
+    emit ui->findWidget->triggerFind(true, backwards, true);
 }
 
 void MainWindow::continueSearch(bool backwards)
