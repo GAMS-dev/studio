@@ -251,7 +251,7 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
     QVector<uint> lastColHeader(mTvColDim);
     for (int i=0; i<lastColHeader.size(); i++)
         lastColHeader[i] = 0;
-    int r;
+    size_t r;
 
     QVector<uint> rowHeader;
     QVector<uint> colHeader;
