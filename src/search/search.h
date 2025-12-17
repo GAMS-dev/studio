@@ -110,6 +110,8 @@ private:
     QFlags<QTextDocument::FindFlag> createFindFlags(const Parameters &parameters,
                                                     Direction direction = Direction::Forward);
 
+    bool skipFileType(FileKind type);
+
 private slots:
     void finished();
 

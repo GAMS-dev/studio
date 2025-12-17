@@ -1,6 +1,7 @@
 Version 1.23.3 *
 ==================
 - Fixed a rare crash in the context menu of Project Explorer.
+- Improved behaviour of the S&R result, i.e. result within complex editors are no longer shown because they could not be selected or jumped to.
 
 Version 1.23.2
 ==================

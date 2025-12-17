@@ -117,8 +117,7 @@ void Search::runSearch(const QList<SearchFile> &files)
     FileMeta* currentFile = mFileHandler->fileMeta(mSearchDialog->currentEditor());
     for (const SearchFile& sf : std::as_const(files)) {
         if (FileMeta* fm = sf.fileMeta()) {
-            // skip certain file types
-            if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Ref)
+            if (skipFileType(fm->kind()))
                 continue;
             // sort files by modified, current file first
             if (fm->isModified() && fm->document()) {
@@ -380,6 +379,14 @@ QFlags<QTextDocument::FindFlag> Search::createFindFlags(const Parameters &parame
     searchOptions.setFlag(QTextDocument::FindBackward, direction == Direction::Backward);
     searchOptions.setFlag(QTextDocument::FindCaseSensitively, parameters.caseSensitive);
     return searchOptions;
+}
+
+bool Search::skipFileType(FileKind type)
+{
+    return type == FileKind::Gdx || type == FileKind::Ref ||
+            type == FileKind::Opt || type == FileKind::Pf ||
+            type == FileKind::Guc || type == FileKind::Efi ||
+            type == FileKind::GCon;
 }
 
 int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
