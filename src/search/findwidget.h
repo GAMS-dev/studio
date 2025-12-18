@@ -32,6 +32,14 @@ namespace Ui {
 class FindWidget;
 }
 
+enum FindOption {
+    foFocusEdit,
+    foFocusTerm,
+    foBackwards,
+    foContinued,
+};
+typedef QFlags<FindOption> FindOptions;
+
 class FindWidget : public QWidget
 {
     Q_OBJECT
@@ -39,21 +47,20 @@ class FindWidget : public QWidget
 public:
     explicit FindWidget(QWidget *parent = nullptr);
     ~FindWidget();
-    bool active() const;
+    void setEditWidget(QWidget *widget);
+    bool isActive() const;
     void setActive(bool newActive);
-    void setLastMatch(const QString &text);
+    void setLastMatch(const QString &text, size_t pos);
+    bool checkLastMatch(const QString &text, size_t pos);
     QString getFindText() const;
     bool setFindText(const QString &text);
     void setReadonly(bool readonly = true);
     QRegularExpression termRexEx();
     QTextDocument::FindFlags findFlags(bool backwards = false);
-    void triggerFind(bool focusEditor, bool backwards, bool continued);
+    void triggerFind(FindOptions options = FindOptions());
     QString replacementText() const;
 
 signals:
-    void find(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool focusEditor);
-    void replace(const QString &replacement);
-    void leaving();
 
 protected:
     void focusInEvent(QFocusEvent *event);
@@ -64,12 +71,20 @@ private slots:
     void on_bNext_clicked();
     void on_bPrev_clicked();
     void on_bReplace_clicked();
+    void on_bReplaceForward_clicked();
+    void on_bReplaceBackward_clicked();
     void on_edFind_textEdited(const QString &term);
 
 private:
+    bool replace();
+    bool doFind(FindOptions options);
+
+private:
     Ui::FindWidget *ui;
+    QWidget *mEdit = nullptr;
     bool mActive = false;
     QString mLastMatch;
+    size_t mLastPos = 0;
 };
 
 } // namespace find

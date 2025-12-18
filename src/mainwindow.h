@@ -215,6 +215,7 @@ public slots:
     void closeFileEditors(const FileId &fileId, bool willReopen = false);
     void updateResults(search::SearchResultModel* model);
     void findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool focusEditor);
+    void allowReplaceChanged(QWidget *widget);
     void continueFind(bool backwards);
     void continueSearch(bool backwards);
     void closeResultsView();

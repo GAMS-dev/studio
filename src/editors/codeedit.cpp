@@ -931,6 +931,33 @@ void CodeEdit::setHasProfiler(bool hasProfiler)
     }
 }
 
+void CodeEdit::allowReplace()
+{
+    connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::removeAllowReplace, Qt::UniqueConnection);
+    mReplaceAllowed = true;
+    emit allowReplaceChanged(this);
+}
+
+bool CodeEdit::isAllowedReplace()
+{
+    return mReplaceAllowed;
+}
+
+void CodeEdit::findReplace(const QString &replacement)
+{
+    if (mCompleter) mCompleter->suppressOpenBegin();
+    if (mReplaceAllowed)
+        textCursor().insertText(replacement);
+    if (mCompleter) mCompleter->suppressOpenStop();
+}
+
+void CodeEdit::removeAllowReplace()
+{
+    disconnect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::removeAllowReplace);
+    mReplaceAllowed = false;
+    emit allowReplaceChanged(this);
+}
+
 bool CodeEdit::ensureUnfolded(int line)
 {
     int lastUnfoldedNr = -1;
@@ -2267,13 +2294,15 @@ bool CodeEdit::findLoop(const QRegularExpression &rex, QTextDocument::FindFlags 
     }
     if (cur.isNull())
         textCursor().clearSelection();
-    else
+    else {
         setTextCursor(cur);
+        allowReplace();
+    }
     if (mFindREx)
         delete mFindREx;
     mFindREx = new QRegularExpression(rex);
     updateExtraSelections();
-    return true;
+    return !cur.isNull();
 }
 
 void CodeEdit::replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope)

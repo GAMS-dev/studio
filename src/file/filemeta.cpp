@@ -1428,6 +1428,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
             edit->setReadOnly(true);
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         } else {
+            connect(codeEdit, &CodeEdit::allowReplaceChanged, mFileRepo, &FileMetaRepo::allowReplaceChanged);
             connect(codeEdit, &CodeEdit::hasHRef, project, &PExProjectNode::hasHRef);
             connect(codeEdit, &CodeEdit::takeCheckedPaths, project, &PExProjectNode::takeCheckedPaths);
             connect(codeEdit, &CodeEdit::jumpToHRef, project, &PExProjectNode::jumpToHRef);

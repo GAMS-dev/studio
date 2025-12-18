@@ -71,6 +71,7 @@ signals:
     void setGroupFontSize(gams::studio::FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
     void saveProjects();
+    void allowReplaceChanged(QWidget *edit);
 
 public slots:
     void openFile(gams::studio::FileMeta* fm, const gams::studio::NodeId &groupId, bool focus = true, const QString &encoding = QString());

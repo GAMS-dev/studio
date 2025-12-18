@@ -19,6 +19,8 @@
  */
 #include "findwidget.h"
 #include "ui_findwidget.h"
+#include "viewhelper.h"
+
 #include <QKeyEvent>
 
 namespace gams {
@@ -38,7 +40,19 @@ FindWidget::~FindWidget()
     delete ui;
 }
 
-bool FindWidget::active() const
+void FindWidget::setEditWidget(QWidget *widget)
+{
+    mEdit = widget;
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mEdit)) {
+        if (mActive) show();
+        ce->updateExtraSelections();
+    } else if (TextView* tv = ViewHelper::toTextView(mEdit)) {
+        if (mActive) show();
+        tv->updateExtraSelections();
+    } else hide();
+}
+
+bool FindWidget::isActive() const
 {
     return mActive;
 }
@@ -48,13 +62,20 @@ void FindWidget::setActive(bool newActive)
     mActive = newActive;
     if (!mActive) {
         hide();
-        emit leaving();
+        if (mEdit)
+            mEdit->setFocus();
     }
 }
 
-void FindWidget::setLastMatch(const QString &text)
+void FindWidget::setLastMatch(const QString &text, size_t pos)
 {
     mLastMatch = text;
+    mLastPos = pos;
+}
+
+bool FindWidget::checkLastMatch(const QString &text, size_t pos)
+{
+    return (text.compare(mLastMatch) == 0 && pos == mLastPos);
 }
 
 QString FindWidget::getFindText() const
@@ -66,7 +87,7 @@ bool FindWidget::setFindText(const QString &text)
 {
     if (mLastMatch.isEmpty() || text != mLastMatch) {
         ui->edFind->setText(text);
-        triggerFind(false, false, false);
+        triggerFind();
         return true;
     }
     return false;
@@ -74,9 +95,9 @@ bool FindWidget::setFindText(const QString &text)
 
 void FindWidget::setReadonly(bool readonly)
 {
-    ui->laReplace->setEnabled(!readonly);
-    ui->edReplace->setEnabled(!readonly);
     ui->bReplace->setEnabled(!readonly);
+    ui->bReplaceForward->setEnabled(!readonly);
+    ui->bReplaceBackward->setEnabled(!readonly);
 }
 
 QRegularExpression FindWidget::termRexEx()
@@ -100,11 +121,11 @@ QTextDocument::FindFlags FindWidget::findFlags(bool backwards)
     return res;
 }
 
-void FindWidget::triggerFind(bool focusEditor, bool backwards, bool continued)
+void FindWidget::triggerFind(FindOptions options)
 {
     if (!mLastMatch.isEmpty())
         mLastMatch = QString();
-    emit find(termRexEx(), findFlags(backwards), continued, focusEditor);
+    doFind(options);
 }
 
 QString FindWidget::replacementText() const
@@ -122,11 +143,15 @@ void FindWidget::focusInEvent(QFocusEvent *event)
 void FindWidget::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return || event->key() == Qt::Key_F3) {
-        triggerFind(true, event->modifiers().testFlag(Qt::ShiftModifier), event->key() == Qt::Key_F3);
+        FindOptions options = foFocusEdit;
+        if (event->modifiers().testFlag(Qt::ShiftModifier)) options.setFlag(foBackwards);
+        if (event->key() == Qt::Key_F3) options.setFlag(foContinued);
+        triggerFind(options);
         event->accept();
     } else if (event->key() == Qt::Key_Escape) {
-        emit leaving();
         event->accept();
+        if (mEdit)
+            mEdit->setFocus();
     } else
         QWidget::keyPressEvent(event);
 }
@@ -138,21 +163,29 @@ void FindWidget::on_bClose_clicked()
 
 void FindWidget::on_bNext_clicked()
 {
-    triggerFind(true, false, true);
+    triggerFind(FindOptions(foFocusEdit | foContinued));
 }
 
 void FindWidget::on_bPrev_clicked()
 {
-    triggerFind(true, true, true);
+    triggerFind(FindOptions(foFocusEdit | foBackwards | foContinued));
 }
 
 void FindWidget::on_bReplace_clicked()
 {
-    if (ui->edReplace->text().isEmpty()) return;
+    replace();
+}
 
-    if (!mLastMatch.isEmpty())
-        mLastMatch = QString();
-    emit replace(ui->edReplace->text());
+void FindWidget::on_bReplaceForward_clicked()
+{
+    if (replace())
+        triggerFind(foContinued);
+}
+
+void FindWidget::on_bReplaceBackward_clicked()
+{
+    if (replace())
+        triggerFind(FindOptions(foBackwards | foContinued));
 }
 
 void FindWidget::on_edFind_textEdited(const QString &term)
@@ -161,7 +194,41 @@ void FindWidget::on_edFind_textEdited(const QString &term)
     if (ui->edFind->isRegEx() && !ui->edFind->regExp().isValid())
         return;
 
-    triggerFind(false, false, false);
+    triggerFind(foFocusTerm);
+}
+
+bool FindWidget::replace()
+{
+    if (ui->edReplace->text().isEmpty()) return false;
+
+    if (!mLastMatch.isEmpty())
+        mLastMatch = QString();
+    if (CodeEdit *edit = ViewHelper::toCodeEdit(mEdit))
+        edit->findReplace(ui->edReplace->text());
+    else return false;
+    return true;
+}
+
+bool FindWidget::doFind(FindOptions options)
+{
+    QString match;
+    size_t pos = 0;
+    if (CodeEdit *edit = ViewHelper::toCodeEdit(mEdit)) {
+        edit->findLoop(termRexEx(), findFlags(options.testFlag(foBackwards)), options.testFlag(foContinued));
+        if (options.testFlag(foFocusEdit))
+            edit->setFocus();
+        match = edit->textCursor().selectedText();
+
+    } else if (TextView *view = ViewHelper::toTextView(mEdit)) {
+        bool continued = options.testFlag(foContinued);
+        view->findText(termRexEx(), findFlags(options.testFlag(foBackwards)), continued);
+        if (options.testFlag(foFocusEdit))
+            view->edit()->setFocus();
+        match = view->selectedText();
+    }
+    if (!match.isEmpty())
+        setLastMatch(match, pos);
+    return !match.isEmpty();
 }
 
 

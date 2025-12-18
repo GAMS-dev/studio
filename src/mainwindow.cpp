@@ -90,6 +90,8 @@
 # include <Windows.h>
 #endif
 
+using namespace std::chrono_literals;
+
 namespace gams {
 namespace studio {
 
@@ -121,10 +123,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Timers
     mFileTimer.setSingleShot(true);
-    mFileTimer.setInterval(100);
+    mFileTimer.setInterval(100ms);
     connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
     mWinStateTimer.setSingleShot(true);
-    mWinStateTimer.setInterval(10);
+    mWinStateTimer.setInterval(10ms);
     connect(&mWinStateTimer, &QTimer::timeout, this, &MainWindow::pushDockSizes);
     mSaveSettingsTimer.setSingleShot(true);
     mTimerID = startTimer(60000);
@@ -188,11 +190,6 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
     ui->findWidget->setVisible(false);
-    connect(ui->findWidget, &find::FindWidget::find, this, &MainWindow::findInCurrentTab);
-    connect(ui->findWidget, &find::FindWidget::leaving, this, [this] {
-        if (ui->mainTabs->currentWidget())
-            ui->mainTabs->currentWidget()->setFocus();
-    });
 
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
@@ -217,7 +214,7 @@ MainWindow::MainWindow(QWidget *parent)
             if (PExAbstractNode *node = mProjectRepo.node(id))
                 nodes << node;
         }
-        runBlocked = nodes.size() ? !mProjectContextMenu.allowChange(nodes) : false;
+        runBlocked = nodes.isEmpty() ? false : !mProjectContextMenu.allowChange(nodes);
     });
     connect(ui->projectView, &ProjectTreeView::openProjectEdit, this, [this](QModelIndex idx) {
         PExProjectNode * project = mProjectRepo.node(idx)->toProject();
@@ -276,6 +273,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
     connect(&mFileMetaRepo, &FileMetaRepo::setGroupFontSize, this, &MainWindow::setGroupFontSize);
     connect(&mFileMetaRepo, &FileMetaRepo::scrollSynchronize, this, &MainWindow::scrollSynchronize);
+    connect(&mFileMetaRepo, &FileMetaRepo::allowReplaceChanged, this, &MainWindow::allowReplaceChanged);
     connect(&mFileMetaRepo, &FileMetaRepo::saveProjects, this, [this]() {
         checkDefaultWorkDir();
         updateAndSaveSettings();
@@ -561,7 +559,7 @@ void MainWindow::updateEditActions()
         ++iter;
     }
     if (!wid) return;
-    for (const QString &actName : enabledActions) {
+    for (const QString &actName : std::as_const(enabledActions)) {
         QAction *act = editActions.value(actName, nullptr);
         if (act) act->setEnabled(true);
     }
@@ -574,7 +572,7 @@ void MainWindow::watchProjectTree()
     });
     connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
         mSearchDialog->filesChanged();
-        mSaveSettingsTimer.start(50);
+        mSaveSettingsTimer.start(50ms);
         // to update the project if changed
 //        mRecent.setEditor(mRecent.fileMeta(), mRecent.editor());
         updateRunState();
@@ -977,11 +975,11 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
     PExProjectNode *project = mProjectRepo.createProject("", "", "", onExist_Project, "", PExProjectNode::tGams);
 
     // open the config files Studio already knows
-    for (FileMeta *meta : metas)
+    for (FileMeta *meta : std::as_const(metas))
         openFile(meta);
 
     // open the config files that exist
-    for (const QString &filePath : confFilesToOpen) {
+    for (const QString &filePath : std::as_const(confFilesToOpen)) {
         PExFileNode *node = addNode("", filePath, project);
         openFileNode(node);
     }
@@ -1334,7 +1332,7 @@ void MainWindow::continueAsyncCall()
                          mAsyncCallOptions.value("forceOverwrite").toBool());
 
     } else if (mAsyncCallOptions.value("call").toString().compare("newFileDialog") == 0) {
-        QVariantList pointerValues = mAsyncCallOptions.value("projects").toList();
+        const QVariantList pointerValues = mAsyncCallOptions.value("projects").toList();
         QVector<PExProjectNode*> projects;
         for (const QVariant& val : pointerValues) {
             projects << val.value<PExProjectNode*>();
@@ -1464,13 +1462,13 @@ search::SearchDialog* MainWindow::searchDialog() const
 
 void MainWindow::setEncodings(const QStringList &encodingsList, const QString &active)
 {
-    while (mCodecGroupSwitch->actions().size()) {
+    while (!mCodecGroupSwitch->actions().isEmpty()) {
         QAction *act = mCodecGroupSwitch->actions().constLast();
         if (ui->menuconvert_to->actions().contains(act))
             ui->menuconvert_to->removeAction(act);
         mCodecGroupSwitch->removeAction(act);
     }
-    while (mCodecGroupReload->actions().size()) {
+    while (!mCodecGroupReload->actions().isEmpty()) {
         QAction *act = mCodecGroupReload->actions().constLast();
         if (ui->menureload_with->actions().contains(act))
             ui->menureload_with->removeAction(act);
@@ -1575,17 +1573,17 @@ void MainWindow::closeHelpView()
 
 void MainWindow::outputViewVisibiltyChanged(bool visibility)
 {
-    ui->actionProcess_Log->setChecked(visibility || tabifiedDockWidgets(ui->dockProcessLog).count());
+    ui->actionProcess_Log->setChecked(visibility || !tabifiedDockWidgets(ui->dockProcessLog).isEmpty());
 }
 
 void MainWindow::projectViewVisibiltyChanged(bool visibility)
 {
-    ui->actionProject_View->setChecked(visibility || tabifiedDockWidgets(ui->dockProjectView).count());
+    ui->actionProject_View->setChecked(visibility || !tabifiedDockWidgets(ui->dockProjectView).isEmpty());
 }
 
 void MainWindow::helpViewVisibilityChanged(bool visibility)
 {
-    ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(ui->dockHelpView).count());
+    ui->actionHelp_View->setChecked(visibility || !tabifiedDockWidgets(ui->dockHelpView).isEmpty());
 }
 
 void MainWindow::toolbarVisibilityChanged(bool visibility)
@@ -2308,17 +2306,7 @@ void MainWindow::activeMainTabChanged(int index)
 
     if (editWidget != mRecent.editor())
         updateRecentEdit(mRecent.editor(), editWidget);
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(editWidget)) {
-        ce->updateExtraSelections();
-        if (ui->findWidget->active())
-            ui->findWidget->setVisible(true);
-    }
-    else if (TextView* tv = ViewHelper::toTextView(editWidget)) {
-        tv->updateExtraSelections();
-        if (ui->findWidget->active())
-            ui->findWidget->setVisible(true);
-    } else
-        ui->findWidget->setVisible(false);
+    ui->findWidget->setEditWidget(editWidget);
 
     PExFileNode* node = mProjectRepo.findFileNode(editWidget);
     if (node) {
@@ -2638,7 +2626,7 @@ void MainWindow::stopDebugServer(PExProjectNode* project, bool stateChecked)
             if (node && !stateChecked)
                 closeNodeConditionally(node);
         }
-        QTimer::singleShot(200, this, [tempGdx]() {
+        QTimer::singleShot(200ms, this, [tempGdx]() {
             bool done = QFile::remove(tempGdx);
             if (!done)
                 DEB() << "Couldn't remove temp GDX file " << tempGdx;
@@ -2693,7 +2681,7 @@ void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
     if (project && project->hasLogNode()) {
         PExLogNode *logNode = project->logNode();
         logNode->logDone();
-        if (logNode->file()->editors().size()) {
+        if (!logNode->file()->editors().isEmpty()) {
             if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
                 if (Settings::settings()->toBool(skJumpToError)) {
                     int errLine = tv->firstErrorLine();
@@ -2865,7 +2853,7 @@ void MainWindow::on_actionGamsHelp_triggered()
 
     if (ui->dockHelpView->isHidden())
         ui->dockHelpView->show();
-    if (tabifiedDockWidgets(ui->dockHelpView).count())
+    if (!tabifiedDockWidgets(ui->dockHelpView).isEmpty())
         ui->dockHelpView->raise();
 #endif
 }
@@ -2880,7 +2868,7 @@ void MainWindow::on_actionStudioHelp_triggered()
 
     if (ui->dockHelpView->isHidden())
         ui->dockHelpView->show();
-    if (tabifiedDockWidgets(ui->dockHelpView).count())
+    if (!tabifiedDockWidgets(ui->dockHelpView).isEmpty())
         ui->dockHelpView->raise();
 #endif
 }
@@ -4291,7 +4279,7 @@ void MainWindow::openFilesProcess(const QStringList &files, OpenGroupOption opt)
     }
 
     // if in project focus mode ensure new opened projects are visible
-    if (mProjectRepo.focussedProject() && openedProjects.size()) {
+    if (mProjectRepo.focussedProject() && !openedProjects.isEmpty()) {
         PExProjectNode *project = (openedProjects.size() == 1) ? openedProjects.first() : nullptr;
         focusProject(project);
         if (project && firstNode && firstNode->assignedProject() != project)
@@ -4394,7 +4382,7 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
 
     if ((mProjectRepo.focussedProject() || Settings::settings()->toInt(skCurrentFocusProject) >= 0)
             && usedProjects.count() == 1) {
-        focusProject(usedProjects.values().first());
+        focusProject(usedProjects.values().constFirst());
     } else if(!skipFocus) {
         focusProject(nullptr);
     }
@@ -4691,7 +4679,7 @@ void MainWindow::initDelayedElements()
     projectRepo()->readList(settings->toList(skProjects));
 
     // assign stored fold data
-    for (QVariant data : settings->toList(skFoldedLines)) {
+    for (const QVariant &data : settings->toList(skFoldedLines)) {
         QStringList elems = data.toString().split('|');
         if (elems.size() < 2) continue;
         if (FileMeta *meta = mFileMetaRepo.fileMeta(elems.first())) {
@@ -4717,12 +4705,12 @@ void MainWindow::initDelayedElements()
     watchProjectTree();
     mTextMarkRepo.readBookmarks(settings->toList(skBookmarks));
     int fp = settings->toInt(skCurrentFocusProject);
-    QAction *action = mActFocusProject->actions().first();
+    QAction *action = mActFocusProject->actions().constFirst();
     for (QAction *act : mActFocusProject->actions()) {
         int actId = act->data().toInt();
         if (actId == fp) action = act;
     }
-    if (action != mActFocusProject->actions().first())
+    if (action != mActFocusProject->actions().constFirst())
         action->trigger();
 
     PExFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
@@ -5400,7 +5388,7 @@ void MainWindow::cleanGeneratedProjectFiles(NodeId projId, const QString &worksp
         fileNodes.append(fileNode);
     deleteLogFiles(projNode->name()+".log*", workspace);
     deleteScratchDirectories(workspace);
-    if (!fileNodes.size())
+    if (fileNodes.isEmpty())
         return;
     ui->projectView->fixFocus(true);
     for (auto* node : fileNodes) {
@@ -5417,7 +5405,7 @@ void MainWindow::cleanGeneratedProjectFiles(NodeId projId, const QString &worksp
 void MainWindow::deleteLogFiles(const QString &pattern, const QString &workspace)
 {
     QDir rootDir(workspace);
-    auto files = rootDir.entryList({pattern}, QDir::Files | QDir::NoDotAndDotDot);
+    const auto files = rootDir.entryList({pattern}, QDir::Files | QDir::NoDotAndDotDot);
     for (const auto& file : files) {
         auto filePath = QDir::toNativeSeparators(workspace + "/" + file);
         appendSystemLogInfo("Deleting log file: " + filePath);
@@ -5428,7 +5416,7 @@ void MainWindow::deleteLogFiles(const QString &pattern, const QString &workspace
 void MainWindow::deleteScratchDirectories(const QString &workspace)
 {
     QDir rootDir(workspace);
-    auto dirs = rootDir.entryList({"225*"}, QDir::Dirs | QDir::NoDotAndDotDot);
+    const auto dirs = rootDir.entryList({"225*"}, QDir::Dirs | QDir::NoDotAndDotDot);
     for (const auto& scratchDir : dirs) {
         auto path = QDir::toNativeSeparators(workspace + "/" + scratchDir);
         appendSystemLogInfo("Deleting scrtach directory: " + path);
@@ -5472,7 +5460,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
     } else {
         if (!project) {
             QVector<PExFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
-            if (nodes.size())
+            if (!nodes.isEmpty())
                 project = nodes.first()->assignedProject();
             if (!project) {
                 QFileInfo file(fileMeta->location());
@@ -5683,7 +5671,7 @@ void MainWindow::focusProject(PExProjectNode *project)
     // update logTabs visibility
     PExLogNode* log = project->logNode();
     QWidget *edit = mSyslog;
-    if (log && log->file()->editors().count())
+    if (log && !log->file()->editors().isEmpty())
         edit = log->file()->editors().first();
     ui->logTabs->setTabVisible(ui->logTabs->indexOf(edit), true);
     if (ui->logTabs->currentWidget() != mSyslog && ui->logTabs->currentWidget() != mResultsView)
@@ -5820,7 +5808,7 @@ void MainWindow::closeNodeConditionally(PExFileNode* node)
 
 void MainWindow::closeAndDeleteFiles(QList<PExFileNode *> fileNodes)
 {
-    if (!fileNodes.size()) return;
+    if (fileNodes.isEmpty()) return;
     ui->projectView->fixFocus(true);
     QString text = QString("Delete %1").arg(fileNodes.size() > 1 ? QString::number(fileNodes.size()) + " files?" : fileNodes.first()->location() + "?");
     if (MsgBox::question("Delete", text, this, "Yes", "No", "", 0, 1) == 1) {
@@ -6023,6 +6011,8 @@ void MainWindow::on_actionFind_triggered()
     QWidget *ed = currentEdit();
     if (ViewHelper::toCodeEdit(ed) || ViewHelper::toTextView(ed)) {
         find::FindWidget *findWid = ed == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
+        findWid->triggerFind(find::foFocusTerm);
+
         QString term;
         bool keep = !findWid->getFindText().isEmpty();
         if (CodeEdit *edit = ViewHelper::toCodeEdit(ed)) {
@@ -6035,7 +6025,7 @@ void MainWindow::on_actionFind_triggered()
             findWid->setFindText(term);
 
         findWid->setActive(true);
-        findWid->setVisible(findWid->active());
+        findWid->setVisible(findWid->isActive());
         if (findWid->isVisible())
             findWid->setFocus();
     }
@@ -6144,21 +6134,36 @@ void MainWindow::updateResults(search::SearchResultModel* model)
 void MainWindow::findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool focusEditor)
 {
     QString match;
-    if (CodeEdit *edit = ViewHelper::toCodeEdit(ui->mainTabs->currentWidget())) {
+    size_t pos = 0;
+    QWidget *widget = currentEdit();
+    if (CodeEdit *edit = ViewHelper::toCodeEdit(widget)) {
         edit->findLoop(rex, options, continued);
         if (focusEditor)
             edit->setFocus();
         match = edit->textCursor().selectedText();
-    }
-    else if (TextView *view = ViewHelper::toTextView(ui->mainTabs->currentWidget())) {
+
+    } else if (TextView *view = ViewHelper::toTextView(widget)) {
         bool dummy = false;
         view->findText(rex, options, dummy);
         if (focusEditor)
             view->edit()->setFocus();
         match = view->selectedText();
     }
-    if (!match.isEmpty())
-        ui->findWidget->setLastMatch(match);
+    if (!match.isEmpty()) {
+        find::FindWidget *findWid = widget == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
+        findWid->setLastMatch(match, pos);
+    }
+}
+
+void MainWindow::allowReplaceChanged(QWidget *widget)
+{
+    find::FindWidget *findWid = widget == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
+    if (!findWid->isActive()) return;
+
+    bool readOnly = true;
+    if (CodeEdit *edit = ViewHelper::toCodeEdit(widget))
+        readOnly = !edit->isAllowedReplace();
+    findWid->setReadonly(readOnly);
 }
 
 void MainWindow::continueFind(bool backwards)
@@ -6167,7 +6172,9 @@ void MainWindow::continueFind(bool backwards)
     if (!ViewHelper::toCodeEdit(edit) && !ViewHelper::toTextView(edit))
         return;
     find::FindWidget *fw = edit == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
-    emit fw->triggerFind(true, backwards, true);
+    find::FindOptions options = {find::foFocusEdit | find::foContinued};
+    if (backwards) options.setFlag(find::foBackwards);
+    emit fw->triggerFind(options);
 }
 
 void MainWindow::continueSearch(bool backwards)

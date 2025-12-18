@@ -63,9 +63,7 @@ PinViewWidget::PinViewWidget(QWidget *parent) :
     connect(mActClose, &QAction::triggered, this, &PinViewWidget::onClose);
     ui->toolBar->addAction(mActClose);
     ui->laFile->installEventFilter(this);
-
     mFindWidget = new find::FindWidget(this);
-    connect(mFindWidget, &find::FindWidget::find, this, &PinViewWidget::find);
 }
 
 PinViewWidget::~PinViewWidget()
@@ -97,7 +95,7 @@ Qt::Orientation PinViewWidget::orientation()
 
 bool PinViewWidget::setWidget(QWidget *widget)
 {
-    bool isFindFocus = mFindWidget->active() && mFindWidget->focusWidget() == qApp->focusWidget();
+    bool isFindFocus = mFindWidget->isActive() && mFindWidget->focusWidget() == qApp->focusWidget();
     QWidget *lastFindFocus = isFindFocus ? mFindWidget->focusWidget() : nullptr;
 
     if (mWidget) {
@@ -107,13 +105,16 @@ bool PinViewWidget::setWidget(QWidget *widget)
         mWidget = nullptr;
     }
     if (!widget) {
+        mFindWidget->setEditWidget(nullptr);
+        mFindWidget->setActive(false);
         return true;
     }
     widget->setSizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::MinimumExpanding);
     layout()->addWidget(widget);
     mWidget = widget;
     layout()->addWidget(mFindWidget);
-    mFindWidget->setVisible(mFindWidget->active() && (ViewHelper::toCodeEdit(widget) || ViewHelper::toTextView(widget)));
+    mFindWidget->setVisible(mFindWidget->isActive() && (ViewHelper::toCodeEdit(widget) || ViewHelper::toTextView(widget)));
+    mFindWidget->setEditWidget(widget);
     if (lastFindFocus)
         lastFindFocus->setFocus();
     return true;
@@ -200,11 +201,13 @@ void PinViewWidget::splitterMoved(int pos, int index)
 void PinViewWidget::find(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool focusEditor)
 {
     QString match;
+    int pos = 0;
     if (CodeEdit *edit = ViewHelper::toCodeEdit(mWidget)) {
         edit->findLoop(rex, options, continued);
         if (focusEditor)
             edit->setFocus();
         match = edit->textCursor().selectedText();
+        pos = edit->textCursor().position();
     }
     else if (TextView *view = ViewHelper::toTextView(mWidget)) {
         bool dummy = false;
@@ -214,7 +217,7 @@ void PinViewWidget::find(const QRegularExpression &rex, QTextDocument::FindFlags
         match = view->selectedText();
     }
     if (!match.isEmpty())
-        mFindWidget->setLastMatch(match);
+        mFindWidget->setLastMatch(match, pos);
 
 }
 
