@@ -69,8 +69,6 @@ signals:
     void compactViewChanged(bool compact);
 
 public slots:
-    void showOptionContextMenu(const QPoint &pos) override;
-    void showDefinitionContextMenu(const QPoint &pos) override;
     void addOptionFromDefinition(const QModelIndex &index) override;
 
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
@@ -87,8 +85,6 @@ protected slots:
     void on_messageViewCheckBox_stateChanged(int checkState) override;
     void on_openAsTextButton_clicked(bool checked = false) override;
 
-    void findAndSelectionOptionFromDefinition() override;
-
     void insertOption() override;
     void insertComment() override;
     void deleteCommentsBeforeOption(int row) override;
@@ -96,7 +92,7 @@ protected slots:
     void moveOptionUp() override;
     void moveOptionDown() override;
 
-    bool isCommentToggleable() override { return false; }
+    bool isCommentToggleable() override { return true; }
 
 protected:
     OptionTokenizer* optionTokenizer() const override { return mOptionTokenizer; }

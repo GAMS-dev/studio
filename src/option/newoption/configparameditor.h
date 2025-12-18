@@ -37,9 +37,9 @@ class ConfigParamEditor : public OptionWidget
 {
     Q_OBJECT
 public:
-    ConfigParamEditor(const QList<ConfigItem *> &initParamItems,
-                      const QString &encodingName,
-                      QWidget *parent = nullptr);
+    explicit ConfigParamEditor(const QList<ConfigItem *> &initParamItems,
+                               const QString &encodingName,
+                               QWidget *parent = nullptr);
     ~ConfigParamEditor() override;
 
     inline bool isModified() const   { return mModified; }
@@ -54,8 +54,6 @@ public:
 public slots:
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
-    void showOptionContextMenu(const QPoint &pos) override;
-    void showDefinitionContextMenu(const QPoint &pos) override;
     void addOptionFromDefinition(const QModelIndex &index) override;
 
     void parameterItemCommitted(QWidget *editor);
@@ -77,8 +75,6 @@ protected slots:
     void moveOptionDown() override;
 
     bool isCommentToggleable() override { return false; }
-
-    void findAndSelectionOptionFromDefinition() override;
 
 protected:
     OptionTokenizer* optionTokenizer() const override { return mOptionTokenizer; }

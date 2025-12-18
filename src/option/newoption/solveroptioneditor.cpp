@@ -196,57 +196,6 @@ void SolverOptionEditor::toggleCommentOption()
     }
 }
 
-void SolverOptionEditor::showOptionContextMenu(const QPoint &pos)
-{
-    QModelIndexList indexSelection = ui->optionTableView->selectionModel()->selectedIndexes();
-    for(const QModelIndex &index : std::as_const(indexSelection)) {
-        ui->optionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
-    }
-    updateActionsState();
-
-    QMenu menu(this);
-    if ( isThereARowSelection() ) {
-        QList<QAction*> ret;
-        getMainWindow()->getAdvancedActions(&ret);
-        for(QAction *action : std::as_const(ret)) {
-            if (action->objectName().compare("actionComment")==0) {
-                menu.addAction(action);
-                menu.addSeparator();
-                break;
-            }
-        }
-    }
-    menu.addAction(ui->actionInsert);
-    menu.addAction(ui->actionInsert_Comment);
-    menu.addAction(ui->actionDelete);
-    menu.addSeparator();
-    menu.addAction(ui->actionMoveUp);
-    menu.addAction(ui->actionMoveDown);
-    menu.addSeparator();
-    menu.addAction(ui->actionSelect_Current_Row);
-    menu.addAction(ui->actionSelectAll);
-    menu.addSeparator();
-    menu.addAction(ui->actionShow_Option_Definition);
-    menu.addAction(ui->actionShowRecurrence);
-    menu.addSeparator();
-    menu.addAction(ui->actionResize_Columns_To_Contents);
-
-    menu.exec(ui->optionTableView->viewport()->mapToGlobal(pos));
-}
-
-void SolverOptionEditor::showDefinitionContextMenu(const QPoint &pos)
-{
-    QModelIndexList selection = ui->definitionTreeView->selectionModel()->selectedRows();
-    if (selection.count() <= 0)
-        return;
-
-    QMenu menu(this);
-    menu.addAction(ui->actionAdd_This_Parameter);
-    menu.addAction(ui->actionRemove_This_Parameter);
-    menu.addSeparator();
-    menu.addAction(ui->actionResize_Columns_To_Contents);
-    menu.exec(ui->definitionTreeView->viewport()->mapToGlobal(pos));
-}
 
 void SolverOptionEditor::addOptionFromDefinition(const QModelIndex &index)
 {
@@ -529,18 +478,6 @@ void SolverOptionEditor::on_reloadSolverOptionFile(const QString &encodingName)
     setModified(false);
 }
 
-//void SolverOptionEditor::on_selectRow(int logicalIndex)
-//{
-//    if (ui->optionTableView->model()->rowCount() <= 0)
-//        return;
-//
-//    QItemSelectionModel *selectionModel = ui->optionTableView->selectionModel();
-//    const QModelIndex topLeft = ui->optionTableView->model()->index(logicalIndex, mOptionModel->column_id(), QModelIndex());
-//    const QModelIndex  bottomRight = ui->optionTableView->model()->index(logicalIndex, mOptionModel->column_id(), QModelIndex());
-//    const QItemSelection selection( topLeft, bottomRight);
-//    selectionModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
-//}
-
 void SolverOptionEditor::on_selectAndToggleRow(int logicalIndex)
 {
     on_selectRow(logicalIndex);
@@ -606,49 +543,6 @@ void SolverOptionEditor::on_openAsTextButton_clicked(bool checked)
     PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
 
     emit main->projectRepo()->openFile(fileMeta, true, project, "", true);
-}
-
-
-void SolverOptionEditor::findAndSelectionOptionFromDefinition()
-{
-    if (ui->optionTableView->model()->rowCount() <= 0)
-        return;
-
-    const QModelIndex index = ui->definitionTreeView->selectionModel()->currentIndex();
-    const QModelIndex parentIndex =  ui->definitionTreeView->model()->parent(index);
-
-    const QModelIndex idx = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
-                                                    : ui->definitionTreeView->model()->index( parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
-    const QVariant data = ui->definitionTreeView->model()->data( idx, Qt::DisplayRole );
-    QModelIndexList indices = ui->optionTableView->model()->match(ui->optionTableView->model()->index(0, mOptionModel->column_id()),
-                                                                        Qt::DisplayRole,
-                                                                        data.toString(), -1, Qt::MatchExactly|Qt::MatchRecursive);
-    ui->optionTableView->clearSelection();
-    ui->optionTableView->clearFocus();
-    QItemSelection selection;
-    for(const QModelIndex &i :std::as_const(indices)) {
-        const QModelIndex valueIndex = ui->optionTableView->model()->index(i.row(), mOptionModel->column_value());
-        const QString value =  ui->optionTableView->model()->data( valueIndex, Qt::DisplayRole).toString();
-        bool selected = false;
-        if (parentIndex.row() < 0) {
-            selected = true;
-        } else {
-            const QModelIndex enumIndex = ui->definitionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
-            const QString enumValue = ui->definitionTreeView->model()->data( enumIndex, Qt::DisplayRole).toString();
-            if (QString::compare(value, enumValue, Qt::CaseInsensitive)==0)
-                selected = true;
-        }
-        if (selected) {
-            const QModelIndex leftIndex  = ui->optionTableView->model()->index(i.row(), 0);
-            const QModelIndex rightIndex = ui->optionTableView->model()->index(i.row(), ui->optionTableView->model()->columnCount() -1);
-
-            QItemSelection rowSelection(leftIndex, rightIndex);
-            selection.merge(rowSelection, QItemSelectionModel::Select);
-        }
-    }
-
-    ui->optionTableView->selectionModel()->select(selection, QItemSelectionModel::Select);
-    ui->definitionTreeView->setFocus();
 }
 
 void SolverOptionEditor::insertOption()

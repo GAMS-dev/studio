@@ -89,10 +89,7 @@ protected slots:
     virtual void moveOptionUp() = 0;
     virtual void moveOptionDown() = 0;
 
-    virtual void showOptionContextMenu(const QPoint &pos) = 0;
-    virtual void showDefinitionContextMenu(const QPoint &pos) = 0;
     virtual void addOptionFromDefinition(const QModelIndex &index) = 0;
-    virtual void findAndSelectionOptionFromDefinition() = 0;
 
     virtual void on_openAsTextButton_clicked(bool checked = false) {
         Q_UNUSED(checked)
@@ -111,6 +108,9 @@ protected slots:
             return;
     }
 
+    void showOptionContextMenu(const QPoint &pos);
+    void showDefinitionContextMenu(const QPoint &pos);
+    void findAndSelectionOptionFromDefinition();
 
     void completeEditingOption(QWidget *editor, QAbstractItemDelegate::EndEditHint hint = QStyledItemDelegate::NoHint);
 

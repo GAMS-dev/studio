@@ -518,6 +518,105 @@ MainWindow *OptionWidget::getMainWindow() const
     return nullptr;
 }
 
+void OptionWidget::showOptionContextMenu(const QPoint &pos)
+{
+    QModelIndexList indexSelection = ui->optionTableView->selectionModel()->selectedIndexes();
+    for(const QModelIndex &index : std::as_const(indexSelection)) {
+        ui->optionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+    }
+    updateActionsState();
+
+    QMenu menu(this);
+    if ( isCommentToggleable() && isThereARowSelection() ) {
+        QList<QAction*> ret;
+        getMainWindow()->getAdvancedActions(&ret);
+        for(QAction *action : std::as_const(ret)) {
+            if (action->objectName().compare("actionComment")==0) {
+                menu.addAction(action);
+                menu.addSeparator();
+                break;
+            }
+        }
+    }
+    menu.addAction(ui->actionInsert);
+    if ( isCommentToggleable() )
+        menu.addAction(ui->actionInsert_Comment);
+    menu.addAction(ui->actionDelete);
+    menu.addSeparator();
+    menu.addAction(ui->actionMoveUp);
+    menu.addAction(ui->actionMoveDown);
+    menu.addSeparator();
+    menu.addAction(ui->actionSelect_Current_Row);
+    menu.addAction(ui->actionSelectAll);
+    menu.addSeparator();
+    menu.addAction(ui->actionShow_Option_Definition);
+    menu.addAction(ui->actionShowRecurrence);
+    menu.addSeparator();
+    menu.addAction(ui->actionResize_Columns_To_Contents);
+
+    menu.exec(ui->optionTableView->viewport()->mapToGlobal(pos));
+}
+
+void OptionWidget::showDefinitionContextMenu(const QPoint &pos)
+{
+    QModelIndexList selection = ui->definitionTreeView->selectionModel()->selectedRows();
+    if (selection.count() <= 0)
+        return;
+
+    QMenu menu(this);
+    menu.addAction(ui->actionAdd_This_Parameter);
+    menu.addAction(ui->actionRemove_This_Parameter);
+    menu.addSeparator();
+    menu.addAction(ui->actionResize_Columns_To_Contents);
+    menu.exec(ui->definitionTreeView->viewport()->mapToGlobal(pos));
+}
+
+void OptionWidget::findAndSelectionOptionFromDefinition()
+{
+    if (ui->optionTableView->model()->rowCount() <= 0)
+        return;
+
+    const QModelIndex index = ui->definitionTreeView->selectionModel()->currentIndex();
+
+    updateDefinitionActionsState(index);
+
+    const QModelIndex parentIndex =  ui->definitionTreeView->model()->parent(index);
+    const QModelIndex idx = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
+                                                    : ui->definitionTreeView->model()->index( parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
+    const QVariant data = ui->definitionTreeView->model()->data( idx, Qt::DisplayRole );
+    QModelIndexList indices = ui->optionTableView->model()->match(ui->optionTableView->model()->index(0, OptionTableModel::COLUMN_ID),
+                                                                  Qt::DisplayRole,
+                                                                  data, -1, Qt::MatchExactly|Qt::MatchRecursive);
+    ui->optionTableView->clearSelection();
+    ui->optionTableView->clearFocus();
+    QItemSelection selection;
+    for(const QModelIndex i :std::as_const(indices)) {
+        const QModelIndex valueIndex = ui->optionTableView->model()->index(i.row(), OptionTableModel::COLUMN_VALUE);
+        const QString value =  ui->optionTableView->model()->data( valueIndex, Qt::DisplayRole).toString();
+        bool selected = false;
+        if (parentIndex.row() < 0) {
+            selected = true;
+        } else {
+            const QModelIndex enumIndex = ui->definitionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
+            const QString enumValue = ui->definitionTreeView->model()->data( enumIndex, Qt::DisplayRole).toString();
+            if (QString::compare(value, enumValue, Qt::CaseInsensitive)==0)
+                selected = true;
+        }
+        if (selected) {
+            const QModelIndex leftIndex  = ui->optionTableView->model()->index(i.row(), 0);
+            const QModelIndex rightIndex = ui->optionTableView->model()->index(i.row(), ui->optionTableView->model()->columnCount() -1);
+
+            const QItemSelection rowSelection(leftIndex, rightIndex);
+            selection.merge(rowSelection, QItemSelectionModel::Select);
+        }
+        ui->actionAdd_This_Parameter->setEnabled(!selected);
+        ui->actionRemove_This_Parameter->setEnabled(selected);
+    }
+
+    ui->optionTableView->selectionModel()->select(selection, QItemSelectionModel::Select);
+    ui->definitionTreeView->setFocus();
+}
+
 void OptionWidget::selectAllOptions()
 {
     if (focusWidget() == mLogEdit) {
@@ -603,7 +702,7 @@ void OptionWidget::updateActionsState()
     std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() < b.row(); });
 
     ui->actionInsert->setEnabled( true );
-    ui->actionInsert_Comment->setEnabled( true );
+    ui->actionInsert_Comment->setEnabled( isCommentToggleable() );
     ui->actionDelete->setEnabled(  thereIsSelection ? idxSelection.first().row() < optionModel()->rowCount() : false );
 
     ui->actionMoveUp->setEnabled( thereIsSelection ? idxSelection.first().row() > 0 : false );
@@ -612,9 +711,13 @@ void OptionWidget::updateActionsState()
     ui->actionSelect_Current_Row->setEnabled( thereIsSelection );
     ui->actionSelectAll->setEnabled( thereIsSelection );
 
-    ui->actionShow_Option_Definition->setEnabled( thereIsSelection
-                                                     ? (idxSelection.first().row() < optionModel()->rowCount() && optionModel()->data(idxSelection.first().siblingAtColumn(optionModel()->column_id())).toInt()!=-1)
-                                                     : false );
+    bool showOptionEnbaled = ( thereIsSelection
+                                ? ( optionModel()->headerData(idxSelection.first().row(),Qt::Vertical, Qt::CheckStateRole) == Qt::PartiallyChecked
+                                         ? false
+                                         : (optionModel()->data(idxSelection.first().siblingAtColumn(optionModel()->column_id())).toInt() == -1 ? false : true )
+                                   )
+                                : false );
+    ui->actionShow_Option_Definition->setEnabled( showOptionEnbaled );
     ui->actionResize_Columns_To_Contents->setEnabled( thereIsSelection ? idxSelection.first().row() < optionModel()->rowCount() : false);
     ui->actionShowRecurrence->setEnabled( thereIsSelection ? idxSelection.first().row() < optionModel()->rowCount()
                                                                 && getRecurrentOption(idxSelection.first()).size() >0 : false );
@@ -659,13 +762,19 @@ void OptionWidget::updateActionsState(const QModelIndex &index)
     }
 
     ui->actionInsert->setEnabled( true );
-    ui->actionInsert_Comment->setEnabled( true );
+    ui->actionInsert_Comment->setEnabled( isCommentToggleable() );
     ui->actionDelete->setEnabled( thereIsSelection && idxSelection.first().row() < optionModel()->rowCount() );
     ui->actionMoveUp->setEnabled(   (singleSelection || singleSelectionIsRow || multiSelectionIsRow || multiSelectionIsCell_sameRow) && idxSelection.first().row() > 0 );
     ui->actionMoveDown->setEnabled( (singleSelection || singleSelectionIsRow || multiSelectionIsRow || multiSelectionIsCell_sameRow) && idxSelection.last().row() < optionModel()->rowCount()-1 );
     ui->actionSelect_Current_Row->setEnabled( thereIsSelection );
     ui->actionSelectAll->setEnabled( thereIsSelection );
-    ui->actionShow_Option_Definition->setEnabled( thereIsSelection && index.row() < optionModel()->rowCount() );
+    bool showOptionEnbaled = ( thereIsSelection
+                                  ? ( optionModel()->headerData(idxSelection.first().row(),Qt::Vertical, Qt::CheckStateRole) == Qt::PartiallyChecked
+                                         ? false
+                                         : (optionModel()->data(idxSelection.first().siblingAtColumn(optionModel()->column_id())).toInt() == -1 ? false : true )
+                                     )
+                                  : false );
+    ui->actionShow_Option_Definition->setEnabled( showOptionEnbaled );
     ui->actionResize_Columns_To_Contents->setEnabled( thereIsSelection );
     ui->actionShowRecurrence->setEnabled( false );
 
