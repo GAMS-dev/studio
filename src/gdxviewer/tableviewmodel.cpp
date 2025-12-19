@@ -32,8 +32,6 @@ TableViewModel::TableViewModel(GdxSymbol* sym, GdxSymbolTableModel* gdxSymbolTab
     mTvDimOrder.reserve(mSym->mDim);
     for (int i = 0; i < mSym->mDim; ++i)
         mTvDimOrder << i;
-    connect(mSym, &GdxSymbol::modelReset, this, &TableViewModel::setTableViewNoArgs);
-    connect(mSym, &GdxSymbol::loadFinished, this, &TableViewModel::setTableViewNoArgs);
 }
 
 TableViewModel::~TableViewModel()
@@ -253,20 +251,21 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
     QVector<uint> lastColHeader(mTvColDim);
     for (int i=0; i<lastColHeader.size(); i++)
         lastColHeader[i] = 0;
-    int r;
+    size_t r;
 
     QVector<uint> rowHeader;
     QVector<uint> colHeader;
+    size_t keyIdx;
     for (int rec=0; rec<mSym->mFilterRecCount; rec++) {
         r = mSym->mRecSortIdx[size_t(mSym->mRecFilterIdx[size_t(rec)])];
-        int keyIdx = r*mSym->mDim;
+        keyIdx = r*mSym->mDim;
         rowHeader.resize(0);
         colHeader.resize(0);
 
         for(int i=0; i<mSym->mDim-mTvColDim; i++)
-            rowHeader.push_back(mSym->mKeys[size_t(keyIdx+mTvDimOrder[i])]);
+            rowHeader.push_back(mSym->mKeys[keyIdx+mTvDimOrder[i]]);
         for(int i=mSym->mDim-mTvColDim; i<mSym->mDim; i++)
-            colHeader.push_back(mSym->mKeys[size_t(keyIdx+mTvDimOrder[i])]);
+            colHeader.push_back(mSym->mKeys[keyIdx+mTvDimOrder[i]]);
 
         if (mSym->mType == GMS_DT_VAR || mSym->mType == GMS_DT_EQU) {
             colHeader.push_back(0);

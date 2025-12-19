@@ -268,8 +268,15 @@ bool GdxViewer::dragInProgress()
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     bool ok = selectedSymbol->loadData();
-    QString symName = selectedSymbol->name();
     if (ok) {
+        QString symName = selectedSymbol->name();
+        GdxSymbolView* symView = symbolViewByName(symName);
+        if (symView) {
+            if (mState && mState->symbolViewState(symName)) {
+                GdxSymbolViewState* symViewState = mState->symbolViewState(symName);
+                symView->applyFilters(symViewState);
+            }
+        }
         QTimer::singleShot(0,this, [this, symName](){
             GdxSymbol* selectedSymbolNew = this->gdxSymbolTable()->getSymbolByName(symName);
             if (selectedSymbolNew) {

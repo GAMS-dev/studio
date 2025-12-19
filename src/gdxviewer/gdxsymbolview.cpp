@@ -568,6 +568,14 @@ void GdxSymbolView::adjustDomainScrollbar()
     }
 }
 
+void GdxSymbolView::updateTvModel()
+{
+    if (mTableView)
+        mTvModel->setTableViewNoArgs();
+    else
+        mTvPendingUpdate = true;
+}
+
 void GdxSymbolView::showListView()
 {
     mTableView = false;
@@ -587,10 +595,12 @@ void GdxSymbolView::showTableView(int colDim, const QVector<int> &tvDimOrder)
 {
     if (!mTvModel)
         initTableViewModel(colDim, tvDimOrder);
-    else {
-        if (colDim != -1)
-            mTvModel->setTableView(colDim, tvDimOrder);
-    }
+    else if (colDim != -1)
+        mTvModel->setTableView(colDim, tvDimOrder);
+    else if (mTvPendingUpdate)
+        mTvModel->setTableViewNoArgs();
+    mTvPendingUpdate = false;
+
     ui->pbToggleView->setText("List View");
     ui->tvListView->hide();
     mTableView = true;
@@ -607,6 +617,10 @@ void GdxSymbolView::showTableView(int colDim, const QVector<int> &tvDimOrder)
 void GdxSymbolView::initTableViewModel(int colDim, const QVector<int> &tvDimOrder)
 {
     mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
+    connect(mSym, &GdxSymbol::modelReset, this, &GdxSymbolView::updateTvModel);
+    connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::updateTvModel);
+
+
     mTvModel->setTableView(colDim, tvDimOrder);
     if (mDefaultSymbolView == DefaultSymbolView::tableView)
         connect(mTvModel, &TableViewModel::initFinished, this, [this](){ if(mTVResizeOnInit) { autoResizeColumns(); mTVResizeOnInit=false;}} );
@@ -801,8 +815,6 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 
 void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
 {
-    applyFilters(symViewState);
-
     ui->tvListView->horizontalHeader()->restoreState(symViewState->listViewHeaderState());
 
     mAutoResizeLV = symViewState->autoResizeLV();
@@ -825,6 +837,8 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
         }
         if (!mAutoResizeTV)
             restoreTableViewHeaderState(symViewState);
+        else
+            autoResizeTableViewColumns();
         ui->tvTableViewFilter->horizontalHeader()->restoreState(symViewState->tableViewFilterHeaderState());
         ui->tvTableViewFilter->resizeColumnsToContents();
         mTVFirstInit = false;

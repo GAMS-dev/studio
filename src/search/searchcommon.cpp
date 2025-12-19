@@ -50,7 +50,7 @@ void SearchCommon::excludeFilters(const QStringList &wildcards,
                                   QList<QRegularExpression> &excludeRegEx)
 {
     QStringList finalWildcards;
-    QStringList additionalWildcards { "*.gdx", "*.zip" };
+    QStringList additionalWildcards { "*.efi", "*.gdx", "*.guc", "*.opt", "*.pf", "*.ref", "*.yaml", "*.yml", "*.zip" };
     finalWildcards << wildcards << additionalWildcards;
     for (const QString &wildcard : std::as_const(finalWildcards)) {
         auto pattern = toRegularExpression(wildcard);

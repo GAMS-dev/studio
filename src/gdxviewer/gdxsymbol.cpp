@@ -227,14 +227,14 @@ bool GdxSymbol::loadData()
     if(!mIsLoaded) {
         beginResetModel();
         endResetModel();
-
+        size_t recCount_size_t = static_cast<size_t>(mRecordCount);
         if(mKeys.empty())
-            mKeys.resize(mRecordCount*mDim);
+            mKeys.resize(recCount_size_t*mDim);
         if(mValues.empty()) {
             if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
-                mValues.resize(mRecordCount);
+                mValues.resize(recCount_size_t);
             else  if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
-                 mValues.resize(mRecordCount*GMS_DT_MAX);
+                 mValues.resize(recCount_size_t*GMS_DT_MAX);
         }
 
         int dummy;
@@ -259,14 +259,14 @@ bool GdxSymbol::loadData()
 
         int updateCount = 1000000;
         int triggerAutoResizeListViewCount = 1000;
-        int keyOffset;
-        int valOffset;
+        size_t keyOffset;
+        size_t valOffset;
         int k;
-        for(int i=mLoadedRecCount; i<mRecordCount; i++) {
+        for(size_t i=mLoadedRecCount; i<mRecordCount; i++) {
             keyOffset = i*mDim;
             gdxDataReadRaw(mGdx, keys, values, &dummy);
 
-            for(int j=0; j<mDim; j++) {
+            for(size_t j=0; j<mDim; j++) {
                 k = keys[j];
                 mKeys[keyOffset+j] = k;
                 mMinUel[j] = qMin(mMinUel[j], k);
@@ -348,7 +348,7 @@ void GdxSymbol::calcUelsInColumn()
         bool* sawUel = new bool[qMax(mMaxUel[dim]+1,1)] {false};
         int lastUel = -1;
         int currentUel = - 1;
-        for(int rec=0; rec<mRecordCount; rec++) {
+        for(size_t rec=0; rec<mRecordCount; rec++) {
             currentUel = mKeys[rec*mDim + dim];
             if (currentUel < 0)
                 mHasInvalidUel = true;
@@ -672,20 +672,22 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
         QList<QPair<int, int>> l;
         l.reserve(mRecordCount);
         uint uel;
+        size_t recIdx;
         for (int rec = 0; rec < mRecordCount; ++rec) {
-            uel = mKeys[mRecSortIdx[rec]*mDim + column];
+            recIdx = static_cast<size_t>(mRecSortIdx[rec]);
+            uel = mKeys[recIdx*mDim + column];
             // bad uels are sorted by their internal number separately from normal UELS
             if (uel >= labelCompIdx.size())
-                l.append(QPair<int, int>(uel, mRecSortIdx[rec]));
+                l.append(QPair<int, int>(uel, recIdx));
             else
-                l.append(QPair<int, int>(labelCompIdx[uel], mRecSortIdx[rec]));
+                l.append(QPair<int, int>(labelCompIdx[uel], recIdx));
         }
         if(order == Qt::SortOrder::AscendingOrder)
             std::stable_sort(l.begin(), l.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.first < b.first; });
         else
             std::stable_sort(l.begin(), l.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.first > b.first; });
 
-        for(int rec=0; rec< mRecordCount; rec++)
+        for(int rec=0; rec < mRecordCount; rec++)
             mRecSortIdx[rec] = l.at(rec).second;
     }
 
@@ -719,11 +721,13 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
         }
         else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU) {
             l.reserve(mRecordCount);
+            size_t recIdx;
             for (int rec = 0; rec < mRecordCount; ++rec) {
-                val = mValues[mRecSortIdx[rec]*GMS_VAL_MAX + (column-mDim)];
+                recIdx = static_cast<size_t>(mRecSortIdx[rec]);
+                val = mValues[recIdx*GMS_VAL_MAX + (column-mDim)];
                 if (val >= GMS_SV_UNDEF)
                     val = specVal2SortVal(val);
-                l.append(QPair<double, int>(val, mRecSortIdx[rec]));
+                l.append(QPair<double, int>(val, recIdx));
             }
         }
 
@@ -749,8 +753,9 @@ void GdxSymbol::filterRows()
     int removedCount = 0;
 
     mFilterRecCount = mLoadedRecCount;
+    size_t recIdx;
     for(int row=0; row<mRecordCount; row++) {
-        int recIdx = mRecSortIdx[row];
+        recIdx = static_cast<size_t>(mRecSortIdx[row]);
         mRecFilterIdx[row-removedCount] = row;
         for(int dim=0; dim<filterColumnCount(); dim++) {
             if (dim<mDim) { // filter by key column

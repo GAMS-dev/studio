@@ -755,8 +755,10 @@ void MainWindow::updateProfilerAction()
 QVector<PExAbstractNode *> MainWindow::selectedNodes(QModelIndex index)
 {
     QVector<PExAbstractNode*> nodes;
+    if (!index.isValid()) return nodes;
+
     QModelIndexList list = ui->projectView->selectionModel()->selectedIndexes();
-    if (index.isValid() && !list.contains(index)) return nodes;
+    if (!list.contains(index)) return nodes;
     const auto ids = mProjectRepo.proxyModel()->selectedIds();
     for (const NodeId &id: ids)
         nodes << mProjectRepo.node(id);
@@ -5436,7 +5438,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             if (fileMeta->projectId().isValid())
                 project = mProjectRepo.asProject(fileMeta->projectId());
         }
-        if (project) {
+        if (project && focus) {
             fileMeta->setProjectId(project->id());
             updateRecentEdit(mRecent.editor(), edit);
             int idx = tabWidget->indexOf(edit);

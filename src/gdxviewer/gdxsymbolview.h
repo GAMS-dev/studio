@@ -85,6 +85,7 @@ public slots:
     void autoResizeTableViewColumns(bool force=false);
     void autoResizeListViewColumns();
     void adjustDomainScrollbar();
+    void updateTvModel();
 
 protected:
     bool event(QEvent *event) override;
@@ -145,6 +146,8 @@ private:
     bool mLVFirstInit = true;
     bool mTVFirstInit = true;
     bool mTVResizeOnInit = true;
+
+    bool mTvPendingUpdate = false;
 
     DefaultSymbolView mDefaultSymbolView;
 
