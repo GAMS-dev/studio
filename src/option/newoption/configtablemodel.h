@@ -63,6 +63,7 @@ public:
     inline static int column_max_version() { return COLUMN_MAX_VERSION; }
 
     const QList<ParamConfigItem *> parameterConfigItems();
+    QString getOptionTableEntry(int row) override;
 
 signals:
     void configParamModelChanged(const QList<ParamConfigItem *> &optionItem);
@@ -70,8 +71,8 @@ signals:
 public slots:
     void on_groupDefinitionReloaded() override;
     void on_reloadConfigParamModel(const QList<ParamConfigItem *> &optionItem);
-    void on_updateConfigParamItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
-    void on_removeConfigParamItem();
+    void on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override;
+    void on_removeOptionItem() override;
     void updateRecurrentStatus();
     QString getParameterTableEntry(int row);
 

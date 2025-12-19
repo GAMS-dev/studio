@@ -57,7 +57,7 @@ public:
     bool dropMimeData(const QMimeData * mimedata, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 
     QList<SolverOptionItem *> getCurrentListOfOptionItems() const;
-    QString getOptionTableEntry(int row);
+    QString getOptionTableEntry(int row) override;
 
     static const int COLUMN_EOL_COMMENT = 3;
     inline static int column_eol_comment() { return COLUMN_EOL_COMMENT; }
@@ -65,12 +65,11 @@ public:
 signals:
     void solverOptionModelChanged(const QList<gams::studio::option::SolverOptionItem *> &optionItem);
     void solverOptionItemModelChanged(const gams::studio::option::SolverOptionItem* optionItem);
-    void solverOptionItemRemoved();
 
 public slots:
     void reloadSolverOptionModel(const QList<gams::studio::option::SolverOptionItem *> &optionItem);
-    void on_updateSolverOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
-    void on_removeSolverOptionItem();
+    void on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override;
+    void on_removeOptionItem() override;
     void on_toggleRowHeader(int logicalIndex);
 
     void on_groupDefinitionReloaded() override;

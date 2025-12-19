@@ -89,8 +89,6 @@ protected slots:
     virtual void moveOptionUp() = 0;
     virtual void moveOptionDown() = 0;
 
-    virtual void addOptionFromDefinition(const QModelIndex &index) = 0;
-
     virtual void on_openAsTextButton_clicked(bool checked = false) {
         Q_UNUSED(checked)
         if (!mIsFileEditor)
@@ -107,6 +105,16 @@ protected slots:
         if (!mIsFileEditor)
             return;
     }
+
+    virtual void updateTableColumnSpan() = 0;
+    virtual void refreshOptionTableModel(bool hideAllComments=true) = 0;
+
+    virtual void addOptionModelFromDefinition(int row, const QModelIndex &descriptionInde)   = 0;
+    virtual void addCommentModelFromDefinition(int row, const QModelIndex &descriptionIndex) = 0;
+    virtual void addEOLCommentModelFromDefinition(int row, const QModelIndex &selectedValueIndex,
+                                                           const QModelIndex &descriptionIndex    ) = 0;
+
+    void addOptionFromDefinition(const QModelIndex &definitionIndex);
 
     void showOptionContextMenu(const QPoint &pos);
     void showDefinitionContextMenu(const QPoint &pos);
@@ -147,7 +155,8 @@ public slots:
     void on_actionRemove_This_Parameter_triggered();
 
 signals:
-   void modificationChanged(bool modifiedState);
+    void modificationChanged(bool modifiedState);
+    void itemCountChanged(int newItemCount);
 
 protected:
     Ui::OptionWidget *ui;

@@ -54,8 +54,6 @@ public:
 public slots:
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
-    void addOptionFromDefinition(const QModelIndex &index) override;
-
     void parameterItemCommitted(QWidget *editor);
     void on_reloadGamsUserConfigFile(const QList<ConfigItem  *> &initParams);
 
@@ -63,8 +61,6 @@ public slots:
 
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_newTableRowDropped(const QModelIndex &index);
-
-    QString getParameterTableEntry(int row);
 
 protected slots:
     void insertOption() override;
@@ -74,7 +70,23 @@ protected slots:
     void moveOptionUp() override;
     void moveOptionDown() override;
 
-    bool isCommentToggleable() override { return false; }
+    bool isCommentToggleable() override   { return false; }
+    void updateTableColumnSpan() override { return;       }
+    void refreshOptionTableModel(bool hideAllComments=true) override {
+        Q_UNUSED(hideAllComments)
+        return;
+    };
+
+    void addOptionModelFromDefinition(int row, const QModelIndex &descriptionIndex)    override;
+    void addCommentModelFromDefinition(int row, const QModelIndex &descriptionIndex)   override {
+        Q_UNUSED(row)  Q_UNUSED(descriptionIndex)
+        return;
+    }
+    void addEOLCommentModelFromDefinition(int row, const QModelIndex &selectedValueIndex,
+                                                   const QModelIndex &descriptionIndex) override {
+        Q_UNUSED(row)  Q_UNUSED(selectedValueIndex)  Q_UNUSED(descriptionIndex)
+        return;
+    }
 
 protected:
     OptionTokenizer* optionTokenizer() const override { return mOptionTokenizer; }

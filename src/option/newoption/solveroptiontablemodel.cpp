@@ -329,7 +329,7 @@ bool SolverOptionTableModel::removeRows(int row, int count, const QModelIndex &p
         mOptionItem.removeAt(i);
     }
     endRemoveRows();
-    emit  solverOptionItemRemoved();
+    emit optionItemRemoved();
     return true;
 }
 
@@ -405,7 +405,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
     Settings* settings = Settings::settings();
     if (action ==  Qt::CopyAction) {
 
-        disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
+        disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateOptionItem);
 
         QList<SolverOptionItem *> itemList;
         itemList.reserve(newItems.size());
@@ -540,7 +540,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         qDeleteAll(itemList);
         itemList.clear();
 
-        connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
+        connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateOptionItem);
         updateRecurrentStatus();
         return true;
     }
@@ -578,7 +578,7 @@ QString SolverOptionTableModel::getOptionTableEntry(int row)
 
 void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionItem *> &optionItem)
 {
-    disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
+    disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateOptionItem);
 
     beginResetModel();
 
@@ -617,10 +617,10 @@ void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionIte
     emit solverOptionModelChanged(mOptionItem);
     updateRecurrentStatus();
     endResetModel();
-    connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
+    connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateOptionItem);
 }
 
-void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void SolverOptionTableModel::on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
     QModelIndex idx = topLeft;
     int row = idx.row();
@@ -659,7 +659,7 @@ void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLef
     updateRecurrentStatus();
 }
 
-void SolverOptionTableModel::on_removeSolverOptionItem()
+void SolverOptionTableModel::on_removeOptionItem()
 {
     beginResetModel();
     mOptionTokenizer->validateOption(mOptionItem);
@@ -695,12 +695,12 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
             mCheckState[logicalIndex] = QVariant(Qt::Unchecked);
         else
             mCheckState[logicalIndex] = QVariant(Qt::Checked);
-        disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
+        disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateOptionItem);
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_KEY), mOptionItem.at(logicalIndex)->key, Qt::EditRole );
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_VALUE), mOptionItem.at(logicalIndex)->value, Qt::EditRole );
         if (mOptionTokenizer->getOption()->isEOLCharDefined())
             setData( index(logicalIndex, SolverOptionTableModel::COLUMN_EOL_COMMENT), mOptionItem.at(logicalIndex)->text, Qt::EditRole );
-        connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
+        connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateOptionItem);
         setData( index(logicalIndex, COLUMN_ID), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     } else {  // to comment
@@ -730,13 +730,13 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         mOptionItem.at(logicalIndex)->optionId = mOptionItem.at(logicalIndex)->optionId; //-1;
         mOptionItem.at(logicalIndex)->disabled = true;
         mCheckState[logicalIndex] = QVariant(Qt::PartiallyChecked);
-        disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
+        disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateOptionItem);
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_KEY), mOptionItem.at(logicalIndex)->key, Qt::EditRole );
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_VALUE), mOptionItem.at(logicalIndex)->value, Qt::EditRole );
         if (mOptionTokenizer->getOption()->isEOLCharDefined())
             setData( index(logicalIndex, SolverOptionTableModel::COLUMN_EOL_COMMENT), mOptionItem.at(logicalIndex)->text, Qt::EditRole );
         setData( index(logicalIndex, COLUMN_ID), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
-        connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
+        connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateOptionItem);
 //        setData( index(logicalIndex, COLUMN_ID), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     }

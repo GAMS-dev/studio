@@ -50,12 +50,9 @@ public:
     inline FileKind fileKind() const { return mFileKind; }
     inline FileId fileId() const     { return mFileId;   }
 
-    inline bool isModified() const   { return mModified; }
-    inline void setModified(bool modified)
-    {
-        mModified = modified;
-        emit modificationChanged( mModified );
-    }
+    inline bool isModified() const         { return mModified;     }
+    inline void setModified(bool modified) { mModified = modified; }
+
     inline void setFileChangedExtern(bool value) { mFileHasChangedExtern = value;  }
 
     bool saveAs(const QString &location);
@@ -65,12 +62,9 @@ public:
     void toggleCommentOption();
 
 signals:
-    void itemCountChanged(int newItemCount);
     void compactViewChanged(bool compact);
 
 public slots:
-    void addOptionFromDefinition(const QModelIndex &index) override;
-
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_newTableRowDropped(const QModelIndex &index);
 
@@ -110,11 +104,15 @@ protected:
     OptionItemDelegate* optionCompleter() const override            { return mOptionCompleter;      }
     void setOptionCompleter(OptionItemDelegate* completer) override { mOptionCompleter = completer; }
 
-    QString getOptionTableEntry(int row);
     bool isEditing();
 
-    void refreshOptionTableModel(bool hideAllComments);
-    void updateTableColumnSpan();
+    void updateTableColumnSpan() override;
+    void refreshOptionTableModel(bool hideAllComments=true) override;
+
+    void addOptionModelFromDefinition(int row, const QModelIndex &descriptionIndex)    override;
+    void addCommentModelFromDefinition(int row, const QModelIndex &descriptionIndex)   override;
+    void addEOLCommentModelFromDefinition(int row, const QModelIndex &selectedValueIndex,
+                                                   const QModelIndex &descriptionndex) override;
 
     SolverOptionTableModel* mOptionModel;
     OptionSortFilterProxyModel* mDefinitionProxymodel;

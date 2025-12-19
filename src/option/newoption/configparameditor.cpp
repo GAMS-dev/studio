@@ -69,9 +69,9 @@ ConfigParamEditor::ConfigParamEditor(const QList<ConfigItem *> &initParamItems, 
         mParameterTableModel->on_groupDefinitionReloaded();
     });
     connect(mParameterTableModel, &QAbstractTableModel::dataChanged, this, &ConfigParamEditor::on_dataItemChanged, Qt::UniqueConnection);
-    connect(mParameterTableModel, &QAbstractTableModel::dataChanged, mParameterTableModel, &ConfigTableModel::on_updateConfigParamItem, Qt::UniqueConnection);
+    connect(mParameterTableModel, &QAbstractTableModel::dataChanged, mParameterTableModel, &ConfigTableModel::on_updateOptionItem, Qt::UniqueConnection);
     connect(mParameterTableModel, &ConfigTableModel::configParamModelChanged, mDefinitionModel, &ConfigOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
-    connect(mParameterTableModel, &ConfigTableModel::optionItemRemoved, mParameterTableModel, &ConfigTableModel::on_removeConfigParamItem, Qt::UniqueConnection);
+    connect(mParameterTableModel, &ConfigTableModel::optionItemRemoved, mParameterTableModel, &ConfigTableModel::on_removeOptionItem, Qt::UniqueConnection);
 
     connect(this, &ConfigParamEditor::modificationChanged, this, &ConfigParamEditor::setModified, Qt::UniqueConnection);
     emit mParameterTableModel->configParamModelChanged(optionItem);
@@ -155,163 +155,6 @@ void ConfigParamEditor::selectionChanged(const QItemSelection &selected, const Q
     }
 
     updateActionsState(selected.indexes().first());
-}
-
-void ConfigParamEditor::addOptionFromDefinition(const QModelIndex &index)
-{
-    emit modificationChanged(true);
-
-    const QModelIndex parentIndex =  ui->definitionTreeView->model()->parent(index);
-    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
-                                                                : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-    const QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
-                                                              : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
-    const QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex
-                                                                   : ui->definitionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
-
-    disconnect( mParameterTableModel, &QAbstractTableModel::dataChanged,  mParameterTableModel, &ConfigTableModel::on_updateConfigParamItem);
-
-    bool replaceExistingEntry = false;
-    const QString optionNameData = ui->definitionTreeView->model()->data(optionNameIndex).toString();
-    const QModelIndex optionIdIndex = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER)
-                                                              : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
-    const QVariant optionIdData = ui->definitionTreeView->model()->data(optionIdIndex);
-
-    int rowToBeAdded = ui->optionTableView->model()->rowCount();
-    //    StudioSettings* settings = SettingsLocator::settings();
-    //    if (settings && settings->overridExistingOption()) {
-    QModelIndexList indices = ui->optionTableView->model()->match(ui->optionTableView->model()->index(0, ConfigTableModel::COLUMN_ID),
-                                                                    Qt::DisplayRole,
-                                                                    optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
-    ui->optionTableView->clearSelection();
-    QItemSelection selection;
-    for(const QModelIndex &idx: std::as_const(indices)) {
-        const QModelIndex leftIndex  = ui->optionTableView->model()->index(idx.row(), ConfigTableModel::COLUMN_KEY);
-        const QModelIndex rightIndex = ui->optionTableView->model()->index(idx.row(), ConfigTableModel::COLUMN_ID);
-        const QItemSelection rowSelection(leftIndex, rightIndex);
-        selection.merge(rowSelection, QItemSelectionModel::Select);
-    }
-    ui->optionTableView->selectionModel()->select(selection, QItemSelectionModel::Select);
-
-    const bool singleEntryExisted = (indices.size()==1);
-    const bool multipleEntryExisted = (indices.size()>1);
-    if (singleEntryExisted ) {
-        const QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
-        .arg(getParameterTableEntry(indices.at(0).row()),
-             "When a GAMS config file contains multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
-             "The value of all other entries except the last entry will be ignored.");
-        const int answer = MsgBox::question("Parameter Entry exists", "Parameter '" + optionNameData + "' already exists.",
-                                            "How do you want to proceed?", detailText,
-                                            nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
-        switch(answer) {
-        case 0: // replace
-            replaceExistingEntry = true;
-            indices = ui->optionTableView->model()->match(ui->optionTableView->model()->index(0, ConfigTableModel::COLUMN_ID),
-                                                            Qt::DisplayRole,
-                                                            optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
-            rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
-            break;
-        case 1: // add
-            break;
-        default:
-            return;
-        }
-    } else if (multipleEntryExisted) {
-        QString entryDetailedText = QString("Entries:\n");
-        int i = 0;
-        for (const QModelIndex &idx : std::as_const(indices))
-            entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getParameterTableEntry(idx.row())));
-        const QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
-                                                                        "When a GAMS config file contains multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
-                                                                        "The value of all other entries except the last entry will be ignored.");
-        int answer = MsgBox::question("Multiple Parameter Entries exist",
-                                      "Multiple entries of Parameter '" + optionNameData + "' already exist.",
-                                      "How do you want to proceed?", detailText, nullptr,
-                                      "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
-        switch(answer) {
-        case 0: // delete and replace
-            disconnect( mParameterTableModel, &ConfigTableModel::optionItemRemoved, mParameterTableModel, &ConfigTableModel::on_removeConfigParamItem);
-            ui->optionTableView->selectionModel()->clearSelection();
-            for(int i=1; i<indices.size(); i++) {
-                ui->optionTableView->selectionModel()->select( indices.at(i), QItemSelectionModel::Select|QItemSelectionModel::Rows );
-            }
-            deleteOption();
-            connect( mParameterTableModel, &ConfigTableModel::optionItemRemoved,
-                    mParameterTableModel, &ConfigTableModel::on_removeConfigParamItem, Qt::UniqueConnection);
-            replaceExistingEntry = true;
-            indices = ui->optionTableView->model()->match(ui->optionTableView->model()->index(0, ConfigTableModel::COLUMN_ID),
-                                                            Qt::DisplayRole,
-                                                            optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
-            rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
-            break;
-        case 1: // add
-            break;
-        default:
-            return;
-        }
-
-    } // else entry not exist
-    //    }
-
-    ui->optionTableView->selectionModel()->clearSelection();
-    //    QString synonymData = ui->definitionTreeView->model()->data(synonymIndex).toString();
-    const QString selectedValueData = ui->definitionTreeView->model()->data(selectedValueIndex).toString();
-    mOptionTokenizer->getOption()->setModified(optionNameData, true);
-    ui->definitionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
-
-    // insert option row
-    if (rowToBeAdded == ui->optionTableView->model()->rowCount()) {
-        ui->optionTableView->model()->insertRows(rowToBeAdded, 1, QModelIndex());
-    }
-    const QModelIndex insertKeyIndex = ui->optionTableView->model()->index(rowToBeAdded, ConfigTableModel::COLUMN_KEY);
-    const QModelIndex insertValueIndex = ui->optionTableView->model()->index(rowToBeAdded, ConfigTableModel::COLUMN_VALUE);
-    const QModelIndex minVersionIndex = ui->optionTableView->model()->index(rowToBeAdded, ConfigTableModel::COLUMN_MIN_VERSION);
-    const QModelIndex maxVersionIndex = ui->optionTableView->model()->index(rowToBeAdded, ConfigTableModel::COLUMN_MIN_VERSION);
-    ui->optionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
-    ui->optionTableView->model()->setData( insertValueIndex, (selectedValueData.simplified().isEmpty()
-                                                                   ? OptionTokenizer::valueGeneratedStr
-                                                                   : selectedValueData)
-                                            , Qt::EditRole);
-    ui->optionTableView->model()->setData( minVersionIndex, "", Qt::EditRole);
-    ui->optionTableView->model()->setData( maxVersionIndex, "", Qt::EditRole);
-
-    QModelIndex insertNumberIndex = ui->optionTableView->model()->index(rowToBeAdded, ConfigTableModel::COLUMN_ID);
-    const int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
-    ui->optionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
-    if (selectedValueData.isEmpty())
-        ui->optionTableView->model()->setHeaderData( rowToBeAdded, Qt::Vertical, Qt::CheckState(Qt::Checked), Qt::CheckStateRole );
-    else
-        ui->optionTableView->model()->setHeaderData( rowToBeAdded, Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
-    ui->optionTableView->selectRow(rowToBeAdded);
-    selectAnOption();
-
-    const QString text =  mParameterTableModel->getParameterTableEntry(insertNumberIndex.row());
-    if (replaceExistingEntry)
-        mOptionTokenizer->logger()->append(QString("Parameter entry '%1' has been replaced").arg(text), LogMsgType::Info);
-    else
-        mOptionTokenizer->logger()->append(QString("Parameter entry '%1' has been added").arg(text), LogMsgType::Info);
-
-    const int lastColumn = ui->optionTableView->model()->columnCount()-1;
-    const int lastRow = rowToBeAdded;
-    int firstRow = lastRow;
-    if (firstRow<0)
-        firstRow = 0;
-    mParameterTableModel->on_updateConfigParamItem( ui->optionTableView->model()->index(firstRow, lastColumn),
-                                                   ui->optionTableView->model()->index(lastRow, lastColumn),
-                                                   {Qt::EditRole});
-
-    ui->optionTableView->resizeColumnToContents(ConfigTableModel::COLUMN_KEY);
-    ui->optionTableView->resizeColumnToContents(ConfigTableModel::COLUMN_VALUE);
-
-    connect( mParameterTableModel, &QAbstractTableModel::dataChanged,  mParameterTableModel, &ConfigTableModel::on_updateConfigParamItem, Qt::UniqueConnection);
-
-    showOptionDefinition(true);
-
-    if (parentIndex.row()<0) {
-        if (mOptionTokenizer->getOption()->getOptionSubType(optionNameData) != optsubNoValue)
-            ui->optionTableView->edit(insertValueIndex);
-    }
-
 }
 
 void ConfigParamEditor::parameterItemCommitted(QWidget *editor)
@@ -411,20 +254,6 @@ void ConfigParamEditor::on_newTableRowDropped(const QModelIndex &index)
             this, &ConfigParamEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 }
 
-QString ConfigParamEditor::getParameterTableEntry(int row)
-{
-    const QModelIndex keyIndex = ui->optionTableView->model()->index(row, ConfigTableModel::COLUMN_KEY);
-    const QVariant optionKey = ui->optionTableView->model()->data(keyIndex, Qt::DisplayRole);
-    const QModelIndex valueIndex = ui->optionTableView->model()->index(row, ConfigTableModel::COLUMN_VALUE);
-    const QVariant optionValue = ui->optionTableView->model()->data(valueIndex, Qt::DisplayRole);
-    const QModelIndex minVersionIndex = ui->optionTableView->model()->index(row, ConfigTableModel::COLUMN_MIN_VERSION);
-    const QVariant minVersionValue = ui->optionTableView->model()->data(minVersionIndex, Qt::DisplayRole);
-    const QModelIndex maxVersionIndex = ui->optionTableView->model()->index(row, ConfigTableModel::COLUMN_MAX_VERSION);
-    const QVariant maxVersionValue = ui->optionTableView->model()->data(maxVersionIndex, Qt::DisplayRole);
-    return QString("%1%2%3 %4 %5").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(),
-                                       optionValue.toString(), minVersionValue.toString(), maxVersionValue.toString());
-}
-
 void ConfigParamEditor::insertOption()
 {
     if (!ui->actionInsert->isEnabled())
@@ -435,7 +264,7 @@ void ConfigParamEditor::insertOption()
         ui->optionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
-    disconnect(mParameterTableModel, &QAbstractTableModel::dataChanged, mParameterTableModel, &ConfigTableModel::on_updateConfigParamItem);
+    disconnect(mParameterTableModel, &QAbstractTableModel::dataChanged, mParameterTableModel, &ConfigTableModel::on_updateOptionItem);
     int rowToBeInserted = -1;
     if (isThereAnIndexSelection()) {
         QList<int> rows;
@@ -478,7 +307,7 @@ void ConfigParamEditor::insertOption()
     ui->optionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
 
     connect(mParameterTableModel, &QAbstractTableModel::dataChanged,
-            mParameterTableModel, &ConfigTableModel::on_updateConfigParamItem, Qt::UniqueConnection);
+            mParameterTableModel, &ConfigTableModel::on_updateOptionItem, Qt::UniqueConnection);
 
     emit modificationChanged(true);
 
@@ -517,7 +346,7 @@ void ConfigParamEditor::deleteOption()
         for(int i=rows.count()-1; i>=0; i--) {
             int current = rows[i];
             if (current != prev) {
-                const QString text = mParameterTableModel->getParameterTableEntry(current);
+                const QString text = mParameterTableModel->getOptionTableEntry(current);
                 ui->optionTableView->model()->removeRows( current, 1 );
                 mOptionTokenizer->logger()->append(QString("Parameter entry '%1' has been deleted").arg(text), LogMsgType::Info);
                 prev = current;
@@ -583,6 +412,39 @@ void ConfigParamEditor::moveOptionDown()
     emit modificationChanged(true);
     updateActionsState( );
 
+}
+
+void ConfigParamEditor::addOptionModelFromDefinition(int row, const QModelIndex &descriptionIndex)
+{
+    if (row == definitionModel()->rowCount()) {
+        mParameterTableModel->insertRows(row, 1, QModelIndex());
+    }
+
+    const QModelIndex parentIndex     =  mDefinitionModel->parent(descriptionIndex);
+    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? mDefinitionModel->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                                : mDefinitionModel->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
+    const QModelIndex defValueIndex   = (parentIndex.row()<0) ? mDefinitionModel->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
+                                                              : mDefinitionModel->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
+    const QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex
+                                                                   : mDefinitionModel->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
+    const QString selectedValueData = mDefinitionModel->data(selectedValueIndex, Qt::DisplayRole).toString();
+    const QString optionNameData    = mDefinitionModel->data(optionNameIndex, Qt::DisplayRole).toString();
+
+    const int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
+    const QModelIndex insertKeyIndex    = mParameterTableModel->index(row, ConfigTableModel::COLUMN_KEY);
+    const QModelIndex insertValueIndex  = mParameterTableModel->index(row, ConfigTableModel::COLUMN_VALUE);
+    const QModelIndex insertNumberIndex = mParameterTableModel->index(row, ConfigTableModel::COLUMN_ID);
+    const QModelIndex minVersionIndex   = mParameterTableModel->index(row, ConfigTableModel::COLUMN_MIN_VERSION);
+    const QModelIndex maxVersionIndex   = mParameterTableModel->index(row, ConfigTableModel::COLUMN_MIN_VERSION);
+
+    mParameterTableModel->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
+    mParameterTableModel->setData( insertKeyIndex, optionNameData, Qt::EditRole);
+    mParameterTableModel->setData( insertValueIndex, (selectedValueData.simplified().isEmpty() ? OptionTokenizer::valueGeneratedStr
+                                                                                               : selectedValueData)
+                                                   , Qt::EditRole);
+    mParameterTableModel->setData( minVersionIndex, "", Qt::EditRole);
+    mParameterTableModel->setData( maxVersionIndex, "", Qt::EditRole);
+    mParameterTableModel->setHeaderData( row, Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
 }
 
 } // namepsace newoption

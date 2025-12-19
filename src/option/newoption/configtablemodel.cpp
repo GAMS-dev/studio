@@ -563,6 +563,21 @@ const QList<ParamConfigItem *> ConfigTableModel::parameterConfigItems()
     return mOptionItem;
 }
 
+QString ConfigTableModel::getOptionTableEntry(int row)
+{
+    const QModelIndex keyIndex = index(row, ConfigTableModel::COLUMN_KEY);
+    const QVariant optionKey = data(keyIndex, Qt::DisplayRole);
+    const QModelIndex valueIndex =index(row, ConfigTableModel::COLUMN_VALUE);
+    const QVariant optionValue = data(valueIndex, Qt::DisplayRole);
+    const QModelIndex minVersionIndex = index(row, ConfigTableModel::COLUMN_MIN_VERSION);
+    const QVariant minVersionValue = data(minVersionIndex, Qt::DisplayRole);
+    const QModelIndex maxVersionIndex = index(row, ConfigTableModel::COLUMN_MAX_VERSION);
+    const QVariant maxVersionValue = data(maxVersionIndex, Qt::DisplayRole);
+    return QString("%1%2%3 %4 %5").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(),
+                                       optionValue.toString(), minVersionValue.toString(), maxVersionValue.toString());
+
+}
+
 void ConfigTableModel::on_groupDefinitionReloaded()
 {
     emit configParamModelChanged(mOptionItem);
@@ -570,7 +585,7 @@ void ConfigTableModel::on_groupDefinitionReloaded()
 
 void ConfigTableModel::on_reloadConfigParamModel(const QList<ParamConfigItem *> &optionItem)
 {
-    disconnect(this, &QAbstractTableModel::dataChanged, this, &ConfigTableModel::on_updateConfigParamItem);
+    disconnect(this, &QAbstractTableModel::dataChanged, this, &ConfigTableModel::on_updateOptionItem);
 
     beginResetModel();
 
@@ -616,10 +631,10 @@ void ConfigTableModel::on_reloadConfigParamModel(const QList<ParamConfigItem *> 
     emit configParamModelChanged(mOptionItem);
     updateRecurrentStatus();
     endResetModel();
-    connect(this, &QAbstractTableModel::dataChanged, this, &ConfigTableModel::on_updateConfigParamItem, Qt::UniqueConnection);
+    connect(this, &QAbstractTableModel::dataChanged, this, &ConfigTableModel::on_updateOptionItem, Qt::UniqueConnection);
 }
 
-void ConfigTableModel::on_updateConfigParamItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void ConfigTableModel::on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
     QModelIndex idx = topLeft;
     int row = idx.row();
@@ -656,7 +671,7 @@ void ConfigTableModel::on_updateConfigParamItem(const QModelIndex &topLeft, cons
     updateRecurrentStatus();
 }
 
-void ConfigTableModel::on_removeConfigParamItem()
+void ConfigTableModel::on_removeOptionItem()
 {
     beginResetModel();
     mOptionTokenizer->validateOption(mOptionItem);
