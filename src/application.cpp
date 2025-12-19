@@ -118,7 +118,7 @@ void Application::init()
         }
         QFileInfo log(vCustomLogFile);
         if (QFile::exists(log.absolutePath())) {
-            qDebug() << "log additionally to file" << vCustomLogFile;
+            qDebug() << "log additionally to file" << QDir::toNativeSeparators(vCustomLogFile);
             vOriginalLogHandler = qInstallMessageHandler(*logToFile);
         } else
             qDebug() << "Error: Couldn't register log file in missing path " << log.absolutePath();

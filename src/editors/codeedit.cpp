@@ -931,30 +931,32 @@ void CodeEdit::setHasProfiler(bool hasProfiler)
     }
 }
 
-void CodeEdit::allowReplace()
+void CodeEdit::lockSelectedFind()
 {
-    connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::removeAllowReplace, Qt::UniqueConnection);
-    mReplaceAllowed = true;
+    connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::removeSelectedFind, Qt::UniqueConnection);
+    mSelectedFind = true;
     emit allowReplaceChanged(this);
 }
 
-bool CodeEdit::isAllowedReplace()
+bool CodeEdit::hasSelectedFind()
 {
-    return mReplaceAllowed;
+    return mSelectedFind;
 }
 
 void CodeEdit::findReplace(const QString &replacement)
 {
     if (mCompleter) mCompleter->suppressOpenBegin();
-    if (mReplaceAllowed)
+    if (mSelectedFind) {
         textCursor().insertText(replacement);
+        updateExtraSelections();
+    }
     if (mCompleter) mCompleter->suppressOpenStop();
 }
 
-void CodeEdit::removeAllowReplace()
+void CodeEdit::removeSelectedFind()
 {
-    disconnect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::removeAllowReplace);
-    mReplaceAllowed = false;
+    disconnect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::removeSelectedFind);
+    mSelectedFind = false;
     emit allowReplaceChanged(this);
 }
 
@@ -2296,11 +2298,16 @@ bool CodeEdit::findLoop(const QRegularExpression &rex, QTextDocument::FindFlags 
         textCursor().clearSelection();
     else {
         setTextCursor(cur);
-        allowReplace();
+        lockSelectedFind();
     }
     if (mFindREx)
         delete mFindREx;
     mFindREx = new QRegularExpression(rex);
+    if (options.testFlag(QTextDocument::FindCaseSensitively)) {
+        QRegularExpression::PatternOptions rexOpt = mFindREx->patternOptions();
+        rexOpt.setFlag(QRegularExpression::CaseInsensitiveOption, true);
+        mFindREx->setPatternOptions(rexOpt);
+    }
     updateExtraSelections();
     return !cur.isNull();
 }

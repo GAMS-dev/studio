@@ -273,7 +273,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
     connect(&mFileMetaRepo, &FileMetaRepo::setGroupFontSize, this, &MainWindow::setGroupFontSize);
     connect(&mFileMetaRepo, &FileMetaRepo::scrollSynchronize, this, &MainWindow::scrollSynchronize);
-    connect(&mFileMetaRepo, &FileMetaRepo::allowReplaceChanged, this, &MainWindow::allowReplaceChanged);
     connect(&mFileMetaRepo, &FileMetaRepo::saveProjects, this, [this]() {
         checkDefaultWorkDir();
         updateAndSaveSettings();
@@ -4771,8 +4770,8 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
     PExProjectNode *projOld = (!old || old == now) ? mRecent.lastProject() : mRecent.project();
     while (wid && wid->parentWidget()) {
         if (wid->parentWidget() == ui->splitter) {
-            PinKind pinKind = wid == ui->mainTabs ? pkNone : PinKind(mPinView->orientation());
-            QWidget *edit = wid == ui->mainTabs ? ui->mainTabs->currentWidget() : mPinView->widget();
+            PinKind pinKind = wid == ui->mainTabs->parentWidget() ? pkNone : PinKind(mPinView->orientation());
+            QWidget *edit = wid == ui->mainTabs->parentWidget() ? ui->mainTabs->currentWidget() : mPinView->widget();
             FileMeta *fm = mFileMetaRepo.fileMeta(edit);
             mRecent.setEditor(fm, edit);
             updateCanSave(edit);
@@ -5523,7 +5522,6 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         CodeEdit* ce = ViewHelper::toCodeEdit(edit);
         connect(ce, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
         connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
-        connect(ce, &CodeEdit::endFind, this, [this] { ui->findWidget->setActive(false); });
         connect(ce, &CodeEdit::continueFindPressed, this, &MainWindow::continueFind);
         connect(ce, &CodeEdit::continueSearchPressed, this, &MainWindow::continueSearch);
         ce->addAction(ui->actionRun);
@@ -6011,7 +6009,7 @@ void MainWindow::on_actionFind_triggered()
     QWidget *ed = currentEdit();
     if (ViewHelper::toCodeEdit(ed) || ViewHelper::toTextView(ed)) {
         find::FindWidget *findWid = ed == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
-        findWid->triggerFind(find::foFocusTerm);
+        findWid->find(find::foFocusTerm);
 
         QString term;
         bool keep = !findWid->getFindText().isEmpty();
@@ -6155,17 +6153,6 @@ void MainWindow::findInCurrentTab(const QRegularExpression &rex, QTextDocument::
     }
 }
 
-void MainWindow::allowReplaceChanged(QWidget *widget)
-{
-    find::FindWidget *findWid = widget == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
-    if (!findWid->isActive()) return;
-
-    bool readOnly = true;
-    if (CodeEdit *edit = ViewHelper::toCodeEdit(widget))
-        readOnly = !edit->isAllowedReplace();
-    findWid->setReadonly(readOnly);
-}
-
 void MainWindow::continueFind(bool backwards)
 {
     QWidget *edit = currentEdit();
@@ -6174,7 +6161,7 @@ void MainWindow::continueFind(bool backwards)
     find::FindWidget *fw = edit == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
     find::FindOptions options = {find::foFocusEdit | find::foContinued};
     if (backwards) options.setFlag(find::foBackwards);
-    emit fw->triggerFind(options);
+    emit fw->find(options);
 }
 
 void MainWindow::continueSearch(bool backwards)

@@ -140,8 +140,8 @@ public:
                    QFlags<QTextDocument::FindFlag> options, bool selectionScope) override;
     QStringList getEnabledContextActions() override;
     void setHasProfiler(bool hasProfiler);
-    void allowReplace();
-    bool isAllowedReplace();
+    void lockSelectedFind();
+    bool hasSelectedFind();
     void findReplace(const QString &replacement);
 
 protected:
@@ -227,7 +227,7 @@ public slots:
     void unfold(const QTextBlock &block) override;
     void breakpointsChanged(const gams::studio::SortedIntMap &bpLines, const gams::studio::SortedIntMap &abpLines);
     void setPausedPos(int line);
-    void removeAllowReplace();
+    void removeSelectedFind();
 
 protected slots:
     void marksChanged(const QSet<int> &dirtyLines = QSet<int>()) override;
@@ -387,7 +387,7 @@ private:
     ProfilerColumn mProfilerHeaderContext = pcNone;
     int mProfilerStepsDigits = 0;
     QTextCursor mPreDebugCursor;
-    bool mReplaceAllowed = false;
+    bool mSelectedFind = false;
 
     static QHash<ProfilerColumn, QString> mProfilerHeaderToolTip;
     static QRegularExpression mRex0LeadingSpaces;
