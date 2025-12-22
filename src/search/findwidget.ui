@@ -136,7 +136,7 @@
    <item row="0" column="6">
     <widget class="QToolButton" name="bNext">
      <property name="toolTip">
-      <string>Fid next</string>
+      <string>Find next</string>
      </property>
      <property name="text">
       <string>...</string>
