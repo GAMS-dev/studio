@@ -58,6 +58,7 @@ public:
     enum Field { fVirtualLastLineEnd, fCacheFirst, fCacheLast, fPosLineStartInFile };
 
     explicit FastFileMapper(QObject *parent = nullptr);
+    ~FastFileMapper() override;
     virtual AbstractTextMapper::Kind kind() const override;
 
     bool openFile(const QString &fileName, bool initAnchor);
