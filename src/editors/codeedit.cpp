@@ -2641,7 +2641,8 @@ void CodeEdit::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)
 
 void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
 {
-    if (mWordUnderCursor.isEmpty() || (mFindREx->isValid() &&  mFindREx->match(mWordUnderCursor).hasMatch()))
+    if (mWordUnderCursor.isEmpty() ||
+        (mFindREx && mFindREx->isValid() &&  mFindREx->match(mWordUnderCursor).hasMatch()))
         return;
 
     QTextBlock block = firstVisibleBlock();
