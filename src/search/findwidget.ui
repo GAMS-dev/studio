@@ -32,7 +32,7 @@
    <item row="0" column="7">
     <widget class="QToolButton" name="bPrev">
      <property name="toolTip">
-      <string>Find previous</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Find backward &amp;nbsp; &amp;nbsp; &lt;span style=&quot; font-weight:600;&quot;&gt;Shift+F3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>...</string>
@@ -46,7 +46,7 @@
    <item row="0" column="6">
     <widget class="QToolButton" name="bNext">
      <property name="toolTip">
-      <string>Find next</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Find forward &amp;nbsp; &amp;nbsp; &lt;span style=&quot; font-weight:600;&quot;&gt;F3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>...</string>
@@ -90,7 +90,7 @@
    <item row="1" column="6">
     <widget class="QToolButton" name="bReplaceForward">
      <property name="toolTip">
-      <string>Replace match and Find next</string>
+      <string>Replace match and Find forward</string>
      </property>
      <property name="text">
       <string>...</string>
@@ -118,7 +118,7 @@
    <item row="1" column="7">
     <widget class="QToolButton" name="bReplaceBackward">
      <property name="toolTip">
-      <string>Replace match and Find previous</string>
+      <string>Replace match and Find backward</string>
      </property>
      <property name="text">
       <string>...</string>
