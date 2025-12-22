@@ -208,6 +208,7 @@ int FilterLineEdit::nextButtonState(QAbstractButton *button, int forceState)
     button->setToolTip("<p style=\"white-space: nowrap;\">"+tips.at(state)+"</p>");
     if (icons.size() > 1) button->setProperty("state", state);
     updateRegExp();
+    emit textEdited(text());
     return state;
 }
 

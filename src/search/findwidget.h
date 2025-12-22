@@ -66,6 +66,7 @@ protected:
 
 private slots:
     void editDestroyed();
+    void termChanged();
     void allowReplaceChanged(QWidget *edit);
 
     void on_bClose_clicked();
@@ -76,6 +77,8 @@ private slots:
     void on_bReplaceBackward_clicked();
     void on_edFind_textEdited(const QString &term);
     void on_edReplace_textChanged(const QString &);
+
+    void on_bToggleReplace_clicked();
 
 private:
     bool replace(bool cursorToStart = false);

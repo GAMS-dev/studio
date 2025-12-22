@@ -34,7 +34,15 @@ FindWidget::FindWidget(QWidget *parent)
 {
     ui->setupUi(this);
     ui->edFind->showOptions(FilterLineEdit::foCaSens);
+    ui->bClose->setIcon(Theme::icon(":/%1/remove"));
+    ui->bNext->setIcon(Theme::icon(":/%1/sort-desc"));
+    ui->bPrev->setIcon(Theme::icon(":/%1/sort-asc"));
     ui->edReplace->hideOptions(FilterLineEdit::FilterLineEditFlags(FilterLineEdit::foExact | FilterLineEdit::foRegEx));
+    ui->bReplace->setIcon(Theme::icon(":/%1/replace"));
+    ui->bReplaceForward->setIcon(Theme::icon(":/%1/replace-fw"));
+    ui->bReplaceBackward->setIcon(Theme::icon(":/%1/replace-bk"));
+    ui->bToggleReplace->setChecked(false);
+    on_bToggleReplace_clicked();
 }
 
 FindWidget::~FindWidget()
@@ -154,9 +162,8 @@ bool FindWidget::find(FindOptions options, bool keepSearch)
     size_t pos = 0;
     if (CodeEdit *edit = ViewHelper::toCodeEdit(mEdit)) {
         if (!edit->hasSelectedFind() && !keepSearch) {
-            bool keep = !getFindText().isEmpty();
-            QString term = edit->currentFindSelection(keep);
-            if (!keep)
+            QString term = edit->currentFindSelection(false);
+            if (!term.isEmpty())
                 ui->edFind->setText(term);
         }
         edit->findLoop(termRexEx(), findFlags(options.testFlag(foBackwards)), options.testFlag(foContinued));
@@ -204,6 +211,10 @@ void FindWidget::keyPressEvent(QKeyEvent *event)
         event->accept();
         if (mEdit)
             mEdit->setFocus();
+    } else if (event->key() == Qt::Key_R && event->modifiers().testFlag(Qt::ControlModifier)) {
+        event->accept();
+        ui->bToggleReplace->setChecked(!ui->bToggleReplace->isChecked());
+        on_bToggleReplace_clicked();
     } else
         QWidget::keyPressEvent(event);
 }
@@ -211,6 +222,13 @@ void FindWidget::keyPressEvent(QKeyEvent *event)
 void FindWidget::editDestroyed()
 {
     mEdit = nullptr;
+}
+
+void FindWidget::termChanged()
+{
+    if (ui->edFind->isRegEx() && !ui->edFind->regExp().isValid())
+        return;
+    find(foFocusTerm);
 }
 
 void FindWidget::allowReplaceChanged(QWidget *edit)
@@ -256,10 +274,7 @@ void FindWidget::on_bReplaceBackward_clicked()
 void FindWidget::on_edFind_textEdited(const QString &term)
 {
     Q_UNUSED(term)
-    if (ui->edFind->isRegEx() && !ui->edFind->regExp().isValid())
-        return;
-
-    find(foFocusTerm);
+    termChanged();
 }
 
 bool FindWidget::replace(bool cursorToStart)
@@ -286,6 +301,16 @@ void FindWidget::on_edReplace_textChanged(const QString &)
     updateButtonStates();
 }
 
+void FindWidget::on_bToggleReplace_clicked()
+{
+    bool visible = ui->bToggleReplace->isChecked();
+    ui->bToggleReplace->setIcon(Theme::icon(visible ? ":/%1/hide" :":/%1/show"));
+    ui->bToggleReplace->setToolTip(visible ? "Hide Replace" : "Show Replace");
+    ui->edReplace->setVisible(visible);
+    ui->bReplace->setVisible(visible);
+    ui->bReplaceForward->setVisible(visible);
+    ui->bReplaceBackward->setVisible(visible);
+}
 
 
 

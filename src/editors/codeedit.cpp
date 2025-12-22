@@ -2303,11 +2303,9 @@ bool CodeEdit::findLoop(const QRegularExpression &rex, QTextDocument::FindFlags 
     if (mFindREx)
         delete mFindREx;
     mFindREx = new QRegularExpression(rex);
-    if (options.testFlag(QTextDocument::FindCaseSensitively)) {
-        QRegularExpression::PatternOptions rexOpt = mFindREx->patternOptions();
-        rexOpt.setFlag(QRegularExpression::CaseInsensitiveOption, true);
-        mFindREx->setPatternOptions(rexOpt);
-    }
+    QRegularExpression::PatternOptions rexOpt = mFindREx->patternOptions();
+    rexOpt.setFlag(QRegularExpression::CaseInsensitiveOption, !options.testFlag(QTextDocument::FindCaseSensitively));
+    mFindREx->setPatternOptions(rexOpt);
     updateExtraSelections();
     return !cur.isNull();
 }
@@ -2643,27 +2641,28 @@ void CodeEdit::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)
 
 void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
 {
-    if (!mWordUnderCursor.isEmpty()) {
-        QTextBlock block = firstVisibleBlock();
-        QRegularExpression rex(QString("(?i)(^|[^\\w]|-)(%1)($|[^\\w]|-)").arg(mWordUnderCursor));
-        QRegularExpressionMatch match;
-        int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
-        while (block.isValid() && top < viewport()->height()) {
-            int i = 0;
-            while (true) {
-                i = int(block.text().indexOf(rex, i, &match));
-                if (i < 0) break;
-                QTextEdit::ExtraSelection selection;
-                selection.cursor = textCursor();
-                selection.cursor.setPosition(block.position() + int(match.capturedStart(2)));
-                selection.cursor.setPosition(block.position() + int(match.capturedEnd(2)), QTextCursor::KeepAnchor);
-                selection.format.setBackground(toColor(Theme::Edit_currentWordBg));
-                selections << selection;
-                i += match.capturedLength(1) + match.capturedLength(2);
-            }
-            top += qRound(blockBoundingRect(block).height());
-            block = block.next();
+    if (mWordUnderCursor.isEmpty() || (mFindREx->isValid() &&  mFindREx->match(mWordUnderCursor).hasMatch()))
+        return;
+
+    QTextBlock block = firstVisibleBlock();
+    QRegularExpression rex(QString("(?i)(^|[^\\w]|-)(%1)($|[^\\w]|-)").arg(mWordUnderCursor));
+    QRegularExpressionMatch match;
+    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+    while (block.isValid() && top < viewport()->height()) {
+        int i = 0;
+        while (true) {
+            i = int(block.text().indexOf(rex, i, &match));
+            if (i < 0) break;
+            QTextEdit::ExtraSelection selection;
+            selection.cursor = textCursor();
+            selection.cursor.setPosition(block.position() + int(match.capturedStart(2)));
+            selection.cursor.setPosition(block.position() + int(match.capturedEnd(2)), QTextCursor::KeepAnchor);
+            selection.format.setBackground(toColor(Theme::Edit_currentWordBg));
+            selections << selection;
+            i += match.capturedLength(1) + match.capturedLength(2);
         }
+        top += qRound(blockBoundingRect(block).height());
+        block = block.next();
     }
 }
 
