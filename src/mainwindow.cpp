@@ -539,7 +539,8 @@ void MainWindow::updateEditActions()
         enabledActions = tv->edit()->getEnabledContextActions();
     else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid))
         enabledActions = gdx->getEnabledContextActions();
-    else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(wid))
+//    else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(wid))
+    else if (option::newoption::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(wid))
         enabledActions = sow->getEnabledContextActions();
     else if (ViewHelper::toGamsConfigEditor(wid))
         enabledActions = {"select-all"};
@@ -741,9 +742,9 @@ void MainWindow::updateProfilerAction()
         bool enabled = project->doProfile();
         if (!enabled) {
             option::OptionTokenizer *opt = mGamsParameterEditor->getOptionTokenizer();
-            QList<option::OptionItem> optList = opt->tokenize(mGamsParameterEditor->getCurrentCommandLineData());
-            for (option::OptionItem item : optList) {
-                if (item.key.compare("profile", Qt::CaseInsensitive) == 0) {
+            QList<option::OptionItem*> optList = opt->tokenize(mGamsParameterEditor->getCurrentCommandLineData());
+            for (option::OptionItem* item : optList) {
+                if (item->key.compare("profile", Qt::CaseInsensitive) == 0) {
                     enabled = true;
                     break;
                 }
@@ -1097,17 +1098,17 @@ void MainWindow::getParameterValue(QString param, QString &value)
     if (joker) param.resize(param.size()-1);
     QString params = mGamsParameterEditor->getCurrentCommandLineData();
     params = mGamsParameterEditor->getOptionTokenizer()->normalize(params);
-    const QList<option::OptionItem> parList = mGamsParameterEditor->getOptionTokenizer()->tokenize(params);
-    for (const option::OptionItem &item : parList) {
+    const QList<option::OptionItem*> parList = mGamsParameterEditor->getOptionTokenizer()->tokenize(params);
+    for (const option::OptionItem* item : parList) {
         if (joker) {
-            if (item.key.startsWith(param, Qt::CaseInsensitive)) {
-                value = item.value.trimmed();
+            if (item->key.startsWith(param, Qt::CaseInsensitive)) {
+                value = item->value.trimmed();
                 if (value.startsWith('"') && value.endsWith('"'))
                     value = value.mid(1, value.size()-2);
                 return;
             }
-        } else if (item.key.compare(param, Qt::CaseInsensitive) == 0) {
-            value = item.value.trimmed();
+        } else if (item->key.compare(param, Qt::CaseInsensitive) == 0) {
+            value = item->value.trimmed();
             if (value.startsWith('"') && value.endsWith('"'))
                 value = value.mid(1, value.size()-2);
             return;
@@ -1768,7 +1769,8 @@ void MainWindow::updateStatusLineCount()
         mStatusWidgets->setLineCount(edit->blockCount());
     else if (TextView *tv = ViewHelper::toTextView(mRecent.editor()))
         mStatusWidgets->setLineCount(tv->lineCount());
-    else if (option::SolverOptionWidget* edit = ViewHelper::toSolverOptionEdit(mRecent.editor()))
+//    else if (option::SolverOptionWidget* edit = ViewHelper::toSolverOptionEdit(mRecent.editor()))
+    else if (option::newoption::SolverOptionEditor* edit = ViewHelper::toSolverOptionEdit(mRecent.editor()))
         mStatusWidgets->setLineCount(edit->getItemCount());
     else mStatusWidgets->setLineCount(-1);
 }
@@ -2433,7 +2435,8 @@ FileProcessKind MainWindow::fileChangedExtern(const FileId &fileId)
     }
     if (file->kind() == FileKind::Opt || file->kind() == FileKind::Pf) {
         for (QWidget *e : file->editors()) {
-            if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(e))
+//            if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(e))
+            if (option::newoption::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(e))
                sow->setFileChangedExtern(true);
         }
     }
@@ -2796,7 +2799,8 @@ void MainWindow::on_actionGamsHelp_triggered()
                                }
                             }
                         } else {
-                            option::SolverOptionWidget* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
+//                            option::SolverOptionWidget* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
+                            option::newoption::SolverOptionEditor* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
                             if (optionEdit) {
                                 QString optionName = optionEdit->getSelectedOptionName(widget);
                                 if (optionName.isEmpty()) {
@@ -4041,7 +4045,8 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         } else if (mGamsParameterEditor->isAParameterEditorFocused(focusWidget())) {
             mGamsParameterEditor->deSelectParameters();
         } else if (mRecent.editor() != nullptr) {
-            option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor());
+//            option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor());
+            option::newoption::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(mRecent.editor());
             if (so && so->isInFocus(focusWidget())) {
                 so->deSelectOptions();
             } else {
@@ -4579,13 +4584,13 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     QDir workDir(workDirName);
 
     // prepare the options and process and run it
-    QList<option::OptionItem> itemList;
+    QList<option::OptionItem*> itemList;
     itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     if (project->parameterFile()) {
 #ifdef _WIN64
         itemList.prepend(option::OptionItem("parmFile", '"'+workDir.relativeFilePath(project->parameterFile()->location())+'"',-1,-1));
 #else
-        itemList.prepend(option::OptionItem("parmFile", workDir.relativeFilePath(project->parameterFile()->location()),-1,-1));
+        itemList.prepend(new option::OptionItem("parmFile", workDir.relativeFilePath(project->parameterFile()->location()),-1,-1));
 #endif
     }
     option::Option *opt = mGamsParameterEditor->getOptionTokenizer()->getOption();
@@ -5150,9 +5155,9 @@ engine::EngineProcess *MainWindow::createEngineProcess()
     connect(engineProcess, &engine::EngineProcess::procStateChanged, this, &MainWindow::remoteProgress);
     engineProcess->setWorkingDirectory(mRecent.project()->workDir());
     QString commandLineStr = mGamsParameterEditor->getCurrentCommandLineData();
-    const QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
-    for (const option::OptionItem &item : itemList) {
-        if (item.key.compare("previousWork", Qt::CaseInsensitive) == 0)
+    const QList<option::OptionItem*> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
+    for (const option::OptionItem* item : itemList) {
+        if (item->key.compare("previousWork", Qt::CaseInsensitive) == 0)
             engineProcess->setHasPreviousWorkOption(true);
     }
     project->setProcess(engineProcess);
@@ -6031,7 +6036,8 @@ void MainWindow::toggleSearchDialog()
                 refViewer->selectSearchField();
                 return;
             }
-            if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+//            if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+            if (option::newoption::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
                 sow->selectSearchField();
                 return;
             }
@@ -6499,7 +6505,8 @@ void MainWindow::on_actionCopy_triggered()
         mSyslog->copy();
     } else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor())) {
         gdx->copyAction();
-    } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+//    } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+    } else if (option::newoption::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         sow->copyAction();
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         tv->copySelection();
@@ -6542,7 +6549,8 @@ void MainWindow::on_actionSelect_All_triggered()
         ae->selectAll();
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         tv->selectAllText();
-    } else if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+//    } else if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+    } else if (option::newoption::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         so->selectAllOptions();
     } else if (option::GamsConfigEditor *guce = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
         guce->selectAll();
@@ -6760,7 +6768,8 @@ void MainWindow::on_actionComment_triggered()
     if (ce && !ce->isReadOnly()) {
         ce->commentLine();
     } else  {
-        if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+//        if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+        if (option::newoption::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
            so->toggleCommentOption();
         }
     }

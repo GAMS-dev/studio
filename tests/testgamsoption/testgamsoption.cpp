@@ -732,13 +732,13 @@ void TestGamsOption::testTokenize()
     QFETCH(QList<OptionItem>, items);
     QFETCH(QList<bool>, recurrent);
 
-    QList<OptionItem> optionItems = optionTokenizer->tokenize(commandLineParameter);
+    QList<OptionItem*> optionItems = optionTokenizer->tokenize(commandLineParameter);
     QCOMPARE(optionItems.size(), numberOfParameters);
     for(int i=0; i<optionItems.size(); i++) {
-        QCOMPARE( optionItems.at(i).key, items.at(i).key );
-        QCOMPARE( optionItems.at(i).value, items.at(i).value );
-        QCOMPARE( optionItems.at(i).optionId, items.at(i).optionId );
-        QCOMPARE( optionItems.at(i).recurrent, recurrent.at(i) );
+        QCOMPARE( optionItems.at(i)->key, items.at(i).key );
+        QCOMPARE( optionItems.at(i)->value, items.at(i).value );
+        QCOMPARE( optionItems.at(i)->optionId, items.at(i).optionId );
+        QCOMPARE( optionItems.at(i)->recurrent, recurrent.at(i) );
     }
 }
 

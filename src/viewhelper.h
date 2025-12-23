@@ -28,7 +28,9 @@
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
 #include "option/gamsconfigeditor.h"
-#include "option/solveroptionwidget.h"
+//#include "option/solveroptionwidget.h"
+#include "option/newoption/solveroptioneditor.h"
+#include "option/newoption/solveroptioneditor.h"
 #include "reference/referenceviewer.h"
 #include "engine/efieditor.h"
 #include <QWidget>
@@ -82,8 +84,12 @@ public:
         if(w) w->setProperty("EditorType", int(EditorType::ref));
         return w;
     }
-    inline static option::SolverOptionWidget* initEditorType(option::SolverOptionWidget * w) {
-        if(w) w->setProperty("EditorType", int(EditorType::opt));
+//    inline static option::SolverOptionWidget* initEditorType(option::SolverOptionWidget * w) {
+//        if(w) w->setProperty("EditorType", int(EditorType::opt));
+//        return w;
+//    }
+    inline static option::newoption::SolverOptionEditor* initEditorType(option::newoption::SolverOptionEditor * w) {
+        if(w) (w)->setProperty("EditorType", int(EditorType::opt));
         return w;
     }
     inline static connect::ConnectEditor* initEditorType(connect::ConnectEditor * w) {
@@ -148,8 +154,11 @@ public:
     inline static reference::ReferenceViewer* toReferenceViewer(QWidget* w) {
         return (editorType(w) == EditorType::ref) ? static_cast<reference::ReferenceViewer*>(w) : nullptr;
     }
-    inline static option::SolverOptionWidget* toSolverOptionEdit(QWidget* w) {
-        return (editorType(w) == EditorType::opt) ? static_cast<option::SolverOptionWidget*>(w) : nullptr;
+//    inline static option::SolverOptionWidget* toSolverOptionEdit(QWidget* w) {
+//        return (editorType(w) == EditorType::opt) ? static_cast<option::SolverOptionWidget*>(w) : nullptr;
+//    }
+    inline static option::newoption::SolverOptionEditor* toSolverOptionEdit(QWidget* w) {
+        return (editorType(w) == EditorType::opt) ? static_cast<option::newoption::SolverOptionEditor*>(w) : nullptr;
     }
     inline static connect::ConnectEditor* toGamsConnectEditor(QWidget* w) {
         return (editorType(w) == EditorType::gConYaml) ? static_cast<connect::ConnectEditor*>(w) : nullptr;

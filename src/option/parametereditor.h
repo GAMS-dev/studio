@@ -24,10 +24,10 @@
 #include <QMenu>
 
 #include "abstractview.h"
-#include "option.h"
-#include "optiontokenizer.h"
-#include "gamsparametertablemodel.h"
-#include "optioncompleterdelegate.h"
+#include "option/option.h"
+#include "option/optiontokenizer.h"
+#include "option/gamsparametertablemodel.h"
+#include "option/optioncompleterdelegate.h"
 
 namespace gams {
 namespace studio {
@@ -84,12 +84,12 @@ public:
 signals:
     void parameterLoaded(const QString &location);
     void ParameterTableModelChanged(const QString &commandLineStr);
-    void commandLineChanged(QLineEdit* lineEdit, const QList<gams::studio::option::OptionItem> &optionItems);
+    void commandLineChanged(QLineEdit* lineEdit, const QList<gams::studio::option::OptionItem*> &optionItems);
     void optionsChanged(const QString &commandLineStr);
 
 public slots:
     void updateParameterTableModel(QLineEdit* lineEdit, const QString &commandLineStr);
-    void updateCommandLineStr(const QList<gams::studio::option::OptionItem> &optionItems);
+    void updateCommandLineStr(const QList<gams::studio::option::OptionItem*> &optionItems);
 
     void showParameterContextMenu(const QPoint &pos);
     void showDefinitionContextMenu(const QPoint &pos);

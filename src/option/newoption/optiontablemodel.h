@@ -30,7 +30,7 @@ namespace option {
 
 struct OptionItem;
 struct SolverOptionItem;
-struct ConfigItem;
+class ConfigItem;
 
 namespace newoption {
 
@@ -68,6 +68,10 @@ public:
 signals:
     void newTableRowDropped(const QModelIndex &index);
     void optionItemRemoved();
+
+    void optionModelChanged(const QList<OptionItem*> &optionItem);
+    void optionNameChanged(const QString &from, const QString &to);
+    void optionValueChanged(const QModelIndex &index);
 
 public slots:
     virtual void on_groupDefinitionReloaded() = 0;

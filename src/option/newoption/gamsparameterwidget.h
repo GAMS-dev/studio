@@ -17,16 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSPARAMEDITOR_H
-#define GAMSPARAMEDITOR_H
+#ifndef GAMSPARAMETERWIDGET_H
+#define GAMSPARAMETERWIDGET_H
 
 #include <QDockWidget>
 #include <QWidget>
-#include <QMenu>
-#include <QToolBar>
 
 #include "abstractview.h"
-#include "ui_gamsparameterwidget.h"
+#include "option/optiontokenizer.h"
+#include "option/newoption/gamsparameditor.h"
 
 namespace gams {
 namespace studio {
@@ -36,9 +35,9 @@ class MainWindow;
 namespace option {
 namespace newoption {
 
+class GamsParamEditor;
 namespace Ui {
-class ParameterEditor;
-class OptionWidget;
+class GamsParameterWidget;
 }
 
 enum class RunActionState {
@@ -68,17 +67,46 @@ public:
     void on_stopAction();
     AbstractView *dockChild();
 
+    OptionTokenizer *getOptionTokenizer() const;
+    bool isAParameterEditorFocused(QWidget* focusWidget) const;
+
+    QString getSelectedParameterName(QWidget* widget) const;
+
+    QString getCurrentCommandLineData() const;
+    void focus();
+
+    void runDefaultAction();
+
+    void setEditorExtended(bool extended);
+    bool isEditorExtended();
+    QDockWidget* extendedEditor() const;
+
+signals:
+    void parameterLoaded(const QString &location);
+    void ParameterTableModelChanged(const QString &commandLineStr);
+    void commandLineChanged(QLineEdit* lineEdit, const QList<gams::studio::option::OptionItem*> &optionItems);
+    void optionsChanged(const QString &commandLineStr);
+
+public slots:
+    void updateParameterTableModel(QLineEdit* lineEdit, const QString &commandLineStr);
+    void updateCommandLineStr(const QList<gams::studio::option::OptionItem*> &optionItems);
+
+    void updateRunState(bool isRunnable, bool isRunning);
+    void loadCommandLine(const QStringList &history);
+
 private:
     void setRunsActionGroup();
     void setInterruptActionGroup();
     void setRunActionsEnabled(bool enable);
     void setInterruptActionsEnabled(bool enable);
 
-    Ui::GamsParamEditor *ui;
-    QToolBar* mToolBar;
+    void on_parameterTableModelChanged(const QString &commandLineStr);
+
+    Ui::GamsParameterWidget *ui;
 
     QDockWidget *mExtendedEditor = nullptr;
-    AbstractView *mDockChild = nullptr;
+    GamsParamEditor *mDockChild = nullptr;
+//    AbstractView *mDockChild = nullptr;
     bool mHasSSL = false;
 
     QAction* actionRun;
@@ -95,7 +123,6 @@ private:
     QAction* actionStop;
 
     MainWindow* main;
-
 };
 
 } // namepsace newoption
@@ -103,4 +130,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // GAMSPARAMEDITOR_H
+#endif // GAMSPARAMETERWIDGET_H

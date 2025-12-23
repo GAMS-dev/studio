@@ -37,7 +37,7 @@ public:
 
 public slots:
     void modifyOptionDefinitionItem(const gams::studio::option::OptionItem &optionItem);
-    void modifyOptionDefinition(const QList<gams::studio::option::OptionItem> &optionItems);
+    void modifyOptionDefinition(const QList<gams::studio::option::OptionItem*> &optionItems);
 
 };
 

@@ -123,7 +123,7 @@ void OptionWidget::initTableView()
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->optionTableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
 
-    if (definitionModel()->rowCount()>0) {
+    if (ui->optionTableView->model()->rowCount()>0) {
         ui->optionTableView->resizeColumnsToContents();
     }
     ui->optionTableView->horizontalHeader()->setStretchLastSection(true);
@@ -216,7 +216,7 @@ void OptionWidget::initMessageControl(bool isFileEditor)
 
 bool OptionWidget::isThereARow() const
 {
-    return (definitionModel()->rowCount() > 0);
+    return (ui->optionTableView->model()->rowCount() > 0);
 }
 
 bool OptionWidget::isThereAnIndexSelection() const
@@ -237,7 +237,7 @@ bool OptionWidget::isEverySelectionARow() const
     const QModelIndexList selection = ui->optionTableView->selectionModel()->selectedRows();
     const QModelIndexList indexSelection = ui->optionTableView->selectionModel()->selectedIndexes();
 
-    return ((selection.count() > 0) && (indexSelection.count() % definitionModel()->columnCount() == 0));
+    return ((selection.count() > 0) && (indexSelection.count() % ui->optionTableView->model()->columnCount() == 0));
 
 }
 
@@ -253,11 +253,11 @@ QString OptionWidget::getSelectedOptionName(QWidget *widget) const
         const QModelIndexList selection = ui->optionTableView->selectionModel()->selectedIndexes();
         if (selection.count() > 0) {
             const QModelIndex index = selection.at(0);
-            const QVariant headerData = definitionModel()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
+            const QVariant headerData = ui->definitionTreeView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
             if (Qt::CheckState(headerData.toUInt())==Qt::PartiallyChecked) {
                 return "";
             }
-            const QVariant data = definitionModel()->data( index.sibling(index.row(),0), Qt::DisplayRole );
+            const QVariant data = ui->definitionTreeView->model()->data( index.sibling(index.row(),0), Qt::DisplayRole );
             if (optionTokenizer()->getOption()->isValid(data.toString()))
                 return data.toString();
             else if (optionTokenizer()->getOption()->isASynonym(data.toString()))
@@ -269,12 +269,12 @@ QString OptionWidget::getSelectedOptionName(QWidget *widget) const
         const QModelIndexList selection = ui->definitionTreeView->selectionModel()->selectedRows();
         if (selection.count() > 0) {
             const QModelIndex index = selection.at(0);
-            const QModelIndex  parentIndex =  definitionModel()->parent(index);
+            const QModelIndex  parentIndex =  ui->definitionTreeView->model()->parent(index);
             if (parentIndex.row() >= 0) {
-                return definitionModel()->data( parentIndex.sibling(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME),
+                return ui->definitionTreeView->model()->data( parentIndex.sibling(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME),
                                                 Qt::DisplayRole ).toString();
             } else {
-                return definitionModel()->data( index.sibling(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME),
+                return ui->definitionTreeView->model()->data( index.sibling(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME),
                                                 Qt::DisplayRole  ).toString();
             }
         }
@@ -312,32 +312,31 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
 {
     emit modificationChanged(true);
 
-    const QModelIndex parentIndex =  definitionModel()->parent(definitionIndex);
-    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? definitionModel()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
-                                                              : definitionModel()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-    const QModelIndex defValueIndex = (parentIndex.row()<0) ? definitionModel()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
-                                                            : definitionModel()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
+    const QModelIndex parentIndex =  ui->definitionTreeView->model()->parent(definitionIndex);
+    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                              : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
+    const QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
+                                                            : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
     const QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex
-                                                                 : definitionModel()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
+                                                                 : ui->definitionTreeView->model()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
 
     disconnect(optionModel(), &QAbstractTableModel::dataChanged,
                optionModel(), &OptionTableModel::on_updateOptionItem);
 
     bool replaceExistingEntry = false;
-    const QString definitionName = definitionModel()->data(optionNameIndex, Qt::DisplayRole).toString();
-    QVariant definitionID        = definitionModel()->data(definitionIndex, Qt::DisplayRole);
-
-    int rowToBeAdded = definitionModel()->rowCount();
+    const QString definitionName = ui->definitionTreeView->model()->data(optionNameIndex, Qt::DisplayRole).toString();
+    QVariant definitionID        = ui->definitionTreeView->model()->data(definitionIndex, Qt::DisplayRole);
+    int rowToBeAdded = ui->definitionTreeView->model()->rowCount();
     Settings* settings = Settings::settings();
     if (settings && settings->toBool(skSoOverrideExisting)) {
-        QModelIndexList indices = definitionModel()->match(definitionModel()->index(0, optionModel()->column_id()),
+        QModelIndexList indices = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, optionModel()->column_id()),
                                                                       Qt::DisplayRole,
                                                                       definitionID, -1, Qt::MatchExactly|Qt::MatchRecursive);
         ui->optionTableView->clearSelection();
         QItemSelection selection;
         for(const QModelIndex &idx: std::as_const(indices)) {
-            const QModelIndex leftIndex  = definitionModel()->index(idx.row(), optionModel()->column_id());
-            const QModelIndex rightIndex = definitionModel()->index(idx.row(), optionModel()->columnCount()-1);
+            const QModelIndex leftIndex  = ui->definitionTreeView->model()->index(idx.row(), optionModel()->column_id());
+            const QModelIndex rightIndex = ui->definitionTreeView->model()->index(idx.row(), optionModel()->columnCount()-1);
             const QItemSelection rowSelection(leftIndex, rightIndex);
             selection.merge(rowSelection, QItemSelectionModel::Select);
         }
@@ -360,7 +359,7 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
                     connect(optionModel(), &OptionTableModel::optionItemRemoved, optionModel(), &OptionTableModel::on_removeOptionItem, Qt::UniqueConnection);
                 }
                 replaceExistingEntry = true;
-                indices = definitionModel()->match(definitionModel()->index(0, optionModel()->column_id()),
+                indices = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, optionModel()->column_id()),
                                                               Qt::DisplayRole,
                                                               definitionID, -1, Qt::MatchExactly|Qt::MatchRecursive);
                 rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
@@ -394,7 +393,7 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
                     deleteCommentsBeforeOption(indices.at(0).row());
                 connect(optionModel(), &OptionTableModel::optionItemRemoved, optionModel(), &OptionTableModel::on_removeOptionItem, Qt::UniqueConnection);
                 replaceExistingEntry = true;
-                indices = definitionModel()->match(definitionModel()->index(0, optionModel()->column_id()),
+                indices = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, optionModel()->column_id()),
                                                               Qt::DisplayRole,
                                                               definitionID, -1, Qt::MatchExactly|Qt::MatchRecursive);
                 rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
@@ -409,9 +408,9 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
     }
     ui->optionTableView->selectionModel()->clearSelection();
 
-    const QString selectedValueData = definitionModel()->data(selectedValueIndex, Qt::DisplayRole).toString();
+    const QString selectedValueData = ui->definitionTreeView->model()->data(selectedValueIndex, Qt::DisplayRole).toString();
     optionTokenizer()->getOption()->setModified(definitionName, true);
-    definitionModel()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
+    ui->definitionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
     if (isCommentToggleable() && settings && settings->toBool(skSoAddCommentAbove)) { // insert comment description row
         QModelIndex descriptionIndex = (parentIndex.row()<0) ? definitionIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_DESCIPTION)
@@ -427,14 +426,14 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
     ui->optionTableView->selectRow(rowToBeAdded);
     selectAnOption();
 
-    const QModelIndex insertNumberIndex = definitionModel()->index(rowToBeAdded, optionModel()->column_id());
+    const QModelIndex insertNumberIndex = ui->definitionTreeView->model()->index(rowToBeAdded, optionModel()->column_id());
     const QString text = optionModel()->getOptionTableEntry(insertNumberIndex.row());
     if (replaceExistingEntry)
         optionTokenizer()->logger()->append(QString("Option entry '%1' has been replaced").arg(text), LogMsgType::Info);
     else
         optionTokenizer()->logger()->append(QString("Option entry '%1' has been added").arg(text), LogMsgType::Info);
 
-    const int lastColumn = definitionModel()->columnCount()-1;
+    const int lastColumn = ui->definitionTreeView->model()->columnCount()-1;
     const int lastRow = rowToBeAdded;
     int firstRow = lastRow;
     if (settings && settings->toBool(skSoAddCommentAbove)) {
@@ -444,8 +443,8 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
     }
     if (firstRow<0)
         firstRow = 0;
-    optionModel()->on_updateOptionItem( definitionModel()->index(firstRow, lastColumn),
-                                        definitionModel()->index(lastRow, lastColumn),
+    optionModel()->on_updateOptionItem( ui->definitionTreeView->model()->index(firstRow, lastColumn),
+                                        ui->definitionTreeView->model()->index(lastRow, lastColumn),
                                         {Qt::EditRole});
 
     connect(optionModel(), &QAbstractTableModel::dataChanged, optionModel(), &OptionTableModel::on_updateOptionItem, Qt::UniqueConnection);
@@ -455,7 +454,7 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
         refreshOptionTableModel(true);
     showOptionDefinition(true);
 
-    emit itemCountChanged(definitionModel()->rowCount());
+    emit itemCountChanged(ui->definitionTreeView->model()->rowCount());
 
     if (parentIndex.row()<0) {
         if (optionTokenizer()->getOption()->getOptionSubType(definitionName) != optsubNoValue) {
@@ -482,7 +481,7 @@ void OptionWidget::completeEditingOption(QWidget *editor, QAbstractItemDelegate:
 
 void OptionWidget::showOptionDefinition(bool selectRow)
 {
-    if (definitionModel()->rowCount() <= 0)
+    if (ui->definitionTreeView->model()->rowCount() <= 0)
         return;
 
     QModelIndexList indexSelection = ui->optionTableView->selectionModel()->selectedIndexes();
@@ -502,30 +501,28 @@ void OptionWidget::showOptionDefinition(bool selectRow)
         selection = indexSelection;
         ui->optionTableView->selectionModel()->setCurrentIndex ( indexSelection.first(), QItemSelectionModel::Current ); //Select );
     }
-
     QModelIndexList selectIndices;
     for (int i=0; i<selection.count(); i++) {
         const QModelIndex index = selection.at(i);
-        if (Qt::CheckState(definitionModel()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toUInt())==Qt::PartiallyChecked)
+        if (Qt::CheckState(ui->optionTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toUInt())==Qt::PartiallyChecked)
             continue;
-
-        const QString value = definitionModel()->data( index.sibling(index.row(), optionModel()->column_value()), Qt::DisplayRole).toString();
-        const QVariant optionId = definitionModel()->data( index.sibling(index.row(), optionModel()->column_id()), Qt::DisplayRole);
-        QModelIndexList indices = definitionModel()->match(definitionModel()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
+        const QString value = ui->optionTableView->model()->data( index.sibling(index.row(), OptionTableModel::COLUMN_VALUE), Qt::DisplayRole).toString();
+        const QVariant optionId = ui->optionTableView->model()->data( index.sibling(index.row(), OptionTableModel::COLUMN_ID), Qt::DisplayRole);
+        QModelIndexList indices = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                                                          Qt::DisplayRole,
                                                                          optionId, 1, Qt::MatchExactly|Qt::MatchRecursive);
         for(const QModelIndex &idx : std::as_const(indices)) {
-            const QModelIndex  parentIndex =  definitionModel()->parent(idx);
-            const QModelIndex optionIdx = definitionModel()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
+            const QModelIndex  parentIndex =  ui->definitionTreeView->model()->parent(idx);
+            const QModelIndex optionIdx = ui->definitionTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
 
             if (parentIndex.row() < 0) {
-                if (definitionModel()->hasChildren(optionIdx) && !ui->definitionTreeView->isExpanded(optionIdx))
+                if (ui->definitionTreeView->model()->hasChildren(optionIdx) && !ui->definitionTreeView->isExpanded(optionIdx))
                     ui->definitionTreeView->expand(optionIdx);
             }
             bool found = false;
-            for(int r=0; r <definitionModel()->rowCount(optionIdx); ++r) {
-                const QModelIndex i = definitionModel()->index(r, OptionDefinitionModel::COLUMN_OPTION_NAME, optionIdx);
-                const QString enumValue = definitionModel()->data(i, Qt::DisplayRole).toString();
+            for(int r=0; r <ui->definitionTreeView->model()->rowCount(optionIdx); ++r) {
+                const QModelIndex i = ui->definitionTreeView->model()->index(r, OptionDefinitionModel::COLUMN_OPTION_NAME, optionIdx);
+                const QString enumValue = ui->definitionTreeView->model()->data(i, Qt::DisplayRole).toString();
                 if (QString::compare(value, enumValue, Qt::CaseInsensitive) == 0) {
                     selectIndices << i;
                     found = true;
@@ -537,22 +534,23 @@ void OptionWidget::showOptionDefinition(bool selectRow)
         }
     }
     ui->definitionTreeView->selectionModel()->clearSelection();
+    ui->definitionTreeView->selectionModel()->clearCurrentIndex();
     for(const QModelIndex &idx : std::as_const(selectIndices)) {
         QItemSelection selection = ui->definitionTreeView->selectionModel()->selection();
-        const QModelIndex  parentIdx =  definitionModel()->parent(idx);
+        const QModelIndex  parentIdx =  ui->definitionTreeView->model()->parent(idx);
         if (parentIdx.row() < 0) {
-            selection.select(definitionModel()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME),
-                             definitionModel()->index(idx.row(), definitionModel()->columnCount()-1));
+            selection.select(ui->definitionTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME),
+                             ui->definitionTreeView->model()->index(idx.row(), ui->definitionTreeView->model()->columnCount()-1));
         } else  {
-            selection.select(definitionModel()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIdx),
-                             definitionModel()->index(idx.row(), definitionModel()->columnCount()-1, parentIdx));
+            selection.select(ui->definitionTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIdx),
+                             ui->definitionTreeView->model()->index(idx.row(), ui->definitionTreeView->model()->columnCount()-1, parentIdx));
         }
         ui->definitionTreeView->selectionModel()->select(selection, QItemSelectionModel::Select);
     }
     if (!selectIndices.isEmpty()) {
-        const QModelIndex parentIndex = definitionModel()->parent(selectIndices.first());
-        const QModelIndex scrollToIndex = (parentIndex.row() < 0  ? definitionModel()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
-                                                                 : definitionModel()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex));
+        const QModelIndex parentIndex = ui->definitionTreeView->model()->parent(selectIndices.first());
+        const QModelIndex scrollToIndex = (parentIndex.row() < 0  ? ui->definitionTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                                 : ui->definitionTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex));
         ui->definitionTreeView->scrollTo(scrollToIndex, QAbstractItemView::EnsureVisible);
         if (parentIndex.row() >= 0) {
             ui->definitionTreeView->scrollTo(parentIndex, QAbstractItemView::EnsureVisible);
@@ -586,7 +584,7 @@ void OptionWidget::showOptionRecurrence()
 
     QItemSelection selection = ui->optionTableView->selectionModel()->selection();
     for(const int row : std::as_const(rowList)) {
-        selection.select(definitionModel()->index(row, 0), definitionModel()->index(row, 0));
+        selection.select(ui->definitionTreeView->model()->index(row, 0), ui->definitionTreeView->model()->index(row, 0));
     }
 
     ui->optionTableView->selectionModel()->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
@@ -628,7 +626,7 @@ void OptionWidget::on_actionResize_Columns_To_Contents_triggered()
         return;
 
     if (focusWidget()==ui->optionTableView) {
-        if (definitionModel()->rowCount()<=0)
+        if (ui->definitionTreeView->model()->rowCount()<=0)
             return;
         ui->optionTableView->resizeColumnToContents(OptionTableModel::COLUMN_KEY);
         ui->optionTableView->resizeColumnToContents(OptionTableModel::COLUMN_VALUE);
@@ -734,38 +732,36 @@ void OptionWidget::showDefinitionContextMenu(const QPoint &pos)
 
 void OptionWidget::findAndSelectionOptionFromDefinition()
 {
-    if (definitionModel()->rowCount() <= 0)
+    if (ui->definitionTreeView->model()->rowCount() <= 0)
         return;
-
     const QModelIndex index = ui->definitionTreeView->selectionModel()->currentIndex();
-
     updateDefinitionActionsState(index);
 
-    const QModelIndex parentIndex =  definitionModel()->parent(index);
-    const QModelIndex idx = (parentIndex.row()<0) ? definitionModel()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
-                                                    : definitionModel()->index( parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
-    const QVariant data = definitionModel()->data( idx, Qt::DisplayRole );
-    QModelIndexList indices = definitionModel()->match(definitionModel()->index(0, OptionTableModel::COLUMN_ID),
+    const QModelIndex parentIndex =  ui->definitionTreeView->model()->parent(index);
+    const QModelIndex idx = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
+                                                  : ui->definitionTreeView->model()->index( parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
+    const QVariant data = ui->definitionTreeView->model()->data( idx, Qt::DisplayRole );
+    QModelIndexList indices = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, OptionTableModel::COLUMN_ID),
                                                                   Qt::DisplayRole,
                                                                   data, -1, Qt::MatchExactly|Qt::MatchRecursive);
     ui->optionTableView->clearSelection();
     ui->optionTableView->clearFocus();
     QItemSelection selection;
     for(const QModelIndex i :std::as_const(indices)) {
-        const QModelIndex valueIndex = definitionModel()->index(i.row(), OptionTableModel::COLUMN_VALUE);
-        const QString value =  definitionModel()->data( valueIndex, Qt::DisplayRole).toString();
+        const QModelIndex valueIndex = ui->definitionTreeView->model()->index(i.row(), OptionTableModel::COLUMN_VALUE);
+        const QString value =  ui->definitionTreeView->model()->data( valueIndex, Qt::DisplayRole).toString();
         bool selected = false;
         if (parentIndex.row() < 0) {
             selected = true;
         } else {
-            const QModelIndex enumIndex = definitionModel()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
-            const QString enumValue = definitionModel()->data( enumIndex, Qt::DisplayRole).toString();
+            const QModelIndex enumIndex = ui->definitionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
+            const QString enumValue = ui->definitionTreeView->model()->data( enumIndex, Qt::DisplayRole).toString();
             if (QString::compare(value, enumValue, Qt::CaseInsensitive)==0)
                 selected = true;
         }
         if (selected) {
-            const QModelIndex leftIndex  = definitionModel()->index(i.row(), 0);
-            const QModelIndex rightIndex = definitionModel()->index(i.row(), definitionModel()->columnCount() -1);
+            const QModelIndex leftIndex  = ui->definitionTreeView->model()->index(i.row(), 0);
+            const QModelIndex rightIndex = ui->definitionTreeView->model()->index(i.row(), ui->definitionTreeView->model()->columnCount() -1);
 
             const QItemSelection rowSelection(leftIndex, rightIndex);
             selection.merge(rowSelection, QItemSelectionModel::Select);
@@ -815,17 +811,17 @@ void OptionWidget::deSelectOptions()
 
 int OptionWidget::getItemCount() const
 {
-    return definitionModel()->rowCount();
+    return ui->definitionTreeView->model()->rowCount();
 }
 
 void OptionWidget::on_selectRow(int logicalIndex) const
 {
-    if (definitionModel()->rowCount() <= 0)
+    if (ui->definitionTreeView->model()->rowCount() <= 0)
         return;
 
     QItemSelectionModel *selectionModel = ui->optionTableView->selectionModel();
-    const QModelIndex topLeft = definitionModel()->index(logicalIndex, OptionTableModel::COLUMN_ID, QModelIndex());
-    const QModelIndex  bottomRight = definitionModel()->index(logicalIndex, OptionTableModel::COLUMN_ID, QModelIndex());
+    const QModelIndex topLeft = ui->definitionTreeView->model()->index(logicalIndex, OptionTableModel::COLUMN_ID, QModelIndex());
+    const QModelIndex  bottomRight = ui->definitionTreeView->model()->index(logicalIndex, OptionTableModel::COLUMN_ID, QModelIndex());
     const QItemSelection selection( topLeft, bottomRight);
     selectionModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
 }
@@ -954,9 +950,10 @@ void OptionWidget::updateActionsState(const QModelIndex &index)
 
 void OptionWidget::updateDefinitionActionsState(const QModelIndex &index)
 {
-    QModelIndex parentIndex =  definitionModel()->parent(index);
-    QVariant data = (parentIndex.row() < 0) ? definitionModel()->data(index, Qt::CheckStateRole)
-                                            : definitionModel()->data(parentIndex, Qt::CheckStateRole);
+    QModelIndex parentIndex =  ui->definitionTreeView->model()->parent(index);
+     QVariant data = (parentIndex.row() < 0) ? ui->definitionTreeView->model()->data(index, Qt::CheckStateRole)
+                                            : ui->definitionTreeView->model()->data(parentIndex, Qt::CheckStateRole);
+
     ui->actionAdd_This_Parameter->setEnabled( Qt::CheckState(data.toInt()) == Qt::Unchecked );
     ui->actionRemove_This_Parameter->setEnabled( Qt::CheckState(data.toInt()) == Qt::Checked );
     ui->actionResize_Columns_To_Contents->setEnabled( true );
@@ -974,12 +971,12 @@ QList<int> OptionWidget::getRecurrentOption(const QModelIndex &index)
     if (!isInFocus(focusWidget()))
         return optionList;
 
-    const QVariant data = definitionModel()->headerData(index.row(), Qt::Vertical,  Qt::CheckStateRole);
+    const QVariant data = optionModel()->headerData(index.row(), Qt::Vertical,  Qt::CheckStateRole);
     if (Qt::CheckState(data.toUInt())==Qt::PartiallyChecked)
         return optionList;
 
-    const QString optionId = definitionModel()->data( index.sibling(index.row(), optionModel()->column_id()), Qt::DisplayRole).toString();
-    QModelIndexList indices = definitionModel()->match(definitionModel()->index(0, optionModel()->column_id()),
+    const QString optionId  = optionModel()->data( index.sibling(index.row(), optionModel()->column_id()), Qt::DisplayRole).toString();
+    QModelIndexList indices = optionModel()->match(optionModel()->index(0, optionModel()->column_id()),
                                                                   Qt::DisplayRole,
                                                                   optionId, -1);
     for(const QModelIndex &idx : std::as_const(indices)) {
@@ -1001,30 +998,30 @@ void OptionWidget::copyDefinitionToClipboard(int column)
         return;
 
     QString text = "";
-    const QModelIndex parentIndex = definitionModel()->parent(index);
+    const QModelIndex parentIndex = ui->definitionTreeView->model()->parent(index);
     if (column == -1) { // copy all
         QStringList strList;
         if (parentIndex.isValid()) {
-            QModelIndex idx = definitionModel()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
-            strList << definitionModel()->data(idx, Qt::DisplayRole).toString();
-            idx = definitionModel()->index(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION, parentIndex);
-            strList << definitionModel()->data(idx, Qt::DisplayRole).toString();
+            QModelIndex idx = ui->definitionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
+            strList << ui->definitionTreeView->model()->data(idx, Qt::DisplayRole).toString();
+            idx = ui->definitionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION, parentIndex);
+            strList << ui->definitionTreeView->model()->data(idx, Qt::DisplayRole).toString();
             text = strList.join(", ");
         } else {
-            for (int j=0; j<definitionModel()->columnCount(); j++) {
+            for (int j=0; j<ui->definitionTreeView->model()->columnCount(); j++) {
                 if (j==OptionDefinitionModel::COLUMN_ENTRY_NUMBER)
                     continue;
-                const QModelIndex columnindex = definitionModel()->index(index.row(), j);
-                strList << definitionModel()->data(columnindex, Qt::DisplayRole).toString();
+                const QModelIndex columnindex = ui->definitionTreeView->model()->index(index.row(), j);
+                strList << ui->definitionTreeView->model()->data(columnindex, Qt::DisplayRole).toString();
             }
             text = strList.join(", ");
         }
     } else {
         if (parentIndex.isValid()) {
-            const QModelIndex idx = definitionModel()->index(index.row(), column, parentIndex);
-            text = definitionModel()->data( idx, Qt::DisplayRole ).toString();
+            const QModelIndex idx = ui->definitionTreeView->model()->index(index.row(), column, parentIndex);
+            text = ui->definitionTreeView->model()->data( idx, Qt::DisplayRole ).toString();
         } else {
-            text = definitionModel()->data( definitionModel()->index(index.row(), column), Qt::DisplayRole ).toString();
+            text = ui->definitionTreeView->model()->data( ui->definitionTreeView->model()->index(index.row(), column), Qt::DisplayRole ).toString();
         }
     }
     QClipboard* clip = QApplication::clipboard();

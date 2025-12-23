@@ -99,12 +99,12 @@ void GamsOptionDefinitionModel::modifyOptionDefinitionItem(const OptionItem &opt
     endResetModel();
 }
 
-void GamsOptionDefinitionModel::modifyOptionDefinition(const QList<OptionItem> &optionItems)
+void GamsOptionDefinitionModel::modifyOptionDefinition(const QList<OptionItem*> &optionItems)
 {
     QMap<int, int> modifiedOption;
     for(int i = 0; i<optionItems.size(); ++i) {
-        if (optionItems.at(i).optionId != -1)
-            modifiedOption[optionItems.at(i).optionId] = i;
+        if (optionItems.at(i)->optionId != -1)
+            modifiedOption[optionItems.at(i)->optionId] = i;
     }
     const QList<int> ids = modifiedOption.keys();
     beginResetModel();

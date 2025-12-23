@@ -223,8 +223,16 @@ SOURCES += \
     option/paramconfigeditor.cpp \
     option/parametereditor.cpp \
     option/solveroptiondefinitionmodel.cpp \
-    option/solveroptiontablemodel.cpp \
-    option/solveroptionwidget.cpp \
+    option/newoption/gamsparametermodel.cpp \
+    option/newoption/configparameditor.cpp \
+    option/newoption/configtablemodel.cpp \
+    option/newoption/gamsparameditor.cpp \
+    option/newoption/gamsparamtablemodel.cpp \
+    option/newoption/optionwidget.cpp \
+    option/newoption/optionitemdelegate.cpp \
+    option/newoption/solveroptioneditor.cpp \
+    option/newoption/solveroptiontablemodel.cpp \
+    option/newoption/gamsparameterwidget.cpp \
     pinviewwidget.cpp \
     process/abstractprocess.cpp \
     process/connectprocess.cpp \
@@ -462,8 +470,17 @@ HEADERS += \
     option/paramconfigeditor.h \
     option/parametereditor.h \
     option/solveroptiondefinitionmodel.h \
-    option/solveroptiontablemodel.h \
-    option/solveroptionwidget.h \
+    option/newoption/gamsparametermodel.h \
+    option/newoption/configparameditor.h \
+    option/newoption/configtablemodel.h \
+    option/newoption/gamsparameditor.h \
+    option/newoption/gamsparamtablemodel.h \
+    option/newoption/optiontablemodel.h \
+    option/newoption/optionwidget.h \
+    option/newoption/optionitemdelegate.h \
+    option/newoption/solveroptioneditor.h \
+    option/newoption/solveroptiontablemodel.h \
+    option/newoption/gamsparameterwidget.h \
     pinviewwidget.h \
     process.h \
     process/abstractprocess.h \
@@ -565,6 +582,8 @@ FORMS += \
     neos/neosstartdialog.ui \
     option/envvarconfigeditor.ui \
     option/gamsconfigeditor.ui \
+    option/newoption/gamsparameterwidget.ui \
+    option/newoption/optionwidget.ui \
     option/paramconfigeditor.ui \
     option/parametereditor.ui \
     option/solveroptionwidget.ui \

@@ -63,7 +63,7 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aCompile, QAction *aRun
     connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged, this, &ParameterEditor::updateParameterTableModel, Qt::UniqueConnection );
     connect(ui->gamsParameterCommandLine, &CommandLine::parameterEditCancelled, this, &CommandLine::clearFocus, Qt::UniqueConnection);
 
-    const QList<OptionItem> optionItem = mOptionTokenizer->tokenize(ui->gamsParameterCommandLine->lineEdit()->text());
+    const QList<OptionItem*> optionItem = mOptionTokenizer->tokenize(ui->gamsParameterCommandLine->lineEdit()->text());
     const QString normalizedText = mOptionTokenizer->normalize(optionItem);
     mParameterTableModel = new GamsParameterTableModel(normalizedText, mOptionTokenizer, this);
     ui->gamsParameterTableView->setModel( mParameterTableModel );
@@ -229,15 +229,15 @@ QString ParameterEditor::on_runAction(RunActionState state)
     bool refParam = false;
     bool profParam = false;
     const auto items = getOptionTokenizer()->tokenize(commandLineStr);
-    for (const option::OptionItem &item : items) {
-        if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0)
+    for (const option::OptionItem* item : items) {
+        if (QString::compare(item->key, "gdx", Qt::CaseInsensitive) == 0)
             gdxParam = true;
-        if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0)
+        if (QString::compare(item->key, "rf", Qt::CaseInsensitive) == 0)
             refParam = true;
-        if ((QString::compare(item.key, "action", Qt::CaseInsensitive) == 0) ||
-            (QString::compare(item.key, "a", Qt::CaseInsensitive) == 0))
+        if ((QString::compare(item->key, "action", Qt::CaseInsensitive) == 0) ||
+            (QString::compare(item->key, "a", Qt::CaseInsensitive) == 0))
             actParam = true;
-        if ((QString::compare(item.key, "profile", Qt::CaseInsensitive) == 0))
+        if ((QString::compare(item->key, "profile", Qt::CaseInsensitive) == 0))
             profParam = true;
     }
 
@@ -299,7 +299,7 @@ void ParameterEditor::updateParameterTableModel(QLineEdit *lineEdit, const QStri
     emit ParameterTableModelChanged(commandLineStr);
 }
 
-void ParameterEditor::updateCommandLineStr(const QList<OptionItem> &optionItems)
+void ParameterEditor::updateCommandLineStr(const QList<OptionItem*> &optionItems)
 {
     if (mDockChild->isHidden())
        return;

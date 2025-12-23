@@ -23,14 +23,13 @@
 #include <QTextLayout>
 #include <QLineEdit>
 
-#include "option.h"
+#include "option/option.h"
 #include "commonpaths.h"
 #include "editors/abstractsystemlogger.h"
 
 namespace gams {
 namespace studio {
 namespace option {
-
 
 struct OptionError {
     OptionError() { }
@@ -56,12 +55,12 @@ public:
     OptionTokenizer(const QString &optionDefFileName, const QString &optionDefFilePath=CommonPaths::systemDir());
     ~OptionTokenizer();
 
-    QList<OptionItem> tokenize(const QString &commandLineStr);
-    QList<OptionItem> tokenize(const QString &commandLineStr, const QList<QString> &disabledOption);
-    QList<OptionError> format(const QList<OptionItem> &items);
+    QList<OptionItem*> tokenize(const QString &commandLineStr);
+    QList<OptionItem*> tokenize(const QString &commandLineStr, const QList<QString> &disabledOption);
+    QList<OptionError> format(const QList<OptionItem*> &items);
     QList<OptionErrorType> validate(ParamConfigItem * item);
     QString normalize(const QString &commandLineStr);
-    QString normalize(const QList<OptionItem> &items);
+    QString normalize(const QList<OptionItem*> &items);
 
     QTextCharFormat invalidKeyFormat() const;
     QTextCharFormat invalidValueFormat() const;
@@ -74,12 +73,13 @@ public:
 
     QString formatOption(const SolverOptionItem *item);
     bool getOptionItemFromStr(SolverOptionItem *item, bool firstTime, const QString &str);
+    bool updateOptionItem(const QString &key, const QString &value, const QString &text, OptionItem* item);
     bool updateOptionItem(const QString &key, const QString &value, const QString &text, SolverOptionItem* item);
 
     QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath, const QString &encodingName);
     bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, const QString &encodingName);
 
-    void validateOption(QList<OptionItem> &items);
+    void validateOption(QList<OptionItem *> &items);
     void validateOption(QList<SolverOptionItem *> &items);
     void validateOption(QList<ParamConfigItem *> &items);
 
@@ -98,7 +98,7 @@ public:
 
 public slots:
     void formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr);
-    void formatItemLineEdit(QLineEdit* lineEdit, const QList<gams::studio::option::OptionItem> &optionItems);
+    void formatItemLineEdit(QLineEdit* lineEdit, const QList<gams::studio::option::OptionItem*> &optionItems);
 
 private:
     Option* mOption = nullptr;

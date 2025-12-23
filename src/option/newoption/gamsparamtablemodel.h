@@ -32,7 +32,7 @@ class GamsParamTableModel : public OptionTableModel
      Q_OBJECT
 public:
     explicit GamsParamTableModel(const QString &normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject *parent = nullptr);
-    explicit GamsParamTableModel(const QList<OptionItem> &itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    explicit GamsParamTableModel(const QList<OptionItem*> &itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -55,17 +55,20 @@ public:
     bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 
 
-signals:
-    void optionModelChanged(const QList<gams::studio::option::OptionItem> &optionItem);
-    void optionNameChanged(const QString &from, const QString &to);
-    void optionValueChanged(const QModelIndex &index);
-
 public slots:
-//    void toggleActiveOptionItem(int index);
+    void on_groupDefinitionReloaded() override;
+    QString getOptionTableEntry(int row) override;
+
+    void on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override;
+    void on_removeOptionItem() override;
+
+    void toggleActiveOptionItem(int index);
     void on_ParameterTableModelChanged(const QString &text);
 
+    void updateRecurrentStatus();
+
 private:
-    QList<OptionItem> mOptionItem;
+    QList<OptionItem*> mOptionItem;
     QList<QString> mHeader;
     QMap<int, QVariant> mCheckState;
 
@@ -74,7 +77,7 @@ private:
     void setRowCount(int rows);
     void itemizeOptionFromCommandLineStr(const QString &text);
 
-    QList<OptionItem> getCurrentListOfOptionItems();
+    QList<OptionItem *> getCurrentListOfOptionItems();
     QString getParameterTableEntry(int row);
 };
 

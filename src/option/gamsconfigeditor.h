@@ -24,9 +24,9 @@
 
 #include "abstractview.h"
 #include "common.h"
-#include "gamsuserconfig.h"
-#include "envvarconfigeditor.h"
-#include "paramconfigeditor.h"
+#include "option/gamsuserconfig.h"
+#include "option/envvarconfigeditor.h"
+#include "option/newoption/configparameditor.h"
 
 namespace gams {
 namespace studio {
@@ -35,8 +35,6 @@ namespace option {
 namespace Ui {
 class GamsConfigEditor;
 }
-
-class OptionTokenizer;
 
 enum  class ConfigEditorType {
     commandLineParameter = 0,
@@ -104,7 +102,7 @@ private:
     bool mFileHasChangedExtern = false;
 
     GamsUserConfig* mGuc;
-    ParamConfigEditor* mParamConfigEditor;
+    newoption::ConfigParamEditor* mConfigParamEditor;
     EnvVarConfigEditor* mEnvVarConfigEditor;
 };
 

@@ -21,7 +21,7 @@
 #define PARAMCONFIGEDITOR_H
 
 #include "gamsuserconfig.h"
-#include "optiontokenizer.h"
+#include "option/optiontokenizer.h"
 #include "configparamtablemodel.h"
 #include "optioncompleterdelegate.h"
 

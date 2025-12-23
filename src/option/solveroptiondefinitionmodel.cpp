@@ -90,7 +90,7 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
         if (entry.isEmpty())
             entry = indexes.first().siblingAtColumn(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).data().toString();
     }
-    stream << QString("%1=%2=%3=%4").arg(name, value, EOLComment, entry);
+    stream << QString("%1=%2=%3=%4").arg(entry, name, value, EOLComment);
 
     mimeData->setData(optionMimeType(OptionDefinitionType::SolverOptionDefinition), encodedData);
     return mimeData;

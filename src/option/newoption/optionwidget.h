@@ -80,13 +80,11 @@ public slots:
     void selectSearchField() const;
 
 protected slots:
-    virtual bool isCommentToggleable() = 0;
-
-    virtual void insertOption() = 0;
-    virtual void insertComment() = 0;
+    virtual void insertOption()   = 0;
+    virtual void insertComment()  = 0;
     virtual void deleteCommentsBeforeOption(int row) = 0;
-    virtual void deleteOption() = 0;
-    virtual void moveOptionUp() = 0;
+    virtual void deleteOption()   = 0;
+    virtual void moveOptionUp()   = 0;
     virtual void moveOptionDown() = 0;
 
     virtual void on_openAsTextButton_clicked(bool checked = false) {
@@ -106,6 +104,7 @@ protected slots:
             return;
     }
 
+    virtual bool isCommentToggleable() = 0;
     virtual void updateTableColumnSpan() = 0;
     virtual void refreshOptionTableModel(bool hideAllComments=true) = 0;
 

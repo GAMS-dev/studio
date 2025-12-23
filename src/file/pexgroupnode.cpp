@@ -1094,7 +1094,7 @@ QStringList PExProjectNode::getRunParametersHistory() const
 /// \return QStringList all arguments
 ///
 QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const QStringList &defaultParameters
-                                              , const QList<option::OptionItem> &itemList, option::Option *opt
+                                              , const QList<option::OptionItem*> &itemList, option::Option *opt
                                               , gamscom::ComFeatures comMode, int &logOption)
 {
     mDoProfile = false;
@@ -1144,17 +1144,17 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
     QStringList argumentList;
     QStringList argumentValueList;
     QList<int> argumentIdList = QList<int>();
-    for (const option::OptionItem &item : itemList) {
-        argumentList      << item.key;
-        argumentIdList    << item.optionId;
-        argumentValueList << item.value;
-        gamsArguments.insert(item.optionId, item.value);
-        if (item.optionId == opt->getOrdinalNumber("curdir")) {
-            cdir = item.value;
-        } else if (item.optionId == opt->getOrdinalNumber("workdir")) {
-            wdir = item.value;
-        } else if (item.optionId == opt->getOrdinalNumber("filestem")) {
-            filestem = item.value;
+    for (const option::OptionItem* item : itemList) {
+        argumentList      << item->key;
+        argumentIdList    << item->optionId;
+        argumentValueList << item->value;
+        gamsArguments.insert(item->optionId, item->value);
+        if (item->optionId == opt->getOrdinalNumber("curdir")) {
+            cdir = item->value;
+        } else if (item->optionId == opt->getOrdinalNumber("workdir")) {
+            wdir = item->value;
+        } else if (item->optionId == opt->getOrdinalNumber("filestem")) {
+            filestem = item->value;
         }
     }
 
@@ -1181,9 +1181,9 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
 
     bool defaultOverride = false;
     // iterate options
-    for (const option::OptionItem &item : itemList) {
+    for (const option::OptionItem* item : itemList) {
         // convert to native seperator
-        QString value = item.value;
+        QString value = item->value;
         value = value.replace('\\', '/');
 
         // regex to remove dots at the end of a filename
@@ -1192,37 +1192,37 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
         if (match.hasMatch()) value = value.remove(match.capturedStart(1), match.capturedLength(1));
 
         // set parameters
-        if (item.optionId != -1) {
-            if (item.optionId == opt->getOrdinalNumber("output")) {
+        if (item->optionId != -1) {
+            if (item->optionId == opt->getOrdinalNumber("output")) {
                 mParameterHash.remove("lst"); // remove default
                 if (!(QString::compare(value, "nul", Qt::CaseInsensitive) == 0
                       || QString::compare(value, "/dev/null", Qt::CaseInsensitive) == 0))
                     setParameter("lst", cleanPath(path, value));
 
-            } else if (item.optionId == opt->getOrdinalNumber("GDX")) {
+            } else if (item->optionId == opt->getOrdinalNumber("GDX")) {
                 if (value == "default") value = "\"" + filestem + ".gdx\"";
                 setParameter("gdx", cleanPath(path, value));
 
-            } else if (item.optionId == opt->getOrdinalNumber("Reference")) {
+            } else if (item->optionId == opt->getOrdinalNumber("Reference")) {
                 if (value == "default") value = "\"" + filestem + ".ref\"";
                 setParameter("ref", cleanPath(path, value));
 
-            } else if (item.optionId == opt->getOrdinalNumber("ParmFile")) {
+            } else if (item->optionId == opt->getOrdinalNumber("ParmFile")) {
                 if (value == "default") value = "\"" + filestem + ".pf\"";
                 setParameterFile(value.isEmpty() ? "" : cleanPath(path, value));
                 emit mainFileChanged();
 
-            } else if (item.optionId == opt->getOrdinalNumber("logoption")) {
-                int lo = item.value.toInt(&ok);
+            } else if (item->optionId == opt->getOrdinalNumber("logoption")) {
+                int lo = item->value.toInt(&ok);
                 if (ok) logOption = lo;
 
-            } else if (item.optionId == opt->getOrdinalNumber("logfile")) {
+            } else if (item->optionId == opt->getOrdinalNumber("logfile")) {
                 if (!value.endsWith(".log", FileType::fsCaseSense()))
                     value.append("." + FileType::from(FileKind::Log).defaultSuffix());
                 setLogLocation(cleanPath(path, value));
             }
 
-            if (defaultArgumentIdList.contains(item.optionId))
+            if (defaultArgumentIdList.contains(item->optionId))
                 defaultOverride = true;
         }
     }
@@ -1244,13 +1244,13 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
         position++;
     }
     position = 0;
-    for(const option::OptionItem &item : itemList) {
-        if (item.recurrent) {
-            if (item.recurrentIndices.first() == position) {
-                output.append( QString("%1=%2").arg(argumentList.at(position), gamsArguments.value(item.optionId)));
+    for(const option::OptionItem* item : itemList) {
+        if (item->recurrent) {
+            if (item->recurrentIndices.first() == position) {
+                output.append( QString("%1=%2").arg(argumentList.at(position), gamsArguments.value(item->optionId)));
             }
         } else {
-            output.append( QString("%1=%2").arg(argumentList.at(position), item.value));
+            output.append( QString("%1=%2").arg(argumentList.at(position), item->value));
         }
         position++;
     }

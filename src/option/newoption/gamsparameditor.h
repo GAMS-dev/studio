@@ -20,10 +20,9 @@
 #ifndef GAMSPARAMEDITOR_H
 #define GAMSPARAMEDITOR_H
 
-#include "optionwidget.h"
-#include "option/newoption/optiontablemodel.h"
-#include "option/newoption/solveroptiontablemodel.h"
-#include "option/solveroptiondefinitionmodel.h"
+#include "option/newoption/optionwidget.h"
+#include "option/newoption/gamsparamtablemodel.h"
+#include "option/gamsoptiondefinitionmodel.h"
 
 namespace gams {
 namespace studio {
@@ -43,7 +42,53 @@ public:
 
     ~GamsParamEditor() override;
 
+    void setEditorExtended(bool extended);
+    bool isEditorExtended();
+    void focus();
+
+    QString getSelectedParameterName(QWidget* widget) const;
+
+public slots:
+    void on_ParameterTableModelChanged(const QString &text);
+
+protected slots:
+    void insertOption() override;
+    void insertComment() override                     {               };
+    void deleteCommentsBeforeOption(int row) override { Q_UNUSED(row) };
+    void deleteOption() override;
+    void moveOptionUp() override;
+    void moveOptionDown()  override;
+
+    void on_openAsTextButton_clicked(bool checked = false) override   { Q_UNUSED(checked)    return; };
+    void on_compactViewCheckBox_stateChanged(int checkState) override { Q_UNUSED(checkState) return; };
+    void on_messageViewCheckBox_stateChanged(int checkState) override { Q_UNUSED(checkState) return; };
+
+    bool isCommentToggleable() override   { return false; };
+    void updateTableColumnSpan() override { return;       };
+    void refreshOptionTableModel(bool hideAllComments=true) override {
+        Q_UNUSED(hideAllComments)
+        return;
+    };
+
+    void addOptionModelFromDefinition(int row, const QModelIndex &descriptionIndex)    override;
+    void addCommentModelFromDefinition(int row, const QModelIndex &descriptionIndex)   override {
+        Q_UNUSED(row)  Q_UNUSED(descriptionIndex)
+        return;
+    }
+    void addEOLCommentModelFromDefinition(int row, const QModelIndex &selectedValueIndex,
+                                          const QModelIndex &descriptionIndex) override {
+        Q_UNUSED(row)  Q_UNUSED(selectedValueIndex)  Q_UNUSED(descriptionIndex)
+        return;
+    }
+
+    void clearDefintionSelection();
+    void clearOptionSelection();
+
+    void parameterItemCommitted(const QModelIndex &index);
+
 protected:
+    friend class GamsParameterWidget;
+
     OptionTokenizer* optionTokenizer() const override { return mOptionTokenizer; }
     OptionTableModel* optionModel() const override    { return mOptionModel; }
 
@@ -55,17 +100,18 @@ protected:
     QStandardItemModel* definitionGroupModel() const override          { return mDefinitionGroupModel;  }
     void setDefinitionGroupModel( QStandardItemModel* model ) override { mDefinitionGroupModel = model; }
 
-
     OptionItemDelegate* optionCompleter() const override            { return mOptionCompleter;      }
     void setOptionCompleter(OptionItemDelegate* completer) override { mOptionCompleter = completer; }
 
-    SolverOptionTableModel* mOptionModel;
+    GamsParamTableModel* mOptionModel;
     OptionSortFilterProxyModel* mDefinitionProxymodel;
-    SolverOptionDefinitionModel* mDefinitionModel;
+    GamsOptionDefinitionModel* mDefinitionModel;
     QStandardItemModel* mDefinitionGroupModel;
 
     OptionTokenizer* mOptionTokenizer;
     OptionItemDelegate* mOptionCompleter;
+
+    bool mExtended = false;
 };
 
 

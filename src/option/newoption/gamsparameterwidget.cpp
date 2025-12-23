@@ -22,6 +22,8 @@
 #include "settings.h"
 
 #include "option/newoption/gamsparameterwidget.h"
+#include "ui_gamsparameterwidget.h"
+#include "option/newoption/gamsparameditor.h"
 
 namespace gams {
 namespace studio {
@@ -32,14 +34,50 @@ GamsParameterWidget::GamsParameterWidget(QAction *aRun, QAction *aCompile, QActi
                                  QAction *aRunDebug, QAction *aStepDebug, QList<QAction *> aActionFlags,
                                  QAction *aRunNeos, QAction *aRunEngine, QAction *aInterrupt, QAction *aStop,
                                  MainWindow *parent):
-    QWidget(parent), ui(new Ui::GamsParamEditor), actionRun(aRun), actionCompile(aCompile),
+    QWidget(parent), ui(new Ui::GamsParameterWidget), actionRun(aRun), actionCompile(aCompile),
     actionRunDebug(aRunDebug), actionStepDebug(aStepDebug), actionRunWithSelected(aRunWith),
     actionCompileWithSelected(aCompileWith), actionFlags(aActionFlags), actionRunNeos(aRunNeos),
     actionRunEngine(aRunEngine), actionInterrupt(aInterrupt), actionStop(aStop), main(parent)
 {
     ui->setupUi(this);
 
-    this->layout()->addWidget( );
+    setRunsActionGroup();
+    setInterruptActionGroup();
+
+    setFocusPolicy(Qt::StrongFocus);
+
+    mExtendedEditor = new QDockWidget("GAMS Parameters", this);
+    mExtendedEditor->setObjectName("gamsArguments");
+
+    mDockChild = new GamsParamEditor(ui->gamsParameterCommandLine->lineEdit()->text(), mExtendedEditor); // new AbstractView(mExtendedEditor);
+    mExtendedEditor->setWidget(mDockChild);
+    QVBoxLayout *lay = new QVBoxLayout(mDockChild);
+    lay->addWidget(ui->gamsParameterEditor);
+    lay->setContentsMargins(0,0,0,0);
+    mDockChild->setLayout(lay);
+
+    mExtendedEditor->setFeatures(QDockWidget::NoDockWidgetFeatures);
+    mExtendedEditor->setTitleBarWidget(new QWidget(this));
+    main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);
+    connect(mExtendedEditor, &QDockWidget::visibilityChanged, main, &MainWindow::setExtendedEditorVisibility, Qt::UniqueConnection);
+    mExtendedEditor->setVisible(false);
+
+#ifdef __APPLE__
+    ui->verticalLayout->setContentsMargins(2,2,2,0);
+#else
+    ui->verticalLayout->setContentsMargins(2,0,2,2);
+#endif
+
+    connect(ui->gamsParameterCommandLine, &CommandLine::parameterRunChanged, main, &MainWindow::parameterRunChanged, Qt::UniqueConnection);
+    connect(ui->gamsParameterCommandLine, &QComboBox::editTextChanged, ui->gamsParameterCommandLine, &CommandLine::validateChangedParameter, Qt::UniqueConnection);
+    connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged, mDockChild->optionTokenizer(), &OptionTokenizer::formatTextLineEdit, Qt::UniqueConnection);
+    connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged, this, &GamsParameterWidget::updateParameterTableModel, Qt::UniqueConnection );
+    connect(ui->gamsParameterCommandLine, &CommandLine::parameterEditCancelled, this, &CommandLine::clearFocus, Qt::UniqueConnection);
+
+    connect(mDockChild->optionModel(), &GamsParamTableModel::optionModelChanged, this, &GamsParameterWidget::updateCommandLineStr,  Qt::UniqueConnection);
+    connect(this, &GamsParameterWidget::commandLineChanged, mDockChild->optionTokenizer(), &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
+    connect(this, &GamsParameterWidget::ParameterTableModelChanged, this, &GamsParameterWidget::on_parameterTableModelChanged, Qt::UniqueConnection);
+
 }
 
 GamsParameterWidget::~GamsParameterWidget()
@@ -59,16 +97,16 @@ QString GamsParameterWidget::on_runAction(RunActionState state)
     bool actParam = false;
     bool refParam = false;
     bool profParam = false;
-    const auto items = getOptionTokenizer()->tokenize(commandLineStr);
-    for (const option::OptionItem &item : items) {
-        if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0)
+    const auto items = mDockChild->optionTokenizer()->tokenize(commandLineStr);
+    for (const option::OptionItem* item : items) {
+        if (QString::compare(item->key, "gdx", Qt::CaseInsensitive) == 0)
             gdxParam = true;
-        if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0)
+        if (QString::compare(item->key, "rf", Qt::CaseInsensitive) == 0)
             refParam = true;
-        if ((QString::compare(item.key, "action", Qt::CaseInsensitive) == 0) ||
-            (QString::compare(item.key, "a", Qt::CaseInsensitive) == 0))
+        if ((QString::compare(item->key, "action", Qt::CaseInsensitive) == 0) ||
+            (QString::compare(item->key, "a", Qt::CaseInsensitive) == 0))
             actParam = true;
-        if ((QString::compare(item.key, "profile", Qt::CaseInsensitive) == 0))
+        if ((QString::compare(item->key, "profile", Qt::CaseInsensitive) == 0))
             profParam = true;
     }
 
@@ -120,6 +158,139 @@ void GamsParameterWidget::on_stopAction()
 AbstractView *GamsParameterWidget::dockChild()
 {
     return mDockChild;
+}
+
+OptionTokenizer *GamsParameterWidget::getOptionTokenizer() const
+{
+    return mDockChild->optionTokenizer();
+}
+
+bool GamsParameterWidget::isAParameterEditorFocused(QWidget *focusWidget) const
+{
+    return (focusWidget==ui->gamsParameterCommandLine || mDockChild->isInFocus(focusWidget) );
+}
+
+QString GamsParameterWidget::getSelectedParameterName(QWidget *widget) const
+{
+    return mDockChild->getSelectedParameterName(widget);
+}
+
+QString GamsParameterWidget::getCurrentCommandLineData() const
+{
+    return ui->gamsParameterCommandLine->getParameterString();
+}
+
+void GamsParameterWidget::focus()
+{
+    if (isEditorExtended())
+        mDockChild->focus();
+    else
+        ui->gamsParameterCommandLine->setFocus(Qt::ShortcutFocusReason);
+}
+
+void GamsParameterWidget::runDefaultAction()
+{
+    ui->gamsRunToolButton->defaultAction()->trigger();
+}
+
+void GamsParameterWidget::setEditorExtended(bool extended)
+{
+    if (extended) {
+        disconnect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged,
+                   this, &GamsParameterWidget::updateParameterTableModel );
+
+        mDockChild->clearDefintionSelection();
+        emit ParameterTableModelChanged(ui->gamsParameterCommandLine->currentText());
+    } else  {
+        connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged,
+                this, &GamsParameterWidget::updateParameterTableModel, Qt::UniqueConnection );
+    }
+    mExtendedEditor->setVisible(extended);
+    main->updateRunState();
+    ui->gamsParameterCommandLine->setEnabled(!extended);
+}
+
+bool GamsParameterWidget::isEditorExtended()
+{
+    return mExtendedEditor->isVisible();
+}
+
+QDockWidget *GamsParameterWidget::extendedEditor() const
+{
+    return mExtendedEditor;
+}
+
+void GamsParameterWidget::updateParameterTableModel(QLineEdit *lineEdit, const QString &commandLineStr)
+{
+    Q_UNUSED(lineEdit)
+    if (mExtendedEditor->isHidden()) return;
+
+    emit ParameterTableModelChanged(commandLineStr);
+}
+
+void GamsParameterWidget::updateRunState(bool isRunnable, bool isRunning)
+{
+    const bool activate = isRunnable && !isRunning;
+    setRunActionsEnabled(activate);
+    setInterruptActionsEnabled(isRunnable && isRunning);
+
+    mDockChild->setEnabled(activate);
+    ui->gamsParameterCommandLine->setEnabled(activate && !isEditorExtended());
+}
+
+void GamsParameterWidget::loadCommandLine(const QStringList &history)
+{
+    // disconnect
+    disconnect(ui->gamsParameterCommandLine, &QComboBox::editTextChanged,
+               ui->gamsParameterCommandLine, &CommandLine::validateChangedParameter);
+    disconnect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged,
+               mDockChild->optionTokenizer(), &OptionTokenizer::formatTextLineEdit);
+    disconnect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged,
+               this, &GamsParameterWidget::updateParameterTableModel );
+    disconnect(mDockChild->optionModel(), &GamsParamTableModel::optionModelChanged,
+               this, &GamsParameterWidget::updateCommandLineStr);
+    disconnect(this, &GamsParameterWidget::commandLineChanged,
+               mDockChild->optionTokenizer(), &OptionTokenizer::formatItemLineEdit);
+    disconnect(ui->gamsParameterCommandLine, &QComboBox::currentTextChanged,
+               this, &GamsParameterWidget::optionsChanged);
+
+    mDockChild->clearDefintionSelection();
+    ui->gamsParameterCommandLine->clear();
+    ui->gamsParameterCommandLine->resetCurrentValue();
+
+    for (const QString &str: history) {
+        ui->gamsParameterCommandLine->insertItem(0, str );
+    }
+    if (!history.isEmpty()) {
+        ui->gamsParameterCommandLine->validateChangedParameter( history.last() );
+    }
+
+    connect(ui->gamsParameterCommandLine, &QComboBox::editTextChanged,
+            ui->gamsParameterCommandLine, &CommandLine::validateChangedParameter, Qt::UniqueConnection);
+    connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged,
+            mDockChild->optionTokenizer(), &OptionTokenizer::formatTextLineEdit, Qt::UniqueConnection);
+    connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged,
+            this, &GamsParameterWidget::updateParameterTableModel, Qt::UniqueConnection);
+    connect(mDockChild->optionModel(), &GamsParamTableModel::optionModelChanged,
+            this, &GamsParameterWidget::updateCommandLineStr,  Qt::UniqueConnection);
+    connect(this, &GamsParameterWidget::commandLineChanged,
+            mDockChild->optionTokenizer(), &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
+    connect(ui->gamsParameterCommandLine, &QComboBox::currentTextChanged, this, &GamsParameterWidget::optionsChanged);
+
+    if (history.isEmpty()) {
+        mDockChild->clearDefintionSelection();
+    }
+    ui->gamsParameterCommandLine->setCurrentIndex(0);
+    emit ui->gamsParameterCommandLine->commandLineChanged(ui->gamsParameterCommandLine->lineEdit(), ui->gamsParameterCommandLine->currentText());
+    emit optionsChanged(ui->gamsParameterCommandLine->currentText());
+}
+
+void GamsParameterWidget::updateCommandLineStr(const QList<OptionItem*> &optionItems)
+{
+    if (mDockChild->isHidden())
+        return;
+
+    emit commandLineChanged(ui->gamsParameterCommandLine->lineEdit(), optionItems);
 }
 
 void GamsParameterWidget::setRunsActionGroup()
@@ -193,6 +364,19 @@ void GamsParameterWidget::setInterruptActionsEnabled(bool enable)
     actionInterrupt->setEnabled(enable);
     actionStop->setEnabled(enable);
     ui->gamsInterruptToolButton->menu()->setEnabled(enable);
+}
+
+void GamsParameterWidget::on_parameterTableModelChanged(const QString &commandLineStr)
+{
+    disconnect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged, mDockChild->optionTokenizer(), &OptionTokenizer::formatTextLineEdit);
+    disconnect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged, this, &GamsParameterWidget::updateParameterTableModel);
+    disconnect(mDockChild->optionModel(), &GamsParamTableModel::optionModelChanged, this, &GamsParameterWidget::updateCommandLineStr);
+
+    mDockChild->on_ParameterTableModelChanged(commandLineStr);
+
+    connect(mDockChild->optionModel(), &GamsParamTableModel::optionModelChanged, this, &GamsParameterWidget::updateCommandLineStr,  Qt::UniqueConnection);
+    connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged, mDockChild->optionTokenizer(), &OptionTokenizer::formatTextLineEdit, Qt::UniqueConnection);
+    connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged, this, &GamsParameterWidget::updateParameterTableModel, Qt::UniqueConnection );
 }
 
 } // namepsace newoption

@@ -42,8 +42,10 @@ void RecentData::setEditor(FileMeta *fileMeta, QWidget *edit)
     if (!mMainWindow) EXCEPT() << "Warning: RecentData isn't initialized";
 
     if (QWidget *lastEdit = editor()) {
-        if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(lastEdit)) {
-            MainWindow::disconnect(soEdit, &option::SolverOptionWidget::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
+//        if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(lastEdit)) {
+//        MainWindow::disconnect(soEdit, &option::SolverOptionWidget::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
+        if (option::newoption::SolverOptionEditor* soEdit = ViewHelper::toSolverOptionEdit(lastEdit)) {
+            MainWindow::disconnect(soEdit, &option::newoption::SolverOptionEditor::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
         } else {
             if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(lastEdit)) {
                 MainWindow::disconnect(aEdit, &AbstractEdit::cursorPositionChanged, mMainWindow, &MainWindow::updateStatusPos);
@@ -79,17 +81,22 @@ void RecentData::setEditor(FileMeta *fileMeta, QWidget *edit)
         mPath = CommonPaths::defaultWorkingDir();
     }
 
-    if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
-        MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
+//    if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
+//        MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
+    if (option::newoption::SolverOptionEditor* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
+            MainWindow::connect(soEdit, &option::newoption::SolverOptionEditor::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
     } else {
         if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit)) {
             MainWindow::connect(aEdit, &AbstractEdit::cursorPositionChanged, mMainWindow, &MainWindow::updateStatusPos);
             MainWindow::connect(aEdit, &AbstractEdit::selectionChanged, mMainWindow, &MainWindow::updateStatusPos);
             MainWindow::connect(aEdit, &AbstractEdit::blockCountChanged, mMainWindow, &MainWindow::updateStatusLineCount);
             MainWindow::connect(aEdit->document(), &QTextDocument::contentsChange, mMainWindow, &MainWindow::currentDocumentChanged);
-        } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
-            MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
+        } else if (option::newoption::SolverOptionEditor* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
+            MainWindow::connect(soEdit, &option::newoption::SolverOptionEditor::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
         }
+//        } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
+//            MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
+//        }
         if (TextView* tv = ViewHelper::toTextView(edit)) {
             MainWindow::connect(tv, &TextView::selectionChanged, mMainWindow, &MainWindow::updateStatusPos, Qt::UniqueConnection);
             MainWindow::connect(tv, &TextView::blockCountChanged, mMainWindow, &MainWindow::updateStatusLineCount, Qt::UniqueConnection);

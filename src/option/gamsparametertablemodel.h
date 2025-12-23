@@ -23,7 +23,7 @@
 #include <QAbstractItemModel>
 #include <QMimeData>
 
-#include "optiontokenizer.h"
+#include "option/optiontokenizer.h"
 
 namespace gams {
 namespace studio {
@@ -34,7 +34,7 @@ class GamsParameterTableModel : public QAbstractTableModel
      Q_OBJECT
 public:
     GamsParameterTableModel(const QString &normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject *parent = nullptr);
-    GamsParameterTableModel(const QList<OptionItem> &itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    GamsParameterTableModel(const QList<OptionItem*> &itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -63,7 +63,7 @@ public:
 
 signals:
     void newTableRowDropped(const QModelIndex &index);
-    void optionModelChanged(const QList<gams::studio::option::OptionItem> &optionItem);
+    void optionModelChanged(const QList<gams::studio::option::OptionItem*> &optionItem);
     void optionNameChanged(const QString &from, const QString &to);
     void optionValueChanged(const QModelIndex &index);
 
@@ -72,7 +72,7 @@ public slots:
     void on_ParameterTableModelChanged(const QString &text);
 
 private:
-    QList<OptionItem> mOptionItem;
+    QList<OptionItem*> mOptionItem;
     QList<QString> mHeader;
     QMap<int, QVariant> mCheckState;
 
@@ -84,7 +84,7 @@ private:
     void setRowCount(int rows);
     void itemizeOptionFromCommandLineStr(const QString &text);
 
-    QList<OptionItem> getCurrentListOfOptionItems();
+    QList<OptionItem*> getCurrentListOfOptionItems();
     QString getParameterTableEntry(int row);
 };
 

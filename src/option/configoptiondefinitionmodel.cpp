@@ -66,13 +66,13 @@ QMimeData *ConfigOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
             if (parentItem == rootItem) {
                 const QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
                 const QModelIndex optionIdIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
-                text = QString("%1=%2=%3").arg(data(index, Qt::DisplayRole).toString(),
-                                               data(defValueIndex, Qt::DisplayRole).toString(),
-                                               data(optionIdIndex, Qt::DisplayRole).toString());
-            } else {
-                text = QString("%1=%2=%3").arg(parentItem->data(index.column()).toString(),
+                text = QString("%1=%2=%3").arg(data(optionIdIndex, Qt::DisplayRole).toString(),
                                                data(index, Qt::DisplayRole).toString(),
-                                               parentItem->data(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).toString());
+                                               data(defValueIndex, Qt::DisplayRole).toString());
+            } else {
+                text = QString("%1=%2=%3").arg(parentItem->data(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).toString(),
+                                               parentItem->data(index.column()).toString(),
+                                               data(index, Qt::DisplayRole).toString());
             }
             stream << text;
         }

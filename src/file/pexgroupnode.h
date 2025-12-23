@@ -134,7 +134,7 @@ public:
     void addRunParametersHistory(const QString &option);
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, const QStringList &defaultParameters
-                                  , const QList<option::OptionItem> &itemList, option::Option *opt
+                                  , const QList<option::OptionItem*> &itemList, option::Option *opt
                                   , gamscom::ComFeatures comMode, int &logOption);
     void setLocation(const QString &newLocation) override;
     void setWorkDir(const QString &workingDir);
