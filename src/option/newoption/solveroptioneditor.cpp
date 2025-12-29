@@ -229,31 +229,6 @@ void SolverOptionEditor::on_dataItemChanged(const QModelIndex &topLeft, const QM
     updateActionsState();
 }
 
-void SolverOptionEditor::on_newTableRowDropped(const QModelIndex &index)
-{
-    disconnect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionEditor::findAndSelectionOptionFromDefinition);
-    updateTableColumnSpan();
-    ui->optionTableView->selectRow(index.row());
-    const QString optionName = mOptionModel->data(index.siblingAtColumn(mOptionModel->column_key()), Qt::DisplayRole).toString();
-    QModelIndexList definitionItems = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
-                                                                               Qt::DisplayRole,
-                                                                               optionName, 1);
-    mOptionTokenizer->getOption()->setModified(optionName, true);
-    for(const QModelIndex &item : std::as_const(definitionItems)) {
-        ui->definitionTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
-    }
-    emit itemCountChanged(mOptionModel->rowCount());
-
-    if (mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumStr &&
-        mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumInt &&
-        mOptionTokenizer->getOption()->getOptionSubType(optionName) != optsubNoValue)
-        ui->optionTableView->edit( mOptionModel->index(index.row(), mOptionModel->column_value() ));
-
-    showOptionDefinition(true);
-    connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
-    updateActionsState();
-}
-
 bool SolverOptionEditor::saveOptionFile(const QString &location)
 {
     return saveAs(location);
@@ -654,20 +629,19 @@ void SolverOptionEditor::refreshOptionTableModel(bool hideAllComments)
 
 void SolverOptionEditor::addOptionModelFromDefinition(int row, const QModelIndex &descriptionIndex)
 {
-    if (row == definitionModel()->rowCount()) {
+    if (row == mOptionModel->rowCount()) {
         mOptionModel->insertRows(row, 1, QModelIndex());
     }
 
-    const QModelIndex parentIndex     =  mDefinitionModel->parent(descriptionIndex);
-    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? mDefinitionModel->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
-                                                              : mDefinitionModel->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-    const QModelIndex defValueIndex   = (parentIndex.row()<0) ? mDefinitionModel->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
-                                                              : mDefinitionModel->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
+    const QModelIndex parentIndex     =  ui->definitionTreeView->model()->parent(descriptionIndex);
+    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                              : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
+    const QModelIndex defValueIndex   = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
+                                                              : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
     const QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex
-                                                                 : mDefinitionModel->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
-    const QString selectedValueData = mDefinitionModel->data(selectedValueIndex, Qt::DisplayRole).toString();
-    const QString optionNameData    = mDefinitionModel->data(optionNameIndex, Qt::DisplayRole).toString();
-
+                                                                 : ui->definitionTreeView->model()->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
+    const QString selectedValueData =  ui->definitionTreeView->model()->data(selectedValueIndex, Qt::DisplayRole).toString();
+    const QString optionNameData    =  ui->definitionTreeView->model()->data(optionNameIndex, Qt::DisplayRole).toString();
     const QModelIndex insertKeyIndex    = mOptionModel->index(row, SolverOptionTableModel::COLUMN_KEY);
     const QModelIndex insertValueIndex  = mOptionModel->index(row, SolverOptionTableModel::COLUMN_VALUE);
     const QModelIndex insertNumberIndex = mOptionModel->index(row, SolverOptionTableModel::COLUMN_ID);
@@ -675,14 +649,16 @@ void SolverOptionEditor::addOptionModelFromDefinition(int row, const QModelIndex
     mOptionModel->setData( insertKeyIndex, optionNameData, Qt::EditRole);
     mOptionModel->setData( insertValueIndex, selectedValueData, Qt::EditRole);
     Settings* settings = Settings::settings();
-    if (settings && settings->toBool(skSoAddEOLComment) && mOptionTokenizer->getOption()->isEOLCharDefined()) {
-        const QModelIndex commentIndex = descriptionIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_DESCIPTION);
-        QString commentData            = mOptionModel->data(commentIndex).toString();
-        QModelIndex insertEOLCommentIndex = mOptionModel->index(row, SolverOptionTableModel::COLUMN_EOL_COMMENT);
-        mOptionModel->setData( insertEOLCommentIndex, commentData, Qt::EditRole);
-    } else {
-        QModelIndex insertEOLCommentIndex = mOptionModel->index(row, SolverOptionTableModel::COLUMN_EOL_COMMENT);
-        mOptionModel->setData( insertEOLCommentIndex, "", Qt::EditRole);
+    if (mOptionTokenizer->getOption()->isEOLCharDefined()) {
+        if (settings && settings->toBool(skSoAddEOLComment)) {
+            const QModelIndex commentIndex = descriptionIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_DESCIPTION);
+            QString commentData            = mOptionModel->data(commentIndex).toString();
+            QModelIndex insertEOLCommentIndex = mOptionModel->index(row, SolverOptionTableModel::COLUMN_EOL_COMMENT);
+            mOptionModel->setData( insertEOLCommentIndex, commentData, Qt::EditRole);
+        } else {
+            QModelIndex insertEOLCommentIndex = mOptionModel->index(row, SolverOptionTableModel::COLUMN_EOL_COMMENT);
+            mOptionModel->setData( insertEOLCommentIndex, "", Qt::EditRole);
+        }
     }
     const int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     mOptionModel->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);

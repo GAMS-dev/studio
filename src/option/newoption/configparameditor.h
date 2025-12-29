@@ -60,7 +60,6 @@ public slots:
     QList<ConfigItem *> parameterConfigItems();
 
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
-    void on_newTableRowDropped(const QModelIndex &index);
 
 protected slots:
     void insertOption() override;

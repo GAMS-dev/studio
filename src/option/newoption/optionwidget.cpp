@@ -317,8 +317,8 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
     const QModelIndex parentIndex =  ui->definitionTreeView->model()->parent(definitionIndex);
     const QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
                                                               : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-    const QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
-                                                            : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
+    const QModelIndex defValueIndex   = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
+                                                              : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
     const QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex
                                                                  : ui->definitionTreeView->model()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
 
@@ -326,19 +326,21 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
                optionModel(), &OptionTableModel::on_updateOptionItem);
 
     bool replaceExistingEntry = false;
-    const QString definitionName = ui->definitionTreeView->model()->data(optionNameIndex, Qt::DisplayRole).toString();
-    QVariant definitionID        = ui->definitionTreeView->model()->data(definitionIndex, Qt::DisplayRole);
-    int rowToBeAdded = ui->definitionTreeView->model()->rowCount();
+    const QString definitionName    = ui->definitionTreeView->model()->data(optionNameIndex, Qt::DisplayRole).toString();
+    const QModelIndex optionIdIndex = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER)
+                                                            : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
+    QVariant definitionID           = ui->definitionTreeView->model()->data(optionIdIndex, Qt::DisplayRole);
+    int rowToBeAdded = ui->optionTableView->model()->rowCount();
     Settings* settings = Settings::settings();
     if (settings && settings->toBool(skSoOverrideExisting)) {
-        QModelIndexList indices = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, optionModel()->column_id()),
+        QModelIndexList indices = ui->optionTableView->model()->match(ui->optionTableView->model()->index(0, optionModel()->column_id()),
                                                                       Qt::DisplayRole,
                                                                       definitionID, -1, Qt::MatchExactly|Qt::MatchRecursive);
         ui->optionTableView->clearSelection();
         QItemSelection selection;
         for(const QModelIndex &idx: std::as_const(indices)) {
-            const QModelIndex leftIndex  = ui->definitionTreeView->model()->index(idx.row(), optionModel()->column_id());
-            const QModelIndex rightIndex = ui->definitionTreeView->model()->index(idx.row(), optionModel()->columnCount()-1);
+            const QModelIndex leftIndex  = ui->optionTableView->model()->index(idx.row(), optionModel()->column_id());
+            const QModelIndex rightIndex = ui->optionTableView->model()->index(idx.row(), optionModel()->columnCount()-1);
             const QItemSelection rowSelection(leftIndex, rightIndex);
             selection.merge(rowSelection, QItemSelectionModel::Select);
         }
@@ -353,6 +355,7 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
             const int answer = MsgBox::question("Option Entry exists", "Option '" + definitionName + "' already exists.",
                                                 "How do you want to proceed?", detailText,
                                                 nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
+            qDebug() << "360: " << detailText;
             switch(answer) {
             case 0: // replace
                 if (isCommentToggleable() && settings && settings->toBool(skSoDeleteCommentsAbove) && indices.size()>0) {
@@ -361,7 +364,7 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
                     connect(optionModel(), &OptionTableModel::optionItemRemoved, optionModel(), &OptionTableModel::on_removeOptionItem, Qt::UniqueConnection);
                 }
                 replaceExistingEntry = true;
-                indices = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, optionModel()->column_id()),
+                indices = ui->optionTableView->model()->match(ui->optionTableView->model()->index(0, optionModel()->column_id()),
                                                               Qt::DisplayRole,
                                                               definitionID, -1, Qt::MatchExactly|Qt::MatchRecursive);
                 rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
@@ -424,9 +427,12 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
             rowToBeAdded++;
         }
     }
+    qDebug() << "430";
     addOptionModelFromDefinition(rowToBeAdded, definitionIndex);
+    qDebug() << "432:" << rowToBeAdded;
     ui->optionTableView->selectRow(rowToBeAdded);
-    selectAnOption();
+    qDebug() << "434";
+//    selectAnOption();
 
     const QModelIndex insertNumberIndex = ui->definitionTreeView->model()->index(rowToBeAdded, optionModel()->column_id());
     const QString text = optionModel()->getOptionTableEntry(insertNumberIndex.row());
@@ -435,7 +441,7 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
     else
         optionTokenizer()->logger()->append(QString("Option entry '%1' has been added").arg(text), LogMsgType::Info);
 
-    const int lastColumn = ui->definitionTreeView->model()->columnCount()-1;
+    const int lastColumn = ui->optionTableView->model()->columnCount()-1;
     const int lastRow = rowToBeAdded;
     int firstRow = lastRow;
     if (settings && settings->toBool(skSoAddCommentAbove)) {
@@ -445,10 +451,12 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
     }
     if (firstRow<0)
         firstRow = 0;
+    qDebug() << "453: " << firstRow << ", " << lastColumn;
+    qDebug() << "454: " << lastRow << ", " << lastColumn;
     optionModel()->on_updateOptionItem( ui->definitionTreeView->model()->index(firstRow, lastColumn),
                                         ui->definitionTreeView->model()->index(lastRow, lastColumn),
                                         {Qt::EditRole});
-
+    qDebug() << "458: " << firstRow << ", " << lastColumn;
     connect(optionModel(), &QAbstractTableModel::dataChanged, optionModel(), &OptionTableModel::on_updateOptionItem, Qt::UniqueConnection);
     if (isCommentToggleable())
         updateTableColumnSpan();
@@ -458,6 +466,8 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
 
     emit itemCountChanged(ui->definitionTreeView->model()->rowCount());
 
+    ui->optionTableView->resizeColumnToContents(OptionTableModel::COLUMN_KEY);
+    ui->optionTableView->resizeColumnToContents(OptionTableModel::COLUMN_VALUE);
     if (parentIndex.row()<0) {
         if (optionTokenizer()->getOption()->getOptionSubType(definitionName) != optsubNoValue) {
             const QModelIndex insertValueIndex = optionModel()->index(rowToBeAdded, OptionTableModel::COLUMN_VALUE);
@@ -823,7 +833,7 @@ void OptionWidget::on_selectRow(int logicalIndex) const
 
     QItemSelectionModel *selectionModel = ui->optionTableView->selectionModel();
     const QModelIndex topLeft = ui->definitionTreeView->model()->index(logicalIndex, OptionTableModel::COLUMN_ID, QModelIndex());
-    const QModelIndex  bottomRight = ui->definitionTreeView->model()->index(logicalIndex, OptionTableModel::COLUMN_ID, QModelIndex());
+    const QModelIndex  bottomRight = ui->definitionTreeView->model()->index(logicalIndex, optionModel()->columnCount()-1, QModelIndex());
     const QItemSelection selection( topLeft, bottomRight);
     selectionModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
 }
@@ -1028,6 +1038,33 @@ void OptionWidget::copyDefinitionToClipboard(int column)
     }
     QClipboard* clip = QApplication::clipboard();
     clip->setText( text );
+}
+
+void OptionWidget::on_newTableRowDropped(const QModelIndex &index)
+{
+    disconnect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
+    updateTableColumnSpan();
+    ui->optionTableView->selectRow(index.row());
+
+    const QString optionName = optionModel()->data(index.siblingAtColumn(optionModel()->column_key()), Qt::DisplayRole).toString();
+    QModelIndexList definitionItems = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+                                                                             Qt::DisplayRole,
+                                                                             optionName, 1);
+    optionTokenizer()->getOption()->setModified(optionName, true);
+    for(const QModelIndex &item : std::as_const(definitionItems)) {
+        ui->definitionTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
+    }
+    emit itemCountChanged(optionModel()->rowCount());
+
+    ui->optionTableView->resizeColumnToContents(index.column());
+    if (optionTokenizer()->getOption()->getOptionType(optionName) != optTypeEnumStr &&
+        optionTokenizer()->getOption()->getOptionType(optionName) != optTypeEnumInt &&
+        optionTokenizer()->getOption()->getOptionSubType(optionName) != optsubNoValue)
+        ui->optionTableView->edit( optionModel()->index(index.row(), optionModel()->column_value() ));
+
+    showOptionDefinition(true);
+    connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
+    updateActionsState();
 }
 
 } // namepsace newoption

@@ -138,6 +138,8 @@ protected slots:
     void copyDefinitionToClipboard(int column);
 
 public slots:
+    void on_newTableRowDropped(const QModelIndex &index);
+
     void on_actionInsert_triggered() { insertOption(); }
     void on_actionInsert_Comment_triggered() { insertComment(); }
     void on_actionDelete_triggered() { deleteOption(); }

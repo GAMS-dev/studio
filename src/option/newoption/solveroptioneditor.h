@@ -66,7 +66,6 @@ signals:
 
 public slots:
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
-    void on_newTableRowDropped(const QModelIndex &index);
 
     bool saveOptionFile(const QString &location);
 

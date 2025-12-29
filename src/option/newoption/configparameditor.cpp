@@ -226,32 +226,6 @@ void ConfigParamEditor::on_dataItemChanged(const QModelIndex &topLeft, const QMo
     ui->optionTableView->selectionModel()->select(topLeft, QItemSelectionModel::Select);
 
     updateActionsState(topLeft);
-
-}
-
-void ConfigParamEditor::on_newTableRowDropped(const QModelIndex &index)
-{
-    disconnect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
-               this, &ConfigParamEditor::findAndSelectionOptionFromDefinition);
-    ui->optionTableView->selectRow(index.row());
-
-    const QString optionName = ui->optionTableView->model()->data(index, Qt::DisplayRole).toString();
-    QModelIndexList definitionItems = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
-                                                                              Qt::DisplayRole,
-                                                                              optionName, 1);
-    mOptionTokenizer->getOption()->setModified(optionName, true);
-    for(const QModelIndex item : std::as_const(definitionItems)) {
-        ui->definitionTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
-    }
-
-    ui->optionTableView->selectionModel()->clearSelection();
-    ui->optionTableView->resizeColumnToContents(index.column());
-    ui->optionTableView->edit( mParameterTableModel->index(index.row(), ConfigTableModel::COLUMN_VALUE));
-
-    showOptionDefinition(false);
-
-    connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &ConfigParamEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 }
 
 void ConfigParamEditor::insertOption()
@@ -416,19 +390,19 @@ void ConfigParamEditor::moveOptionDown()
 
 void ConfigParamEditor::addOptionModelFromDefinition(int row, const QModelIndex &descriptionIndex)
 {
-    if (row == definitionModel()->rowCount()) {
+    if (row == mParameterTableModel->rowCount()) {
         mParameterTableModel->insertRows(row, 1, QModelIndex());
     }
 
-    const QModelIndex parentIndex     =  mDefinitionModel->parent(descriptionIndex);
-    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? mDefinitionModel->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
-                                                                : mDefinitionModel->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-    const QModelIndex defValueIndex   = (parentIndex.row()<0) ? mDefinitionModel->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
-                                                              : mDefinitionModel->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
+    const QModelIndex parentIndex     =  ui->definitionTreeView->model()->parent(descriptionIndex);
+    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                              : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
+    const QModelIndex defValueIndex   = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
+                                                              : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
     const QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex
-                                                                   : mDefinitionModel->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
-    const QString selectedValueData = mDefinitionModel->data(selectedValueIndex, Qt::DisplayRole).toString();
-    const QString optionNameData    = mDefinitionModel->data(optionNameIndex, Qt::DisplayRole).toString();
+                                                                 : ui->definitionTreeView->model()->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
+    const QString selectedValueData = ui->definitionTreeView->model()->data(selectedValueIndex, Qt::DisplayRole).toString();
+    const QString optionNameData    = ui->definitionTreeView->model()->data(optionNameIndex, Qt::DisplayRole).toString();
 
     const int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     const QModelIndex insertKeyIndex    = mParameterTableModel->index(row, ConfigTableModel::COLUMN_KEY);
