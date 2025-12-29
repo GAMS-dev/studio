@@ -285,6 +285,20 @@ void GamsParameterWidget::loadCommandLine(const QStringList &history)
     emit optionsChanged(ui->gamsParameterCommandLine->currentText());
 }
 
+void GamsParameterWidget::selectSearchField()
+{
+    mDockChild->selectSearchField();
+}
+
+void GamsParameterWidget::deSelectParameters()
+{
+    if (mDockChild->hasFocus() && mDockChild->hasSelection()) {
+        mDockChild->deSelectParameters();
+    } else {
+        this->focusNextChild();
+    }
+}
+
 void GamsParameterWidget::updateCommandLineStr(const QList<OptionItem*> &optionItems)
 {
     if (mDockChild->isHidden())

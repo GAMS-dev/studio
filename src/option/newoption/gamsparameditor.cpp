@@ -282,6 +282,16 @@ void gams::studio::option::newoption::GamsParamEditor::focus()
         ui->optionTableView->setFocus(Qt::TabFocusReason);
 }
 
+bool GamsParamEditor::hasFocus()
+{
+    return (ui->optionTableView->hasFocus() || ui->optionDefinitionView->hasFocus());
+}
+
+bool GamsParamEditor::hasSelection()
+{
+    return (ui->optionTableView->selectionModel()->hasSelection() || ui->definitionTreeView->selectionModel()->hasSelection());
+}
+
 QString GamsParamEditor::getSelectedParameterName(QWidget *widget) const
 {
     if (widget == ui->optionTableView) {
@@ -327,6 +337,15 @@ void GamsParamEditor::on_ParameterTableModelChanged(const QString &text)
 
 }
 
+void GamsParamEditor::deSelectParameters()
+{
+    if (ui->optionTableView->hasFocus() && ui->optionTableView->selectionModel()->hasSelection()) {
+        ui->optionTableView->selectionModel()->clearSelection();
+        ui->definitionTreeView->selectionModel()->clearSelection();
+    } else if (ui->definitionTreeView->hasFocus() && ui->definitionTreeView->selectionModel()->hasSelection()) {
+        ui->definitionTreeView->selectionModel()->clearSelection();
+    }
+}
 
 } // namepsace newoption
 } // namepsace option

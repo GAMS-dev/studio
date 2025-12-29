@@ -94,6 +94,9 @@ public slots:
     void updateRunState(bool isRunnable, bool isRunning);
     void loadCommandLine(const QStringList &history);
 
+    void selectSearchField();
+    void deSelectParameters();
+
 private:
     void setRunsActionGroup();
     void setInterruptActionGroup();

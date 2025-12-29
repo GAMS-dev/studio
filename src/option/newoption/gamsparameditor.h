@@ -45,11 +45,15 @@ public:
     void setEditorExtended(bool extended);
     bool isEditorExtended();
     void focus();
+    bool hasFocus();
+    bool hasSelection();
 
     QString getSelectedParameterName(QWidget* widget) const;
 
 public slots:
     void on_ParameterTableModelChanged(const QString &text);
+
+    void deSelectParameters();
 
 protected slots:
     void insertOption() override;

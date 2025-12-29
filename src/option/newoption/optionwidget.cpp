@@ -48,6 +48,8 @@ OptionWidget::~OptionWidget()
 {
     delete mToolBar;
     delete ui;
+    if (mLogEdit)
+        delete mLogEdit;
 }
 
 void OptionWidget::initActions()
