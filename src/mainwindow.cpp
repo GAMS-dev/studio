@@ -4588,7 +4588,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     if (project->parameterFile()) {
 #ifdef _WIN64
-        itemList.prepend(option::OptionItem("parmFile", '"'+workDir.relativeFilePath(project->parameterFile()->location())+'"',-1,-1));
+        itemList.prepend(new option::OptionItem("parmFile", '"'+workDir.relativeFilePath(project->parameterFile()->location())+'"',-1,-1));
 #else
         itemList.prepend(new option::OptionItem("parmFile", workDir.relativeFilePath(project->parameterFile()->location()),-1,-1));
 #endif
