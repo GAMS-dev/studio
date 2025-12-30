@@ -21,7 +21,7 @@
 #include "option/gamsuserconfig.h"
 #include "option/optiondefinitionmodel.h"
 #include "option/newoption/configparameditor.h"
-#include "msgbox.h"
+//#include "msgbox.h"
 #include "ui_optionwidget.h"
 
 namespace gams {
@@ -146,17 +146,6 @@ QString ConfigParamEditor::getSelectedParameterName(QWidget *widget) const
     return "";
 }
 
-void ConfigParamEditor::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
-{
-    Q_UNUSED(deselected)
-    if (selected.isEmpty()) {
-        updateActionsState();
-        return;
-    }
-
-    updateActionsState(selected.indexes().first());
-}
-
 void ConfigParamEditor::parameterItemCommitted(QWidget *editor)
 {
     Q_UNUSED(editor)
@@ -235,6 +224,8 @@ void ConfigParamEditor::insertOption()
 
     QModelIndexList indexSelection = ui->optionTableView->selectionModel()->selectedIndexes();
     for(const QModelIndex index : std::as_const(indexSelection)) {
+        if (!mOptionCompleter->isLastEditorClosed() && mOptionCompleter->currentEditedIndex().row()==index.row())
+            return;
         ui->optionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 

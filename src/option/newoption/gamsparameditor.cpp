@@ -51,6 +51,14 @@ GamsParamEditor::GamsParamEditor(const QString &commandLineParameter, QWidget *p
 
     connect(mOptionCompleter, &OptionItemDelegate::currentEditedIndexChanged, this, &GamsParamEditor::parameterItemCommitted, Qt::UniqueConnection);
 
+    connect(ui->optionTableView, &QTableView::customContextMenuRequested,this, &GamsParamEditor::showOptionContextMenu, Qt::UniqueConnection);
+//    connect(this, &GamsParamTableModel::optionModelChanged, this, &GamsParamEditor::on_ParameterTableModelChanged, Qt::UniqueConnection);
+    connect(mOptionModel, &GamsParamTableModel::newTableRowDropped, this, &GamsParamEditor::on_newTableRowDropped, Qt::UniqueConnection);
+    connect(mOptionModel, &GamsParamTableModel::optionNameChanged,  this, &GamsParamEditor::on_parameterTableNameChanged, Qt::UniqueConnection);
+    connect(mOptionModel, &GamsParamTableModel::optionValueChanged, this, &GamsParamEditor::on_parameterValueChanged, Qt::UniqueConnection);
+
+    connect(ui->optionTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GamsParamEditor::selectionChanged);
+
     connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &GamsParamEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
     connect(ui->definitionTreeView, &QTreeView::customContextMenuRequested, this, &GamsParamEditor::showDefinitionContextMenu, Qt::UniqueConnection);
@@ -94,9 +102,11 @@ bool gams::studio::option::newoption::GamsParamEditor::isEditorExtended()
 
 void gams::studio::option::newoption::GamsParamEditor::insertOption()
 {
+    qDebug() << "103:" << (mExtended ? "extended":"not extended") << ", hasFocus:" << (ui->optionTableView->hasFocus() ? "Focus": "NO focus");
     if (!mExtended || !ui->optionTableView->hasFocus() )
         return;
 
+    qDebug() << "107:";
     QModelIndexList indexSelection = ui->optionTableView->selectionModel()->selectedIndexes();
     for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->optionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
@@ -106,7 +116,7 @@ void gams::studio::option::newoption::GamsParamEditor::insertOption()
 
     if (mOptionModel->rowCount() <= 0 || selection.count() <= 0) {
         mOptionModel->insertRows(mOptionModel->rowCount(), 1, QModelIndex());
-        const QModelIndex index = mOptionModel->index( mOptionModel->rowCount()-1, GamsParameterTableModel::COLUMN_OPTION_KEY);
+        const QModelIndex index = mOptionModel->index( mOptionModel->rowCount()-1, GamsParamTableModel::COLUMN_KEY);
         ui->optionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
         ui->optionTableView->edit( index );
 
@@ -118,9 +128,9 @@ void gams::studio::option::newoption::GamsParamEditor::insertOption()
         }
         std::sort(rows.begin(), rows.end());
         ui->optionTableView->model()->insertRows(rows.at(0), 1, QModelIndex());
-        const QModelIndex index = ui->optionTableView->model()->index(rows.at(0), GamsParameterTableModel::COLUMN_OPTION_KEY);
+        const QModelIndex index = ui->optionTableView->model()->index(rows.at(0), GamsParamTableModel::COLUMN_KEY);
         ui->optionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
-        ui->optionTableView->edit( mOptionModel->index(index.row(), GamsParameterTableModel::COLUMN_OPTION_KEY) );
+        ui->optionTableView->edit( mOptionModel->index(index.row(), GamsParamTableModel::COLUMN_KEY) );
 
         ui->optionTableView->scrollTo(index, QAbstractItemView::EnsureVisible);
     }
@@ -142,6 +152,27 @@ void gams::studio::option::newoption::GamsParamEditor::deleteOption()
 
     disconnect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
                this, &GamsParamEditor::findAndSelectionOptionFromDefinition);
+
+    QList<int> rows;
+    const auto indexes = ui->optionTableView->selectionModel()->selectedRows();
+    for(const QModelIndex & index : indexes) {
+        rows.append( index.row() );
+    }
+    std::sort(rows.begin(), rows.end());
+    int prev = -1;
+    for(int i=rows.count()-1; i>=0; i--) {
+        const int current = rows[i];
+        if (current != prev) {
+            ui->optionTableView->model()->removeRows( current, 1 );
+            prev = current;
+        }
+    }
+
+    ui->optionTableView->clearSelection();
+    ui->optionTableView->setFocus();
+    connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &GamsParamEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
+    updateActionsState();
 }
 
 void gams::studio::option::newoption::GamsParamEditor::moveOptionUp()
@@ -173,8 +204,8 @@ void gams::studio::option::newoption::GamsParamEditor::moveOptionUp()
                this, &GamsParamEditor::findAndSelectionOptionFromDefinition);
     QItemSelection select;
     for(const QModelIndex indx : std::as_const(idxSelection)) {
-        const QModelIndex leftIndex  = ui->optionTableView->model()->index(indx.row()-1, GamsParameterTableModel::COLUMN_OPTION_KEY);
-        const QModelIndex rightIndex = ui->optionTableView->model()->index(indx.row()-1, GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
+        const QModelIndex leftIndex  = ui->optionTableView->model()->index(indx.row()-1, GamsParamTableModel::COLUMN_KEY);
+        const QModelIndex rightIndex = ui->optionTableView->model()->index(indx.row()-1, ui->optionTableView->model()->columnCount()-1);
         const QItemSelection rowSelection(leftIndex, rightIndex);
         select.merge(rowSelection, QItemSelectionModel::Select);
     }
@@ -182,6 +213,7 @@ void gams::studio::option::newoption::GamsParamEditor::moveOptionUp()
     connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this,
             &GamsParamEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 
+    updateActionsState();
 }
 
 void gams::studio::option::newoption::GamsParamEditor::moveOptionDown()
@@ -213,15 +245,15 @@ void gams::studio::option::newoption::GamsParamEditor::moveOptionDown()
                &GamsParamEditor::findAndSelectionOptionFromDefinition);
     QItemSelection select;
     for(const QModelIndex indx : std::as_const(idxSelection)) {
-        const QModelIndex leftIndex  = ui->optionTableView->model()->index(indx.row()+1, GamsParameterTableModel::COLUMN_OPTION_KEY);
-        const QModelIndex rightIndex = ui->optionTableView->model()->index(indx.row()+1, GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
+        const QModelIndex leftIndex  = ui->optionTableView->model()->index(indx.row()+1, GamsParamTableModel::COLUMN_KEY);
+        const QModelIndex rightIndex = ui->optionTableView->model()->index(indx.row()+1, GamsParamTableModel::COLUMN_ID);
         const QItemSelection rowSelection(leftIndex, rightIndex);
         select.merge(rowSelection, QItemSelectionModel::Select);
     }
     ui->optionTableView->selectionModel()->select(select, QItemSelectionModel::ClearAndSelect);
     connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &GamsParamEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
-
+    updateActionsState();
 }
 
 void GamsParamEditor::addOptionModelFromDefinition(int row, const QModelIndex &descriptionIndex)
@@ -335,6 +367,76 @@ void GamsParamEditor::on_ParameterTableModelChanged(const QString &text)
 
     connect(mOptionCompleter, &OptionItemDelegate::currentEditedIndexChanged, this, &GamsParamEditor::parameterItemCommitted, Qt::UniqueConnection);
 
+}
+
+void GamsParamEditor::on_parameterTableNameChanged(const QString &from, const QString &to)
+{
+    if (QString::compare(from, to, Qt::CaseInsensitive)==0)
+        return;
+
+    disconnect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GamsParamEditor::findAndSelectionOptionFromDefinition);
+    QModelIndexList fromDefinitionItems = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+                                                                                    Qt::DisplayRole,
+                                                                                    from, 1);
+    if (fromDefinitionItems.size() <= 0) {
+        fromDefinitionItems = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_SYNONYM),
+                                                                        Qt::DisplayRole,
+                                                                        from, 1);
+    }
+    for(const QModelIndex item : std::as_const(fromDefinitionItems)) {
+        const QModelIndex index = ui->definitionTreeView->model()->index(item.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
+        ui->definitionTreeView->model()->setData(index, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
+    }
+
+    QModelIndexList toDefinitionItems = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+                                                                                  Qt::DisplayRole,
+                                                                                  to, 1);
+    if (toDefinitionItems.size() <= 0) {
+        toDefinitionItems = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_SYNONYM),
+                                                                      Qt::DisplayRole,
+                                                                      to, 1);
+    }
+    for(const QModelIndex item : std::as_const(toDefinitionItems)) {
+        const QModelIndex index = ui->definitionTreeView->model()->index(item.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
+        ui->definitionTreeView->model()->setData(index, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
+    }
+
+    ui->definitionTreeView->selectionModel()->clearSelection();
+    if (!toDefinitionItems.isEmpty()) {
+        ui->definitionTreeView->selectionModel()->select(
+            QItemSelection (
+                ui->definitionTreeView->model ()->index (toDefinitionItems.first().row() , 0),
+                ui->definitionTreeView->model ()->index (toDefinitionItems.first().row(), ui->definitionTreeView->model ()->columnCount () - 1)),
+            QItemSelectionModel::Select);
+        ui->definitionTreeView->scrollTo(toDefinitionItems.first(), QAbstractItemView::EnsureVisible);
+    }
+    connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GamsParamEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
+}
+
+void GamsParamEditor::on_parameterValueChanged(const QModelIndex &index)
+{
+    disconnect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GamsParamEditor::findAndSelectionOptionFromDefinition);
+    ui->definitionTreeView->selectionModel()->clearSelection();
+
+    const QModelIndex idx = index.sibling(index.row(), GamsParamTableModel::COLUMN_KEY);
+    const QString data = ui->optionTableView->model()->data(idx, Qt::DisplayRole).toString();
+    QModelIndexList toDefinitionItems = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+                                                                                  Qt::DisplayRole,
+                                                                                  data, 1);
+    if (toDefinitionItems.isEmpty()) {
+        toDefinitionItems = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_SYNONYM),
+                                                                      Qt::DisplayRole,
+                                                                      data, 1);
+    } /*else {*/
+    if (!toDefinitionItems.isEmpty()) {
+        ui->definitionTreeView->selectionModel()->select(
+            QItemSelection (
+                ui->definitionTreeView->model ()->index (toDefinitionItems.first().row() , 0),
+                ui->definitionTreeView->model ()->index (toDefinitionItems.first().row(), ui->definitionTreeView->model ()->columnCount () - 1)),
+            QItemSelectionModel::Select);
+        ui->definitionTreeView->scrollTo(toDefinitionItems.first(), QAbstractItemView::EnsureVisible);
+    }
+    connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GamsParamEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 }
 
 void GamsParamEditor::deSelectParameters()

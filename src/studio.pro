@@ -204,14 +204,12 @@ SOURCES += \
     option/addoptionheaderview.cpp \
     option/commandline.cpp \
     option/configoptiondefinitionmodel.cpp \
-    option/configparamtablemodel.cpp \
     option/definitionitemdelegate.cpp \
     option/envvarcfgcompleterdelegate.cpp \
     option/envvarconfigeditor.cpp \
     option/envvartablemodel.cpp \
     option/gamsconfigeditor.cpp \
     option/gamsoptiondefinitionmodel.cpp \
-    option/gamsparametertablemodel.cpp \
     option/gamsuserconfig.cpp \
     option/lineeditcompleteevent.cpp \
     option/option.cpp \
@@ -220,18 +218,15 @@ SOURCES += \
     option/optiondefinitionmodel.cpp \
     option/optionsortfilterproxymodel.cpp \
     option/optiontokenizer.cpp \
-    option/paramconfigeditor.cpp \
-    option/parametereditor.cpp \
     option/solveroptiondefinitionmodel.cpp \
-    option/newoption/gamsparametermodel.cpp \
-    option/newoption/configparameditor.cpp \
-    option/newoption/configtablemodel.cpp \
-    option/newoption/gamsparameditor.cpp \
-    option/newoption/gamsparamtablemodel.cpp \
-    option/newoption/optionwidget.cpp \
     option/newoption/optionitemdelegate.cpp \
-    option/newoption/solveroptioneditor.cpp \
     option/newoption/solveroptiontablemodel.cpp \
+    option/newoption/gamsparamtablemodel.cpp \
+    option/newoption/configtablemodel.cpp \
+    option/newoption/optionwidget.cpp \
+    option/newoption/configparameditor.cpp \
+    option/newoption/gamsparameditor.cpp \
+    option/newoption/solveroptioneditor.cpp \
     option/newoption/gamsparameterwidget.cpp \
     pinviewwidget.cpp \
     process/abstractprocess.cpp \
@@ -451,14 +446,12 @@ HEADERS += \
     option/addoptionheaderview.h \
     option/commandline.h \
     option/configoptiondefinitionmodel.h \
-    option/configparamtablemodel.h \
     option/definitionitemdelegate.h \
     option/envvarcfgcompleterdelegate.h \
     option/envvarconfigeditor.h \
     option/envvartablemodel.h \
     option/gamsconfigeditor.h \
     option/gamsoptiondefinitionmodel.h \
-    option/gamsparametertablemodel.h \
     option/gamsuserconfig.h \
     option/lineeditcompleteevent.h \
     option/option.h \
@@ -467,19 +460,16 @@ HEADERS += \
     option/optiondefinitionmodel.h \
     option/optionsortfilterproxymodel.h \
     option/optiontokenizer.h \
-    option/paramconfigeditor.h \
-    option/parametereditor.h \
     option/solveroptiondefinitionmodel.h \
-    option/newoption/gamsparametermodel.h \
-    option/newoption/configparameditor.h \
-    option/newoption/configtablemodel.h \
-    option/newoption/gamsparameditor.h \
-    option/newoption/gamsparamtablemodel.h \
-    option/newoption/optiontablemodel.h \
-    option/newoption/optionwidget.h \
     option/newoption/optionitemdelegate.h \
-    option/newoption/solveroptioneditor.h \
+    option/newoption/optiontablemodel.h \
     option/newoption/solveroptiontablemodel.h \
+    option/newoption/gamsparamtablemodel.h \
+    option/newoption/configtablemodel.h \
+    option/newoption/optionwidget.h \
+    option/newoption/configparameditor.h \
+    option/newoption/gamsparameditor.h \
+    option/newoption/solveroptioneditor.h \
     option/newoption/gamsparameterwidget.h \
     pinviewwidget.h \
     process.h \
@@ -584,9 +574,6 @@ FORMS += \
     option/gamsconfigeditor.ui \
     option/newoption/gamsparameterwidget.ui \
     option/newoption/optionwidget.ui \
-    option/paramconfigeditor.ui \
-    option/parametereditor.ui \
-    option/solveroptionwidget.ui \
     pinviewwidget.ui \
     reference/filereferencewidget.ui \
     reference/referenceviewer.ui \

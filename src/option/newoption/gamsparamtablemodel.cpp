@@ -424,14 +424,13 @@ bool GamsParamTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction
 
     Settings* settings = Settings::settings();
     if (action ==  Qt::CopyAction) {
-
-        QList<OptionItem> itemList;
+        QList<OptionItem*> itemList;
         itemList.reserve(newItems.size());
         QList<int> overrideIdRowList;
         for (const QString &text : std::as_const(newItems)) {
             const QStringList textList = text.split("=");
             const int optionid = mOptionTokenizer->getOption()->getOptionDefinition(textList.at(0)).number;
-            itemList.append(OptionItem(optionid, textList.at( COLUMN_KEY ), textList.at( COLUMN_VALUE )));
+            itemList.append(new OptionItem(optionid, textList.at( COLUMN_KEY ), textList.at( COLUMN_VALUE )));
             QModelIndexList indices = match(index(GamsParamTableModel::COLUMN_KEY, columnCount()), Qt::DisplayRole,
                                             QVariant(optionid), Qt::MatchRecursive);
             if (settings && settings->toBool(skSoOverrideExisting)) {
@@ -515,19 +514,20 @@ bool GamsParamTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction
             }
         } // else entry not exist
 
-        for (const OptionItem &item : itemList) {
+        for (const OptionItem* item : itemList) {
             if (!replaceExistingEntry)
                 insertRows(beginRow, 1, QModelIndex());
 
             const QModelIndex idx = index(beginRow, COLUMN_KEY);
             setHeaderData( idx.row(), Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
-            setData(idx, item.key, Qt::EditRole);
-            setData( index(beginRow, COLUMN_VALUE), item.value, Qt::EditRole);
-            setData( index(beginRow, COLUMN_ID), item.optionId, Qt::EditRole);
+            setData(idx, item->key, Qt::EditRole);
+            setData( index(beginRow, COLUMN_VALUE), item->value, Qt::EditRole);
+            setData( index(beginRow, COLUMN_ID), item->optionId, Qt::EditRole);
             emit newTableRowDropped( idx );
             beginRow++;
         }
 
+        qDeleteAll(itemList);
         itemList.clear();
         return true;
     } else {

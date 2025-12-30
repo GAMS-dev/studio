@@ -19,6 +19,7 @@
  */
 #include <QStandardItemModel>
 #include <QClipboard>
+#include <QScrollBar>
 
 #include "optionwidget.h"
 #include "ui_optionwidget.h"
@@ -27,6 +28,7 @@
 #include "settings.h"
 #include "theme.h"
 #include "headerviewproxy.h"
+#include "mainwindow.h"
 #include "option/definitionitemdelegate.h"
 #include "option/optionsortfilterproxymodel.h"
 #include "option/optiondefinitionmodel.h"
@@ -48,8 +50,6 @@ OptionWidget::~OptionWidget()
 {
     delete mToolBar;
     delete ui;
-    if (mLogEdit)
-        delete mLogEdit;
 }
 
 void OptionWidget::initActions()
@@ -241,6 +241,12 @@ bool OptionWidget::isEverySelectionARow() const
 
     return ((selection.count() > 0) && (indexSelection.count() % ui->optionTableView->model()->columnCount() == 0));
 
+}
+
+bool OptionWidget::isEachRowSelected() const
+{
+    const QModelIndexList selection = ui->optionTableView->selectionModel()->selectedRows();
+    return (selection.size() == ui->optionTableView->model()->rowCount());
 }
 
 bool OptionWidget::isInFocus(QWidget *focusWidget) const
@@ -689,6 +695,17 @@ MainWindow *OptionWidget::getMainWindow() const
     return nullptr;
 }
 
+void OptionWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+{
+    Q_UNUSED(deselected)
+    if (selected.isEmpty()) {
+        updateActionsState();
+        return;
+    }
+
+    updateActionsState(selected.indexes().first());
+}
+
 void OptionWidget::showOptionContextMenu(const QPoint &pos)
 {
     QModelIndexList indexSelection = ui->optionTableView->selectionModel()->selectedIndexes();
@@ -784,6 +801,7 @@ void OptionWidget::findAndSelectionOptionFromDefinition()
 
     ui->optionTableView->selectionModel()->select(selection, QItemSelectionModel::Select);
     ui->definitionTreeView->setFocus();
+    updateActionsState(index);
 }
 
 void OptionWidget::selectAllOptions()
@@ -877,8 +895,8 @@ void OptionWidget::updateActionsState()
     ui->actionMoveUp->setEnabled( thereIsSelection ? idxSelection.first().row() > 0 : false );
     ui->actionMoveDown->setEnabled( thereIsSelection ? idxSelection.last().row() < optionModel()->rowCount()-1 : false );
 
-    ui->actionSelect_Current_Row->setEnabled( thereIsSelection );
-    ui->actionSelectAll->setEnabled( thereIsSelection );
+    ui->actionSelect_Current_Row->setEnabled( thereIsSelection && !isEachRowSelected());
+    ui->actionSelectAll->setEnabled( thereIsSelection && !isEachRowSelected());
 
     bool showOptionEnbaled = ( thereIsSelection
                                 ? ( optionModel()->headerData(idxSelection.first().row(),Qt::Vertical, Qt::CheckStateRole) == Qt::PartiallyChecked

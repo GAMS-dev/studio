@@ -893,7 +893,7 @@ void MainWindow::initToolBar()
     ui->action1_Create_GDX->setChecked(runOptions & 1);
     ui->action2_Create_RF->setChecked(runOptions & 2);
     ui->action3_Profiling->setChecked(runOptions & 4);
-    mGamsParameterEditor = new option::ParameterEditor(ui->actionRun, ui->actionCompile,
+    mGamsParameterEditor = new option::newoption::GamsParameterWidget(ui->actionRun, ui->actionCompile,
                 ui->actionRunWithSelected, ui->actionCompileWithSelected, ui->actionRunDebugger, ui->actionStepDebugger,
                 actionFlags, ui->actionRunNeos, ui->actionRunEngine,  ui->actionInterrupt, ui->actionStop, this);
 
@@ -905,7 +905,7 @@ void MainWindow::initToolBar()
         zoomWidget(mGamsParameterEditor->dockChild(), delta);
     });
 
-    connect(mGamsParameterEditor, &option::ParameterEditor::optionsChanged, this, [this](const QString &) {
+    connect(mGamsParameterEditor, &option::newoption::GamsParameterWidget::optionsChanged, this, [this](const QString &) {
         updateProfilerAction();
     });
 }
@@ -4810,17 +4810,17 @@ void MainWindow::checkDefaultWorkDir()
 
 void MainWindow::on_actionRun_triggered()
 {
-    option::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
-            ? option::RunActionState::Compile
-            : option::RunActionState::Run;
+    option::newoption::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
+            ? option::newoption::RunActionState::Compile
+            : option::newoption::RunActionState::Run;
     execute(mGamsParameterEditor->on_runAction(state), nullptr);
 }
 
 void MainWindow::on_actionRunWithSelected_triggered()
 {
-    option::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
-            ? option::RunActionState::CompileWithSelected
-            : option::RunActionState::RunWithSelected;
+    option::newoption::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
+            ? option::newoption::RunActionState::CompileWithSelected
+            : option::newoption::RunActionState::RunWithSelected;
     gamscom::ComFeatures comMode = ui->action3_Profiling->isChecked() ? gamscom::cfProfiler : gamscom::cfNoCom;
     processMainFileDynamics();
     execute(mGamsParameterEditor->on_runAction(state), nullptr, comMode);
@@ -4829,13 +4829,13 @@ void MainWindow::on_actionRunWithSelected_triggered()
 void MainWindow::on_actionCompile_triggered()
 {
     processMainFileDynamics();
-    execute(mGamsParameterEditor->on_runAction(option::RunActionState::Compile), nullptr);
+    execute(mGamsParameterEditor->on_runAction(option::newoption::RunActionState::Compile), nullptr);
 }
 
 void MainWindow::on_actionCompileWithSelected_triggered()
 {
     processMainFileDynamics();
-    execute(mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithSelected), nullptr);
+    execute(mGamsParameterEditor->on_runAction(option::newoption::RunActionState::CompileWithSelected), nullptr);
 }
 
 void MainWindow::on_actionRunDebugger_triggered()
@@ -4845,7 +4845,7 @@ void MainWindow::on_actionRunDebugger_triggered()
         emit ui->debugWidget->sendRun();
     } else {
         processMainFileDynamics();
-        execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebug), nullptr, gamscom::cfRunDebug);
+        execute(mGamsParameterEditor->on_runAction(option::newoption::RunActionState::RunDebug), nullptr, gamscom::cfRunDebug);
     }
 }
 
@@ -4856,7 +4856,7 @@ void MainWindow::on_actionStepDebugger_triggered()
         emit ui->debugWidget->sendStepLine();
     } else {
         processMainFileDynamics();
-        execute(mGamsParameterEditor->on_runAction(option::RunActionState::StepDebug), nullptr, gamscom::cfStepDebug);
+        execute(mGamsParameterEditor->on_runAction(option::newoption::RunActionState::StepDebug), nullptr, gamscom::cfStepDebug);
     }
 }
 
@@ -4954,7 +4954,7 @@ neos::NeosProcess *MainWindow::createNeosProcess()
     if (!project) return nullptr;
     auto neosProcess = new neos::NeosProcess();
     neosProcess->setWorkingDirectory(mRecent.project()->workDir());
-    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
+    mGamsParameterEditor->on_runAction(option::newoption::RunActionState::RunNeos);
     project->setProcess(neosProcess);
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(project->process());
     connect(neosPtr, &neos::NeosProcess::procStateChanged, this, &MainWindow::remoteProgress);
@@ -5192,7 +5192,7 @@ void MainWindow::prepareEngineProcess()
     engine::EngineProcess *engineProcess = qobject_cast<engine::EngineProcess*>(process);
     if (!engineProcess) return;
     NodeId pid = project->id();
-    mGamsParameterEditor->on_runAction(option::RunActionState::RunEngine);
+    mGamsParameterEditor->on_runAction(option::newoption::RunActionState::RunEngine);
     connect(engineProcess, &engine::EngineProcess::jobCreated, this, [this, pid](const QString &token) { //    void jobCreated(const QString &token);
         if (PExProjectNode *project = mProjectRepo.findProject(pid)) {
             project->setEngineJobToken(token);

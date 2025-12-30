@@ -22,7 +22,7 @@
 
 #include <QAbstractTableModel>
 
-#include "optiontokenizer.h"
+#include "option/optiontokenizer.h"
 
 namespace gams {
 namespace studio {

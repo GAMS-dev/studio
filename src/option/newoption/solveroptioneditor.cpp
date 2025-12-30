@@ -20,7 +20,10 @@
 #include <QFileInfo>
 #include <QClipboard>
 
+#include "mainwindow.h"
 #include "option/newoption/solveroptiontablemodel.h"
+#include "option/solveroptiondefinitionmodel.h"
+#include "option/optioncompleterdelegate.h"
 #include "option/newoption/solveroptioneditor.h"
 #include "option/solveroptiondefinitionmodel.h"
 #include "file/filetype.h"
@@ -88,6 +91,8 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
             mDefinitionProxymodel->setFilterRegularExpression(ui->definitionSearch->regExp());
             selectSearchField();
         });
+
+        connect(ui->optionTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionEditor::selectionChanged);
 
         connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
         connect(ui->definitionTreeView, &QAbstractItemView::doubleClicked, this, &SolverOptionEditor::addOptionFromDefinition);
@@ -226,7 +231,7 @@ void SolverOptionEditor::on_dataItemChanged(const QModelIndex &topLeft, const QM
         ui->definitionTreeView->scrollTo(toDefinitionItems.first(), QAbstractItemView::EnsureVisible);
     }
     ui->optionTableView->selectionModel()->select(topLeft, QItemSelectionModel::Select);
-    updateActionsState();
+    updateActionsState(topLeft);
 }
 
 bool SolverOptionEditor::saveOptionFile(const QString &location)
@@ -325,10 +330,9 @@ void SolverOptionEditor::insertOption()
         QLineEdit* editor = qobject_cast<QLineEdit *>(mOptionCompleter->lastEditor());
         if (editor) emit editor->editingFinished();
     }
-
     QModelIndexList indexSelection = ui->optionTableView->selectionModel()->selectedIndexes();
     for(const QModelIndex &index : std::as_const(indexSelection)) {
-        if (mOptionCompleter->currentEditedIndex().isValid() && mOptionCompleter->currentEditedIndex().row()==index.row())
+        if (!mOptionCompleter->isLastEditorClosed() && mOptionCompleter->currentEditedIndex().row()==index.row())
             return;
         ui->optionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
@@ -386,7 +390,10 @@ void SolverOptionEditor::insertOption()
 
     ui->definitionTreeView->clearSelection();
     ui->optionTableView->clearSelection();
-    ui->optionTableView->edit( mOptionModel->index(rowToBeInserted, mOptionModel->column_key()));
+
+    const QModelIndex index = mOptionModel->index(rowToBeInserted, OptionTableModel::COLUMN_KEY);
+    ui->optionTableView->edit( index );
+    updateActionsState(index);
 }
 
 void SolverOptionEditor::updateTableColumnSpan()
@@ -411,7 +418,7 @@ void SolverOptionEditor::insertComment()
 
     QModelIndexList indexSelection = ui->optionTableView->selectionModel()->selectedIndexes();
     for(const QModelIndex &index : std::as_const(indexSelection)) {
-        if (mOptionCompleter->currentEditedIndex().isValid() && mOptionCompleter->currentEditedIndex().row()==index.row())
+        if (!mOptionCompleter->isLastEditorClosed() && mOptionCompleter->currentEditedIndex().row()==index.row())
             return;
         ui->optionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
@@ -546,6 +553,7 @@ void SolverOptionEditor::deleteOption()
         updateTableColumnSpan();
         setModified(true);
         emit itemCountChanged(mOptionModel->rowCount());
+        updateActionsState();
     }
 }
 
@@ -574,6 +582,7 @@ void SolverOptionEditor::moveOptionUp()
     //                                                 QModelIndex(), index.row()-1);
     updateTableColumnSpan();
     setModified(true);
+    updateActionsState();
 }
 
 void SolverOptionEditor::moveOptionDown()
@@ -601,6 +610,7 @@ void SolverOptionEditor::moveOptionDown()
     //                                QModelIndex(), index.row()+selection.count()+1);
     updateTableColumnSpan();
     setModified(true);
+    updateActionsState();
 }
 
 bool SolverOptionEditor::isEditing()

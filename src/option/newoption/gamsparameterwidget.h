@@ -23,15 +23,11 @@
 #include <QDockWidget>
 #include <QWidget>
 
-#include "abstractview.h"
 #include "option/optiontokenizer.h"
 #include "option/newoption/gamsparameditor.h"
 
 namespace gams {
 namespace studio {
-
-class MainWindow;
-
 namespace option {
 namespace newoption {
 
@@ -65,7 +61,7 @@ public:
     QString on_runAction(RunActionState state);
     void on_interruptAction();
     void on_stopAction();
-    AbstractView *dockChild();
+    GamsParamEditor *dockChild();
 
     OptionTokenizer *getOptionTokenizer() const;
     bool isAParameterEditorFocused(QWidget* focusWidget) const;
@@ -82,7 +78,7 @@ public:
     QDockWidget* extendedEditor() const;
 
 signals:
-    void parameterLoaded(const QString &location);
+//    void parameterLoaded(const QString &location);
     void ParameterTableModelChanged(const QString &commandLineStr);
     void commandLineChanged(QLineEdit* lineEdit, const QList<gams::studio::option::OptionItem*> &optionItems);
     void optionsChanged(const QString &commandLineStr);
@@ -109,7 +105,6 @@ private:
 
     QDockWidget *mExtendedEditor = nullptr;
     GamsParamEditor *mDockChild = nullptr;
-//    AbstractView *mDockChild = nullptr;
     bool mHasSSL = false;
 
     QAction* actionRun;

@@ -41,15 +41,10 @@ GamsParameterWidget::GamsParameterWidget(QAction *aRun, QAction *aCompile, QActi
 {
     ui->setupUi(this);
 
-    setRunsActionGroup();
-    setInterruptActionGroup();
-
-    setFocusPolicy(Qt::StrongFocus);
-
     mExtendedEditor = new QDockWidget("GAMS Parameters", this);
     mExtendedEditor->setObjectName("gamsArguments");
 
-    mDockChild = new GamsParamEditor(ui->gamsParameterCommandLine->lineEdit()->text(), mExtendedEditor); // new AbstractView(mExtendedEditor);
+    mDockChild = new GamsParamEditor(ui->gamsParameterCommandLine->lineEdit()->text(), mExtendedEditor);
     mExtendedEditor->setWidget(mDockChild);
     QVBoxLayout *lay = new QVBoxLayout(mDockChild);
     lay->addWidget(ui->gamsParameterEditor);
@@ -61,6 +56,11 @@ GamsParameterWidget::GamsParameterWidget(QAction *aRun, QAction *aCompile, QActi
     main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);
     connect(mExtendedEditor, &QDockWidget::visibilityChanged, main, &MainWindow::setExtendedEditorVisibility, Qt::UniqueConnection);
     mExtendedEditor->setVisible(false);
+
+    setRunsActionGroup();
+    setInterruptActionGroup();
+
+    setFocusPolicy(Qt::StrongFocus);
 
 #ifdef __APPLE__
     ui->verticalLayout->setContentsMargins(2,2,2,0);
@@ -83,6 +83,10 @@ GamsParameterWidget::GamsParameterWidget(QAction *aRun, QAction *aCompile, QActi
 GamsParameterWidget::~GamsParameterWidget()
 {
     delete ui;
+    if (mDockChild)
+        delete mDockChild;
+    if (mExtendedEditor)
+        delete mExtendedEditor;
 }
 
 QString GamsParameterWidget::on_runAction(RunActionState state)
@@ -155,7 +159,7 @@ void GamsParameterWidget::on_stopAction()
    ui->gamsInterruptToolButton->setDefaultAction( actionStop );
 }
 
-AbstractView *GamsParameterWidget::dockChild()
+GamsParamEditor *GamsParameterWidget::dockChild()
 {
     return mDockChild;
 }
@@ -206,6 +210,7 @@ void GamsParameterWidget::setEditorExtended(bool extended)
                 this, &GamsParameterWidget::updateParameterTableModel, Qt::UniqueConnection );
     }
     mExtendedEditor->setVisible(extended);
+    mDockChild->setEditorExtended(extended);
     main->updateRunState();
     ui->gamsParameterCommandLine->setEnabled(!extended);
 }

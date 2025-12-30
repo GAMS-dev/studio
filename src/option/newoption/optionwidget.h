@@ -25,7 +25,6 @@
 #include <QStandardItemModel>
 
 #include "abstractview.h"
-#include "mainwindow.h"
 #include "editors/systemlogedit.h"
 #include "option/optiontokenizer.h"
 #include "option/optionsortfilterproxymodel.h"
@@ -35,6 +34,9 @@
 
 namespace gams {
 namespace studio {
+
+class MainWindow;
+
 namespace option {
 namespace newoption {
 
@@ -62,10 +64,13 @@ protected:
    bool isThereAnIndexSelection() const;
    bool isThereARowSelection() const;
    bool isEverySelectionARow() const;
+   bool isEachRowSelected() const;
 
    MainWindow* getMainWindow() const;
 
 public slots:
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
     void selectAllOptions();
     void deSelectOptions();
 

@@ -21,8 +21,8 @@
 #define OPTIONCOMPLETERDELEGATE_H
 
 #include <QStyledItemDelegate>
-#include "optiontokenizer.h"
-#include "option.h"
+#include "option/optiontokenizer.h"
+#include "option/option.h"
 
 namespace gams {
 namespace studio {

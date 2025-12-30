@@ -52,8 +52,6 @@ public:
     QString getSelectedParameterName(QWidget* widget) const;
 
 public slots:
-    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
-
     void parameterItemCommitted(QWidget *editor);
     void on_reloadGamsUserConfigFile(const QList<ConfigItem  *> &initParams);
 
@@ -63,8 +61,8 @@ public slots:
 
 protected slots:
     void insertOption() override;
-    void insertComment() override                     {               };
-    void deleteCommentsBeforeOption(int row) override { Q_UNUSED(row) };
+    void insertComment() override                     { return;               };
+    void deleteCommentsBeforeOption(int row) override { Q_UNUSED(row) return; };
     void deleteOption() override;
     void moveOptionUp() override;
     void moveOptionDown() override;

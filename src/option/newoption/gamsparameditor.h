@@ -52,6 +52,8 @@ public:
 
 public slots:
     void on_ParameterTableModelChanged(const QString &text);
+    void on_parameterTableNameChanged(const QString &from, const QString &to);
+    void on_parameterValueChanged(const QModelIndex &index);
 
     void deSelectParameters();
 

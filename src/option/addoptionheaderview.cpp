@@ -22,8 +22,8 @@
 #include <QMouseEvent>
 #include <QToolTip>
 
-#include "optiontokenizer.h"
-#include "addoptionheaderview.h"
+#include "option/optiontokenizer.h"
+#include "option/addoptionheaderview.h"
 #include "theme.h"
 
 namespace gams {
