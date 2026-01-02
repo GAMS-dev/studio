@@ -93,12 +93,16 @@ void OptionWidget::initToolBar()
     ui->optionActionCtrl->layout()->setMenuBar(mToolBar);
 }
 
-void OptionWidget::initTableView()
+void OptionWidget::initOptionTableView()
 {
+    Q_ASSERT( optionModel() );
+    Q_ASSERT( optionTokenizer() );
+
     ui->optionTableView->setModel( optionModel() );
 
-    setOptionCompleter( new OptionItemDelegate(optionTokenizer(), ui->optionTableView) );
-    ui->optionTableView->setItemDelegate( optionCompleter() );
+    OptionItemDelegate* completer = new OptionItemDelegate(optionTokenizer(), ui->optionTableView);
+    ui->optionTableView->setItemDelegate( completer );
+    setOptionCompleter( completer );
 //    connect(optionCompleter(), &QStyledItemDelegate::commitData, this, &ParamConfigEditor::parameterItemCommitted);
 
     ui->optionTableView->setEditTriggers(QAbstractItemView::DoubleClicked
@@ -131,10 +135,18 @@ void OptionWidget::initTableView()
     ui->optionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->optionTableView->horizontalHeader()->setHighlightSections(false);
 
+    connect( optionCompleter(), &OptionItemDelegate::closeEditor, this, &OptionWidget::completeEditingOption, Qt::UniqueConnection );
+
+    connect(ui->optionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu, Qt::UniqueConnection);
+    connect(ui->optionTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::selectionChanged);
+    connect(optionModel(), &OptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped, Qt::UniqueConnection);
 }
 
-void OptionWidget::initTreeView()
+void OptionWidget::initDefintionTreeView()
 {
+    Q_ASSERT( optionModel() );
+    Q_ASSERT( definitionModel() );
+
     QList<OptionGroup> optionGroupList = optionTokenizer()->getOption()->getOptionGroupList();
     int groupsize = 0;
     for(const OptionGroup &group : std::as_const(optionGroupList)) {
@@ -144,31 +156,33 @@ void OptionWidget::initTreeView()
             ++groupsize;
     }
 
-    setDefinitionGroupModel( new QStandardItemModel(groupsize+1, 3) );
+    QStandardItemModel* groupModel = new QStandardItemModel(groupsize+1, 3);
     int i = 0;
-    definitionGroupModel()->setItem(0, 0, new QStandardItem("--- All Options ---"));
-    definitionGroupModel()->setItem(0, 1, new QStandardItem("0"));
-    definitionGroupModel()->setItem(0, 2, new QStandardItem("All Options"));
+    groupModel->setItem(0, 0, new QStandardItem("--- All Options ---"));
+    groupModel->setItem(0, 1, new QStandardItem("0"));
+    groupModel->setItem(0, 2, new QStandardItem("All Options"));
     for(const OptionGroup &group : std::as_const(optionGroupList)) {
         if (group.hidden || group.name.compare("deprecated", Qt::CaseInsensitive)==0)
             continue;
         ++i;
-        definitionGroupModel()->setItem(i, 0, new QStandardItem(group.description));
-        definitionGroupModel()->setItem(i, 1, new QStandardItem(QString::number(group.number)));
-        definitionGroupModel()->setItem(i, 2, new QStandardItem(group.name));
+        groupModel->setItem(i, 0, new QStandardItem(group.description));
+        groupModel->setItem(i, 1, new QStandardItem(QString::number(group.number)));
+        groupModel->setItem(i, 2, new QStandardItem(group.name));
     }
-    ui->definitionGroup->setModel( definitionGroupModel() );
+    ui->definitionGroup->setModel( groupModel );
     ui->definitionGroup->setModelColumn(0);
+    setDefinitionGroupModel( groupModel );
 
-    setDefintionProxyModel( new OptionSortFilterProxyModel(this) );
-    definitionProxymodel()->setFilterKeyColumn(-1);
-    definitionProxymodel()->setSourceModel( definitionModel() );
-    definitionProxymodel()->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    definitionProxymodel()->setSortCaseSensitivity(Qt::CaseInsensitive);
+    OptionSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
+    proxymodel->setFilterKeyColumn(-1);
+    proxymodel->setSourceModel( definitionModel() );
+    proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
+    setDefinitionProxyModel( proxymodel );
 
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->definitionTreeView->header()->setStyle(HeaderViewProxy::instance());
-    ui->definitionTreeView->setModel( definitionProxymodel() );
+    ui->definitionTreeView->setModel( proxymodel );
     ui->definitionTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->definitionTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->definitionTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -188,6 +202,20 @@ void OptionWidget::initTreeView()
     ui->definitionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true);
 
     headerRegister(ui->definitionTreeView->header());
+
+    connect(ui->definitionSearch, &FilterLineEdit::regExpChanged, this, [this]() {
+        definitionProxymodel()->setFilterRegularExpression(ui->definitionSearch->regExp());
+        selectSearchField();
+    });
+
+    connect(ui->definitionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int groupindex) {
+        definitionModel()->loadOptionFromGroup( groupindex );
+    });
+
+    connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &GamsParamEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
+    connect(ui->definitionTreeView, &QTreeView::customContextMenuRequested, this, &OptionWidget::showDefinitionContextMenu, Qt::UniqueConnection);
+    connect(ui->definitionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition, Qt::UniqueConnection);
 }
 
 void OptionWidget::initTabNavigation(bool isFileEditor)
@@ -203,16 +231,16 @@ void OptionWidget::initTabNavigation(bool isFileEditor)
     }
 }
 
-void OptionWidget::initMessageControl(bool isFileEditor)
+void OptionWidget::initMessageControl(bool visible)
 {
     mLogEdit = new SystemLogEdit(this);
     mLogEdit->setObjectName("log-edit");
     optionTokenizer()->provideLogger(mLogEdit);
 
     ui->messageTabWidget->addTab( mLogEdit, "Messages" );
-    ui->messageCtrlWidget->setVisible( isFileEditor );
-    ui->messageTabWidget->setVisible( isFileEditor );
-    ui->optionFileCtrlwidget->setVisible( isFileEditor );
+    ui->messageCtrlWidget->setVisible( visible );
+    ui->messageTabWidget->setVisible( visible );
+    ui->optionFileCtrlwidget->setVisible( visible );
 }
 
 

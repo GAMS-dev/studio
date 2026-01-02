@@ -90,13 +90,13 @@ protected:
     OptionTableModel* optionModel() const override    { return mParameterTableModel; }
 
     OptionSortFilterProxyModel* definitionProxymodel() const override        { return mDefinitionProxymodel;  }
-    void setDefintionProxyModel(OptionSortFilterProxyModel *model) override  { mDefinitionProxymodel = model; }
+    void setDefinitionProxyModel(OptionSortFilterProxyModel *model) override { mDefinitionProxymodel = model; }
 
-    OptionDefinitionModel* definitionModel() const override { return mDefinitionModel; }
+    OptionDefinitionModel* definitionModel() const override         { return mDefinitionModel;                                              }
+    void setDefinitionModel(OptionDefinitionModel* model) override  { mDefinitionModel = dynamic_cast<ConfigOptionDefinitionModel*>(model); }
 
     QStandardItemModel* definitionGroupModel() const override          { return mDefinitionGroupModel;  }
     void setDefinitionGroupModel( QStandardItemModel* model ) override { mDefinitionGroupModel = model; }
-
 
     OptionItemDelegate* optionCompleter() const override            { return mOptionCompleter;      }
     void setOptionCompleter(OptionItemDelegate* completer) override { mOptionCompleter = completer; }

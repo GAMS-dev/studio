@@ -62,13 +62,12 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
     const QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(optionFilePath, encodingName);
     mOptionModel = new SolverOptionTableModel(optionItem, mOptionTokenizer,  this);
 
-    mOptionCompleter = new OptionItemDelegate(optionTokenizer(), ui->optionTableView);
     mDefinitionModel = new SolverOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
 
-    initToolBar();
     initActions();
-    initTableView();
-    initTreeView();
+    initToolBar();
+    initOptionTableView();
+    initDefintionTreeView();
     initTabNavigation( mIsFileEditor );
     initMessageControl( mIsFileEditor );
 
@@ -84,24 +83,6 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
     }
     else {
         connect(ui->optionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionEditor::on_selectAndToggleRow, Qt::UniqueConnection);
-        connect(ui->optionTableView, &QTableView::customContextMenuRequested, this, &SolverOptionEditor::showOptionContextMenu, Qt::UniqueConnection);
-        connect(mOptionModel, &SolverOptionTableModel::newTableRowDropped, this, &SolverOptionEditor::on_newTableRowDropped, Qt::UniqueConnection);
-
-        connect(ui->definitionSearch, &FilterLineEdit::regExpChanged, this, [this]() {
-            mDefinitionProxymodel->setFilterRegularExpression(ui->definitionSearch->regExp());
-            selectSearchField();
-        });
-
-        connect(ui->optionTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionEditor::selectionChanged);
-
-        connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
-        connect(ui->definitionTreeView, &QAbstractItemView::doubleClicked, this, &SolverOptionEditor::addOptionFromDefinition);
-        connect(ui->definitionTreeView, &QTreeView::customContextMenuRequested, this, &SolverOptionEditor::showDefinitionContextMenu, Qt::UniqueConnection);
-
-        connect(ui->definitionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int index) {
-            mDefinitionModel->loadOptionFromGroup( mDefinitionGroupModel->data(mDefinitionGroupModel->index(index, 1)).toInt() );
-            mOptionModel->on_groupDefinitionReloaded();
-        });
 
         connect(this, &SolverOptionEditor::modificationChanged, this, &SolverOptionEditor::setModified, Qt::UniqueConnection);
 
@@ -111,8 +92,6 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
         connect(mOptionModel, &SolverOptionTableModel::solverOptionModelChanged, mDefinitionModel, &SolverOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
         connect(mOptionModel, &SolverOptionTableModel::solverOptionItemModelChanged, mDefinitionModel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem, Qt::UniqueConnection);
         connect(mOptionModel, &OptionTableModel::optionItemRemoved, mOptionModel, &SolverOptionTableModel::on_removeOptionItem, Qt::UniqueConnection);
-
-        connect( mOptionCompleter, &OptionCompleterDelegate::closeEditor, this, &SolverOptionEditor::completeEditingOption, Qt::UniqueConnection );
 
         connect(this, &SolverOptionEditor::compactViewChanged, mDefinitionModel, &SolverOptionDefinitionModel::on_compactViewChanged, Qt::UniqueConnection);
 

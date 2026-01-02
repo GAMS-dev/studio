@@ -39,33 +39,21 @@ GamsParamEditor::GamsParamEditor(const QString &commandLineParameter, QWidget *p
     const QString normalizedText = mOptionTokenizer->normalize(optionItem);
     mOptionModel = new GamsParamTableModel(optionItem, mOptionTokenizer,  this);
 
-    mOptionCompleter = new OptionItemDelegate(optionTokenizer(), ui->optionTableView);
     mDefinitionModel = new GamsOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
 
-    initToolBar();
     initActions();
-    initTableView();
-    initTreeView();
+    initToolBar();
+    initOptionTableView();
+    initDefintionTreeView();
     initTabNavigation( false );
     initMessageControl( false );
 
     connect(mOptionCompleter, &OptionItemDelegate::currentEditedIndexChanged, this, &GamsParamEditor::parameterItemCommitted, Qt::UniqueConnection);
 
-    connect(ui->optionTableView, &QTableView::customContextMenuRequested,this, &GamsParamEditor::showOptionContextMenu, Qt::UniqueConnection);
 //    connect(this, &GamsParamTableModel::optionModelChanged, this, &GamsParamEditor::on_ParameterTableModelChanged, Qt::UniqueConnection);
-    connect(mOptionModel, &GamsParamTableModel::newTableRowDropped, this, &GamsParamEditor::on_newTableRowDropped, Qt::UniqueConnection);
-    connect(mOptionModel, &GamsParamTableModel::optionNameChanged,  this, &GamsParamEditor::on_parameterTableNameChanged, Qt::UniqueConnection);
-    connect(mOptionModel, &GamsParamTableModel::optionValueChanged, this, &GamsParamEditor::on_parameterValueChanged, Qt::UniqueConnection);
 
     connect(ui->optionTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GamsParamEditor::selectionChanged);
 
-    connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &GamsParamEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
-    connect(ui->definitionTreeView, &QTreeView::customContextMenuRequested, this, &GamsParamEditor::showDefinitionContextMenu, Qt::UniqueConnection);
-    connect(ui->definitionTreeView, &QAbstractItemView::doubleClicked, this, &GamsParamEditor::addOptionFromDefinition, Qt::UniqueConnection);
-    connect(ui->definitionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int index) {
-        mDefinitionModel->loadOptionFromGroup( mDefinitionModel->data(mDefinitionModel->index(index, 1), Qt::DisplayRole).toInt() );
-    });
     connect(mOptionModel, &GamsParamTableModel::optionModelChanged, mDefinitionModel, &GamsOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
 
 }

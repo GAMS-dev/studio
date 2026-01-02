@@ -54,9 +54,9 @@ public:
 protected:
    void initActions();
    void initToolBar();
-   void initTableView();
-   void initTableControl();
-   void initTreeView();
+   void initOptionTableView();
+   void initOptionTableControl();
+   void initDefintionTreeView();
    void initTabNavigation(bool visible=false);
    void initMessageControl(bool visible=false);
 
@@ -172,9 +172,10 @@ protected:
     virtual OptionTableModel* optionModel() const = 0;
 
     virtual OptionSortFilterProxyModel* definitionProxymodel() const = 0;
-    virtual void setDefintionProxyModel(OptionSortFilterProxyModel *model) = 0;
+    virtual void setDefinitionProxyModel(OptionSortFilterProxyModel *model) = 0;
 
     virtual OptionDefinitionModel* definitionModel() const = 0;
+    virtual void setDefinitionModel(OptionDefinitionModel* model) = 0;
 
     virtual QStandardItemModel* definitionGroupModel() const = 0;
     virtual void setDefinitionGroupModel( QStandardItemModel* model) = 0;

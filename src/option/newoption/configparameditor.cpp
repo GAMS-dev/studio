@@ -44,30 +44,17 @@ ConfigParamEditor::ConfigParamEditor(const QList<ConfigItem *> &initParamItems, 
     }
     mParameterTableModel = new ConfigTableModel(optionItem, mOptionTokenizer, this);
 
-    mOptionCompleter = new OptionItemDelegate(optionTokenizer(), ui->optionTableView);
     mDefinitionModel = new ConfigOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
 
-    initToolBar();
     initActions();
-    initTableView();
-    initTreeView();
+    initToolBar();
+    initOptionTableView();
+    initDefintionTreeView();
     initTabNavigation( false );
     initMessageControl( false );
 
     connect(ui->optionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &ConfigParamEditor::on_selectRow, Qt::UniqueConnection);
-    connect(ui->optionTableView, &QTableView::customContextMenuRequested,this, &ConfigParamEditor::showOptionContextMenu, Qt::UniqueConnection);
-    connect(ui->optionTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ConfigParamEditor::selectionChanged);
-    connect(mParameterTableModel, &ConfigTableModel::newTableRowDropped, this, &ConfigParamEditor::on_newTableRowDropped, Qt::UniqueConnection);
 
-    connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &ConfigParamEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
-    connect(ui->definitionTreeView, &QTreeView::customContextMenuRequested, this, &ConfigParamEditor::showDefinitionContextMenu, Qt::UniqueConnection);
-    connect(ui->definitionTreeView, &QAbstractItemView::doubleClicked, this, &ConfigParamEditor::addOptionFromDefinition, Qt::UniqueConnection);
-
-    connect(ui->definitionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int index) {
-        mDefinitionModel->loadOptionFromGroup( mDefinitionGroupModel->data(mDefinitionGroupModel->index(index, 1)).toInt() );
-        mParameterTableModel->on_groupDefinitionReloaded();
-    });
     connect(mParameterTableModel, &QAbstractTableModel::dataChanged, this, &ConfigParamEditor::on_dataItemChanged, Qt::UniqueConnection);
     connect(mParameterTableModel, &QAbstractTableModel::dataChanged, mParameterTableModel, &ConfigTableModel::on_updateOptionItem, Qt::UniqueConnection);
     connect(mParameterTableModel, &ConfigTableModel::configParamModelChanged, mDefinitionModel, &ConfigOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
