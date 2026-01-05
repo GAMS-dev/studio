@@ -160,6 +160,8 @@ public slots:
     void on_actionAdd_This_Parameter_triggered();
     void on_actionRemove_This_Parameter_triggered();
 
+    void currentTableIndexChanged(const QModelIndex &index);
+
 signals:
     void modificationChanged(bool modifiedState);
     void itemCountChanged(int newItemCount);

@@ -23,7 +23,6 @@
 #include "mainwindow.h"
 #include "option/newoption/solveroptiontablemodel.h"
 #include "option/solveroptiondefinitionmodel.h"
-#include "option/optioncompleterdelegate.h"
 #include "option/newoption/solveroptioneditor.h"
 #include "option/solveroptiondefinitionmodel.h"
 #include "file/filetype.h"
@@ -70,6 +69,9 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
     initDefintionTreeView();
     initTabNavigation( mIsFileEditor );
     initMessageControl( mIsFileEditor );
+
+    if (isCommentToggleable())
+        updateTableColumnSpan();
 
     if (!mOptionTokenizer->getOption()->available())  {
         ui->definitionSearch->setReadOnly(true);
@@ -381,7 +383,7 @@ void SolverOptionEditor::updateTableColumnSpan()
     QList<SolverOptionItem *> optionItems = mOptionModel->getCurrentListOfOptionItems();
     for(int i=0; i< optionItems.size(); ++i) {
         if (optionItems.at(i)->disabled)
-            ui->optionTableView->setSpan(i, mOptionModel->column_key(), 1, mOptionModel->columnCount()-1);
+            ui->optionTableView->setSpan(i, mOptionModel->column_key(), 1, mOptionModel->columnCount());
     }
 }
 

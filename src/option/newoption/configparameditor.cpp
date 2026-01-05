@@ -263,8 +263,8 @@ void ConfigParamEditor::insertOption()
 
     emit modificationChanged(true);
 
+    ui->definitionTreeView->clearSelection();
     ui->optionTableView->selectionModel()->clearSelection();
-    ui->optionTableView->selectionModel()->select(insertKeyIndex, QItemSelectionModel::ClearAndSelect );
 
     const QModelIndex index = mParameterTableModel->index(rowToBeInserted, ConfigTableModel::COLUMN_KEY);
     ui->optionTableView->edit( index );
