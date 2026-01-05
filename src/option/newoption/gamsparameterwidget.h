@@ -103,6 +103,8 @@ private:
 
     Ui::GamsParameterWidget *ui;
 
+    OptionTokenizer* mOptionTokenizer;
+
     QDockWidget *mExtendedEditor = nullptr;
     GamsParamEditor *mDockChild = nullptr;
     bool mHasSSL = false;

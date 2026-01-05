@@ -27,14 +27,11 @@ namespace studio {
 namespace option {
 namespace newoption {
 
-GamsParamEditor::GamsParamEditor(const QString &commandLineParameter, QWidget *parent):
-    OptionWidget(false, parent)
+GamsParamEditor::GamsParamEditor(const QString &commandLineParameter,
+                                 OptionTokenizer* tokenizer,
+                                 QWidget *parent):
+    OptionWidget(false, parent), mOptionTokenizer(tokenizer)
 {
-    mOptionTokenizer = new OptionTokenizer(GamsOptDefFile);
-
-//    if (!mOptionTokenizer->getOption()->available())
-//        EXCEPT() << "Could not find or load OPT library for opening '" << mLocation << "'. Please check your GAMS installation.";
-
     const QList<OptionItem *> optionItem = mOptionTokenizer->tokenize(commandLineParameter);
     const QString normalizedText = mOptionTokenizer->normalize(optionItem);
     mOptionModel = new GamsParamTableModel(optionItem, mOptionTokenizer,  this);
@@ -60,8 +57,6 @@ GamsParamEditor::GamsParamEditor(const QString &commandLineParameter, QWidget *p
 
 GamsParamEditor::~GamsParamEditor()
 {
-    if (mOptionTokenizer)
-        delete mOptionTokenizer;
     if (mOptionCompleter)
         delete mOptionCompleter;
     if (mDefinitionGroupModel)
