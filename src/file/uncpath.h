@@ -23,6 +23,8 @@
 #include <QObject>
 #include <QSet>
 
+#ifdef _WIN64
+
 namespace gams {
 namespace studio {
 namespace file {
@@ -79,5 +81,7 @@ private:
 } // namespace file
 } // namespace studio
 } // namespace gams
+
+#endif // _WIN64
 
 #endif // UNCPATH_H

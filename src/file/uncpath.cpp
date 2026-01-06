@@ -138,8 +138,8 @@ bool UncPath::unmapDrive(const QString &driveLetter, bool force)
     return true;
 }
 
-#endif
-
 } // namespace file
 } // namespace studio
 } // namespace gams
+
+#endif // _WIN64
