@@ -1,8 +1,8 @@
 /**
  * GAMS Studio
  *
- * Copyright (c) 2017-2025 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2025 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2026 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2026 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3751,6 +3751,7 @@ void MainWindow::on_actionBase_mode_triggered()
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.project()->workDir());
     miroProcess->setModelName(mRecent.project()->mainModelName());
+    miroProcess->setModelPath(mRecent.project()->mainFile()->location());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
@@ -3766,6 +3767,7 @@ void MainWindow::on_actionConfiguration_mode_triggered()
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.project()->workDir());
     miroProcess->setModelName(mRecent.project()->mainModelName());
+    miroProcess->setModelPath(mRecent.project()->mainFile()->location());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
@@ -3825,6 +3827,7 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
     process->setMiroPath(miro::MiroCommon::path( Settings::settings()->toString(skMiroInstallPath)));
     process->setWorkingDirectory(mRecent.project()->workDir());
     process->setModelName(mRecent.project()->mainModelName());
+    process->setModelPath(mRecent.project()->mainFile()->location());
     process->setTestDeployment(testDeploy);
     process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
 

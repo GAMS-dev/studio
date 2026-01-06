@@ -1,8 +1,8 @@
 /**
  * GAMS Studio
  *
- * Copyright (c) 2017-2025 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2025 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2026 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2026 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -107,7 +107,12 @@ void AbstractMiroProcess::setModelName(const QString &modelFile)
 }
 
 QString AbstractMiroProcess::modelPath() const {
-    return workingDirectory() + "/" + modelName() + ".gms";
+    return mModelPath;
+}
+
+void AbstractMiroProcess::setModelPath(const QString &path)
+{
+    mModelPath = path;
 }
 
 void AbstractMiroProcess::readStdOut()
