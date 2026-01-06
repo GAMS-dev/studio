@@ -77,8 +77,9 @@ protected slots:
         return;
     };
 
-    void addOptionModelFromDefinition(int row, const QModelIndex &descriptionIndex)    override;
-    void addCommentModelFromDefinition(int row, const QModelIndex &descriptionIndex)   override {
+    void addOptionModelFromDefinition(int row, const QModelIndex &definitionIndex,
+                                               const QModelIndex &parentDefinitionIndex) override;
+    void addCommentModelFromDefinition(int row, const QModelIndex &descriptionIndex)     override {
         Q_UNUSED(row)  Q_UNUSED(descriptionIndex)
         return;
     }
@@ -108,16 +109,12 @@ protected:
     QStandardItemModel* definitionGroupModel() const override          { return mDefinitionGroupModel;  }
     void setDefinitionGroupModel( QStandardItemModel* model ) override { mDefinitionGroupModel = model; }
 
-    OptionItemDelegate* optionCompleter() const override            { return mOptionCompleter;      }
-    void setOptionCompleter(OptionItemDelegate* completer) override { mOptionCompleter = completer; }
-
     GamsParamTableModel* mOptionModel;
     OptionSortFilterProxyModel* mDefinitionProxymodel;
     GamsOptionDefinitionModel* mDefinitionModel;
     QStandardItemModel* mDefinitionGroupModel;
 
     OptionTokenizer* mOptionTokenizer;
-    OptionItemDelegate* mOptionCompleter;
 
     bool mExtended = false;
 };

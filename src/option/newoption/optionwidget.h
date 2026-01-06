@@ -113,7 +113,8 @@ protected slots:
     virtual void updateTableColumnSpan() = 0;
     virtual void refreshOptionTableModel(bool hideAllComments=true) = 0;
 
-    virtual void addOptionModelFromDefinition(int row, const QModelIndex &descriptionInde)   = 0;
+    virtual void addOptionModelFromDefinition(int row, const QModelIndex &definitionIndex,
+                                                       const QModelIndex &parentDefinitionIndex)   = 0;
     virtual void addCommentModelFromDefinition(int row, const QModelIndex &descriptionIndex) = 0;
     virtual void addEOLCommentModelFromDefinition(int row, const QModelIndex &selectedValueIndex,
                                                            const QModelIndex &descriptionIndex    ) = 0;
@@ -182,8 +183,10 @@ protected:
     virtual QStandardItemModel* definitionGroupModel() const = 0;
     virtual void setDefinitionGroupModel( QStandardItemModel* model) = 0;
 
-    virtual OptionItemDelegate* optionCompleter() const = 0;
-    virtual void setOptionCompleter(OptionItemDelegate* completer) = 0;
+    OptionItemDelegate* optionCompleter() const            { return mOptionCompleter;      }
+    void setOptionCompleter(OptionItemDelegate* completer) { mOptionCompleter = completer; }
+
+    OptionItemDelegate* mOptionCompleter;
 
     bool mIsFileEditor = false;
     SystemLogEdit *mLogEdit = nullptr;

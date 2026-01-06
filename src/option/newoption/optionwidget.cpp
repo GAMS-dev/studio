@@ -48,6 +48,8 @@ OptionWidget::OptionWidget(bool isFileEditor, QWidget *parent) :
 
 OptionWidget::~OptionWidget()
 {
+    if (mOptionCompleter)
+        delete mOptionCompleter;
     delete mToolBar;
     delete ui;
 }
@@ -135,8 +137,8 @@ void OptionWidget::initOptionTableView()
     ui->optionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->optionTableView->horizontalHeader()->setHighlightSections(false);
 
-    connect( optionCompleter(), &OptionItemDelegate::closeEditor, this, &OptionWidget::completeEditingOption, Qt::UniqueConnection );
-    connect( optionCompleter(), &OptionItemDelegate::currentEditedIndexChanged, this, &OptionWidget::currentTableIndexChanged, Qt::UniqueConnection) ;
+    connect( mOptionCompleter, &OptionItemDelegate::closeEditor, this, &OptionWidget::completeEditingOption, Qt::UniqueConnection );
+    connect( mOptionCompleter, &OptionItemDelegate::currentEditedIndexChanged, this, &OptionWidget::currentTableIndexChanged, Qt::UniqueConnection) ;
 
     connect(ui->optionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu, Qt::UniqueConnection);
     connect(ui->optionTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::selectionChanged);
@@ -350,12 +352,12 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
     emit modificationChanged(true);
 
     const QModelIndex parentIndex =  ui->definitionTreeView->model()->parent(definitionIndex);
-    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
-                                                              : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-    const QModelIndex defValueIndex   = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
-                                                              : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
+    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? definitionIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                              : parentIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME) ;
+    const QModelIndex defValueIndex   = (parentIndex.row()<0) ? definitionIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_DEF_VALUE)
+                                                              : parentIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_DEF_VALUE) ;
     const QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex
-                                                                 : ui->definitionTreeView->model()->index(definitionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
+                                                                 : parentIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME) ;
 
     disconnect(optionModel(), &QAbstractTableModel::dataChanged,
                optionModel(), &OptionTableModel::on_updateOptionItem);
@@ -366,6 +368,7 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
                                                             : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
     QVariant definitionID           = ui->definitionTreeView->model()->data(optionIdIndex, Qt::DisplayRole);
     int rowToBeAdded = ui->optionTableView->model()->rowCount();
+    qDebug() << "371: row="<< rowToBeAdded << ", definitionID=" << definitionID << ", definitionName=" << definitionName;
     Settings* settings = Settings::settings();
     if (settings && settings->toBool(skSoOverrideExisting)) {
         QModelIndexList indices = ui->optionTableView->model()->match(ui->optionTableView->model()->index(0, optionModel()->column_id()),
@@ -446,7 +449,6 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
         } // else entry not exist
     }
     ui->optionTableView->selectionModel()->clearSelection();
-
     const QString selectedValueData = ui->definitionTreeView->model()->data(selectedValueIndex, Qt::DisplayRole).toString();
     optionTokenizer()->getOption()->setModified(definitionName, true);
     ui->definitionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
@@ -461,7 +463,7 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
             rowToBeAdded++;
         }
     }
-    addOptionModelFromDefinition(rowToBeAdded, definitionIndex);
+    addOptionModelFromDefinition(rowToBeAdded,  definitionIndex, parentIndex);
     ui->optionTableView->selectRow(rowToBeAdded);
 //    selectAnOption();
 
@@ -485,13 +487,12 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
     optionModel()->on_updateOptionItem( ui->definitionTreeView->model()->index(firstRow, lastColumn),
                                         ui->definitionTreeView->model()->index(lastRow, lastColumn),
                                         {Qt::EditRole});
-    connect(optionModel(), &QAbstractTableModel::dataChanged, optionModel(), &OptionTableModel::on_updateOptionItem, Qt::UniqueConnection);
+
     if (isCommentToggleable())
         updateTableColumnSpan();
     if (isViewCompact())
         refreshOptionTableModel(true);
     showOptionDefinition(true);
-
     emit itemCountChanged(ui->definitionTreeView->model()->rowCount());
 
     ui->optionTableView->resizeColumnToContents(OptionTableModel::COLUMN_KEY);
@@ -502,6 +503,7 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
             ui->optionTableView->edit(insertValueIndex);
         }
     }
+    connect(optionModel(), &QAbstractTableModel::dataChanged, optionModel(), &OptionTableModel::on_updateOptionItem, Qt::UniqueConnection);
 }
 
 void OptionWidget::copyAction()
@@ -517,10 +519,10 @@ void OptionWidget::completeEditingOption(QWidget *editor, QAbstractItemDelegate:
     Q_UNUSED(editor)
     Q_UNUSED(hint)
 
-    Q_ASSERT( optionCompleter() );
-    ui->optionTableView->selectionModel()->setCurrentIndex ( optionCompleter()->currentEditedIndex(), QItemSelectionModel::Current );
-    ui->optionTableView->selectionModel()->select( optionCompleter()->currentEditedIndex(), QItemSelectionModel::ClearAndSelect );
-    ui->optionTableView->resizeColumnToContents( optionCompleter()->currentEditedIndex().column() );
+    Q_ASSERT( mOptionCompleter );
+    ui->optionTableView->selectionModel()->setCurrentIndex ( mOptionCompleter->currentEditedIndex(), QItemSelectionModel::Current );
+    ui->optionTableView->selectionModel()->select( mOptionCompleter->currentEditedIndex(), QItemSelectionModel::ClearAndSelect );
+    ui->optionTableView->resizeColumnToContents( mOptionCompleter->currentEditedIndex().column() );
     ui->optionTableView->setFocus();
     showOptionDefinition(false);
     updateActionsState();
@@ -712,7 +714,9 @@ void OptionWidget::on_actionRemove_This_Parameter_triggered()
         return;
 
     findAndSelectionOptionFromDefinition();
+    disconnect(optionModel(), &QAbstractTableModel::dataChanged, optionModel(), &OptionTableModel::on_updateOptionItem);
     deleteOption();
+    connect(optionModel(), &QAbstractTableModel::dataChanged, optionModel(), &OptionTableModel::on_updateOptionItem, Qt::UniqueConnection);
 }
 
 void OptionWidget::currentTableIndexChanged(const QModelIndex &index)

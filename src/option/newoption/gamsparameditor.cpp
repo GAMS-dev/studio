@@ -32,8 +32,8 @@ GamsParamEditor::GamsParamEditor(const QString &commandLineParameter,
                                  QWidget *parent):
     OptionWidget(false, parent), mOptionTokenizer(tokenizer)
 {
-    const QList<OptionItem *> optionItem = mOptionTokenizer->tokenize(commandLineParameter);
-    const QString normalizedText = mOptionTokenizer->normalize(optionItem);
+    QList<OptionItem *> optionItem = mOptionTokenizer->tokenize(commandLineParameter);
+//    QString normalizedText = mOptionTokenizer->normalize(optionItem);
     mOptionModel = new GamsParamTableModel(optionItem, mOptionTokenizer,  this);
 
     mDefinitionModel = new GamsOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
@@ -46,9 +46,6 @@ GamsParamEditor::GamsParamEditor(const QString &commandLineParameter,
     initMessageControl( false );
 
     connect(mOptionCompleter, &OptionItemDelegate::currentEditedIndexChanged, this, &GamsParamEditor::parameterItemCommitted, Qt::UniqueConnection);
-
-//    connect(this, &GamsParamTableModel::optionModelChanged, this, &GamsParamEditor::on_ParameterTableModelChanged, Qt::UniqueConnection);
-
     connect(ui->optionTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GamsParamEditor::selectionChanged);
 
     connect(mOptionModel, &GamsParamTableModel::optionModelChanged, mDefinitionModel, &GamsOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
@@ -57,8 +54,6 @@ GamsParamEditor::GamsParamEditor(const QString &commandLineParameter,
 
 GamsParamEditor::~GamsParamEditor()
 {
-    if (mOptionCompleter)
-        delete mOptionCompleter;
     if (mDefinitionGroupModel)
         delete mDefinitionGroupModel;
     if (mDefinitionModel)
@@ -185,6 +180,7 @@ void gams::studio::option::newoption::GamsParamEditor::moveOptionUp()
 
     disconnect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
                this, &GamsParamEditor::findAndSelectionOptionFromDefinition);
+    disconnect(optionModel(), &QAbstractTableModel::dataChanged, optionModel(), &OptionTableModel::on_updateOptionItem);
     QItemSelection select;
     for(const QModelIndex indx : std::as_const(idxSelection)) {
         const QModelIndex leftIndex  = ui->optionTableView->model()->index(indx.row()-1, GamsParamTableModel::COLUMN_KEY);
@@ -195,6 +191,7 @@ void gams::studio::option::newoption::GamsParamEditor::moveOptionUp()
     ui->optionTableView->selectionModel()->select(select, QItemSelectionModel::ClearAndSelect);
     connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this,
             &GamsParamEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
+    connect(optionModel(), &QAbstractTableModel::dataChanged, optionModel(), &OptionTableModel::on_updateOptionItem, Qt::UniqueConnection);
 
     updateActionsState();
 }
@@ -239,31 +236,31 @@ void gams::studio::option::newoption::GamsParamEditor::moveOptionDown()
     updateActionsState();
 }
 
-void GamsParamEditor::addOptionModelFromDefinition(int row, const QModelIndex &descriptionIndex)
+void GamsParamEditor::addOptionModelFromDefinition(int row, const QModelIndex &index, const QModelIndex &parentIndex)
 {
-    if (row == definitionModel()->rowCount()) {
-        mOptionModel->insertRows(row, 1, QModelIndex());
+    if (row ==  ui->optionTableView->model()->rowCount()) {
+        ui->optionTableView->model()->insertRows(row, 1, QModelIndex());
     }
 
-    const QModelIndex parentIndex     =  mDefinitionModel->parent(descriptionIndex);
-    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? mDefinitionModel->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
-                                                              : mDefinitionModel->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-    const QModelIndex defValueIndex   = (parentIndex.row()<0) ? mDefinitionModel->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
-                                                              : mDefinitionModel->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
+    const QModelIndex optionNameIndex    = (parentIndex.row()<0) ? index.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                                 : parentIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME) ;
+    const QModelIndex defValueIndex      = (parentIndex.row()<0) ? index.siblingAtColumn(OptionDefinitionModel::COLUMN_DEF_VALUE)
+                                                                 : parentIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_DEF_VALUE);
     const QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex
-                                                                 : mDefinitionModel->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
-    const QString selectedValueData = mDefinitionModel->data(selectedValueIndex, Qt::DisplayRole).toString();
-    const QString optionNameData    = mDefinitionModel->data(optionNameIndex, Qt::DisplayRole).toString();
+                                                                 : index.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME);
 
+    const QString selectedValueData  =  ui->definitionTreeView->model()->data(selectedValueIndex, Qt::DisplayRole).toString();
+    const QString optionNameData     = ui->definitionTreeView->model()->data(optionNameIndex, Qt::DisplayRole).toString();
+
+    const QModelIndex insertNumberIndex = mOptionModel->index(row, OptionTableModel::COLUMN_ID);
     const QModelIndex insertKeyIndex    = mOptionModel->index(row, OptionTableModel::COLUMN_KEY);
     const QModelIndex insertValueIndex  = mOptionModel->index(row, OptionTableModel::COLUMN_VALUE);
-    const QModelIndex insertNumberIndex = mOptionModel->index(row, OptionTableModel::COLUMN_ID);
-
-    mOptionModel->setData( insertKeyIndex, optionNameData, Qt::EditRole);
-    mOptionModel->setData( insertValueIndex, selectedValueData, Qt::EditRole);
-
     const int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
+
     mOptionModel->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
+    mOptionModel->setData( insertKeyIndex,    optionNameData,    Qt::EditRole);
+    mOptionModel->setData( insertValueIndex,  selectedValueData, Qt::EditRole);
+
     mOptionModel->setHeaderData( row, Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
 }
 
@@ -275,7 +272,7 @@ void GamsParamEditor::clearDefintionSelection()
 
 void GamsParamEditor::clearOptionSelection()
 {
-
+    ui->optionTableView->clearSelection();
 }
 
 void GamsParamEditor::parameterItemCommitted(const QModelIndex &index)

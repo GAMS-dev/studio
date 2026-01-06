@@ -35,7 +35,7 @@ namespace option {
 namespace newoption {
 
 GamsParamTableModel::GamsParamTableModel(const QString &normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject* parent):
-    OptionTableModel(tokenizer, parent), mTokenizerUsed(true)
+    OptionTableModel(tokenizer, parent), mOptionItem(QList<OptionItem*>()), mTokenizerUsed(true)
 {
     Q_UNUSED(normalizedCommandLineStr)
     mHeader << "id" << "Key" << "Value";

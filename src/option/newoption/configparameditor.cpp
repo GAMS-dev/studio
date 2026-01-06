@@ -75,8 +75,6 @@ ConfigParamEditor::~ConfigParamEditor()
 {
     if (mOptionTokenizer)
         delete mOptionTokenizer;
-    if (mOptionCompleter)
-        delete mOptionCompleter;
     if (mDefinitionGroupModel)
         delete mDefinitionGroupModel;
     if (mDefinitionModel)
@@ -366,21 +364,22 @@ void ConfigParamEditor::moveOptionDown()
 
 }
 
-void ConfigParamEditor::addOptionModelFromDefinition(int row, const QModelIndex &descriptionIndex)
+void ConfigParamEditor::addOptionModelFromDefinition(int row, const QModelIndex &index,
+                                                              const QModelIndex &parentIndex)
 {
     if (row == mParameterTableModel->rowCount()) {
         mParameterTableModel->insertRows(row, 1, QModelIndex());
     }
 
-    const QModelIndex parentIndex     =  ui->definitionTreeView->model()->parent(descriptionIndex);
-    const QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
-                                                              : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-    const QModelIndex defValueIndex   = (parentIndex.row()<0) ? ui->definitionTreeView->model()->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE)
-                                                              : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
+    const QModelIndex optionNameIndex   = (parentIndex.row()<0) ? index.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                                : parentIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME) ;
+    const QModelIndex defValueIndex      = (parentIndex.row()<0) ? index.siblingAtColumn(OptionDefinitionModel::COLUMN_DEF_VALUE)
+                                                                 : parentIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_DEF_VALUE);
     const QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex
-                                                                 : ui->definitionTreeView->model()->index(descriptionIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
-    const QString selectedValueData = ui->definitionTreeView->model()->data(selectedValueIndex, Qt::DisplayRole).toString();
-    const QString optionNameData    = ui->definitionTreeView->model()->data(optionNameIndex, Qt::DisplayRole).toString();
+                                                                 : index.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME) ;
+
+    const QString selectedValueData  = ui->definitionTreeView->model()->data(selectedValueIndex, Qt::DisplayRole).toString();
+    const QString optionNameData     = ui->definitionTreeView->model()->data(optionNameIndex, Qt::DisplayRole).toString();
 
     const int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     const QModelIndex insertKeyIndex    = mParameterTableModel->index(row, ConfigTableModel::COLUMN_KEY);
@@ -390,10 +389,8 @@ void ConfigParamEditor::addOptionModelFromDefinition(int row, const QModelIndex 
     const QModelIndex maxVersionIndex   = mParameterTableModel->index(row, ConfigTableModel::COLUMN_MIN_VERSION);
 
     mParameterTableModel->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
-    mParameterTableModel->setData( insertKeyIndex, optionNameData, Qt::EditRole);
-    mParameterTableModel->setData( insertValueIndex, (selectedValueData.simplified().isEmpty() ? OptionTokenizer::valueGeneratedStr
-                                                                                               : selectedValueData)
-                                                   , Qt::EditRole);
+    mParameterTableModel->setData( insertKeyIndex,    optionNameData,    Qt::EditRole);
+    mParameterTableModel->setData( insertValueIndex,  selectedValueData, Qt::EditRole);
     mParameterTableModel->setData( minVersionIndex, "", Qt::EditRole);
     mParameterTableModel->setData( maxVersionIndex, "", Qt::EditRole);
     mParameterTableModel->setHeaderData( row, Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );

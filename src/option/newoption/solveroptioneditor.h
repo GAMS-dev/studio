@@ -100,15 +100,13 @@ protected:
     QStandardItemModel* definitionGroupModel() const override          { return mDefinitionGroupModel;  }
     void setDefinitionGroupModel( QStandardItemModel* model ) override { mDefinitionGroupModel = model; }
 
-    OptionItemDelegate* optionCompleter() const override            { return mOptionCompleter;      }
-    void setOptionCompleter(OptionItemDelegate* completer) override { mOptionCompleter = completer; }
-
     bool isEditing();
 
     void updateTableColumnSpan() override;
     void refreshOptionTableModel(bool hideAllComments=true) override;
 
-    void addOptionModelFromDefinition(int row, const QModelIndex &descriptionIndex)    override;
+    void addOptionModelFromDefinition(int row, const QModelIndex &definitionIndex,
+                                               const QModelIndex &parentDefinitionIndex) override;
     void addCommentModelFromDefinition(int row, const QModelIndex &descriptionIndex)   override;
     void addEOLCommentModelFromDefinition(int row, const QModelIndex &selectedValueIndex,
                                                    const QModelIndex &descriptionndex) override;
@@ -119,7 +117,6 @@ protected:
     QStandardItemModel* mDefinitionGroupModel;
 
     OptionTokenizer* mOptionTokenizer;
-    OptionItemDelegate* mOptionCompleter;
 
     QString mSolverName;
     QString mEncoding = "UTF-8";
