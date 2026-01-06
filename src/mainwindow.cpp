@@ -590,7 +590,9 @@ void MainWindow::watchProjectTree()
 
 MainWindow::~MainWindow()
 {
+#ifdef _WIN64
     file::UncPath::releaseUnc();
+#endif
     if (mSettingsDialog) mSettingsDialog->deleteLater();
     killTimer(mTimerID);
     WelcomePage *wp = mWp;

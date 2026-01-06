@@ -28,6 +28,34 @@ namespace gams {
 namespace studio {
 namespace file {
 
+const QHash<int,QString> CErrCodes {
+    {ERROR_ACCESS_DENIED, "ERROR_ACCESS_DENIED"},
+    {ERROR_ALREADY_ASSIGNED, "ERROR_ALREADY_ASSIGNED"},
+    {ERROR_BAD_DEV_TYPE, "ERROR_BAD_DEV_TYPE"},
+    {ERROR_BAD_DEVICE, "ERROR_BAD_DEVICE"},
+    {ERROR_BAD_NET_NAME, "ERROR_BAD_NET_NAME"},
+    {ERROR_BAD_PROFILE, "ERROR_BAD_PROFILE"},
+    {ERROR_BAD_PROVIDER, "ERROR_BAD_PROVIDER"},
+    {ERROR_BAD_USERNAME, "ERROR_BAD_USERNAME"},
+    {ERROR_BUSY, "ERROR_BUSY"},
+    {ERROR_CANCELLED, "ERROR_CANCELLED"},
+    {ERROR_CANNOT_OPEN_PROFILE, "ERROR_CANNOT_OPEN_PROFILE"},
+    {ERROR_DEVICE_ALREADY_REMEMBERED, "ERROR_DEVICE_ALREADY_REMEMBERED"},
+    {ERROR_EXTENDED_ERROR, "ERROR_EXTENDED_ERROR"},
+    {ERROR_INVALID_ADDRESS, "ERROR_INVALID_ADDRESS"},
+    {ERROR_INVALID_PARAMETER, "ERROR_INVALID_PARAMETER"},
+    {ERROR_INVALID_PASSWORD, "ERROR_INVALID_PASSWORD"},
+    {ERROR_LOGON_FAILURE, "ERROR_LOGON_FAILURE"},
+    {ERROR_NO_NET_OR_BAD_PATH, "ERROR_NO_NET_OR_BAD_PATH"},
+    {ERROR_NO_NETWORK, "ERROR_NO_NETWORK"},
+    {ERROR_BAD_PROFILE, "ERROR_BAD_PROFILE"},
+    {ERROR_CANNOT_OPEN_PROFILE, "ERROR_CANNOT_OPEN_PROFILE"},
+    {ERROR_EXTENDED_ERROR, "ERROR_EXTENDED_ERROR"},
+    {ERROR_NOT_CONNECTED, "ERROR_NOT_CONNECTED"},
+    {ERROR_OPEN_FILES, "ERROR_OPEN_FILES"},
+    {ERROR_DEVICE_IN_USE, "ERROR_DEVICE_IN_USE"},
+};
+
 UncPath *UncPath::mUnc = nullptr;
 
 UncPath::UncPath(QObject *parent)
@@ -118,7 +146,7 @@ bool UncPath::mapNetworkDrive(const QString &localDrive, const QString &uncPath)
     DWORD result = WNetAddConnection2(&nr, NULL, NULL, CONNECT_TEMPORARY);
 
     if (result != NO_ERROR) {
-        qDebug() << "Error mapping drive. Error code:" << result;
+        qDebug() << "Error mapping drive. Error code:" << result << CErrCodes.value(result, "");
         return false;
     }
     qDebug() << "Drive " << localDrive << " mapped to " << uncPath;
@@ -131,7 +159,7 @@ bool UncPath::unmapDrive(const QString &driveLetter, bool force)
 
     DWORD result = WNetCancelConnection2(driveLetter.toStdWString().c_str(), 0, force);
     if (result != NO_ERROR) {
-        qDebug() << "Failed to unmap" << driveLetter << "Error code:" << result;
+        qDebug() << "Failed to unmap" << driveLetter << "Error code:" << result << CErrCodes.value(result, "");
         return false;
     }
     qDebug() << "Successfully unmapped" << driveLetter;
