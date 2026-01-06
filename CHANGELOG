@@ -1,6 +1,7 @@
 Version 1.23.4 *
 ==================
 - Fixed the path to the main file when running MIRO. Before, the main file path always corresponded to the working directory path.
+- Fixed enable MIRO menu. Before, the MIRO menu was not enabeld in some cases although a correct path has been configured.
 
 Version 1.23.3
 ==================

@@ -673,6 +673,7 @@ void MainWindow::initSettingsDialog()
     connect(mSettingsDialog, &SettingsDialog::userGamsTypeChanged, this,[this]() {
         QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserGamsTypes));
         mFileMetaRepo.setUserGamsTypes(suffixes);
+        updateMiroEnabled();
     });
     DEB() << "settings initialized";
     connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFonts);
@@ -693,8 +694,7 @@ void MainWindow::initSettingsDialog()
         ui->actionOpenAlternative->setText(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
         ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
         mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
-        if (mSettingsDialog->miroSettingsEnabled())
-            updateMiroEnabled();
+        updateMiroEnabled();
     });
 }
 
