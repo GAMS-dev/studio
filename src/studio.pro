@@ -41,7 +41,7 @@ unix {
 }
 win32 {
     RC_FILE += ../platform/windows/studio.rc
-    LIBS += -luser32
+    LIBS += -luser32 -lMpr
 }
 
 # The following define makes your compiler emit warnings if you use
@@ -130,6 +130,7 @@ SOURCES += \
     file/recentdata.cpp \
     file/textfilesaver.cpp \
     file/treeitemdelegate.cpp \
+    file/uncpath.cpp \
     fileeventhandler.cpp \
     filesystemmodel.cpp \
     filesystemwidget.cpp \
@@ -369,6 +370,7 @@ HEADERS += \
     file/recentdata.h \
     file/textfilesaver.h \
     file/treeitemdelegate.h \
+    file/uncpath.h \
     fileeventhandler.h \
     filesystemmodel.h \
     filesystemwidget.h \

@@ -25,6 +25,10 @@
 #include "../platform/macos/macoscocoabridge.h"
 #endif
 
+#ifdef _WIN64
+#include <windows.h>
+#endif
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>

@@ -19,10 +19,10 @@
  */
 #include "gamslicensingdialog.h"
 #include "ui_gamslicensingdialog.h"
-#include "commonpaths.h"
 #include "gamslicenseinfo.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
+#include "file/uncpath.h"
 #include "process/gamsaboutprocess.h"
 #include "process/gamsgetkeyprocess.h"
 #include "process/gamsprobeprocess.h"
@@ -131,8 +131,14 @@ QString GamsLicensingDialog::getCurdirForAboutProcess()
     auto dataLocations = liceInfo.gamsDataLocations();
     if (dataLocations.isEmpty())
         curdir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    else
+    else {
         curdir = dataLocations.first();
+        if (curdir.startsWith("\\\\")) {
+            curdir = file::UncPath::unc()->toMappedPath(curdir, true);
+            if (curdir.isEmpty())
+                curdir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+        }
+    }
 #else
     curdir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
 #endif

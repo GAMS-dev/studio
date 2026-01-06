@@ -22,7 +22,6 @@
 #include "editors/sysloglocator.h"
 #include "commonpaths.h"
 
-
 #include <QDir>
 
 namespace gams {

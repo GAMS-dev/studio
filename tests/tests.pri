@@ -25,7 +25,7 @@ unix {
     LIBS += -ldl
 }
 win32 {
-    LIBS += -luser32
+    LIBS += -luser32 -lMpr
 }
 
 TESTSROOT = $$_PRO_FILE_PWD_/..

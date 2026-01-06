@@ -32,6 +32,7 @@
 #include "editors/abstractedit.h"
 #include "editors/systemlogedit.h"
 #include "encodingsdialog.h"
+#include "file/uncpath.h"
 #include "welcome/welcomepage.h"
 #include "modeldialog/modeldialog.h"
 #include "navigator/navigatordialog.h"
@@ -589,6 +590,7 @@ void MainWindow::watchProjectTree()
 
 MainWindow::~MainWindow()
 {
+    file::UncPath::releaseUnc();
     if (mSettingsDialog) mSettingsDialog->deleteLater();
     killTimer(mTimerID);
     WelcomePage *wp = mWp;
