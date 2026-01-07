@@ -36,8 +36,10 @@ FilterLineEdit::FilterLineEdit(const QString &contents, QWidget *parent): QLineE
     init();
 }
 
-const QRegularExpression &FilterLineEdit::regExp() const
+const QRegularExpression &FilterLineEdit::regExp()
 {
+    if (mRexNeedsUpdate)
+        updateRegExp();
     return mRegExp;
 }
 
@@ -62,7 +64,7 @@ void FilterLineEdit::hideOptions(FilterLineEditFlags options)
     if (options.testFlag(foExact)) mExactButton->setVisible(false);
     if (options.testFlag(foRegEx)) mRegExButton->setVisible(false);
     if (options.testFlag(foColumn)) mAllColButton->setVisible(false);
-    updateRegExp();
+    invalidateRex();
 }
 
 void FilterLineEdit::showOptions(FilterLineEditFlags options)
@@ -72,7 +74,7 @@ void FilterLineEdit::showOptions(FilterLineEditFlags options)
     if (options.testFlag(foExact)) mExactButton->setVisible(true);
     if (options.testFlag(foRegEx)) mRegExButton->setVisible(true);
     if (options.testFlag(foColumn)) mAllColButton->setVisible(true);
-    updateRegExp();
+    invalidateRex();
 }
 
 int FilterLineEdit::effectiveKeyColumn()
@@ -139,9 +141,14 @@ void FilterLineEdit::init()
     mAllColButton->setVisible(false);
 
     setLayout(lay);
-    connect(this, &FilterLineEdit::textChanged, this, [this](){ updateRegExp(); });
-    updateRegExp();
+    connect(this, &FilterLineEdit::textChanged, this, [this](){ invalidateRex(); });
+    invalidateRex();
     updateTextMargins();
+}
+
+void FilterLineEdit::invalidateRex()
+{
+    mRexNeedsUpdate = true;
 }
 
 void FilterLineEdit::updateRegExp()
@@ -154,16 +161,26 @@ void FilterLineEdit::updateRegExp()
     QString filter;
     if (!text().isEmpty()) {
         if (buttonState(mRegExButton)) {
-            filter = buttonState(mExactButton) ? "^"+text()+"$" : text();
+
+            if (!buttonState(mExactButton))
+                filter = text();
+            else if (mBoundaryMode == bmLineBound)
+                filter = "^"+text()+"$";
+            else
+                filter = "\\b"+text()+"\\b";
         } else {
             QRegularExpression::WildcardConversionOptions opt = QRegularExpression::NonPathWildcardConversion;
-            if (!buttonState(mExactButton))
+            if (!buttonState(mExactButton) || mBoundaryMode == bmWordBound)
                 opt.setFlag(QRegularExpression::UnanchoredWildcardConversion);
             filter = QRegularExpression::wildcardToRegularExpression(text(), opt);
+            if (mBoundaryMode == bmWordBound && buttonState(mExactButton))
+                filter = "\\b"+text()+"\\b";
         }
     }
     // TODO(JM) Check if we should use the flag QRegularExpression::UseUnicodePropertiesOption
     mRegExp = QRegularExpression(filter, QRegularExpression::CaseInsensitiveOption);
+    mRexNeedsUpdate = false;
+
     if (mRegExp.isValid())
         emit regExpChanged(mRegExp);
 }
@@ -207,7 +224,7 @@ int FilterLineEdit::nextButtonState(QAbstractButton *button, int forceState)
     button->setIcon(Theme::instance()->icon(icons.at(state)));
     button->setToolTip("<p style=\"white-space: nowrap;\">"+tips.at(state)+"</p>");
     if (icons.size() > 1) button->setProperty("state", state);
-    updateRegExp();
+    invalidateRex();
     emit textEdited(text());
     return state;
 }
@@ -238,6 +255,16 @@ QAbstractButton *FilterLineEdit::button(FilterLineEditFlag option)
     case foCaSens: return mCaseSenseButton;
     default: return nullptr;
     }
+}
+
+FilterLineEdit::BoundaryMode FilterLineEdit::docMode() const
+{
+    return mBoundaryMode;
+}
+
+void FilterLineEdit::setBoundaryMode(BoundaryMode newDocMode)
+{
+    mBoundaryMode = newDocMode;
 }
 
 QSize MiniButton::sizeHint() const

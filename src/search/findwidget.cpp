@@ -34,6 +34,7 @@ FindWidget::FindWidget(QWidget *parent)
 {
     ui->setupUi(this);
     ui->edFind->showOptions(FilterLineEdit::foCaSens);
+    ui->edFind->setBoundaryMode(FilterLineEdit::bmWordBound);
     ui->bClose->setIcon(Theme::icon(":/%1/remove"));
     ui->bNext->setIcon(Theme::icon(":/%1/sort-desc"));
     ui->bPrev->setIcon(Theme::icon(":/%1/sort-asc"));
@@ -41,6 +42,7 @@ FindWidget::FindWidget(QWidget *parent)
     ui->bReplace->setIcon(Theme::icon(":/%1/replace"));
     ui->bReplaceForward->setIcon(Theme::icon(":/%1/replace-fw"));
     ui->bReplaceBackward->setIcon(Theme::icon(":/%1/replace-bk"));
+    ui->bReplaceAll->setIcon(Theme::icon(":/%1/replace-all"));
     ui->bToggleReplace->setChecked(false);
     on_bToggleReplace_clicked();
 }
@@ -101,6 +103,7 @@ void FindWidget::updateButtonStates()
     ui->bReplace->setEnabled(canReplace);
     ui->bReplaceForward->setEnabled(canReplace);
     ui->bReplaceBackward->setEnabled(canReplace);
+    ui->bReplaceAll->setEnabled(canReplace);
 }
 
 void FindWidget::setLastMatch(const QString &text, size_t pos)
@@ -129,14 +132,10 @@ bool FindWidget::setFindText(const QString &text)
     return false;
 }
 
-QRegularExpression FindWidget::termRexEx()
+QRegularExpression FindWidget::termRegEx()
 {
     QRegularExpression res;
-    if (ui->edFind->isRegEx())
-        res = ui->edFind->regExp();
-    else
-        res.setPattern(res.escape(ui->edFind->text()));
-
+    res = ui->edFind->regExp();
     if (!ui->edFind->isCaseSensitive())
         res.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
     return res;
@@ -166,20 +165,29 @@ bool FindWidget::find(FindOptions options, bool keepSearch)
             if (!term.isEmpty())
                 ui->edFind->setText(term);
         }
-        edit->findLoop(termRexEx(), findFlags(options.testFlag(foBackwards)), options.testFlag(foContinued));
+        edit->findLoop(termRegEx(), findFlags(options.testFlag(foBackwards)), options.testFlag(foContinued));
         if (options.testFlag(foFocusEdit))
             edit->setFocus();
         match = edit->textCursor().selectedText();
+        if (match.isEmpty()) {
+            edit->removeSelectedFind();
+            QTextCursor cur = edit->textCursor();
+            if (cur.hasSelection()) {
+                cur.setPosition(cur.anchor());
+                edit->setTextCursor(cur);
+            }
+        }
 
     } else if (TextView *view = ViewHelper::toTextView(mEdit)) {
         bool continued = options.testFlag(foContinued);
-        view->findText(termRexEx(), findFlags(options.testFlag(foBackwards)), continued);
+        view->findText(termRegEx(), findFlags(options.testFlag(foBackwards)), continued);
         if (options.testFlag(foFocusEdit))
             view->edit()->setFocus();
         match = view->selectedText();
     }
     if (!match.isEmpty())
         setLastMatch(match, pos);
+
     return !match.isEmpty();
 
 }
@@ -271,6 +279,19 @@ void FindWidget::on_bReplaceBackward_clicked()
         find(FindOptions(foBackwards | foContinued), true);
 }
 
+void FindWidget::on_bReplaceAll_clicked()
+{
+    if (ui->edReplace->text().isEmpty()) return;
+
+    if (CodeEdit *edit = ViewHelper::toCodeEdit(mEdit)) {
+        int count = edit->findReplaceAll(termRegEx(), findFlags(), ui->edReplace->text());
+        edit->setFocus();
+        QString countText = (count ? QString::number(count) : QString("No"));
+        DEB() << QString("%1 occurrencies replaced").arg(countText);
+        // TODO(JM) show count of replacements
+    }
+}
+
 void FindWidget::on_edFind_textEdited(const QString &term)
 {
     Q_UNUSED(term)
@@ -310,8 +331,8 @@ void FindWidget::on_bToggleReplace_clicked()
     ui->bReplace->setVisible(visible);
     ui->bReplaceForward->setVisible(visible);
     ui->bReplaceBackward->setVisible(visible);
+    ui->bReplaceAll->setVisible(visible);
 }
-
 
 
 } // namespace find

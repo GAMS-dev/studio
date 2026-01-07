@@ -55,7 +55,7 @@ public:
     bool checkLastMatch(const QString &text, size_t pos);
     QString getFindText() const;
     bool setFindText(const QString &text);
-    QRegularExpression termRexEx();
+    QRegularExpression termRegEx();
     QTextDocument::FindFlags findFlags(bool backwards = false);
     bool find(FindOptions options = FindOptions(), bool keepSearch = false);
     QString replacementText() const;
@@ -75,10 +75,12 @@ private slots:
     void on_bReplace_clicked();
     void on_bReplaceForward_clicked();
     void on_bReplaceBackward_clicked();
+    void on_bReplaceAll_clicked();
     void on_edFind_textEdited(const QString &term);
     void on_edReplace_textChanged(const QString &);
 
     void on_bToggleReplace_clicked();
+
 
 private:
     bool replace(bool cursorToStart = false);

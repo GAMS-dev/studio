@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>750</width>
-    <height>50</height>
+    <height>51</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -156,6 +156,17 @@
      </property>
      <property name="checkable">
       <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="11">
+    <widget class="QToolButton" name="bReplaceAll">
+     <property name="text">
+      <string>b</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../../icons/icons.qrc">
+       <normaloff>:/solid/replace-all</normaloff>:/solid/replace-all</iconset>
      </property>
     </widget>
    </item>

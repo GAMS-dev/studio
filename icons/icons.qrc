@@ -110,6 +110,7 @@
         <file alias="reload">solid/redo.svg</file>
         <file alias="remove">solid/remove.svg</file>
         <file alias="replace">solid/replace.svg</file>
+        <file alias="replace-all">solid/replace-all.svg</file>
         <file alias="replace-fw">solid/replace-fw.svg</file>
         <file alias="replace-bk">solid/replace-bk.svg</file>
         <file alias="run-gdx">solid/play-gdx.svg</file>

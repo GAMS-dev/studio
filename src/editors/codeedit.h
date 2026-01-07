@@ -135,6 +135,7 @@ public:
     void updateSearchSelection() override;
     void findInSelection(QList<search::Result> &results) override;
     bool findLoop(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued);
+    int findReplaceAll(const QRegularExpression &rex, QTextDocument::FindFlags options, const QString &replacement);
     void replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope) override;
     int replaceAll(FileMeta *fm, const QRegularExpression &regex, const QString &replaceText,
                    QFlags<QTextDocument::FindFlag> options, bool selectionScope) override;
@@ -142,7 +143,7 @@ public:
     void setHasProfiler(bool hasProfiler);
     void lockSelectedFind();
     bool hasSelectedFind();
-    void findReplace(const QString &replacement);
+    bool findReplace(const QString &replacement);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

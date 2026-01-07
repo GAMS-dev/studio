@@ -943,14 +943,16 @@ bool CodeEdit::hasSelectedFind()
     return mSelectedFind;
 }
 
-void CodeEdit::findReplace(const QString &replacement)
+bool CodeEdit::findReplace(const QString &replacement)
 {
+    bool res = mSelectedFind;
     if (mCompleter) mCompleter->suppressOpenBegin();
     if (mSelectedFind) {
         textCursor().insertText(replacement);
         updateExtraSelections();
     }
     if (mCompleter) mCompleter->suppressOpenStop();
+    return res;
 }
 
 void CodeEdit::removeSelectedFind()
@@ -2308,6 +2310,22 @@ bool CodeEdit::findLoop(const QRegularExpression &rex, QTextDocument::FindFlags 
     mFindREx->setPatternOptions(rexOpt);
     updateExtraSelections();
     return !cur.isNull();
+}
+
+int CodeEdit::findReplaceAll(const QRegularExpression &rex, QTextDocument::FindFlags options, const QString &replacement)
+{
+    int count = 0;
+    QTextCursor startCursor = textCursor();
+    QTextCursor cur = textCursor();
+    cur.setPosition(0);
+    setTextCursor(cur);
+    while (findLoop(rex, options, true)) {
+        findReplace(replacement);
+        ++count;
+    }
+    if (!count)
+        setTextCursor(startCursor);
+    return count;
 }
 
 void CodeEdit::replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope)

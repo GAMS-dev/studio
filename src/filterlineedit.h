@@ -43,20 +43,25 @@ class FilterLineEdit : public QLineEdit
     Q_OBJECT
 public:
     enum FilterLineEditFlag {
-        foNone   = 0x00,
-        foClear  = 0x01,
-        foExact  = 0x02,
-        foRegEx  = 0x04,
-        foColumn = 0x08,
-        foCaSens = 0x10,
+        foNone   = 0x00,        // No flag set
+        foClear  = 0x01,        // Clear button visible
+        foExact  = 0x02,        // Exact button visible (BoundaryMode dependent)
+        foRegEx  = 0x04,        // RegEx button visible
+        foColumn = 0x08,        // Column button visible
+        foCaSens = 0x10,        // Case Sensitivity button visible
     };
     Q_DECLARE_FLAGS(FilterLineEditFlags, FilterLineEditFlag)
     Q_FLAG(FilterLineEditFlags)
 
+    enum BoundaryMode {
+        bmLineBound,
+        bmWordBound,
+    };
+
 public:
     explicit FilterLineEdit(QWidget *parent = nullptr);
     explicit FilterLineEdit(const QString &contents, QWidget *parent = nullptr);
-    const QRegularExpression &regExp() const;
+    const QRegularExpression &regExp();
     void setOptionState(FilterLineEditFlag option, int state);
     void setKeyColumn(int column);
     void hideOptions(FilterLineEditFlags options);
@@ -65,6 +70,8 @@ public:
     bool exactMatch();
     bool isRegEx();
     bool isCaseSensitive();
+    BoundaryMode docMode() const;
+    void setBoundaryMode(BoundaryMode newDocMode);
 
 signals:
     void regExpChanged(QRegularExpression regExp);
@@ -75,6 +82,7 @@ protected:
 
 private:
     void init();
+    void invalidateRex();
     void updateRegExp();
     QAbstractButton *createButton(const QStringList &iconPaths, const QStringList &toolTips);
     int nextButtonState(QAbstractButton *button, int forceState = -1);
@@ -89,8 +97,10 @@ private:
     QAbstractButton *mRegExButton = nullptr;
     QAbstractButton *mAllColButton = nullptr;
     QRegularExpression mRegExp;
+    BoundaryMode mBoundaryMode = bmLineBound;
     bool mCanClear = true;
     int mKeyColumn = -1;
+    bool mRexNeedsUpdate = false;
 };
 
 } // namespace studio
