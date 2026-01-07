@@ -236,21 +236,23 @@ void gams::studio::option::newoption::GamsParamEditor::moveOptionDown()
     updateActionsState();
 }
 
-void GamsParamEditor::addOptionModelFromDefinition(int row, const QModelIndex &index, const QModelIndex &parentIndex)
+void GamsParamEditor::addOptionModelFromDefinition(int row, const QModelIndex &defindex, const QModelIndex &parentIndex)
 {
+    disconnect(mOptionModel, &GamsParamTableModel::optionModelChanged, mDefinitionModel, &GamsOptionDefinitionModel::modifyOptionDefinition);
     if (row ==  ui->optionTableView->model()->rowCount()) {
-        ui->optionTableView->model()->insertRows(row, 1, QModelIndex());
+        mOptionModel->insertRows(row, 1, QModelIndex());
     }
 
-    const QModelIndex optionNameIndex    = (parentIndex.row()<0) ? index.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME)
+    const QModelIndex optionNameIndex    = (parentIndex.row()<0) ? defindex.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME)
                                                                  : parentIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-    const QModelIndex defValueIndex      = (parentIndex.row()<0) ? index.siblingAtColumn(OptionDefinitionModel::COLUMN_DEF_VALUE)
+    const QModelIndex defValueIndex      = (parentIndex.row()<0) ? defindex.siblingAtColumn(OptionDefinitionModel::COLUMN_DEF_VALUE)
                                                                  : parentIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_DEF_VALUE);
     const QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex
-                                                                 : index.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME);
+                                                                 : defindex.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME);
 
-    const QString selectedValueData  =  ui->definitionTreeView->model()->data(selectedValueIndex, Qt::DisplayRole).toString();
-    const QString optionNameData     = ui->definitionTreeView->model()->data(optionNameIndex, Qt::DisplayRole).toString();
+    const QString optionNameData    = ui->definitionTreeView->model()->data(optionNameIndex, Qt::DisplayRole).toString();
+    const QString defValueData      = ui->definitionTreeView->model()->data(defValueIndex, Qt::DisplayRole).toString();
+    const QString selectedValueData = ui->definitionTreeView->model()->data(selectedValueIndex, Qt::DisplayRole).toString();
 
     const QModelIndex insertNumberIndex = mOptionModel->index(row, OptionTableModel::COLUMN_ID);
     const QModelIndex insertKeyIndex    = mOptionModel->index(row, OptionTableModel::COLUMN_KEY);
@@ -262,6 +264,7 @@ void GamsParamEditor::addOptionModelFromDefinition(int row, const QModelIndex &i
     mOptionModel->setData( insertValueIndex,  selectedValueData, Qt::EditRole);
 
     mOptionModel->setHeaderData( row, Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
+    connect(mOptionModel, &GamsParamTableModel::optionModelChanged, mDefinitionModel, &GamsOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
 }
 
 void GamsParamEditor::clearDefintionSelection()

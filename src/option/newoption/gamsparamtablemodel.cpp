@@ -554,6 +554,9 @@ QString GamsParamTableModel::getOptionTableEntry(int row)
 
 void GamsParamTableModel::on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
+    if (!topLeft.isValid() || roles.isEmpty() || mOptionItem.isEmpty())
+        return;
+
     QModelIndex idx = topLeft;
     int row = idx.row();
     while(row <= bottomRight.row()) {
