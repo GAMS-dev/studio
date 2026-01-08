@@ -2,6 +2,7 @@ Version 1.23.4 *
 ==================
 - Fixed the path to the main file when running MIRO. Before, the main file path always corresponded to the working directory path.
 - Fixed enable MIRO menu. Before, the MIRO menu was not enabeld in some cases although a correct path has been configured.
+- Improved search and replace dialog selection behavior. Now the result selection is removed when the dialog is closed and no search result list is open.
 
 Version 1.23.3
 ==================
