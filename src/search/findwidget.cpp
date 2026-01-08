@@ -40,8 +40,6 @@ FindWidget::FindWidget(QWidget *parent)
     ui->bPrev->setIcon(Theme::icon(":/%1/sort-asc"));
     ui->edReplace->hideOptions(FilterLineEdit::FilterLineEditFlags(FilterLineEdit::foExact | FilterLineEdit::foRegEx));
     ui->bReplace->setIcon(Theme::icon(":/%1/replace"));
-    ui->bReplaceForward->setIcon(Theme::icon(":/%1/replace-fw"));
-    ui->bReplaceBackward->setIcon(Theme::icon(":/%1/replace-bk"));
     ui->bReplaceAll->setIcon(Theme::icon(":/%1/replace-all"));
     ui->bToggleReplace->setChecked(false);
     on_bToggleReplace_clicked();
@@ -101,8 +99,6 @@ void FindWidget::updateButtonStates()
     CodeEdit *edit = ViewHelper::toCodeEdit(mEdit);
     bool canReplace = canFind  && edit && !edit->isReadOnly() && edit->hasSelectedFind();
     ui->bReplace->setEnabled(canReplace);
-    ui->bReplaceForward->setEnabled(canReplace);
-    ui->bReplaceBackward->setEnabled(canReplace);
     ui->bReplaceAll->setEnabled(canReplace);
 }
 
@@ -208,7 +204,7 @@ void FindWidget::keyPressEvent(QKeyEvent *event)
 {
     if ((event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
         && ui->edReplace->hasFocus() && ui->bReplace->isEnabled()) {
-        on_bReplaceForward_clicked();
+        on_bReplace_clicked();
     } else if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return || event->key() == Qt::Key_F3) {
         FindOptions options = foFocusEdit;
         if (event->modifiers().testFlag(Qt::ShiftModifier)) options.setFlag(foBackwards);
@@ -252,31 +248,18 @@ void FindWidget::on_bClose_clicked()
 
 void FindWidget::on_bNext_clicked()
 {
-    find(FindOptions(foFocusEdit | foContinued));
+    find(FindOptions(foFocusEdit | foContinued), true);
 }
 
 void FindWidget::on_bPrev_clicked()
 {
-    find(FindOptions(foFocusEdit | foBackwards | foContinued));
+    find(FindOptions(foFocusEdit | foBackwards | foContinued), true);
 }
 
 void FindWidget::on_bReplace_clicked()
 {
-    replace();
-    if (mEdit)
-        mEdit->setFocus();
-}
-
-void FindWidget::on_bReplaceForward_clicked()
-{
     if (replace())
         find(foContinued, true);
-}
-
-void FindWidget::on_bReplaceBackward_clicked()
-{
-    if (replace(true))
-        find(FindOptions(foBackwards | foContinued), true);
 }
 
 void FindWidget::on_bReplaceAll_clicked()
@@ -329,8 +312,6 @@ void FindWidget::on_bToggleReplace_clicked()
     ui->bToggleReplace->setToolTip(visible ? "Hide Replace" : "Show Replace");
     ui->edReplace->setVisible(visible);
     ui->bReplace->setVisible(visible);
-    ui->bReplaceForward->setVisible(visible);
-    ui->bReplaceBackward->setVisible(visible);
     ui->bReplaceAll->setVisible(visible);
 }
 

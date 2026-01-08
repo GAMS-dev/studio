@@ -203,7 +203,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
     }
     else if (role == Qt::BackgroundRole) {
         if (!mSearchRegEx.pattern().isEmpty() && mSearchRegEx.match(data(index).toString()).hasMatch())
-            return toColor(Theme::Edit_matchesBg);
+            return toColor(Theme::Edit_findBg);
     }
     else if (role == Qt::ForegroundRole) {
         if (!mSearchRegEx.pattern().isEmpty() && mSearchRegEx.match(data(index).toString()).hasMatch())

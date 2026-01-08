@@ -73,8 +73,6 @@ private slots:
     void on_bNext_clicked();
     void on_bPrev_clicked();
     void on_bReplace_clicked();
-    void on_bReplaceForward_clicked();
-    void on_bReplaceBackward_clicked();
     void on_bReplaceAll_clicked();
     void on_edFind_textEdited(const QString &term);
     void on_edReplace_textChanged(const QString &);

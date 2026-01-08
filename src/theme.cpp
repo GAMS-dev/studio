@@ -62,7 +62,8 @@ void Theme::initSlotTexts()
     mSlotText.insert(Edit_currentLineBg,        "Current line");
     mSlotText.insert(Edit_errorBg,              "Error");
     mSlotText.insert(Edit_currentWordBg,        "Current word");
-    mSlotText.insert(Edit_matchesBg,            "Search result");
+    mSlotText.insert(Edit_findBg,               "Find matches");
+    mSlotText.insert(Edit_searchBg,             "Search result");
     mSlotText.insert(Edit_foldLineBg,           "Fold lines marker");
     mSlotText.insert(Edit_parenthesesValidFg,   "Matching parentheses");
     mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
@@ -130,7 +131,8 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_currentLineBg,             QColor(255, 250, 170));
     mColorThemes[sNr].insert(Edit_errorBg,                   QColor(255, 220, 200));
     mColorThemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
-    mColorThemes[sNr].insert(Edit_matchesBg,                 QColor(92,194,75));
+    mColorThemes[sNr].insert(Edit_findBg,                    QColor(92,194,75));
+    mColorThemes[sNr].insert(Edit_searchBg,                  QColor(102,164,0));
     mColorThemes[sNr].insert(Edit_foldLineBg,                QColor(200,200,200));
     mColorThemes[sNr].insert(Edit_foldLineFg,                QColor(255,255,255));
     mColorThemes[sNr].insert(Edit_parenthesesValidFg,        QColor(Qt::red));
@@ -210,7 +212,8 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_background,                QColor(30,30,30));
     mColorThemes[sNr].insert(Edit_currentLineBg,             QColor(0,73,61));
     mColorThemes[sNr].insert(Edit_errorBg,                   QColor(187,34,51));
-    mColorThemes[sNr].insert(Edit_matchesBg,                 QColor(51,102,51));
+    mColorThemes[sNr].insert(Edit_findBg,                    QColor(51,102,51));
+    mColorThemes[sNr].insert(Edit_searchBg,                  QColor(71,82,11));
     mColorThemes[sNr].insert(Edit_foldLineBg,                QColor(80,80,80));
     mColorThemes[sNr].insert(Edit_foldLineFg,                QColor(0,0,0));
     mColorThemes[sNr].insert(Edit_linenrAreaBg,              QColor(16,16,16));

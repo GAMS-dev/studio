@@ -111,8 +111,6 @@
         <file alias="remove">solid/remove.svg</file>
         <file alias="replace">solid/replace.svg</file>
         <file alias="replace-all">solid/replace-all.svg</file>
-        <file alias="replace-fw">solid/replace-fw.svg</file>
-        <file alias="replace-bk">solid/replace-bk.svg</file>
         <file alias="run-gdx">solid/play-gdx.svg</file>
         <file alias="run-debug">solid/play-debug.svg</file>
         <file alias="run-neos">solid/play-neos.svg</file>

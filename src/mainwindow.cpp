@@ -6161,7 +6161,7 @@ void MainWindow::continueFind(bool backwards)
     find::FindWidget *fw = edit == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
     find::FindOptions options = {find::foFocusEdit | find::foContinued};
     if (backwards) options.setFlag(find::foBackwards);
-    emit fw->find(options);
+    emit fw->find(options, true);
 }
 
 void MainWindow::continueSearch(bool backwards)

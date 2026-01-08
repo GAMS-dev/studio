@@ -38,8 +38,7 @@ FilterLineEdit::FilterLineEdit(const QString &contents, QWidget *parent): QLineE
 
 const QRegularExpression &FilterLineEdit::regExp()
 {
-    if (mRexNeedsUpdate)
-        updateRegExp();
+    updateRegExp();
     return mRegExp;
 }
 
@@ -64,7 +63,7 @@ void FilterLineEdit::hideOptions(FilterLineEditFlags options)
     if (options.testFlag(foExact)) mExactButton->setVisible(false);
     if (options.testFlag(foRegEx)) mRegExButton->setVisible(false);
     if (options.testFlag(foColumn)) mAllColButton->setVisible(false);
-    invalidateRex();
+    updateRegExp();
 }
 
 void FilterLineEdit::showOptions(FilterLineEditFlags options)
@@ -74,7 +73,7 @@ void FilterLineEdit::showOptions(FilterLineEditFlags options)
     if (options.testFlag(foExact)) mExactButton->setVisible(true);
     if (options.testFlag(foRegEx)) mRegExButton->setVisible(true);
     if (options.testFlag(foColumn)) mAllColButton->setVisible(true);
-    invalidateRex();
+    updateRegExp();
 }
 
 int FilterLineEdit::effectiveKeyColumn()
@@ -141,14 +140,9 @@ void FilterLineEdit::init()
     mAllColButton->setVisible(false);
 
     setLayout(lay);
-    connect(this, &FilterLineEdit::textChanged, this, [this](){ invalidateRex(); });
-    invalidateRex();
+    connect(this, &FilterLineEdit::textChanged, this, [this](){ updateRegExp(); });
+    updateRegExp();
     updateTextMargins();
-}
-
-void FilterLineEdit::invalidateRex()
-{
-    mRexNeedsUpdate = true;
 }
 
 void FilterLineEdit::updateRegExp()
@@ -179,7 +173,6 @@ void FilterLineEdit::updateRegExp()
     }
     // TODO(JM) Check if we should use the flag QRegularExpression::UseUnicodePropertiesOption
     mRegExp = QRegularExpression(filter, QRegularExpression::CaseInsensitiveOption);
-    mRexNeedsUpdate = false;
 
     if (mRegExp.isValid())
         emit regExpChanged(mRegExp);
@@ -224,7 +217,7 @@ int FilterLineEdit::nextButtonState(QAbstractButton *button, int forceState)
     button->setIcon(Theme::instance()->icon(icons.at(state)));
     button->setToolTip("<p style=\"white-space: nowrap;\">"+tips.at(state)+"</p>");
     if (icons.size() > 1) button->setProperty("state", state);
-    invalidateRex();
+    updateRegExp();
     emit textEdited(text());
     return state;
 }

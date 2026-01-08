@@ -152,7 +152,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                     painter->setPen(pen2);
 
                     QBrush bgBrush = painter->background();
-                    bgBrush.setColor(toColor(Theme::Edit_matchesBg));
+                    bgBrush.setColor(toColor(Theme::Edit_findBg));
                     painter->setBrush(bgBrush);
 
                     QRect rect2 = opt.rect;
@@ -213,7 +213,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                     painter->setPen(pen2);
 
                     QBrush bgBrush = painter->background();
-                    bgBrush.setColor(toColor(Theme::Edit_matchesBg));
+                    bgBrush.setColor(toColor(Theme::Edit_findBg));
                     painter->setBrush(bgBrush);
 
                     QRect rect2 = opt.rect;

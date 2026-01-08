@@ -978,7 +978,8 @@ void SettingsDialog::initColorPage()
         {Theme::invalid,                    Theme::Edit_currentLineBg,          Theme::invalid},
         {Theme::invalid,                    Theme::Edit_currentWordBg,          Theme::invalid},
         {Theme::invalid,                    Theme::Edit_errorBg,                Theme::invalid},
-        {Theme::invalid,                    Theme::Edit_matchesBg,              Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_findBg,                 Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_searchBg,               Theme::invalid},
         {Theme::Edit_parenthesesValidFg,    Theme::Edit_parenthesesValidBg,     Theme::Edit_parenthesesValidBgBlink},
         {Theme::Edit_parenthesesInvalidFg,  Theme::Edit_parenthesesInvalidBg,   Theme::Edit_parenthesesInvalidBgBlink},
 

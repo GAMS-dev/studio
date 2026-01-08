@@ -87,48 +87,6 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="6">
-    <widget class="QToolButton" name="bReplaceForward">
-     <property name="toolTip">
-      <string>Replace match and Find forward</string>
-     </property>
-     <property name="text">
-      <string>...</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../../icons/icons.qrc">
-       <normaloff>:/solid/replace-fw</normaloff>:/solid/replace-fw</iconset>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2" colspan="4">
-    <widget class="QToolButton" name="bReplace">
-     <property name="toolTip">
-      <string>Replace current match</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="icon">
-      <iconset resource="../../icons/icons.qrc">
-       <normaloff>:/solid/replace</normaloff>:/solid/replace</iconset>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="7">
-    <widget class="QToolButton" name="bReplaceBackward">
-     <property name="toolTip">
-      <string>Replace match and Find backward</string>
-     </property>
-     <property name="text">
-      <string>...</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../../icons/icons.qrc">
-       <normaloff>:/solid/replace-bk</normaloff>:/solid/replace-bk</iconset>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="1">
     <widget class="gams::studio::FilterLineEdit" name="edReplace">
      <property name="toolTip">
@@ -159,8 +117,25 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="11">
+   <item row="1" column="6">
+    <widget class="QToolButton" name="bReplace">
+     <property name="toolTip">
+      <string>Replace current match</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../../icons/icons.qrc">
+       <normaloff>:/solid/replace</normaloff>:/solid/replace</iconset>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="7">
     <widget class="QToolButton" name="bReplaceAll">
+     <property name="toolTip">
+      <string>Replace all occurrencies</string>
+     </property>
      <property name="text">
       <string>b</string>
      </property>
@@ -182,7 +157,6 @@
  <tabstops>
   <tabstop>edFind</tabstop>
   <tabstop>edReplace</tabstop>
-  <tabstop>bReplace</tabstop>
  </tabstops>
  <resources>
   <include location="../../icons/icons.qrc"/>

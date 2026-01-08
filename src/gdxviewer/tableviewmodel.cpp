@@ -140,7 +140,7 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
     }
     else if (role == Qt::BackgroundRole) {
         if (!mSym->searchRegEx().pattern().isEmpty() && mSym->searchRegEx().match(data(index).toString()).hasMatch())
-            return toColor(Theme::Edit_matchesBg);
+            return toColor(Theme::Edit_findBg);
     }
     else if (role == Qt::ForegroundRole) {
         if (!mSym->searchRegEx().pattern().isEmpty() && mSym->searchRegEx().match(data(index).toString()).hasMatch())

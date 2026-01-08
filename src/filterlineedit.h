@@ -82,7 +82,6 @@ protected:
 
 private:
     void init();
-    void invalidateRex();
     void updateRegExp();
     QAbstractButton *createButton(const QStringList &iconPaths, const QStringList &toolTips);
     int nextButtonState(QAbstractButton *button, int forceState = -1);
@@ -100,7 +99,6 @@ private:
     BoundaryMode mBoundaryMode = bmLineBound;
     bool mCanClear = true;
     int mKeyColumn = -1;
-    bool mRexNeedsUpdate = false;
 };
 
 } // namespace studio
