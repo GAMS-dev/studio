@@ -44,7 +44,12 @@ public:
     bool resetView() const;
     bool skipCheckForUpdate() const;
     QString gamsDir() const;
-    int activeHelpView();
+
+    ///
+    /// \brief Activate the HelpView (QWebEngine) on(1) and off(0).
+    ///
+    bool activeHelpView();
+
     QString logFile() const;
 
     static QString networkLog();
@@ -58,7 +63,7 @@ private:
     bool mResetSettings = false;
     bool mResetView = false;
     bool mSkipCheckForUpdate = false;
-    int mActiveHelpView = -1;
+    bool mActiveHelpView = true;
     QString mGamsDir = QString();
     QString mLogFile = QString();
     static QString NetLog;

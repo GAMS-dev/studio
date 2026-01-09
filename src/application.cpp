@@ -123,8 +123,7 @@ void Application::init()
         } else
             qDebug() << "Error: Couldn't register log file in missing path " << log.absolutePath();
     }
-    if (mCmdParser.activeHelpView() >= 0)
-        Settings::settings()->setBool(skSupressWebEngine, !mCmdParser.activeHelpView());
+    Settings::settings()->setBool(skSupressWebEngine, !mCmdParser.activeHelpView());
     initEnvironment();
 
     mMainWindow = QSharedPointer<MainWindow>(new MainWindow());

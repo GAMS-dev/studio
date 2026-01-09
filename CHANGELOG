@@ -4,6 +4,7 @@ Version 1.23.4 *
 - Fixed enable MIRO menu. Before, the MIRO menu was not enabeld in some cases although a correct path has been configured.
 - Improved search and replace dialog selection behavior. Now the result selection is removed when the dialog is closed and no search result list is open.
 - Ensure closing lst files on file system when corresponding tab is closed.
+- Improved behavior of `--integrated-help=on/off` command line option, to ensure the Help View is not unexpectedly disabled when started.
 
 Version 1.23.3
 ==================
