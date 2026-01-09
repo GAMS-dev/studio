@@ -44,6 +44,9 @@ public:
     ///
     QSharedPointer<MainWindow> mainWindow() const;
 
+    ///
+    /// \brief Main event loop handling
+    ///
     bool notify(QObject *object, QEvent *event) override;
 
     ///
