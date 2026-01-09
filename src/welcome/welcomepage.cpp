@@ -99,9 +99,29 @@ WelcomePage::WelcomePage(MainWindow *parent)
 void WelcomePage::initReleaseOverview()
 {
     ui->stackedWidget->setCurrentIndex(0);
+
+    connect(ui->bCloseChangelog, &QPushButton::clicked, this, [this]() {
+        ui->stackedWidget->setCurrentIndex(0);
+    });
+    connect(ui->bClose, &QPushButton::clicked, this, [this]() {
+        ui->stackedWidget->setCurrentIndex(0);
+    });
+    connect(Theme::instance(), &Theme::changed, this, [this]() {
+        setDarkMode(Theme::instance()->isDark());
+    });
+#ifdef __APPLE__
+    QLayoutItem *item = ui->buttonsLayout->takeAt(1);
+    ui->buttonsLayout->insertItem(0, item);
+    item = ui->buttonsLayout->takeAt(2);
+    ui->buttonsLayout->insertItem(0, item);
+    item = ui->buttonsLayout2->takeAt(1);
+    ui->buttonsLayout2->insertItem(0, item);
+#endif
+
     bool replaced = false;
     if (docPath(replaced).isEmpty()) return;
     if (replaced) return;
+
 #ifdef QWEBENGINE
     QLayout *vLayout = ui->pageOverview->layout();
 
@@ -121,12 +141,6 @@ void WelcomePage::initReleaseOverview()
         }
         ui->bBack->setEnabled(mOverview->history()->canGoBack());
     });
-    connect(ui->bClose, &QPushButton::clicked, this, [this]() {
-        ui->stackedWidget->setCurrentIndex(0);
-    });
-    connect(ui->bCloseChangelog, &QPushButton::clicked, this, [this]() {
-        ui->stackedWidget->setCurrentIndex(0);
-    });
     connect(ui->bBack, &QPushButton::clicked, this, [this]() {
         if (mOverview->history()->canGoBack()) {
             mOverview->history()->back();
@@ -137,20 +151,8 @@ void WelcomePage::initReleaseOverview()
     connect(mOverview, &QWebEngineView::loadFinished, this, [this]() {
         setDarkMode(Theme::instance()->isDark());
     });
-    connect(Theme::instance(), &Theme::changed, this, [this]() {
-        setDarkMode(Theme::instance()->isDark());
-    });
 
     vLayout->addWidget(mOverview);
-#endif
-
-#ifdef __APPLE__
-    QLayoutItem *item = ui->buttonsLayout->takeAt(1);
-    ui->buttonsLayout->insertItem(0, item);
-    item = ui->buttonsLayout->takeAt(2);
-    ui->buttonsLayout->insertItem(0, item);
-    item = ui->buttonsLayout2->takeAt(1);
-    ui->buttonsLayout2->insertItem(0, item);
 #endif
 }
 
