@@ -103,10 +103,10 @@ void OptionItemDelegate::commitAndCloseEditor()
 {
     QLineEdit *lineEdit = qobject_cast<QLineEdit *>( mLastEditor ? mLastEditor : sender() ) ;
     if (lineEdit) {
-       emit commitData(lineEdit);
+        emit commitData(lineEdit);
         if (!mIsLastEditorClosed)
            emit closeEditor(lineEdit);
-        emit currentEditedIndexChanged(QModelIndex());
+        emit currentEditedIndexChanged(mCurrentEditedIndex);
     }
 }
 

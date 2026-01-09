@@ -45,7 +45,6 @@ GamsParamEditor::GamsParamEditor(const QString &commandLineParameter,
     initTabNavigation( false );
     initMessageControl( false );
 
-    connect(mOptionCompleter, &OptionItemDelegate::currentEditedIndexChanged, this, &GamsParamEditor::parameterItemCommitted, Qt::UniqueConnection);
     connect(ui->optionTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GamsParamEditor::selectionChanged);
 
     connect(mOptionModel, &GamsParamTableModel::optionModelChanged, mDefinitionModel, &GamsOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
@@ -344,12 +343,7 @@ QString GamsParamEditor::getSelectedParameterName(QWidget *widget) const
 
 void GamsParamEditor::on_ParameterTableModelChanged(const QString &text)
 {
-    disconnect(mOptionCompleter, &OptionItemDelegate::currentEditedIndexChanged, this, &GamsParamEditor::parameterItemCommitted);
-
     mOptionModel->on_ParameterTableModelChanged(text);
-
-    connect(mOptionCompleter, &OptionItemDelegate::currentEditedIndexChanged, this, &GamsParamEditor::parameterItemCommitted, Qt::UniqueConnection);
-
 }
 
 void GamsParamEditor::on_parameterTableNameChanged(const QString &from, const QString &to)
@@ -357,7 +351,6 @@ void GamsParamEditor::on_parameterTableNameChanged(const QString &from, const QS
     if (QString::compare(from, to, Qt::CaseInsensitive)==0)
         return;
 
-    disconnect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GamsParamEditor::findAndSelectionOptionFromDefinition);
     QModelIndexList fromDefinitionItems = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
                                                                                     Qt::DisplayRole,
                                                                                     from, 1);
@@ -393,7 +386,6 @@ void GamsParamEditor::on_parameterTableNameChanged(const QString &from, const QS
             QItemSelectionModel::Select);
         ui->definitionTreeView->scrollTo(toDefinitionItems.first(), QAbstractItemView::EnsureVisible);
     }
-    connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GamsParamEditor::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 }
 
 void GamsParamEditor::on_parameterValueChanged(const QModelIndex &index)
