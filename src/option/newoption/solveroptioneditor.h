@@ -21,7 +21,7 @@
 #define SOLVEROPTIONEDITOR_H
 
 #include "option/newoption/optionwidget.h"
-#include "option/newoption/solveroptiontablemodel.h"
+#include "option/solveroptiontablemodel.h"
 #include "option/solveroptiondefinitionmodel.h"
 
 namespace gams {

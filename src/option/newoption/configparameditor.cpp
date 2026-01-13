@@ -42,7 +42,7 @@ ConfigParamEditor::ConfigParamEditor(const QList<ConfigItem *> &initParamItems, 
     for(ConfigItem* item: initParamItems) {
         optionItem.append( new ParamConfigItem(-1, item->key, item->value, item->minVersion, item->maxVersion) );
     }
-    mParameterTableModel = new ConfigTableModel(optionItem, mOptionTokenizer, this);
+    mParameterTableModel = new ConfigParamTableModel(optionItem, mOptionTokenizer, this);
 
     mDefinitionModel = new ConfigOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
 
@@ -56,17 +56,17 @@ ConfigParamEditor::ConfigParamEditor(const QList<ConfigItem *> &initParamItems, 
     connect(ui->optionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &ConfigParamEditor::on_selectRow, Qt::UniqueConnection);
 
     connect(mParameterTableModel, &QAbstractTableModel::dataChanged, this, &ConfigParamEditor::on_dataItemChanged, Qt::UniqueConnection);
-    connect(mParameterTableModel, &QAbstractTableModel::dataChanged, mParameterTableModel, &ConfigTableModel::on_updateOptionItem, Qt::UniqueConnection);
-    connect(mParameterTableModel, &ConfigTableModel::configParamModelChanged, mDefinitionModel, &ConfigOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
-    connect(mParameterTableModel, &ConfigTableModel::optionItemRemoved, mParameterTableModel, &ConfigTableModel::on_removeOptionItem, Qt::UniqueConnection);
+    connect(mParameterTableModel, &QAbstractTableModel::dataChanged, mParameterTableModel, &ConfigParamTableModel::on_updateOptionItem, Qt::UniqueConnection);
+    connect(mParameterTableModel, &ConfigParamTableModel::configParamModelChanged, mDefinitionModel, &ConfigOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
+    connect(mParameterTableModel, &ConfigParamTableModel::optionItemRemoved, mParameterTableModel, &ConfigParamTableModel::on_removeOptionItem, Qt::UniqueConnection);
 
     connect(this, &ConfigParamEditor::modificationChanged, this, &ConfigParamEditor::setModified, Qt::UniqueConnection);
     emit mParameterTableModel->configParamModelChanged(optionItem);
 
     QTimer::singleShot(0, this, [this]() {
         mParameterTableModel->updateRecurrentStatus();
-        ui->optionTableView->horizontalHeader()->setSectionResizeMode(ConfigTableModel::COLUMN_KEY, QHeaderView::Interactive);
-        ui->optionTableView->horizontalHeader()->setSectionResizeMode(ConfigTableModel::COLUMN_VALUE, QHeaderView::Interactive);
+        ui->optionTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_KEY, QHeaderView::Interactive);
+        ui->optionTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_VALUE, QHeaderView::Interactive);
     });
 
 }
@@ -214,7 +214,7 @@ void ConfigParamEditor::insertOption()
         ui->optionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
-    disconnect(mParameterTableModel, &QAbstractTableModel::dataChanged, mParameterTableModel, &ConfigTableModel::on_updateOptionItem);
+    disconnect(mParameterTableModel, &QAbstractTableModel::dataChanged, mParameterTableModel, &ConfigParamTableModel::on_updateOptionItem);
     int rowToBeInserted = -1;
     if (isThereAnIndexSelection()) {
         QList<int> rows;
@@ -239,11 +239,11 @@ void ConfigParamEditor::insertOption()
         rowToBeInserted = mParameterTableModel->rowCount()-1;
     }
 
-    const QModelIndex insertKeyIndex = ui->optionTableView->model()->index(rowToBeInserted, ConfigTableModel::COLUMN_KEY);
-    const QModelIndex insertValueIndex = ui->optionTableView->model()->index(rowToBeInserted, ConfigTableModel::COLUMN_VALUE);
-    const QModelIndex insertNumberIndex = ui->optionTableView->model()->index(rowToBeInserted, ConfigTableModel::COLUMN_ID);
-    const QModelIndex minVersionIndex = ui->optionTableView->model()->index(rowToBeInserted, ConfigTableModel::COLUMN_MIN_VERSION);
-    const QModelIndex maxVersionIndex = ui->optionTableView->model()->index(rowToBeInserted, ConfigTableModel::COLUMN_MIN_VERSION);
+    const QModelIndex insertKeyIndex = ui->optionTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_KEY);
+    const QModelIndex insertValueIndex = ui->optionTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_VALUE);
+    const QModelIndex insertNumberIndex = ui->optionTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_ID);
+    const QModelIndex minVersionIndex = ui->optionTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_MIN_VERSION);
+    const QModelIndex maxVersionIndex = ui->optionTableView->model()->index(rowToBeInserted, ConfigParamTableModel::COLUMN_MIN_VERSION);
 
     ui->optionTableView->model()->setHeaderData(rowToBeInserted, Qt::Vertical,
                                                   Qt::CheckState(Qt::Checked),
@@ -257,14 +257,14 @@ void ConfigParamEditor::insertOption()
     ui->optionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
 
     connect(mParameterTableModel, &QAbstractTableModel::dataChanged,
-            mParameterTableModel, &ConfigTableModel::on_updateOptionItem, Qt::UniqueConnection);
+            mParameterTableModel, &ConfigParamTableModel::on_updateOptionItem, Qt::UniqueConnection);
 
     emit modificationChanged(true);
 
     ui->definitionTreeView->clearSelection();
     ui->optionTableView->selectionModel()->clearSelection();
 
-    const QModelIndex index = mParameterTableModel->index(rowToBeInserted, ConfigTableModel::COLUMN_KEY);
+    const QModelIndex index = mParameterTableModel->index(rowToBeInserted, ConfigParamTableModel::COLUMN_KEY);
     ui->optionTableView->edit( index );
     updateActionsState(index);
 }
@@ -382,11 +382,11 @@ void ConfigParamEditor::addOptionModelFromDefinition(int row, const QModelIndex 
     const QString optionNameData     = ui->definitionTreeView->model()->data(optionNameIndex, Qt::DisplayRole).toString();
 
     const int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
-    const QModelIndex insertKeyIndex    = mParameterTableModel->index(row, ConfigTableModel::COLUMN_KEY);
-    const QModelIndex insertValueIndex  = mParameterTableModel->index(row, ConfigTableModel::COLUMN_VALUE);
-    const QModelIndex insertNumberIndex = mParameterTableModel->index(row, ConfigTableModel::COLUMN_ID);
-    const QModelIndex minVersionIndex   = mParameterTableModel->index(row, ConfigTableModel::COLUMN_MIN_VERSION);
-    const QModelIndex maxVersionIndex   = mParameterTableModel->index(row, ConfigTableModel::COLUMN_MIN_VERSION);
+    const QModelIndex insertKeyIndex    = mParameterTableModel->index(row, ConfigParamTableModel::COLUMN_KEY);
+    const QModelIndex insertValueIndex  = mParameterTableModel->index(row, ConfigParamTableModel::COLUMN_VALUE);
+    const QModelIndex insertNumberIndex = mParameterTableModel->index(row, ConfigParamTableModel::COLUMN_ID);
+    const QModelIndex minVersionIndex   = mParameterTableModel->index(row, ConfigParamTableModel::COLUMN_MIN_VERSION);
+    const QModelIndex maxVersionIndex   = mParameterTableModel->index(row, ConfigParamTableModel::COLUMN_MIN_VERSION);
 
     mParameterTableModel->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
     mParameterTableModel->setData( insertKeyIndex,    optionNameData,    Qt::EditRole);

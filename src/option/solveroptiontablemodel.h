@@ -23,14 +23,15 @@
 #include <QAbstractItemModel>
 #include <QMimeData>
 
-#include "optiontokenizer.h"
-#include "option.h"
+#include "option/optiontablemodel.h"
+#include "option/optiontokenizer.h"
+#include "option/option.h"
 
 namespace gams {
 namespace studio {
 namespace option {
 
-class SolverOptionTableModel : public QAbstractTableModel
+class SolverOptionTableModel : public OptionTableModel
 {
     Q_OBJECT
 public:
@@ -41,9 +42,6 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    QSize span(const QModelIndex &index) const override;
-
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
     bool setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole) override;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
@@ -58,45 +56,29 @@ public:
     bool dropMimeData(const QMimeData * mimedata, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 
     QList<SolverOptionItem *> getCurrentListOfOptionItems() const;
-    QString getOptionTableEntry(int row);
+    QString getOptionTableEntry(int row) override;
 
-    static const int COLUMN_OPTION_KEY = 0;
-    static const int COLUMN_OPTION_VALUE = 1;
-    static const int COLUMN_EOL_COMMENT = 2;
-
-    // temporary, for debug only
-    int getColumnEntryNumber() const;
-    void setColumnEntryNumber(int column);
+    static const int COLUMN_EOL_COMMENT = 3;
+    inline static int column_eol_comment() { return COLUMN_EOL_COMMENT; }
 
 signals:
-    void newTableRowDropped(const QModelIndex &index);
     void solverOptionModelChanged(const QList<gams::studio::option::SolverOptionItem *> &optionItem);
     void solverOptionItemModelChanged(const gams::studio::option::SolverOptionItem* optionItem);
-    void solverOptionItemRemoved();
-    void columnSpanned(int row);
-    void columnUnspanned(int row);
 
 public slots:
     void reloadSolverOptionModel(const QList<gams::studio::option::SolverOptionItem *> &optionItem);
-    void on_updateSolverOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
-    void on_removeSolverOptionItem();
+    void on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override;
+    void on_removeOptionItem() override;
     void on_toggleRowHeader(int logicalIndex);
-    void on_groupDefinitionReloaded();
+
+    void on_groupDefinitionReloaded() override;
     void updateRecurrentStatus();
 
 private:
     QList<SolverOptionItem *> mOptionItem;
-    QList<QString> mHeader;
-    QMap<int, QVariant> mCheckState;
-
-    OptionTokenizer* mOptionTokenizer;
-    Option* mOption;
 
     void setRowCount(int rows);
     void updateCheckState();
-
-    // temporary, for debug only
-    int columnEntryNumber = 2;
 };
 
 } // namepsace option

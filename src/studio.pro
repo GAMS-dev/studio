@@ -208,21 +208,20 @@ SOURCES += \
     option/envvarcfgcompleterdelegate.cpp \
     option/envvarconfigeditor.cpp \
     option/envvartablemodel.cpp \
+    option/solveroptiontablemodel.cpp \
+    option/gamsparamtablemodel.cpp \
+    option/configparamtablemodel.cpp \
     option/gamsconfigeditor.cpp \
     option/gamsoptiondefinitionmodel.cpp \
     option/gamsuserconfig.cpp \
     option/lineeditcompleteevent.cpp \
     option/option.cpp \
-    option/optioncompleterdelegate.cpp \
     option/optiondefinitionitem.cpp \
     option/optiondefinitionmodel.cpp \
     option/optionsortfilterproxymodel.cpp \
     option/optiontokenizer.cpp \
     option/solveroptiondefinitionmodel.cpp \
     option/newoption/optionitemdelegate.cpp \
-    option/newoption/solveroptiontablemodel.cpp \
-    option/newoption/gamsparamtablemodel.cpp \
-    option/newoption/configtablemodel.cpp \
     option/newoption/optionwidget.cpp \
     option/newoption/configparameditor.cpp \
     option/newoption/gamsparameditor.cpp \
@@ -455,17 +454,16 @@ HEADERS += \
     option/gamsuserconfig.h \
     option/lineeditcompleteevent.h \
     option/option.h \
-    option/optioncompleterdelegate.h \
     option/optiondefinitionitem.h \
     option/optiondefinitionmodel.h \
     option/optionsortfilterproxymodel.h \
     option/optiontokenizer.h \
+    option/optiontablemodel.h \
+    option/solveroptiontablemodel.h \
+    option/gamsparamtablemodel.h \
+    option/configparamtablemodel.h \
     option/solveroptiondefinitionmodel.h \
     option/newoption/optionitemdelegate.h \
-    option/newoption/optiontablemodel.h \
-    option/newoption/solveroptiontablemodel.h \
-    option/newoption/gamsparamtablemodel.h \
-    option/newoption/configtablemodel.h \
     option/newoption/optionwidget.h \
     option/newoption/configparameditor.h \
     option/newoption/gamsparameditor.h \

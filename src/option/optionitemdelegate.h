@@ -26,7 +26,6 @@
 namespace gams {
 namespace studio {
 namespace option {
-namespace newoption {
 
 class OptionItemDelegate : public QStyledItemDelegate
 {
@@ -61,7 +60,6 @@ private:
     mutable QWidget* mLastEditor;
 };
 
-} // namespace newoption
 } // namespace option
 } // namespace studio
 } // namespace gams

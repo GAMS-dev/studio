@@ -24,7 +24,7 @@
 #include <QMainWindow>
 
 #include "option/newoption/optionitemdelegate.h"
-#include "option/newoption/optiontablemodel.h"
+#include "option/optiontablemodel.h"
 
 namespace gams {
 namespace studio {

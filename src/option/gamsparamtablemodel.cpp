@@ -22,7 +22,7 @@
 #include <QApplication>
 #include <QMimeData>
 
-#include "option/newoption/gamsparamtablemodel.h"
+#include "option/gamsparamtablemodel.h"
 #include "option/option.h"
 
 #include "theme.h"
@@ -32,7 +32,6 @@
 namespace gams {
 namespace studio {
 namespace option {
-namespace newoption {
 
 GamsParamTableModel::GamsParamTableModel(const QString &normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject* parent):
     OptionTableModel(tokenizer, parent), mOptionItem(QList<OptionItem*>()), mTokenizerUsed(true)
@@ -711,7 +710,6 @@ void GamsParamTableModel::itemizeOptionFromCommandLineStr(const QString &text)
 
 }
 
-} // namepsace newoption
 } // namepsace option
 } // namespace studio
 } // namespace gams

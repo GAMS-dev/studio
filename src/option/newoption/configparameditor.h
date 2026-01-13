@@ -21,7 +21,7 @@
 #define CONFIGPARAMEDITOR_H
 
 #include "option/newoption/optionwidget.h"
-#include "option/newoption/configtablemodel.h"
+#include "option/configparamtablemodel.h"
 #include "option/configoptiondefinitionmodel.h"
 
 namespace gams {
@@ -99,7 +99,7 @@ protected:
     QStandardItemModel* definitionGroupModel() const override          { return mDefinitionGroupModel;  }
     void setDefinitionGroupModel( QStandardItemModel* model ) override { mDefinitionGroupModel = model; }
 
-    ConfigTableModel* mParameterTableModel;
+    ConfigParamTableModel* mParameterTableModel;
     OptionSortFilterProxyModel* mDefinitionProxymodel;
     ConfigOptionDefinitionModel* mDefinitionModel;
     QStandardItemModel* mDefinitionGroupModel;

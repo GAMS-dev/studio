@@ -21,7 +21,7 @@
 #define GAMSPARAMEDITOR_H
 
 #include "option/newoption/optionwidget.h"
-#include "option/newoption/gamsparamtablemodel.h"
+#include "option/gamsparamtablemodel.h"
 #include "option/gamsoptiondefinitionmodel.h"
 
 namespace gams {

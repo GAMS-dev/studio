@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "option/newoption/gamsparameditor.h"
-#include "option/newoption/gamsparamtablemodel.h"
+#include "option/gamsparamtablemodel.h"
 #include "option/gamsoptiondefinitionmodel.h"
 #include "ui_optionwidget.h"
 

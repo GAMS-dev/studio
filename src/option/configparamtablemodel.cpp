@@ -17,9 +17,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "configparamtablemodel.h"
 #include "theme.h"
 #include "msgbox.h"
+
+#include "option/configparamtablemodel.h"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -30,9 +31,10 @@ namespace studio {
 namespace option {
 
 ConfigParamTableModel::ConfigParamTableModel(const QList<ParamConfigItem *> &itemList, OptionTokenizer *tokenizer, QObject *parent):
-    QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption())
+    OptionTableModel(tokenizer, parent),
+    mOptionItem(itemList)
 {
-    mHeader << "Key"  << "Value" << "minVersion" << "maxVersion"  << "Debug Entry";
+    mHeader << "id" << "Key"  << "Value" << "minVersion" << "maxVersion";
 
     for(ParamConfigItem* item : itemList) {
         QList<OptionErrorType> errorType = mOptionTokenizer->validate(item);
@@ -138,15 +140,15 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case Qt::DisplayRole: {
-        if (col==COLUMN_PARAM_KEY) {
+        if (col==COLUMN_KEY) {
             return mOptionItem.at(row)->key;
-        } else if (col== COLUMN_PARAM_VALUE) {
+        } else if (col== COLUMN_VALUE) {
                  return  mOptionItem.at(row)->value;
         } else if (col==COLUMN_MIN_VERSION) {
                   return mOptionItem.at(row)->minVersion;
         } else if (col==COLUMN_MAX_VERSION) {
                   return mOptionItem.at(row)->maxVersion;
-        } else if (col==COLUMN_ENTRY_NUMBER) {
+        } else if (col==COLUMN_ID) {
             return mOptionItem.at(row)->optionId;
         }
         break;
@@ -199,39 +201,39 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
 //        if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))
 //            return QVariant::fromValue(QColor(Qt::gray));
 
-        if (mOptionItem[index.row()]->recurrent && index.column()==COLUMN_PARAM_KEY)
+        if (mOptionItem[index.row()]->recurrent && index.column()==COLUMN_KEY)
             return QVariant::fromValue(QColor(Qt::darkYellow));
 
         if (index.column()==COLUMN_MIN_VERSION) {
             if (mOptionItem[index.row()]->minVersion.isEmpty())
                 return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
-            else if (mOption->isConformantVersion(mOptionItem[index.row()]->minVersion))
+            else if (mOptionTokenizer->getOption()->isConformantVersion(mOptionItem[index.row()]->minVersion))
                      return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
             else
                  return QVariant::fromValue(Theme::color(Theme::Normal_Red));
         } else if (index.column()==COLUMN_MAX_VERSION) {
             if (mOptionItem[index.row()]->maxVersion.isEmpty())
                 return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
-            else if (mOption->isConformantVersion(mOptionItem[index.row()]->maxVersion))
+            else if (mOptionTokenizer->getOption()->isConformantVersion(mOptionItem[index.row()]->maxVersion))
                     return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
             else
                 return QVariant::fromValue(Theme::color(Theme::Normal_Red));
         }
-        if (mOption->isDoubleDashedOption(mOptionItem.at(row)->key)) { // double dashed parameter
-            if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row)->key)) )
+        if (mOptionTokenizer->getOption()->isDoubleDashedOption(mOptionItem.at(row)->key)) { // double dashed parameter
+            if (!mOptionTokenizer->getOption()->isDoubleDashedOptionNameValid( mOptionTokenizer->getOption()->getOptionKey(mOptionItem.at(row)->key)) )
                 return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             else
                  return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         }
-        if (mOption->isValid(mOptionItem.at(row)->key) || mOption->isASynonym(mOptionItem.at(row)->key)) { // valid option
-            if (col==COLUMN_PARAM_KEY) { // key
-                if (mOption->isDeprecated(mOptionItem.at(row)->key)) { // deprecated option
+        if (mOptionTokenizer->getOption()->isValid(mOptionItem.at(row)->key) || mOptionTokenizer->getOption()->isASynonym(mOptionItem.at(row)->key)) { // valid option
+            if (col==COLUMN_KEY) { // key
+                if (mOptionTokenizer->getOption()->isDeprecated(mOptionItem.at(row)->key)) { // deprecated option
                     return QVariant::fromValue(QColor(Theme::Disable_Gray));
                 } else {
                     return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                 }
-            } else if (col==COLUMN_PARAM_VALUE) { // value
-                  switch (mOption->getValueErrorType(mOptionItem.at(row)->key, mOptionItem.at(row)->value)) {
+            } else if (col==COLUMN_VALUE) { // value
+                  switch (mOptionTokenizer->getOption()->getValueErrorType(mOptionItem.at(row)->key, mOptionItem.at(row)->value)) {
                       case OptionErrorType::Incorrect_Value_Type:
                             return QVariant::fromValue(Theme::color(Theme::Normal_Red));
                       case OptionErrorType::Value_Out_Of_Range:
@@ -241,13 +243,13 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
                       default:
                            return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                   }
-            } else if (col==COLUMN_MIN_VERSION && mOption->isConformantVersion(mOptionItem.at(row)->minVersion)) {
+            } else if (col==COLUMN_MIN_VERSION && mOptionTokenizer->getOption()->isConformantVersion(mOptionItem.at(row)->minVersion)) {
                       return QVariant::fromValue(Theme::color(Theme::Normal_Red));
-            } else if (col==COLUMN_MAX_VERSION && mOption->isConformantVersion(mOptionItem.at(row)->maxVersion)) {
+            } else if (col==COLUMN_MAX_VERSION && mOptionTokenizer->getOption()->isConformantVersion(mOptionItem.at(row)->maxVersion)) {
                        return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             }
         } else { // invalid option
-            if (col ==COLUMN_PARAM_KEY)
+            if (col ==COLUMN_KEY)
                return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             else
                 return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
@@ -259,15 +261,6 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
     }
     return QVariant();
 
-}
-
-Qt::ItemFlags ConfigParamTableModel::flags(const QModelIndex &index) const
-{
-    Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
-     if (!index.isValid())
-         return Qt::NoItemFlags | Qt::ItemIsDropEnabled ;
-     else
-         return Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
 }
 
 bool ConfigParamTableModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
@@ -298,12 +291,12 @@ bool ConfigParamTableModel::setData(const QModelIndex &index, const QVariant &va
         if (index.row() > mOptionItem.size())
             return false;
 
-        if (index.column() == COLUMN_PARAM_KEY) { // key
+        if (index.column() == COLUMN_KEY) { // key
 //            QString from = data(index, Qt::DisplayRole).toString();
             mOptionItem[index.row()]->key = dataValue;
-        } else if (index.column() == COLUMN_PARAM_VALUE) { // value
+        } else if (index.column() == COLUMN_VALUE) { // value
                   mOptionItem[index.row()]->value = dataValue;
-        } else if (index.column() == COLUMN_ENTRY_NUMBER) {
+        } else if (index.column() == COLUMN_ID) {
                   mOptionItem[index.row()]->optionId = dataValue.toInt();
         } else if (index.column() == COLUMN_MIN_VERSION) {
                    mOptionItem[index.row()]->minVersion = dataValue;
@@ -357,7 +350,7 @@ bool ConfigParamTableModel::removeRows(int row, int count, const QModelIndex &pa
         mOptionItem.removeAt(i);
     }
     endRemoveRows();
-    emit configParamItemRemoved();
+    emit optionItemRemoved();
     return true;
 }
 
@@ -466,9 +459,9 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
         itemList.reserve(newItems.size());
         for (const QString &text : std::as_const(newItems)) {
             const QStringList textList = text.split("=");
-            const int optionid = mOption->getOptionDefinition(textList.at(0)).number;
-            itemList.append(new ParamConfigItem(optionid, textList.at( COLUMN_PARAM_KEY ), textList.at( COLUMN_PARAM_VALUE )));
-            QModelIndexList indices = match(index(COLUMN_PARAM_KEY,COLUMN_ENTRY_NUMBER), Qt::DisplayRole,
+            const int optionid = mOptionTokenizer->getOption()->getOptionDefinition(textList.at(0)).number;
+            itemList.append(new ParamConfigItem(optionid, textList.at( COLUMN_KEY ), textList.at( COLUMN_VALUE )));
+            QModelIndexList indices = match(index(COLUMN_KEY,COLUMN_ID), Qt::DisplayRole,
                                             QVariant(optionid), Qt::MatchRecursive);
 //          if (settings && settings->overridExistingOption()) {
               for(const QModelIndex idx : std::as_const(indices)) { overrideIdRowList.append(idx.row()); }
@@ -480,7 +473,7 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
          const bool singleEntryExisted = (overrideIdRowList.size()==1);
          const bool multipleEntryExisted = (overrideIdRowList.size()>1);
          if (singleEntryExisted) {
-             const QString param = data(index(overrideIdRowList.at(0), COLUMN_PARAM_KEY)).toString();
+             const QString param = data(index(overrideIdRowList.at(0), COLUMN_KEY)).toString();
              const QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
                  .arg(getParameterTableEntry(overrideIdRowList.at(0)),
                  "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
@@ -500,7 +493,7 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
                 return false;
              }
          } else if (multipleEntryExisted) {
-             const QString param = data(index(overrideIdRowList.at(0), COLUMN_PARAM_KEY)).toString();
+             const QString param = data(index(overrideIdRowList.at(0), COLUMN_KEY)).toString();
              QString entryDetailedText = QString("Entries:\n");
              int i = 0;
              for (const int id : overrideIdRowList)
@@ -543,10 +536,10 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
              if (!replaceExistingEntry)
                  insertRows(beginRow, 1, QModelIndex());
 
-             const QModelIndex idx = index(beginRow, COLUMN_PARAM_KEY);
+             const QModelIndex idx = index(beginRow, COLUMN_KEY);
              setData(idx, item->key, Qt::EditRole);
-             setData( index(beginRow, COLUMN_PARAM_VALUE), item->value, Qt::EditRole);
-             setData( index(beginRow, COLUMN_ENTRY_NUMBER), item->optionId, Qt::EditRole);
+             setData( index(beginRow, COLUMN_VALUE), item->value, Qt::EditRole);
+             setData( index(beginRow, COLUMN_ID), item->optionId, Qt::EditRole);
              setData( index(beginRow, COLUMN_MIN_VERSION), item->minVersion, Qt::EditRole);
              setData( index(beginRow, COLUMN_MAX_VERSION), item->maxVersion, Qt::EditRole);
              if (item->key.isEmpty() || item->value.isEmpty())
@@ -569,6 +562,21 @@ const QList<ParamConfigItem *> ConfigParamTableModel::parameterConfigItems()
     return mOptionItem;
 }
 
+QString ConfigParamTableModel::getOptionTableEntry(int row)
+{
+    const QModelIndex keyIndex = index(row, ConfigParamTableModel::COLUMN_KEY);
+    const QVariant optionKey = data(keyIndex, Qt::DisplayRole);
+    const QModelIndex valueIndex =index(row, ConfigParamTableModel::COLUMN_VALUE);
+    const QVariant optionValue = data(valueIndex, Qt::DisplayRole);
+    const QModelIndex minVersionIndex = index(row, ConfigParamTableModel::COLUMN_MIN_VERSION);
+    const QVariant minVersionValue = data(minVersionIndex, Qt::DisplayRole);
+    const QModelIndex maxVersionIndex = index(row, ConfigParamTableModel::COLUMN_MAX_VERSION);
+    const QVariant maxVersionValue = data(maxVersionIndex, Qt::DisplayRole);
+    return QString("%1%2%3 %4 %5").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(),
+                                       optionValue.toString(), minVersionValue.toString(), maxVersionValue.toString());
+
+}
+
 void ConfigParamTableModel::on_groupDefinitionReloaded()
 {
     emit configParamModelChanged(mOptionItem);
@@ -576,7 +584,7 @@ void ConfigParamTableModel::on_groupDefinitionReloaded()
 
 void ConfigParamTableModel::on_reloadConfigParamModel(const QList<ParamConfigItem *> &optionItem)
 {
-    disconnect(this, &QAbstractTableModel::dataChanged, this, &ConfigParamTableModel::on_updateConfigParamItem);
+    disconnect(this, &QAbstractTableModel::dataChanged, this, &ConfigParamTableModel::on_updateOptionItem);
 
     beginResetModel();
 
@@ -594,17 +602,17 @@ void ConfigParamTableModel::on_reloadConfigParamModel(const QList<ParamConfigIte
 
     for (int i=0; i<mOptionItem.size(); ++i) {
         if (mOptionItem.at(i)->disabled) {
-            setData( index(i, COLUMN_PARAM_KEY), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
+            setData( index(i, COLUMN_KEY), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::PartiallyChecked),
                               Qt::CheckStateRole );
-            setData( index(i, COLUMN_ENTRY_NUMBER), QVariant(mOptionItem.at(i)->optionId), Qt::EditRole);
+            setData( index(i, COLUMN_ID), QVariant(mOptionItem.at(i)->optionId), Qt::EditRole);
         } else {
-           setData( index(i, COLUMN_PARAM_KEY), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
-           setData( index(i, COLUMN_PARAM_VALUE), QVariant(mOptionItem.at(i)->value), Qt::EditRole);
+           setData( index(i, COLUMN_KEY), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
+           setData( index(i, COLUMN_VALUE), QVariant(mOptionItem.at(i)->value), Qt::EditRole);
            setData( index(i, COLUMN_MIN_VERSION), mOptionItem.at(i)->minVersion, Qt::EditRole);
            setData( index(i, COLUMN_MAX_VERSION), mOptionItem.at(i)->maxVersion, Qt::EditRole);
-           setData( index(i, COLUMN_ENTRY_NUMBER), QVariant(mOptionItem.at(i)->optionId), Qt::EditRole);
+           setData( index(i, COLUMN_ID), QVariant(mOptionItem.at(i)->optionId), Qt::EditRole);
            if (mOptionItem.at(i)->error == OptionErrorType::No_Error)
                setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),
@@ -622,10 +630,10 @@ void ConfigParamTableModel::on_reloadConfigParamModel(const QList<ParamConfigIte
     emit configParamModelChanged(mOptionItem);
     updateRecurrentStatus();
     endResetModel();
-    connect(this, &QAbstractTableModel::dataChanged, this, &ConfigParamTableModel::on_updateConfigParamItem, Qt::UniqueConnection);
+    connect(this, &QAbstractTableModel::dataChanged, this, &ConfigParamTableModel::on_updateOptionItem, Qt::UniqueConnection);
 }
 
-void ConfigParamTableModel::on_updateConfigParamItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void ConfigParamTableModel::on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
     QModelIndex idx = topLeft;
     int row = idx.row();
@@ -662,7 +670,7 @@ void ConfigParamTableModel::on_updateConfigParamItem(const QModelIndex &topLeft,
     updateRecurrentStatus();
 }
 
-void ConfigParamTableModel::on_removeConfigParamItem()
+void ConfigParamTableModel::on_removeOptionItem()
 {
     beginResetModel();
     mOptionTokenizer->validateOption(mOptionItem);
@@ -732,14 +740,13 @@ void ConfigParamTableModel::setRowCount(int rows)
 
 QString ConfigParamTableModel::getParameterTableEntry(int row)
 {
-    const QModelIndex keyIndex = index(row, COLUMN_PARAM_KEY);
+    const QModelIndex keyIndex = index(row, COLUMN_KEY);
     const QVariant optionKey = data(keyIndex, Qt::DisplayRole);
-    const QModelIndex valueIndex = index(row, COLUMN_PARAM_VALUE);
+    const QModelIndex valueIndex = index(row, COLUMN_VALUE);
     const QVariant optionValue = data(valueIndex, Qt::DisplayRole);
     return QString("%1%2%3").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(), optionValue.toString());
 
 }
-
 
 } // namepsace option
 } // namespace studio

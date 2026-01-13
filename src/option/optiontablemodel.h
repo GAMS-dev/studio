@@ -32,12 +32,12 @@ struct OptionItem;
 struct SolverOptionItem;
 class ConfigItem;
 
-namespace newoption {
-
-typedef QList<SolverOptionItem*>  GamsParameterItem;     // QList<GamsParameter*>
-//typedef QList<SolverOptionItem*>  SolverParameterItem;   // QList<SolverOption*>
-typedef QList<SolverOptionItem*>  GamsParameterLineItem; // QList<LineOptin*>
-typedef QList<ParamConfigItem*>   GucParameterItem;      // QList<GAMSParameter*>
+//namespace newoption {
+//
+//typedef QList<SolverOptionItem*>  GamsParameterItem;     // QList<GamsParameter*>
+////typedef QList<SolverOptionItem*>  SolverParameterItem;   // QList<SolverOption*>
+//typedef QList<SolverOptionItem*>  GamsParameterLineItem; // QList<LineOptin*>
+//typedef QList<ParamConfigItem*>   GucParameterItem;      // QList<GAMSParameter*>
 
 class OptionTableModel : public QAbstractTableModel
 {
@@ -92,7 +92,7 @@ protected:
     QList<QList<int>> mRecurrence;
 };
 
-} // namepsace newoption
+//} // namepsace newoption
 } // namepsace option
 } // namespace studio
 } // namespace gams

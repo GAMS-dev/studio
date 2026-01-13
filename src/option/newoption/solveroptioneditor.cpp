@@ -21,7 +21,7 @@
 #include <QClipboard>
 
 #include "mainwindow.h"
-#include "option/newoption/solveroptiontablemodel.h"
+#include "option/solveroptiontablemodel.h"
 #include "option/solveroptiondefinitionmodel.h"
 #include "option/newoption/solveroptioneditor.h"
 #include "option/solveroptiondefinitionmodel.h"

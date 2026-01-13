@@ -17,18 +17,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSCONFIGPARAMETERTABLEMODEL_H
-#define GAMSCONFIGPARAMETERTABLEMODEL_H
+#ifndef CONFIGTABLEMODEL_H
+#define CONFIGTABLEMODEL_H
 
 #include <QAbstractTableModel>
 
 #include "option/optiontokenizer.h"
+#include "option/optiontablemodel.h"
 
 namespace gams {
 namespace studio {
 namespace option {
 
-class ConfigParamTableModel : public QAbstractTableModel
+class ConfigParamTableModel : public OptionTableModel
 {
      Q_OBJECT
 public:
@@ -39,7 +40,6 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
     bool setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole) override;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
@@ -55,41 +55,35 @@ public:
     Qt::DropActions supportedDropActions() const override;
     bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 
-    static const int COLUMN_PARAM_KEY = 0;
-    static const int COLUMN_PARAM_VALUE = 1;
-    static const int COLUMN_MIN_VERSION = 2;
-    static const int COLUMN_MAX_VERSION = 3;
-    static const int COLUMN_ENTRY_NUMBER = 4;
+    static const int COLUMN_MIN_VERSION = 3;
+    static const int COLUMN_MAX_VERSION = 4;
+
+    inline static int column_min_version() { return COLUMN_MIN_VERSION; }
+    inline static int column_max_version() { return COLUMN_MAX_VERSION; }
 
     const QList<ParamConfigItem *> parameterConfigItems();
+    QString getOptionTableEntry(int row) override;
 
 signals:
-    void newTableRowDropped(const QModelIndex &index);
-    void configParamModelChanged(const QList<gams::studio::option::ParamConfigItem *> &optionItem);
-    void configParamItemRemoved();
+    void configParamModelChanged(const QList<ParamConfigItem *> &optionItem);
 
 public slots:
-    void on_groupDefinitionReloaded();
-    void on_reloadConfigParamModel(const QList<gams::studio::option::ParamConfigItem *> &optionItem);
-    void on_updateConfigParamItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
-    void on_removeConfigParamItem();
+    void on_groupDefinitionReloaded() override;
+    void on_reloadConfigParamModel(const QList<ParamConfigItem *> &optionItem);
+    void on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override;
+    void on_removeOptionItem() override;
     void updateRecurrentStatus();
     QString getParameterTableEntry(int row);
 
-private slots:
-    void setRowCount(int rows);
-    void updateCheckState();
-
 private:
     QList<ParamConfigItem *> mOptionItem;
-    QList<QString> mHeader;
-    QMap<int, QVariant> mCheckState;
 
-    OptionTokenizer* mOptionTokenizer;
-    Option* mOption;
+    void setRowCount(int rows);
+    void updateCheckState();
 };
 
 } // namepsace option
 } // namespace studio
 } // namespace gams
-#endif // GAMSCONFIGPARAMETERTABLEMODEL_H
+
+#endif // CONFIGTABLEMODEL_H

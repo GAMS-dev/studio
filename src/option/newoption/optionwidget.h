@@ -29,7 +29,7 @@
 #include "option/optiontokenizer.h"
 #include "option/optionsortfilterproxymodel.h"
 #include "option/optiondefinitionmodel.h"
-#include "option/newoption/optiontablemodel.h"
+#include "option/optiontablemodel.h"
 #include "option/newoption/optionitemdelegate.h"
 
 namespace gams {

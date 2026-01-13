@@ -20,12 +20,11 @@
 #ifndef GAMSPARAMTABLEMODEL_H
 #define GAMSPARAMTABLEMODEL_H
 
-#include "option/newoption/optiontablemodel.h"
+#include "option/optiontablemodel.h"
 
 namespace gams {
 namespace studio {
 namespace option {
-namespace newoption {
 
 class GamsParamTableModel : public OptionTableModel
 {
@@ -81,7 +80,6 @@ private:
     QString getParameterTableEntry(int row);
 };
 
-} // namepsace newoption
 } // namepsace option
 } // namespace studio
 } // namespace gams
