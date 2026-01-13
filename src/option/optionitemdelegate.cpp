@@ -23,13 +23,12 @@
 #include <QApplication>
 #include <QMainWindow>
 
-#include "option/newoption/optionitemdelegate.h"
+#include "option/optionitemdelegate.h"
 #include "option/optiontablemodel.h"
 
 namespace gams {
 namespace studio {
 namespace option {
-namespace newoption {
 
 OptionItemDelegate::OptionItemDelegate(OptionTokenizer* tokenizer, QObject* parent) :
     QStyledItemDelegate(parent), mOptionTokenizer(tokenizer), mIsLastEditorClosed(false), mLastEditor(nullptr)
@@ -149,7 +148,6 @@ bool OptionItemDelegate::eventFilter(QObject* editor, QEvent* event)
     return QStyledItemDelegate::eventFilter(editor, event);
 }
 
-} // namespace newoption
 } // namespace option
 } // namespace studio
 } // namespace gams

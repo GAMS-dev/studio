@@ -220,8 +220,8 @@ SOURCES += \
     option/optiondefinitionmodel.cpp \
     option/optionsortfilterproxymodel.cpp \
     option/optiontokenizer.cpp \
+    option/optionitemdelegate.cpp \
     option/solveroptiondefinitionmodel.cpp \
-    option/newoption/optionitemdelegate.cpp \
     option/newoption/optionwidget.cpp \
     option/newoption/configparameditor.cpp \
     option/newoption/gamsparameditor.cpp \
@@ -463,7 +463,7 @@ HEADERS += \
     option/gamsparamtablemodel.h \
     option/configparamtablemodel.h \
     option/solveroptiondefinitionmodel.h \
-    option/newoption/optionitemdelegate.h \
+    option/optionitemdelegate.h \
     option/newoption/optionwidget.h \
     option/newoption/configparameditor.h \
     option/newoption/gamsparameditor.h \

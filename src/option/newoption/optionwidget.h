@@ -30,7 +30,7 @@
 #include "option/optionsortfilterproxymodel.h"
 #include "option/optiondefinitionmodel.h"
 #include "option/optiontablemodel.h"
-#include "option/newoption/optionitemdelegate.h"
+#include "option/optionitemdelegate.h"
 
 namespace gams {
 namespace studio {
