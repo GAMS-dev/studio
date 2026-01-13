@@ -727,7 +727,7 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         mOptionItem.at(logicalIndex)->key = key;
         mOptionItem.at(logicalIndex)->value = "";
         mOptionItem.at(logicalIndex)->text = "";
-        mOptionItem.at(logicalIndex)->optionId = mOptionItem.at(logicalIndex)->optionId; //-1;
+        mOptionItem.at(logicalIndex)->optionId = -1;
         mOptionItem.at(logicalIndex)->disabled = true;
         mCheckState[logicalIndex] = QVariant(Qt::PartiallyChecked);
         disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateOptionItem);
@@ -735,9 +735,8 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_VALUE), mOptionItem.at(logicalIndex)->value, Qt::EditRole );
         if (mOptionTokenizer->getOption()->isEOLCharDefined())
             setData( index(logicalIndex, SolverOptionTableModel::COLUMN_EOL_COMMENT), mOptionItem.at(logicalIndex)->text, Qt::EditRole );
-        setData( index(logicalIndex, COLUMN_ID), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
         connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateOptionItem);
-//        setData( index(logicalIndex, COLUMN_ID), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
+        setData( index(logicalIndex, COLUMN_ID), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     }
     emit solverOptionItemModelChanged(mOptionItem.at(logicalIndex));
