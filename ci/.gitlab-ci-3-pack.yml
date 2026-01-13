@@ -194,8 +194,8 @@ pack-wei:
     - cp build/src/bin/* studio
     - cp "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Redist/MSVC/14.44.35112/x64/Microsoft.VC143.CRT/*" "studio"
     - cp "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Redist/MSVC/14.44.35112/vc_redist.x64.exe" "studio"
-    - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libcrypto-3-x64.dll" "studio"
-    - cp "C:\QT\Tools\OpenSSLv3\Win_x64\bin\libssl-3-x64.dll" "studio"
+    - Copy-Item "build/libssl-3-x64.dll" "studio"
+    - Copy-Item "build/libcrypto-3-x64.dll" "studio"
     - cd studio
     - mkdir -p support/doc/fonts
     - cp ../fonts/*-License.txt support/doc/fonts

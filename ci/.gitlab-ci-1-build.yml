@@ -75,14 +75,18 @@ build-wei:
     - !reference [.get-gams-wei]
     - !reference [.gams-folder-wei]
     - '& $cmd_vcvars'
-    - $data = 
-      "GAMS_DISTRIB=C:/Cache/gams-installs/$(Get-Content mygmsdir.tmp -Raw)",
-      'GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api',
-      'GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api'
+    - $gpath = "C:/Cache/gams-installs/$((Get-Content mygmsdir.tmp -Raw).Trim())"
+    - $data = @(
+         "GAMS_DISTRIB=$gpath",
+         "GAMS_DISTRIB_C_API=$gpath/apifiles/C/api",
+         "GAMS_DISTRIB_CPP_API=$gpath/apifiles/C++/api"
+      )
     - $data | out-file -encoding ascii gamsinclude.pri
-    - mkdir build
-    - cd build
+    - New-Item -ItemType Directory -Path build -Force | Out-Null
+    - Set-Location build
     - $env:PATH="C:\Qt\Tools\icu\bin64;$env:PATH"; & { qmake.exe ..\gams-studio.pro "CONFIG+=release" }
+    - Copy-Item "$gpath\libssl-3-x64.dll" .
+    - Copy-Item "$gpath\libcrypto-3-x64.dll" .
     - nmake.exe
   artifacts:
     name: studio-wei
