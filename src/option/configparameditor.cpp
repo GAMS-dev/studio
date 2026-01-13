@@ -20,14 +20,13 @@
 #include "option/configoptiondefinitionmodel.h"
 #include "option/gamsuserconfig.h"
 #include "option/optiondefinitionmodel.h"
-#include "option/newoption/configparameditor.h"
+#include "option/configparameditor.h"
 //#include "msgbox.h"
 #include "ui_optionwidget.h"
 
 namespace gams {
 namespace studio {
 namespace option {
-namespace newoption {
 
 ConfigParamEditor::ConfigParamEditor(const QList<ConfigItem *> &initParamItems, const QString &encodingName, QWidget *parent) :
     OptionWidget(true, parent),
@@ -396,7 +395,6 @@ void ConfigParamEditor::addOptionModelFromDefinition(int row, const QModelIndex 
     mParameterTableModel->setHeaderData( row, Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
 }
 
-} // namepsace newoption
 } // namepsace option
 } // namespace studio
 } // namespace gams

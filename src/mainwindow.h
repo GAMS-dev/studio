@@ -32,7 +32,7 @@
 #include "gamscom/pincontrol.h"
 #include "modeldialog/libraryitem.h"
 #include "search/resultsview.h"
-#include "option/newoption/gamsparameterwidget.h"
+#include "option/gamsparameterwidget.h"
 #include "statuswidgets.h"
 #include "maintabcontextmenu.h"
 #include "logtabcontextmenu.h"
@@ -73,9 +73,7 @@ namespace search {
 class SearchDialog;
 }
 namespace option {
-namespace newoption {
 class GamsParameterWidget;
-}
 }
 namespace gdxdiffdialog {
 class GdxDiffDialog;
@@ -559,7 +557,7 @@ private:
 #ifdef QWEBENGINE
     help::HelpWidget *mHelpWidget = nullptr;
 #endif
-    option::newoption::GamsParameterWidget *mGamsParameterEditor = nullptr;
+    option::GamsParameterWidget *mGamsParameterEditor = nullptr;
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;
     QTimer mWinStateTimer;

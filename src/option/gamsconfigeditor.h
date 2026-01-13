@@ -26,7 +26,7 @@
 #include "common.h"
 #include "option/gamsuserconfig.h"
 #include "option/envvarconfigeditor.h"
-#include "option/newoption/configparameditor.h"
+#include "option/configparameditor.h"
 
 namespace gams {
 namespace studio {
@@ -102,7 +102,7 @@ private:
     bool mFileHasChangedExtern = false;
 
     GamsUserConfig* mGuc;
-    newoption::ConfigParamEditor* mConfigParamEditor;
+    ConfigParamEditor* mConfigParamEditor;
     EnvVarConfigEditor* mEnvVarConfigEditor;
 };
 

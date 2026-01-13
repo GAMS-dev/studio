@@ -20,14 +20,13 @@
 #ifndef GAMSPARAMEDITOR_H
 #define GAMSPARAMEDITOR_H
 
-#include "option/newoption/optionwidget.h"
+#include "option/optionwidget.h"
 #include "option/gamsparamtablemodel.h"
 #include "option/gamsoptiondefinitionmodel.h"
 
 namespace gams {
 namespace studio {
 namespace option {
-namespace newoption {
 
 namespace Ui {
 class OptionWidget;
@@ -120,8 +119,6 @@ protected:
 };
 
 
-
-} // namepsace newoption
 } // namepsace option
 } // namespace studio
 } // namespace gams

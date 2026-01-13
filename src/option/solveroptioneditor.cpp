@@ -23,7 +23,7 @@
 #include "mainwindow.h"
 #include "option/solveroptiontablemodel.h"
 #include "option/solveroptiondefinitionmodel.h"
-#include "option/newoption/solveroptioneditor.h"
+#include "option/solveroptioneditor.h"
 #include "option/solveroptiondefinitionmodel.h"
 #include "file/filetype.h"
 
@@ -35,7 +35,6 @@
 namespace gams {
 namespace studio {
 namespace option {
-namespace newoption {
 
 SolverOptionEditor::SolverOptionEditor(const QString &solverName,
                                        const QString &optionFilePath,
@@ -696,7 +695,6 @@ void SolverOptionEditor::addEOLCommentModelFromDefinition(int row, const QModelI
 
 
 
-} // namepsace newoption
 } // namepsace option
 } // namespace studio
 } // namespace gams

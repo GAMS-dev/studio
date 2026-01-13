@@ -540,7 +540,7 @@ void MainWindow::updateEditActions()
     else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid))
         enabledActions = gdx->getEnabledContextActions();
 //    else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(wid))
-    else if (option::newoption::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(wid))
+    else if (option::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(wid))
         enabledActions = sow->getEnabledContextActions();
     else if (ViewHelper::toGamsConfigEditor(wid))
         enabledActions = {"select-all"};
@@ -893,7 +893,7 @@ void MainWindow::initToolBar()
     ui->action1_Create_GDX->setChecked(runOptions & 1);
     ui->action2_Create_RF->setChecked(runOptions & 2);
     ui->action3_Profiling->setChecked(runOptions & 4);
-    mGamsParameterEditor = new option::newoption::GamsParameterWidget(ui->actionRun, ui->actionCompile,
+    mGamsParameterEditor = new option::GamsParameterWidget(ui->actionRun, ui->actionCompile,
                 ui->actionRunWithSelected, ui->actionCompileWithSelected, ui->actionRunDebugger, ui->actionStepDebugger,
                 actionFlags, ui->actionRunNeos, ui->actionRunEngine,  ui->actionInterrupt, ui->actionStop, this);
 
@@ -905,7 +905,7 @@ void MainWindow::initToolBar()
         zoomWidget(mGamsParameterEditor->dockChild(), delta);
     });
 
-    connect(mGamsParameterEditor, &option::newoption::GamsParameterWidget::optionsChanged, this, [this](const QString &) {
+    connect(mGamsParameterEditor, &option::GamsParameterWidget::optionsChanged, this, [this](const QString &) {
         updateProfilerAction();
     });
 }
@@ -1770,7 +1770,7 @@ void MainWindow::updateStatusLineCount()
     else if (TextView *tv = ViewHelper::toTextView(mRecent.editor()))
         mStatusWidgets->setLineCount(tv->lineCount());
 //    else if (option::SolverOptionWidget* edit = ViewHelper::toSolverOptionEdit(mRecent.editor()))
-    else if (option::newoption::SolverOptionEditor* edit = ViewHelper::toSolverOptionEdit(mRecent.editor()))
+    else if (option::SolverOptionEditor* edit = ViewHelper::toSolverOptionEdit(mRecent.editor()))
         mStatusWidgets->setLineCount(edit->getItemCount());
     else mStatusWidgets->setLineCount(-1);
 }
@@ -2436,7 +2436,7 @@ FileProcessKind MainWindow::fileChangedExtern(const FileId &fileId)
     if (file->kind() == FileKind::Opt || file->kind() == FileKind::Pf) {
         for (QWidget *e : file->editors()) {
 //            if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(e))
-            if (option::newoption::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(e))
+            if (option::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(e))
                sow->setFileChangedExtern(true);
         }
     }
@@ -2800,7 +2800,7 @@ void MainWindow::on_actionGamsHelp_triggered()
                             }
                         } else {
 //                            option::SolverOptionWidget* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
-                            option::newoption::SolverOptionEditor* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
+                            option::SolverOptionEditor* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
                             if (optionEdit) {
                                 QString optionName = optionEdit->getSelectedOptionName(widget);
                                 if (optionName.isEmpty()) {
@@ -4046,7 +4046,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
             mGamsParameterEditor->deSelectParameters();
         } else if (mRecent.editor() != nullptr) {
 //            option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor());
-            option::newoption::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(mRecent.editor());
+            option::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(mRecent.editor());
             if (so && so->isInFocus(focusWidget())) {
                 so->deSelectOptions();
             } else {
@@ -4810,17 +4810,17 @@ void MainWindow::checkDefaultWorkDir()
 
 void MainWindow::on_actionRun_triggered()
 {
-    option::newoption::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
-            ? option::newoption::RunActionState::Compile
-            : option::newoption::RunActionState::Run;
+    option::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
+            ? option::RunActionState::Compile
+            : option::RunActionState::Run;
     execute(mGamsParameterEditor->on_runAction(state), nullptr);
 }
 
 void MainWindow::on_actionRunWithSelected_triggered()
 {
-    option::newoption::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
-            ? option::newoption::RunActionState::CompileWithSelected
-            : option::newoption::RunActionState::RunWithSelected;
+    option::RunActionState state = qApp->keyboardModifiers() & Qt::ShiftModifier
+            ? option::RunActionState::CompileWithSelected
+            : option::RunActionState::RunWithSelected;
     gamscom::ComFeatures comMode = ui->action3_Profiling->isChecked() ? gamscom::cfProfiler : gamscom::cfNoCom;
     processMainFileDynamics();
     execute(mGamsParameterEditor->on_runAction(state), nullptr, comMode);
@@ -4829,13 +4829,13 @@ void MainWindow::on_actionRunWithSelected_triggered()
 void MainWindow::on_actionCompile_triggered()
 {
     processMainFileDynamics();
-    execute(mGamsParameterEditor->on_runAction(option::newoption::RunActionState::Compile), nullptr);
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::Compile), nullptr);
 }
 
 void MainWindow::on_actionCompileWithSelected_triggered()
 {
     processMainFileDynamics();
-    execute(mGamsParameterEditor->on_runAction(option::newoption::RunActionState::CompileWithSelected), nullptr);
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithSelected), nullptr);
 }
 
 void MainWindow::on_actionRunDebugger_triggered()
@@ -4845,7 +4845,7 @@ void MainWindow::on_actionRunDebugger_triggered()
         emit ui->debugWidget->sendRun();
     } else {
         processMainFileDynamics();
-        execute(mGamsParameterEditor->on_runAction(option::newoption::RunActionState::RunDebug), nullptr, gamscom::cfRunDebug);
+        execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebug), nullptr, gamscom::cfRunDebug);
     }
 }
 
@@ -4856,7 +4856,7 @@ void MainWindow::on_actionStepDebugger_triggered()
         emit ui->debugWidget->sendStepLine();
     } else {
         processMainFileDynamics();
-        execute(mGamsParameterEditor->on_runAction(option::newoption::RunActionState::StepDebug), nullptr, gamscom::cfStepDebug);
+        execute(mGamsParameterEditor->on_runAction(option::RunActionState::StepDebug), nullptr, gamscom::cfStepDebug);
     }
 }
 
@@ -4954,7 +4954,7 @@ neos::NeosProcess *MainWindow::createNeosProcess()
     if (!project) return nullptr;
     auto neosProcess = new neos::NeosProcess();
     neosProcess->setWorkingDirectory(mRecent.project()->workDir());
-    mGamsParameterEditor->on_runAction(option::newoption::RunActionState::RunNeos);
+    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
     project->setProcess(neosProcess);
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(project->process());
     connect(neosPtr, &neos::NeosProcess::procStateChanged, this, &MainWindow::remoteProgress);
@@ -5192,7 +5192,7 @@ void MainWindow::prepareEngineProcess()
     engine::EngineProcess *engineProcess = qobject_cast<engine::EngineProcess*>(process);
     if (!engineProcess) return;
     NodeId pid = project->id();
-    mGamsParameterEditor->on_runAction(option::newoption::RunActionState::RunEngine);
+    mGamsParameterEditor->on_runAction(option::RunActionState::RunEngine);
     connect(engineProcess, &engine::EngineProcess::jobCreated, this, [this, pid](const QString &token) { //    void jobCreated(const QString &token);
         if (PExProjectNode *project = mProjectRepo.findProject(pid)) {
             project->setEngineJobToken(token);
@@ -6037,7 +6037,7 @@ void MainWindow::toggleSearchDialog()
                 return;
             }
 //            if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
-            if (option::newoption::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+            if (option::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
                 sow->selectSearchField();
                 return;
             }
@@ -6506,7 +6506,7 @@ void MainWindow::on_actionCopy_triggered()
     } else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor())) {
         gdx->copyAction();
 //    } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
-    } else if (option::newoption::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+    } else if (option::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         sow->copyAction();
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         tv->copySelection();
@@ -6550,7 +6550,7 @@ void MainWindow::on_actionSelect_All_triggered()
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         tv->selectAllText();
 //    } else if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
-    } else if (option::newoption::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+    } else if (option::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         so->selectAllOptions();
     } else if (option::GamsConfigEditor *guce = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
         guce->selectAll();
@@ -6769,7 +6769,7 @@ void MainWindow::on_actionComment_triggered()
         ce->commentLine();
     } else  {
 //        if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
-        if (option::newoption::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+        if (option::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
            so->toggleCommentOption();
         }
     }

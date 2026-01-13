@@ -21,14 +21,13 @@
 #include "mainwindow.h"
 #include "settings.h"
 
-#include "option/newoption/gamsparameterwidget.h"
+#include "option/gamsparameterwidget.h"
 #include "ui_gamsparameterwidget.h"
-#include "option/newoption/gamsparameditor.h"
+#include "option/gamsparameditor.h"
 
 namespace gams {
 namespace studio {
 namespace option {
-namespace newoption {
 
 GamsParameterWidget::GamsParameterWidget(QAction *aRun, QAction *aCompile, QAction *aRunWith, QAction *aCompileWith,
                                          QAction *aRunDebug, QAction *aStepDebug, QList<QAction *> aActionFlags,
@@ -406,7 +405,6 @@ void GamsParameterWidget::on_parameterTableModelChanged(const QString &commandLi
     connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged, this, &GamsParameterWidget::updateParameterTableModel, Qt::UniqueConnection );
 }
 
-} // namepsace newoption
 } // namepsace option
 } // namespace studio
 } // namespace gams

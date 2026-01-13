@@ -36,7 +36,6 @@
 namespace gams {
 namespace studio {
 namespace option {
-namespace newoption {
 
 OptionWidget::OptionWidget(bool isFileEditor, QWidget *parent) :
     AbstractView(parent),
@@ -1127,7 +1126,6 @@ void OptionWidget::on_newTableRowDropped(const QModelIndex &index)
     ui->optionTableView->setFocus();
 }
 
-} // namepsace newoption
 } // namepsace option
 } // namespace studio
 } // namespace gams

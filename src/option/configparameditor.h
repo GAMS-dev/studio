@@ -20,14 +20,13 @@
 #ifndef CONFIGPARAMEDITOR_H
 #define CONFIGPARAMEDITOR_H
 
-#include "option/newoption/optionwidget.h"
+#include "option/optionwidget.h"
 #include "option/configparamtablemodel.h"
 #include "option/configoptiondefinitionmodel.h"
 
 namespace gams {
 namespace studio {
 namespace option {
-namespace newoption {
 
 namespace Ui {
 class OptionWidget;
@@ -115,7 +114,6 @@ protected:
 };
 
 
-} // namepsace newoption
 } // namepsace option
 } // namespace studio
 } // namespace gams

@@ -24,12 +24,11 @@
 #include <QWidget>
 
 #include "option/optiontokenizer.h"
-#include "option/newoption/gamsparameditor.h"
+#include "option/gamsparameditor.h"
 
 namespace gams {
 namespace studio {
 namespace option {
-namespace newoption {
 
 class GamsParamEditor;
 namespace Ui {
@@ -125,7 +124,6 @@ private:
     MainWindow* main;
 };
 
-} // namepsace newoption
 } // namepsace option
 } // namespace studio
 } // namespace gams

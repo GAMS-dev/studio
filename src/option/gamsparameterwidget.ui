@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>gams::studio::option::newoption::GamsParameterWidget</class>
- <widget class="QWidget" name="gams::studio::option::newoption::GamsParameterWidget">
+ <class>gams::studio::option::GamsParameterWidget</class>
+ <widget class="QWidget" name="gams::studio::option::GamsParameterWidget">
   <property name="enabled">
    <bool>true</bool>
   </property>

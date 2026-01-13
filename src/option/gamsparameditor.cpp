@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "option/newoption/gamsparameditor.h"
+#include "option/gamsparameditor.h"
 #include "option/gamsparamtablemodel.h"
 #include "option/gamsoptiondefinitionmodel.h"
 #include "ui_optionwidget.h"
@@ -25,7 +25,6 @@
 namespace gams {
 namespace studio {
 namespace option {
-namespace newoption {
 
 GamsParamEditor::GamsParamEditor(const QString &commandLineParameter,
                                  OptionTokenizer* tokenizer,
@@ -63,7 +62,7 @@ GamsParamEditor::~GamsParamEditor()
         delete mOptionModel;
 }
 
-void gams::studio::option::newoption::GamsParamEditor::setEditorExtended(bool extended)
+void GamsParamEditor::setEditorExtended(bool extended)
 {
     if (extended) {
         ui->definitionTreeView->clearSelection();
@@ -72,12 +71,12 @@ void gams::studio::option::newoption::GamsParamEditor::setEditorExtended(bool ex
     mExtended = extended;
 }
 
-bool gams::studio::option::newoption::GamsParamEditor::isEditorExtended()
+bool GamsParamEditor::isEditorExtended()
 {
     return mExtended;
 }
 
-void gams::studio::option::newoption::GamsParamEditor::insertOption()
+void GamsParamEditor::insertOption()
 {
     qDebug() << "103:" << (mExtended ? "extended":"not extended") << ", hasFocus:" << (ui->optionTableView->hasFocus() ? "Focus": "NO focus");
     if (!mExtended || !ui->optionTableView->hasFocus() )
@@ -113,7 +112,7 @@ void gams::studio::option::newoption::GamsParamEditor::insertOption()
     }
 }
 
-void gams::studio::option::newoption::GamsParamEditor::deleteOption()
+void GamsParamEditor::deleteOption()
 {
     if (!mExtended)
         return;
@@ -152,7 +151,7 @@ void gams::studio::option::newoption::GamsParamEditor::deleteOption()
     updateActionsState();
 }
 
-void gams::studio::option::newoption::GamsParamEditor::moveOptionUp()
+void GamsParamEditor::moveOptionUp()
 {
     if (!mExtended)
         return;
@@ -195,7 +194,7 @@ void gams::studio::option::newoption::GamsParamEditor::moveOptionUp()
     updateActionsState();
 }
 
-void gams::studio::option::newoption::GamsParamEditor::moveOptionDown()
+void GamsParamEditor::moveOptionDown()
 {
     if (!mExtended)
         return;
@@ -286,7 +285,7 @@ void GamsParamEditor::parameterItemCommitted(const QModelIndex &index)
     }
 }
 
-void gams::studio::option::newoption::GamsParamEditor::focus()
+void GamsParamEditor::focus()
 {
     if (ui->optionTableView->hasFocus())
         ui->definitionSearch->setFocus(Qt::ShortcutFocusReason);
@@ -424,7 +423,6 @@ void GamsParamEditor::deSelectParameters()
     }
 }
 
-} // namepsace newoption
 } // namepsace option
 } // namespace studio
 } // namespace gams

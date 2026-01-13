@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "option/gamsconfigeditor.h"
-#include "option/newoption/configparameditor.h"
+#include "option/configparameditor.h"
 #include "ui_gamsconfigeditor.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
@@ -44,12 +44,12 @@ GamsConfigEditor::GamsConfigEditor(const QString &fileName, const QString &optio
 {
     ui->setupUi(this);
 
-    mConfigParamEditor = new newoption::ConfigParamEditor(mGuc->readCommandLineParameters(), "UTF-8", this);
+    mConfigParamEditor = new ConfigParamEditor(mGuc->readCommandLineParameters(), "UTF-8", this);
     ui->GamsCfgTabWidget->addTab(mConfigParamEditor, ConfigEditorName.at(static_cast<int>(ConfigEditorType::commandLineParameter)) );
     mEnvVarConfigEditor = new EnvVarConfigEditor(mGuc->readEnvironmentVariables(), this);
     ui->GamsCfgTabWidget->addTab( mEnvVarConfigEditor, ConfigEditorName.at(static_cast<int>(ConfigEditorType::environmentVariable)) );
 
-    connect(mConfigParamEditor, &newoption::ConfigParamEditor::modificationChanged, this, &GamsConfigEditor::setModified, Qt::UniqueConnection);
+    connect(mConfigParamEditor, &ConfigParamEditor::modificationChanged, this, &GamsConfigEditor::setModified, Qt::UniqueConnection);
     connect(mEnvVarConfigEditor, &EnvVarConfigEditor::modificationChanged, this, &GamsConfigEditor::setModified, Qt::UniqueConnection);
 
     ui->GamsCfgTabWidget->setCurrentIndex(static_cast<int>(ConfigEditorType::commandLineParameter));

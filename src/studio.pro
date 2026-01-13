@@ -222,11 +222,11 @@ SOURCES += \
     option/optiontokenizer.cpp \
     option/optionitemdelegate.cpp \
     option/solveroptiondefinitionmodel.cpp \
-    option/newoption/optionwidget.cpp \
-    option/newoption/configparameditor.cpp \
-    option/newoption/gamsparameditor.cpp \
-    option/newoption/solveroptioneditor.cpp \
-    option/newoption/gamsparameterwidget.cpp \
+    option/optionwidget.cpp \
+    option/configparameditor.cpp \
+    option/gamsparameditor.cpp \
+    option/solveroptioneditor.cpp \
+    option/gamsparameterwidget.cpp \
     pinviewwidget.cpp \
     process/abstractprocess.cpp \
     process/connectprocess.cpp \
@@ -464,11 +464,11 @@ HEADERS += \
     option/configparamtablemodel.h \
     option/solveroptiondefinitionmodel.h \
     option/optionitemdelegate.h \
-    option/newoption/optionwidget.h \
-    option/newoption/configparameditor.h \
-    option/newoption/gamsparameditor.h \
-    option/newoption/solveroptioneditor.h \
-    option/newoption/gamsparameterwidget.h \
+    option/optionwidget.h \
+    option/configparameditor.h \
+    option/gamsparameditor.h \
+    option/solveroptioneditor.h \
+    option/gamsparameterwidget.h \
     pinviewwidget.h \
     process.h \
     process/abstractprocess.h \
@@ -570,8 +570,8 @@ FORMS += \
     neos/neosstartdialog.ui \
     option/envvarconfigeditor.ui \
     option/gamsconfigeditor.ui \
-    option/newoption/gamsparameterwidget.ui \
-    option/newoption/optionwidget.ui \
+    option/gamsparameterwidget.ui \
+    option/optionwidget.ui \
     pinviewwidget.ui \
     reference/filereferencewidget.ui \
     reference/referenceviewer.ui \

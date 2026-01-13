@@ -38,7 +38,6 @@ namespace studio {
 class MainWindow;
 
 namespace option {
-namespace newoption {
 
 namespace Ui {
 class OptionWidget;
@@ -193,7 +192,6 @@ protected:
 };
 
 
-} // namepsace newoption
 } // namepsace option
 } // namespace studio
 } // namespace gams

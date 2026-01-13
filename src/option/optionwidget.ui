@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>gams::studio::option::newoption::OptionWidget</class>
- <widget class="QWidget" name="gams::studio::option::newoption::OptionWidget">
+ <class>gams::studio::option::OptionWidget</class>
+ <widget class="QWidget" name="gams::studio::option::OptionWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -231,7 +231,7 @@
   </layout>
   <action name="actionInsert">
    <property name="icon">
-    <iconset resource="../../../icons/icons.qrc">
+    <iconset resource="../../icons/icons.qrc">
      <normaloff>:/solid/plus</normaloff>:/solid/plus</iconset>
    </property>
    <property name="text">
@@ -246,7 +246,7 @@
   </action>
   <action name="actionDelete">
    <property name="icon">
-    <iconset resource="../../../icons/icons.qrc">
+    <iconset resource="../../icons/icons.qrc">
      <normaloff>:/solid/delete-all</normaloff>:/solid/delete-all</iconset>
    </property>
    <property name="text">
@@ -261,7 +261,7 @@
   </action>
   <action name="actionMoveUp">
    <property name="icon">
-    <iconset resource="../../../icons/icons.qrc">
+    <iconset resource="../../icons/icons.qrc">
      <normaloff>:/solid/move-up</normaloff>:/solid/move-up</iconset>
    </property>
    <property name="text">
@@ -276,7 +276,7 @@
   </action>
   <action name="actionMoveDown">
    <property name="icon">
-    <iconset resource="../../../icons/icons.qrc">
+    <iconset resource="../../icons/icons.qrc">
      <normaloff>:/solid/move-down</normaloff>:/solid/move-down</iconset>
    </property>
    <property name="text">
@@ -332,7 +332,7 @@
   </action>
   <action name="actionAdd_This_Parameter">
    <property name="icon">
-    <iconset resource="../../../icons/icons.qrc">
+    <iconset resource="../../icons/icons.qrc">
      <normaloff>:/solid/plus</normaloff>:/solid/plus</iconset>
    </property>
    <property name="text">
@@ -344,7 +344,7 @@
   </action>
   <action name="actionRemove_This_Parameter">
    <property name="icon">
-    <iconset resource="../../../icons/icons.qrc">
+    <iconset resource="../../icons/icons.qrc">
      <normaloff>:/solid/delete-all</normaloff>:/solid/delete-all</iconset>
    </property>
    <property name="text">
@@ -370,7 +370,7 @@
   </action>
   <action name="actionInsert_Comment">
    <property name="icon">
-    <iconset resource="../../../icons/icons.qrc">
+    <iconset resource="../../icons/icons.qrc">
      <normaloff>:/solid/plus</normaloff>:/solid/plus</iconset>
    </property>
    <property name="text">
@@ -392,7 +392,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../icons/icons.qrc"/>
+  <include location="../../icons/icons.qrc"/>
  </resources>
  <connections/>
 </ui>

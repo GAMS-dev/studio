@@ -20,14 +20,13 @@
 #ifndef SOLVEROPTIONEDITOR_H
 #define SOLVEROPTIONEDITOR_H
 
-#include "option/newoption/optionwidget.h"
+#include "option/optionwidget.h"
 #include "option/solveroptiontablemodel.h"
 #include "option/solveroptiondefinitionmodel.h"
 
 namespace gams {
 namespace studio {
 namespace option {
-namespace newoption {
 
 namespace Ui {
 class OptionWidget;
@@ -130,7 +129,6 @@ protected:
     bool mFileHasChangedExtern = false;
 };
 
-} // namepsace newoption
 } // namepsace option
 } // namespace studio
 } // namespace gams
