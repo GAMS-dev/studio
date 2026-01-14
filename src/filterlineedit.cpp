@@ -131,12 +131,16 @@ void FilterLineEdit::updateRegExp()
 
     QString filter;
     if (!text().isEmpty()) {
-        if (buttonState(mRegExButton))
+        if (buttonState(mRegExButton)) {
             filter = buttonState(mExactButton) ? "^"+text()+"$" : text();
-        else
-            filter = QRegularExpression::wildcardToRegularExpression(buttonState(mExactButton) ? text()
-                                                                                               : "*"+text()+"*");
+        } else {
+            QRegularExpression::WildcardConversionOptions opt = QRegularExpression::NonPathWildcardConversion;
+            if (!buttonState(mExactButton))
+                opt.setFlag(QRegularExpression::UnanchoredWildcardConversion);
+            filter = QRegularExpression::wildcardToRegularExpression(text(), opt);
+        }
     }
+    // TODO(JM) Check if we should use the flag QRegularExpression::UseUnicodePropertiesOption
     mRegExp = QRegularExpression(filter, QRegularExpression::CaseInsensitiveOption);
     if (mRegExp.isValid())
         emit regExpChanged(mRegExp);

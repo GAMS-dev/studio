@@ -101,7 +101,7 @@ ModelDialog::ModelDialog(const QString &userLibPath, QWidget *parent)
     connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, &ModelDialog::clearSelections);
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::storeSelectedTab);
-    setTabOrder(tableViewList.last(), ui->pbLoad);
+    setTabOrder(mTableViewList.last(), ui->pbLoad);
     setTabOrder(ui->pbLoad, ui->pbCancel);
     setTabOrder(ui->pbCancel, ui->pbDescription);
 
@@ -115,7 +115,7 @@ ModelDialog::ModelDialog(const QString &userLibPath, QWidget *parent)
 
     // bind filter mechanism to textChanged
     connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, [this](const QRegularExpression &value) {
-        for (int i=0; i<proxyModelList.size(); i++)
+        for (int i=0; i<mProxyModelList.size(); i++)
             applyFilter(value, i);
     });
     connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, &ModelDialog::jumpToNonEmptyTab);
@@ -128,8 +128,8 @@ ModelDialog::~ModelDialog()
 
 QTableView* ModelDialog::tableAt(int i)
 {
-    if (i >= 0 && i < tableViewList.size())
-        return tableViewList.at(i);
+    if (i >= 0 && i < mTableViewList.size())
+        return mTableViewList.at(i);
     else
         return nullptr;
 }
@@ -145,7 +145,7 @@ void ModelDialog::changeHeader(QTableView *view)
 void ModelDialog::updateSelectedLibraryItem()
 {
     int idx = ui->tabWidget->currentIndex();
-    QModelIndexList modelIndexList = tableViewList.at(idx)->selectionModel()->selectedIndexes();
+    QModelIndexList modelIndexList = mTableViewList.at(idx)->selectionModel()->selectedIndexes();
     if (modelIndexList.size()>0) {
         QModelIndex index = modelIndexList.at(0);
         index = static_cast<const QAbstractProxyModel*>(index.model())->mapToSource(index);
@@ -165,7 +165,7 @@ void ModelDialog::updateSelectedLibraryItem()
 
 void ModelDialog::clearSelections()
 {
-    for (auto tv : std::as_const(tableViewList))
+    for (auto tv : std::as_const(mTableViewList))
         tv->clearSelection();
 }
 
@@ -217,8 +217,8 @@ void ModelDialog::addLibrary(const QList<LibraryItem>& items, bool isUserLibrary
         ui->tabWidget->setCurrentIndex(index);
     });
 
-    tableViewList.append(tableView);
-    proxyModelList.append(proxyModel);
+    mTableViewList.append(tableView);
+    mProxyModelList.append(proxyModel);
     connect(proxyModel, &QAbstractItemModel::rowsRemoved,
             this, [this, tableView]{ changeHeader(tableView); });
     connect(proxyModel, &QAbstractItemModel::rowsInserted,
@@ -283,19 +283,19 @@ void ModelDialog::on_pbDescription_clicked()
 void ModelDialog::applyFilter(const QRegularExpression &filterRex, int proxyModelIndex)
 {
     if (filterRex.isValid()) {
-        proxyModelList[proxyModelIndex]->setFilterRegularExpression(filterRex);
+        mProxyModelList[proxyModelIndex]->setFilterRegularExpression(filterRex);
     }
 }
 
 void ModelDialog::jumpToNonEmptyTab()
 {
-    if (mLastTabIndex != ui->tabWidget->currentIndex() && proxyModelList[mLastTabIndex]->rowCount() > 0) { //jump back to last manual selected tab if it becomes non-empty
+    if (mLastTabIndex != ui->tabWidget->currentIndex() && mProxyModelList[mLastTabIndex]->rowCount() > 0) { //jump back to last manual selected tab if it becomes non-empty
         disconnect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::storeSelectedTab);
         ui->tabWidget->setCurrentIndex(mLastTabIndex);
         connect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::storeSelectedTab);
-    } else if (proxyModelList[ui->tabWidget->currentIndex()]->rowCount() == 0){ // jump to the first non-empty tab in case the current tab runs out of results
-        for (int i=0; i<proxyModelList.size(); i++) {
-            if (proxyModelList[i]->rowCount() > 0) {
+    } else if (mProxyModelList[ui->tabWidget->currentIndex()]->rowCount() == 0){ // jump to the first non-empty tab in case the current tab runs out of results
+        for (int i=0; i<mProxyModelList.size(); i++) {
+            if (mProxyModelList[i]->rowCount() > 0) {
                 disconnect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::storeSelectedTab);
                 ui->tabWidget->setCurrentIndex(i);
                 connect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::storeSelectedTab);
