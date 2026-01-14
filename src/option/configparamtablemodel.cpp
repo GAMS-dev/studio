@@ -31,7 +31,7 @@ namespace studio {
 namespace option {
 
 ConfigParamTableModel::ConfigParamTableModel(const QList<ParamConfigItem *> &itemList, OptionTokenizer *tokenizer, QObject *parent):
-    OptionTableModel(tokenizer, parent),
+    OptionTableModel(false, tokenizer, parent),
     mOptionItem(itemList)
 {
     mHeader << "id" << "Key"  << "Value" << "minVersion" << "maxVersion";
@@ -56,63 +56,20 @@ QVariant ConfigParamTableModel::headerData(int index, Qt::Orientation orientatio
     // orientation == Qt::Vertical
     switch(role) {
     case Qt::CheckStateRole:
-        if (mOptionItem.isEmpty())
-            return QVariant();
-        else
-            return mCheckState[index];
+        return (mOptionItem.isEmpty() ? QVariant() : mCheckState[index]);
     case Qt::DecorationRole:
-        if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
-            if (mOptionItem.at(index)->recurrent)
-               return QVariant::fromValue(Theme::icon(":/img/square-red-yellow"));
-            else
-               return QVariant::fromValue(Theme::icon(":/img/square-red"));
-        } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
-                  if (mOptionItem.at(index)->recurrent)
-                     return QVariant::fromValue(Theme::icon(":/img/square-gray-yellow"));
-                  else
-                     return QVariant::fromValue(Theme::icon(":/img/square-gray"));
-        } else {
-            if (mOptionItem.at(index)->recurrent)
-                return QVariant::fromValue(Theme::icon(":/img/square-green-yellow"));
-            else
-                return QVariant::fromValue(Theme::icon(":/img/square-green"));
-        }
+        return headerDecoration(mCheckState[index].toUInt(), mOptionItem.at(index)->recurrent);
     case Qt::ToolTipRole:
-        QString tooltipText = "";
-        if (mOptionItem.at(index)->value.isEmpty()) {
-            tooltipText.append(QString("Missing value for parameter key '%1'").arg(mOptionItem.at(index)->key));
-        } else {
-            switch(mOptionItem.at(index)->error) {
-            case OptionErrorType::Invalid_Key:
-                tooltipText.append( QString("Unknown parameter '%1'").arg(mOptionItem.at(index)->key) );
-                break;
-            case OptionErrorType::Invalid_minVersion:
-                tooltipText.append( QString("Invalid minVersion '%1', must be  conformed to [xx[.y[.z]]] format").arg(mOptionItem.at(index)->minVersion) );
-                break;
-            case OptionErrorType::Invalid_maxVersion:
-                tooltipText.append( QString("Invalid maxVersion '%1', must be  conformed to [xx[.y[.z]]] format").arg(mOptionItem.at(index)->maxVersion) );
-                break;
-            case OptionErrorType::Incorrect_Value_Type:
-                tooltipText.append( QString("Parameter key '%1' has a value of incorrect type").arg(mOptionItem.at(index)->key) );
-                break;
-            case OptionErrorType::Value_Out_Of_Range:
-                tooltipText.append( QString("Value '%1' for parameter key '%2' is out of range").arg(mOptionItem.at(index)->value, mOptionItem.at(index)->key) );
-                break;
-            case OptionErrorType::Deprecated_Option:
-                tooltipText.append( QString("Parameter '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index)->key) );
-                break;
-            default:
-                break;
-            }
-        }
-        if (mOptionItem.at(index)->recurrent) {
-            if (!tooltipText.isEmpty())
-                tooltipText.append("\n");
-            tooltipText.append( QString("Recurrent parameter '%1', only last entry of same parameters will not be ignored").arg(mOptionItem.at(index)->key));
-        }
-        return tooltipText;
+        return headerTooltip(mOptionItem.at(index)->disabled,
+                             (mOptionTokenizer->getOption()->isEOLCharDefined() ? QString(mOptionTokenizer->getOption()->getEOLChars().at(0))
+                                                                                : QString("*")),
+                             mOptionItem.at(index)->recurrent,
+                             mOptionItem.at(index)->error,
+                             mOptionItem.at(index)->key,
+                             mOptionItem.at(index)->value );
+    default:
+        return QVariant();
     }
-    return QVariant();
 }
 
 int ConfigParamTableModel::rowCount(const QModelIndex &parent) const
@@ -160,42 +117,8 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
            return QVariant(static_cast<int>(Qt::AlignLeft | Qt::AlignVCenter));
     }
     case Qt::ToolTipRole: {
-        QString tooltipText = "";
-        if (mOptionItem.at(row)->value.isEmpty()) {
-            tooltipText.append( QString("Missing value for parameter key '%1'").arg(mOptionItem.at(row)->key) );
-        } else {
-            switch(mOptionItem.at(row)->error) {
-            case OptionErrorType::Invalid_Key:
-                tooltipText.append( QString("Unknown parameter '%1'").arg(mOptionItem.at(row)->key));
-                break;
-            case OptionErrorType::Incorrect_Value_Type:
-                tooltipText.append( QString("Parameter key '%1' has a value of incorrect type").arg(mOptionItem.at(row)->key) );
-                break;
-            case OptionErrorType::Value_Out_Of_Range:
-                tooltipText.append( QString("Value '%1' for parameter key '%2' is out of range").arg(mOptionItem.at(row)->value, mOptionItem.at(row)->key) );
-                break;
-            case OptionErrorType::Deprecated_Option:
-                tooltipText.append( QString("Parameter '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row)->key) );
-                break;
-            case OptionErrorType::UserDefined_Error:
-                tooltipText.append( QString("Invalid parameter key or value or comment defined") );
-                break;
-            case OptionErrorType::Invalid_minVersion:
-                tooltipText.append( QString("Invalid minVersion '%1', must be conformed to [xx[.y[.z]]] format").arg(mOptionItem.at(row)->minVersion) );
-                break;
-            case OptionErrorType::Invalid_maxVersion:
-                tooltipText.append( QString("Invalid maxVersion '%1', must be conformed to [xx[.y[.z]]] format").arg(mOptionItem.at(row)->maxVersion) );
-                break;
-            default:
-                break;
-            }
-        }
-        if (mOptionItem.at(row)->recurrent) {
-            if (!tooltipText.isEmpty())
-                tooltipText.append("\n");
-            tooltipText.append( QString("Recurrent parameter '%1', only last entry of same parameters will not be ignored").arg(mOptionItem.at(row)->key));
-        }
-        return tooltipText;
+        return dataTooltip(mOptionItem.at(row)->disabled, mOptionItem.at(row)->recurrent,
+                           mOptionItem.at(row)->error, mOptionItem.at(row)->key, mOptionItem.at(row)->value);
     }
     case Qt::ForegroundRole: {
 //        if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))

@@ -23,6 +23,7 @@
 #include <QAbstractTableModel>
 
 #include "option/optiontokenizer.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -36,8 +37,8 @@ class OptionTableModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    OptionTableModel(OptionTokenizer* tokenizer, QObject *parent = nullptr) :
-        QAbstractTableModel(parent), mOptionTokenizer(tokenizer)
+    OptionTableModel(const bool allowLineComment, OptionTokenizer* tokenizer, QObject *parent = nullptr) :
+        QAbstractTableModel(parent), isLineCommentAllowed(allowLineComment), mOptionTokenizer(tokenizer)
     { }
 
     Qt::ItemFlags flags(const QModelIndex &index) const override {
@@ -58,6 +59,115 @@ public:
 
     inline QStringList headers()  { return mHeader; }
 
+    QVariant headerTooltip(const bool disabled, const QString& EOLChar,  const bool recurrent,
+                           const OptionErrorType& type, const QString& key, const QString& value,
+                           const QString minVersion="", const QString maxVersion="") const {
+        QString tooltipText = "";
+        if (isLineCommentAllowed && disabled) {
+            if (key.startsWith(EOLChar))
+                return QString("%1 %2").arg(key, value);
+            else
+                return QString("%1 %2 %3").arg(EOLChar, key, value);
+        } else {
+            if (!tooltipText.isEmpty())
+                tooltipText.append("\n");
+            switch(type) {
+            case OptionErrorType::Invalid_Key:
+                tooltipText.append( QString("Unknown option '%1'").arg(key) );
+                break;
+            case OptionErrorType::Incorrect_Value_Type:
+                tooltipText.append( QString("Option key '%1' has a value of incorrect type").arg(key));
+                break;
+            case OptionErrorType::Value_Out_Of_Range:
+                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(value, key));
+                break;
+            case OptionErrorType::Deprecated_Option:
+                tooltipText.append( QString("Option '%1' is deprecated, will be eventually ignored").arg(key));
+                break;
+            case OptionErrorType::Invalid_minVersion:
+                tooltipText.append( QString("Invalid minVersion '%1', must be  conformed to [xx[.y[.z]]] format").arg(minVersion) );
+                break;
+            case OptionErrorType::Invalid_maxVersion:
+                tooltipText.append( QString("Invalid maxVersion '%1', must be  conformed to [xx[.y[.z]]] format").arg(maxVersion) );
+                break;
+
+            default:
+                break;
+            }
+            if (recurrent) {
+                if (!tooltipText.isEmpty())
+                    tooltipText.append("\n");
+                tooltipText.append( QString("Recurrent parameter '%1', only last entry of same parameters will not be ignored").arg(key));
+            }
+        }
+        return QVariant(tooltipText);
+    };
+
+    QVariant headerDecoration(const uint checkstate, const bool recurrent) const {
+        if (Qt::CheckState(checkstate)==Qt::Checked) {
+            if (recurrent)
+                return QVariant::fromValue(Theme::icon(":/img/square-red-yellow"));
+            else
+                return QVariant::fromValue(Theme::icon(":/img/square-red"));
+        } else if (Qt::CheckState(checkstate)==Qt::PartiallyChecked) {
+            if (recurrent)
+                return QVariant::fromValue(Theme::icon(":/img/square-gray-yellow"));
+            else
+                return QVariant::fromValue(Theme::icon(":/img/square-gray"));
+        } else {
+            if (recurrent)
+                return QVariant::fromValue(Theme::icon(":/img/square-green-yellow"));
+            else
+                return QVariant::fromValue(Theme::icon(":/img/square-green"));
+        }
+    };
+
+    QVariant dataTooltip(const bool disabled, const bool recurrent,
+                         const OptionErrorType& type, const QString& key, const QString& value
+                        ) const {
+        if (disabled) {
+            return QVariant(key);
+        } else if (value.isEmpty()) {
+                return QVariant( QString("Missing value for parameter key '%1'").arg(key) );
+        } else {
+            QString tooltipText = "";
+            switch(type) {
+            case OptionErrorType::Missing_Value:
+                tooltipText.append( QString("Missing value for Parameter key '%1'").arg(key) );
+                break;
+            case OptionErrorType::Invalid_Key:
+                tooltipText.append( QString("Unknown parameter '%1'").arg(key));
+                break;
+            case OptionErrorType::Incorrect_Value_Type:
+                tooltipText.append( QString("Parameter key '%1' has a value of incorrect type").arg(key) );
+                break;
+            case OptionErrorType::Value_Out_Of_Range:
+                tooltipText.append( QString("Value '%1' for parameter key '%2' is out of range").arg(value, key) );
+                break;
+            case OptionErrorType::Deprecated_Option:
+                tooltipText.append( QString("Parameter '%1' is deprecated, will be eventually ignored").arg(key) );
+                break;
+            case OptionErrorType::UserDefined_Error:
+                tooltipText.append( QString("Invalid parameter key or value or comment defined") );
+                break;
+            case OptionErrorType::Invalid_minVersion:
+                tooltipText.append( QString("Invalid minVersion format, must be [xx[.y[.z]]") );
+                break;
+            case OptionErrorType::Invalid_maxVersion:
+                tooltipText.append( QString("Invalid maxVersion format, must be [xx[.y[.z]]") );
+                break;
+            default:
+                break;
+            }
+            if (recurrent) {
+                if (!tooltipText.isEmpty())
+                    tooltipText.append("\n");
+                tooltipText.append( QString("Recurrent parameter '%1', only last entry of same parameters will not be ignored").arg(key));
+            }
+            return QVariant(tooltipText);
+        }
+    };
+
 signals:
     void newTableRowDropped(const QModelIndex &index);
     void optionItemRemoved();
@@ -77,6 +187,7 @@ public slots:
 //    QList<int> recurrent(int index) const { return (index < mRecurrence.size() ? mRecurrence[index] : QList<int>()); }
 
 protected:
+    bool isLineCommentAllowed;
     OptionTokenizer* mOptionTokenizer;
     QStringList mHeader;
     QMap<int, QVariant> mCheckState;

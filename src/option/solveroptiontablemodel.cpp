@@ -30,7 +30,7 @@ namespace studio {
 namespace option {
 
 SolverOptionTableModel::SolverOptionTableModel(const QList<SolverOptionItem *> &itemList, OptionTokenizer *tokenizer, QObject *parent):
-    OptionTableModel(tokenizer, parent),
+    OptionTableModel(true, tokenizer, parent),
     mOptionItem(itemList)
 {
     if (mOptionTokenizer->getOption()->isEOLCharDefined()) {
@@ -55,60 +55,19 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
     // orientation == Qt::Vertical
     switch(role) {
     case Qt::CheckStateRole:
-        if (mOptionItem.isEmpty())
-            return QVariant();
-        else
-            return mCheckState[index];
-    case Qt::ToolTipRole: {
-        const QString lineComment = mOptionTokenizer->getOption()->isEOLCharDefined() ? QString(mOptionTokenizer->getOption()->getEOLChars().at(0)) : QString("*");
-        if (mOptionItem.at(index)->disabled) {
-            if (mOptionItem.at(index)->key.startsWith(lineComment))
-                return QString("%1 %2").arg(mOptionItem.at(index)->key, mOptionItem.at(index)->value);
-            else
-                return QString("%1 %2 %3").arg(lineComment, mOptionItem.at(index)->key, mOptionItem.at(index)->value);
-        } else {
-            QString tooltipText = "";
-            switch(mOptionItem.at(index)->error) {
-            case OptionErrorType::Invalid_Key:
-                tooltipText.append( QString("Unknown option '%1'").arg(mOptionItem.at(index)->key) );
-                break;
-            case OptionErrorType::Incorrect_Value_Type:
-                tooltipText.append( QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(index)->key));
-                break;
-            case OptionErrorType::Value_Out_Of_Range:
-                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index)->value, mOptionItem.at(index)->key));
-                break;
-            case OptionErrorType::Deprecated_Option:
-                tooltipText.append( QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index)->key));
-                break;
-            default:
-               break;
-            }
-            if (mOptionItem.at(index)->recurrent) {
-              if (!tooltipText.isEmpty())
-                  tooltipText.append("\n");
-              tooltipText.append( QString("Recurrent option '%1', only last entry of same options will not be ignored").arg(mOptionItem.at(index)->key));
-            }
-            return tooltipText;
-        }
-    }
+        return (mOptionItem.isEmpty() ? QVariant() : mCheckState[index]);
+    case Qt::ToolTipRole:
+        return headerTooltip(mOptionItem.at(index)->disabled,
+                             (mOptionTokenizer->getOption()->isEOLCharDefined() ? QString(mOptionTokenizer->getOption()->getEOLChars().at(0))
+                                                                                : QString("*")),
+                             mOptionItem.at(index)->recurrent,
+                             mOptionItem.at(index)->error,
+                             mOptionItem.at(index)->key,
+                             mOptionItem.at(index)->value );
     case Qt::DecorationRole:
-        if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
-            if (mOptionItem.at(index)->recurrent)
-               return QVariant::fromValue(Theme::icon(":/img/square-red-yellow"));
-            else
-                return QVariant::fromValue(Theme::icon(":/img/square-red"));
-        } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
-                  if (mOptionItem.at(index)->recurrent)
-                      return QVariant::fromValue(Theme::icon(":/img/square-gray-yellow"));
-                  else
-                     return QVariant::fromValue(Theme::icon(":/img/square-gray"));
-        } else {
-            if (mOptionItem.at(index)->recurrent)
-               return QVariant::fromValue(Theme::icon(":/img/square-green-yellow"));
-           else
-               return QVariant::fromValue(Theme::icon(":/img/square-green"));
-        }
+        return headerDecoration(mCheckState[index].toUInt(), mOptionItem.at(index)->recurrent);
+    default:
+        return QVariant();
     }
 
     return QVariant();
@@ -165,36 +124,8 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
         return int(Qt::AlignLeft | Qt::AlignVCenter);
     }
     case Qt::ToolTipRole: {
-        if (mOptionItem.at(row)->disabled) {
-            return mOptionItem.at(row)->key;
-        } else {
-            QString tooltipText = "";
-            switch(mOptionItem.at(row)->error) {
-            case OptionErrorType::Invalid_Key:
-                tooltipText.append( QString("Unknown option '%1'").arg(mOptionItem.at(row)->key));
-                break;
-            case OptionErrorType::Incorrect_Value_Type:
-                tooltipText.append( QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(row)->key) );
-                break;
-            case OptionErrorType::Value_Out_Of_Range:
-                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row)->value, mOptionItem.at(row)->key) );
-                break;
-            case OptionErrorType::Deprecated_Option:
-                tooltipText.append( QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row)->key) );
-                break;
-            case OptionErrorType::UserDefined_Error:
-                tooltipText.append( QString("Invalid option key or value or comment defined") );
-                break;
-            default:
-                break;
-            }
-            if (mOptionItem.at(row)->recurrent) {
-                if (!tooltipText.isEmpty())
-                    tooltipText.append("\n");
-                tooltipText.append( QString("Recurrent option '%1', only last entry of same options will not be ignored").arg(mOptionItem.at(row)->key));
-            }
-            return tooltipText;
-        }
+        return dataTooltip(mOptionItem.at(row)->disabled, mOptionItem.at(row)->recurrent,
+                           mOptionItem.at(row)->error, mOptionItem.at(row)->key, mOptionItem.at(row)->value);
     }
     case Qt::ForegroundRole: {
         if (mOptionItem.at(row)->disabled) {
