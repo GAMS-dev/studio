@@ -457,10 +457,6 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
                                                              : parentIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_DESCIPTION);
         addCommentModelFromDefinition(rowToBeAdded, descriptionIndex);
         rowToBeAdded++;
-        if (parentIndex.row() >= 0 && !settings->toBool(skSoAddEOLComment)) {  // insert enum comment description row
-            addEOLCommentModelFromDefinition(rowToBeAdded, selectedValueIndex, descriptionIndex);
-            rowToBeAdded++;
-        }
     }
     addOptionModelFromDefinition(rowToBeAdded,  definitionIndex, parentIndex);
     ui->optionTableView->selectRow(rowToBeAdded);

@@ -634,19 +634,18 @@ void SolverOptionEditor::addOptionModelFromDefinition(int row, const QModelIndex
     const QModelIndex insertKeyIndex    = mOptionModel->index(row, SolverOptionTableModel::COLUMN_KEY);
     const QModelIndex insertValueIndex  = mOptionModel->index(row, SolverOptionTableModel::COLUMN_VALUE);
     const QModelIndex insertNumberIndex = mOptionModel->index(row, SolverOptionTableModel::COLUMN_ID);
-
     mOptionModel->setData( insertKeyIndex,   optionNameData,    Qt::EditRole);
     mOptionModel->setData( insertValueIndex, selectedValueData, Qt::EditRole);
     Settings* settings = Settings::settings();
     if (mOptionTokenizer->getOption()->isEOLCharDefined()) {
         if (settings && settings->toBool(skSoAddEOLComment)) {
-            const QModelIndex commentIndex = index.siblingAtColumn(OptionDefinitionModel::COLUMN_DESCIPTION);
-            QString commentData            = mOptionModel->data(commentIndex).toString();
-            QModelIndex insertEOLCommentIndex = mOptionModel->index(row, SolverOptionTableModel::COLUMN_EOL_COMMENT);
-            mOptionModel->setData( insertEOLCommentIndex, commentData, Qt::EditRole);
+           const QModelIndex commentIndex = index.siblingAtColumn(OptionDefinitionModel::COLUMN_DESCIPTION);
+           QString commentData            = ui->definitionTreeView->model()->data(commentIndex, Qt::DisplayRole).toString();
+           QModelIndex insertEOLCommentIndex = mOptionModel->index(row, SolverOptionTableModel::COLUMN_EOL_COMMENT);
+           mOptionModel->setData( insertEOLCommentIndex, commentData, Qt::EditRole);
         } else {
-            QModelIndex insertEOLCommentIndex = mOptionModel->index(row, SolverOptionTableModel::COLUMN_EOL_COMMENT);
-            mOptionModel->setData( insertEOLCommentIndex, "", Qt::EditRole);
+           QModelIndex insertEOLCommentIndex = mOptionModel->index(row, SolverOptionTableModel::COLUMN_EOL_COMMENT);
+           mOptionModel->setData( insertEOLCommentIndex, "", Qt::EditRole);
         }
     }
     const int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
@@ -656,20 +655,20 @@ void SolverOptionEditor::addOptionModelFromDefinition(int row, const QModelIndex
 
 void SolverOptionEditor::addCommentModelFromDefinition(int row, const QModelIndex &descriptionIndex)
 {
-    QString descriptionData = definitionModel()->data(descriptionIndex, Qt::DisplayRole).toString();
+    QString descriptionData = ui->definitionTreeView->model()->data(descriptionIndex, Qt::DisplayRole).toString();
 
-    mDefinitionModel->insertRows(row, 1, QModelIndex());
+    mOptionModel->insertRows(row, 1, QModelIndex());
 
-    QModelIndex insertKeyIndex    = mDefinitionModel->index(row, mOptionModel->column_key());
-    QModelIndex insertValueIndex  = mDefinitionModel->index(row, mOptionModel->column_value());
-    QModelIndex insertNumberIndex = mDefinitionModel->index(row, mOptionModel->column_id());
+    QModelIndex insertKeyIndex    = mOptionModel->index(row, mOptionModel->column_key());
+    QModelIndex insertValueIndex  = mOptionModel->index(row, mOptionModel->column_value());
+    QModelIndex insertNumberIndex = mOptionModel->index(row, mOptionModel->column_id());
 
-    mDefinitionModel->setHeaderData( insertKeyIndex.row(), Qt::Vertical,
+    mOptionModel->setHeaderData( insertKeyIndex.row(), Qt::Vertical,
                                       Qt::CheckState(Qt::PartiallyChecked),
                                       Qt::CheckStateRole );
-    mDefinitionModel->setData( insertKeyIndex,    descriptionData, Qt::EditRole);
-    mDefinitionModel->setData( insertValueIndex,  "",              Qt::EditRole);
-    mDefinitionModel->setData( insertNumberIndex, -1,              Qt::EditRole);
+    mOptionModel->setData( insertKeyIndex,    descriptionData, Qt::EditRole);
+    mOptionModel->setData( insertValueIndex,  "",              Qt::EditRole);
+    mOptionModel->setData( insertNumberIndex, -1,              Qt::EditRole);
 }
 
 void SolverOptionEditor::addEOLCommentModelFromDefinition(int row, const QModelIndex &selectedValueIndex,
@@ -681,16 +680,16 @@ void SolverOptionEditor::addEOLCommentModelFromDefinition(int row, const QModelI
     strData.append( mDefinitionModel->data(descriptionIndex, Qt::DisplayRole).toString() );
     mDefinitionModel->insertRows(row, 1, QModelIndex());
 
-    QModelIndex insertNumberIndex = definitionModel()->index(row, mOptionModel->column_id());
-    QModelIndex insertKeyIndex    = definitionModel()->index(row, mOptionModel->column_key());
-    QModelIndex insertValueIndex  = definitionModel()->index(row, mOptionModel->column_value());
+    QModelIndex insertNumberIndex = mOptionModel->index(row, mOptionModel->column_id());
+    QModelIndex insertKeyIndex    = mOptionModel->index(row, mOptionModel->column_key());
+    QModelIndex insertValueIndex  = mOptionModel->index(row, mOptionModel->column_value());
 
-    definitionModel()->setHeaderData( insertKeyIndex.row(), Qt::Vertical,
+    mOptionModel->setHeaderData( insertKeyIndex.row(), Qt::Vertical,
                                       Qt::CheckState(Qt::PartiallyChecked),
                                       Qt::CheckStateRole );
-    definitionModel()->setData( insertNumberIndex, -1,      Qt::EditRole);
-    definitionModel()->setData( insertKeyIndex,    strData, Qt::EditRole);
-    definitionModel()->setData( insertValueIndex,  "",      Qt::EditRole);
+    mOptionModel->setData( insertNumberIndex, -1,      Qt::EditRole);
+    mOptionModel->setData( insertKeyIndex,    strData, Qt::EditRole);
+    mOptionModel->setData( insertValueIndex,  "",      Qt::EditRole);
 }
 
 
