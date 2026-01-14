@@ -539,7 +539,6 @@ void MainWindow::updateEditActions()
         enabledActions = tv->edit()->getEnabledContextActions();
     else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid))
         enabledActions = gdx->getEnabledContextActions();
-//    else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(wid))
     else if (option::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(wid))
         enabledActions = sow->getEnabledContextActions();
     else if (ViewHelper::toGamsConfigEditor(wid))
@@ -1769,7 +1768,6 @@ void MainWindow::updateStatusLineCount()
         mStatusWidgets->setLineCount(edit->blockCount());
     else if (TextView *tv = ViewHelper::toTextView(mRecent.editor()))
         mStatusWidgets->setLineCount(tv->lineCount());
-//    else if (option::SolverOptionWidget* edit = ViewHelper::toSolverOptionEdit(mRecent.editor()))
     else if (option::SolverOptionEditor* edit = ViewHelper::toSolverOptionEdit(mRecent.editor()))
         mStatusWidgets->setLineCount(edit->getItemCount());
     else mStatusWidgets->setLineCount(-1);
@@ -2435,7 +2433,6 @@ FileProcessKind MainWindow::fileChangedExtern(const FileId &fileId)
     }
     if (file->kind() == FileKind::Opt || file->kind() == FileKind::Pf) {
         for (QWidget *e : file->editors()) {
-//            if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(e))
             if (option::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(e))
                sow->setFileChangedExtern(true);
         }
@@ -2799,7 +2796,6 @@ void MainWindow::on_actionGamsHelp_triggered()
                                }
                             }
                         } else {
-//                            option::SolverOptionWidget* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
                             option::SolverOptionEditor* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
                             if (optionEdit) {
                                 QString optionName = optionEdit->getSelectedOptionName(widget);
@@ -4045,7 +4041,6 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         } else if (mGamsParameterEditor->isAParameterEditorFocused(focusWidget())) {
             mGamsParameterEditor->deSelectParameters();
         } else if (mRecent.editor() != nullptr) {
-//            option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor());
             option::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(mRecent.editor());
             if (so && so->isInFocus(focusWidget())) {
                 so->deSelectOptions();
@@ -6036,7 +6031,6 @@ void MainWindow::toggleSearchDialog()
                 refViewer->selectSearchField();
                 return;
             }
-//            if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
             if (option::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
                 sow->selectSearchField();
                 return;
@@ -6505,7 +6499,6 @@ void MainWindow::on_actionCopy_triggered()
         mSyslog->copy();
     } else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor())) {
         gdx->copyAction();
-//    } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
     } else if (option::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         sow->copyAction();
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
@@ -6549,7 +6542,6 @@ void MainWindow::on_actionSelect_All_triggered()
         ae->selectAll();
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         tv->selectAllText();
-//    } else if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
     } else if (option::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         so->selectAllOptions();
     } else if (option::GamsConfigEditor *guce = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
@@ -6768,7 +6760,6 @@ void MainWindow::on_actionComment_triggered()
     if (ce && !ce->isReadOnly()) {
         ce->commentLine();
     } else  {
-//        if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         if (option::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
            so->toggleCommentOption();
         }

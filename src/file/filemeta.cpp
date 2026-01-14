@@ -603,8 +603,6 @@ void FileMeta::addEditor(QWidget *edit)
         connect(this, &FileMeta::saveProjects, mFileRepo, &FileMetaRepo::saveProjects, Qt::UniqueConnection);
     } else if (option::SolverOptionEditor* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
         connect(soEdit, &option::SolverOptionEditor::modificationChanged, this, &FileMeta::modificationChanged);
-//    } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
-//        connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (connect::ConnectEditor* gcEdit = ViewHelper::toGamsConnectEditor(edit)) {
         connect(gcEdit, &connect::ConnectEditor::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
@@ -744,8 +742,6 @@ void FileMeta::deleteEditor(QWidget *edit)
        disconnect(prOp, &project::ProjectEdit::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::SolverOptionEditor* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
         disconnect(soEdit, &option::SolverOptionEditor::modificationChanged, this, &FileMeta::modificationChanged);
-//    } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
-//       disconnect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
         disconnect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (efi::EfiEditor* efi = ViewHelper::toEfiEditor(edit)) {
@@ -824,7 +820,6 @@ void FileMeta::load(QString encoding, bool init)
         bool done = false;
         for (QWidget *wid : std::as_const(mEditors)) {
             if (option::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(wid)) {
-//            if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid)) {
                 done = true;
                 so->on_reloadSolverOptionFile(encoding);
             }
@@ -948,7 +943,6 @@ bool FileMeta::save(const QString &newLocation)
         }
     } else if (kind() == FileKind::Opt || kind() == FileKind::Pf) {
         option::SolverOptionEditor* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
-//        option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
         if (solverOptionWidget) res = solverOptionWidget->saveOptionFile(location);
 
     } else if (kind() == FileKind::Guc) {
@@ -1170,7 +1164,6 @@ bool FileMeta::isModified() const
     } else if (kind() == FileKind::Opt || kind() == FileKind::Pf) {
         for (QWidget *wid: mEditors) {
             option::SolverOptionEditor *solverOptionWidget = ViewHelper::toSolverOptionEdit(wid);
-//            option::SolverOptionWidget *solverOptionWidget = ViewHelper::toSolverOptionEdit(wid);
             if (solverOptionWidget)
                 return solverOptionWidget->isModified();
         }
@@ -1262,7 +1255,6 @@ void FileMeta::setModified(bool modified)
     } else if (kind() == FileKind::Opt || kind() == FileKind::Pf) {
           for (QWidget *e : std::as_const(mEditors)) {
                option::SolverOptionEditor *so = ViewHelper::toSolverOptionEdit(e);
-//              option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
                if (so) so->setModified(modified);
           }
     } else if (kind() == FileKind::Guc) {
@@ -1400,10 +1392,10 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
                                                       id(),
                                                       mEncoding,
                                                       parent);
-            res =  ViewHelper::initEditorType(e/*new option::SolverOptionWidget*/);
+            res =  ViewHelper::initEditorType(e);
         } else if ( QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists() &&
                     QString::compare(fileInfo.baseName().toLower(),"gams", Qt::CaseInsensitive)!=0 ) {
-            res =  ViewHelper::initEditorType(new /*option::SolverOptionWidget*/option::SolverOptionEditor(QFileInfo(name()).completeBaseName(), location(), QString("opt%1.def").arg(fileInfo.baseName().toLower()), kind(),
+            res =  ViewHelper::initEditorType(new option::SolverOptionEditor(QFileInfo(name()).completeBaseName(), location(), QString("opt%1.def").arg(fileInfo.baseName().toLower()), kind(),
                                                                              id(), mEncoding, parent));
         } else {
             SysLogLocator::systemLog()->append(QString("Cannot find  solver option definition file for %1. Open %1 in text editor.").arg(fileInfo.fileName()), LogMsgType::Error);

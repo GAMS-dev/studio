@@ -20,7 +20,7 @@
 #ifndef PARAMCFGCOMPLETERDELEGATE_H
 #define PARAMCFGCOMPLETERDELEGATE_H
 
-#include "optioncompleterdelegate.h"
+#include <QStyledItemDelegate>
 
 namespace gams {
 namespace studio {

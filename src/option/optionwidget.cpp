@@ -105,7 +105,6 @@ void OptionWidget::initOptionTableView()
     OptionItemDelegate* completer = new OptionItemDelegate(optionTokenizer(), ui->optionTableView);
     ui->optionTableView->setItemDelegate( completer );
     setOptionCompleter( completer );
-//    connect(optionCompleter(), &QStyledItemDelegate::commitData, this, &ParamConfigEditor::parameterItemCommitted);
 
     ui->optionTableView->setEditTriggers(QAbstractItemView::DoubleClicked
                                            | QAbstractItemView::SelectedClicked
@@ -125,7 +124,7 @@ void OptionWidget::initOptionTableView()
     ui->optionTableView->setDefaultDropAction(Qt::CopyAction);
 
     ui->optionTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-//    ui->optionTableView->setColumnHidden(OptionTableModel::COLUMN_ID, true);
+    ui->optionTableView->setColumnHidden(OptionTableModel::COLUMN_ID, true);
     ui->optionTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->optionTableView->verticalHeader()->setDefaultSectionSize(static_cast<int>(fontMetrics().height()*TABLE_ROW_HEIGHT));
     if (HeaderViewProxy::platformShouldDrawBorder())

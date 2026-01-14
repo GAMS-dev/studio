@@ -21,6 +21,8 @@
 #include "envvartablemodel.h"
 
 #include <QCompleter>
+#include <QKeyEvent>
+#include <QLineEdit>
 #include <QStringListModel>
 
 namespace gams {
