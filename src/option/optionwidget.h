@@ -47,8 +47,10 @@ class OptionWidget : public AbstractView
 {
     Q_OBJECT
 public:
-    explicit OptionWidget(bool isFileEditor, QWidget* parent = nullptr);
+    explicit OptionWidget(bool isFileEditor, FileKind kind, QWidget* parent = nullptr);
     ~OptionWidget() override;
+
+    inline FileKind fileKind() const { return mFileKind; }
 
 protected:
    void initActions();
@@ -186,6 +188,8 @@ protected:
     void setOptionCompleter(OptionItemDelegate* completer) { mOptionCompleter = completer; }
 
     OptionItemDelegate* mOptionCompleter;
+
+    FileKind mFileKind = FileKind::None;
 
     bool mIsFileEditor = false;
     SystemLogEdit *mLogEdit = nullptr;

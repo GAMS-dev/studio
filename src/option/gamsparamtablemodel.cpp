@@ -33,15 +33,21 @@ namespace gams {
 namespace studio {
 namespace option {
 
-GamsParamTableModel::GamsParamTableModel(const QString &normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject* parent):
-    OptionTableModel(false, tokenizer, parent), mOptionItem(QList<OptionItem*>()), mTokenizerUsed(true)
+GamsParamTableModel::GamsParamTableModel(const QString& callstr,
+                                         const QString &normalizedCommandLineStr,
+                                         OptionTokenizer* tokenizer,
+                                         QObject* parent):
+    OptionTableModel(callstr, false, tokenizer, parent), mOptionItem(QList<OptionItem*>()), mTokenizerUsed(true)
 {
     Q_UNUSED(normalizedCommandLineStr)
     mHeader << "id" << "Key" << "Value";
 }
 
-GamsParamTableModel::GamsParamTableModel(const QList<OptionItem*> &itemList, OptionTokenizer *tokenizer, QObject *parent):
-    OptionTableModel(false, tokenizer, parent), mOptionItem(itemList), mTokenizerUsed(false)
+GamsParamTableModel::GamsParamTableModel(const QString& callstr,
+                                         const QList<OptionItem*> &itemList,
+                                         OptionTokenizer *tokenizer,
+                                         QObject *parent):
+    OptionTableModel(callstr, false, tokenizer, parent), mOptionItem(itemList), mTokenizerUsed(false)
 {
     mHeader << "id" << "Key" << "Value";
 }

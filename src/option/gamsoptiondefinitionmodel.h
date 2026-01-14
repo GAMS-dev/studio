@@ -30,7 +30,7 @@ class GamsOptionDefinitionModel : public OptionDefinitionModel
 {
     Q_OBJECT
 public:
-    GamsOptionDefinitionModel(Option* data, int optionGroup=0, QObject* parent=nullptr);
+    GamsOptionDefinitionModel(const QString& callstr, Option* data, int optionGroup=0, QObject* parent=nullptr);
 
     QStringList mimeTypes() const override;
     QMimeData* mimeData(const QModelIndexList & indexes) const override;

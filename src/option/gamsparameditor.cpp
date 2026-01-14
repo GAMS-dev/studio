@@ -26,16 +26,19 @@ namespace gams {
 namespace studio {
 namespace option {
 
-GamsParamEditor::GamsParamEditor(const QString &commandLineParameter,
+GamsParamEditor::GamsParamEditor(FileKind kind,
+                                 const QString &commandLineParameter,
                                  OptionTokenizer* tokenizer,
                                  QWidget *parent):
-    OptionWidget(false, parent), mOptionTokenizer(tokenizer)
+    OptionWidget(false, kind, parent), mOptionTokenizer(tokenizer)
 {
     QList<OptionItem *> optionItem = mOptionTokenizer->tokenize(commandLineParameter);
 //    QString normalizedText = mOptionTokenizer->normalize(optionItem);
-    mOptionModel = new GamsParamTableModel(optionItem, mOptionTokenizer,  this);
+    mOptionModel = new GamsParamTableModel(mFileKind==FileKind::Opt ? "Option" : "Parameter",
+                                           optionItem, mOptionTokenizer,  this);
 
-    mDefinitionModel = new GamsOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
+    mDefinitionModel = new GamsOptionDefinitionModel(mFileKind==FileKind::Opt ? "Option" : "Parameter",
+                                                     mOptionTokenizer->getOption(), 0, this);
 
     initActions();
     initToolBar();

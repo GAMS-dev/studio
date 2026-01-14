@@ -37,9 +37,10 @@ namespace gams {
 namespace studio {
 namespace option {
 
-OptionWidget::OptionWidget(bool isFileEditor, QWidget *parent) :
+OptionWidget::OptionWidget(bool isFileEditor, FileKind kind, QWidget *parent) :
     AbstractView(parent),
     ui(new Ui::OptionWidget),
+    mFileKind(kind),
     mIsFileEditor(isFileEditor)
 {
     ui->setupUi(this);
@@ -160,9 +161,10 @@ void OptionWidget::initDefintionTreeView()
 
     QStandardItemModel* groupModel = new QStandardItemModel(groupsize+1, 3);
     int i = 0;
-    groupModel->setItem(0, 0, new QStandardItem("--- All Options ---"));
+    QString callstr = (mFileKind==FileKind::Opt ? "Options" : "Parameters");
+    groupModel->setItem(0, 0, new QStandardItem(QString("--- All %1 ---").arg(callstr)));
     groupModel->setItem(0, 1, new QStandardItem("0"));
-    groupModel->setItem(0, 2, new QStandardItem("All Options"));
+    groupModel->setItem(0, 2, new QStandardItem(QString("All %1").arg(callstr)));
     for(const OptionGroup &group : std::as_const(optionGroupList)) {
         if (group.hidden || group.name.compare("deprecated", Qt::CaseInsensitive)==0)
             continue;
@@ -205,6 +207,7 @@ void OptionWidget::initDefintionTreeView()
 
     headerRegister(ui->definitionTreeView->header());
 
+    ui->definitionSearch->setPlaceholderText(QString("Filter %1 ...").arg(callstr));
     connect(ui->definitionSearch, &FilterLineEdit::regExpChanged, this, [this]() {
         definitionProxymodel()->setFilterRegularExpression(ui->definitionSearch->regExp());
         selectSearchField();

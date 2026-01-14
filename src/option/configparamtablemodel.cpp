@@ -30,8 +30,11 @@ namespace gams {
 namespace studio {
 namespace option {
 
-ConfigParamTableModel::ConfigParamTableModel(const QList<ParamConfigItem *> &itemList, OptionTokenizer *tokenizer, QObject *parent):
-    OptionTableModel(false, tokenizer, parent),
+ConfigParamTableModel::ConfigParamTableModel(const QString& callstr,
+                                             const QList<ParamConfigItem *> &itemList,
+                                             OptionTokenizer *tokenizer,
+                                             QObject *parent):
+    OptionTableModel(callstr, false, tokenizer, parent),
     mOptionItem(itemList)
 {
     mHeader << "id" << "Key"  << "Value" << "minVersion" << "maxVersion";

@@ -30,8 +30,8 @@ class GamsParamTableModel : public OptionTableModel
 {
      Q_OBJECT
 public:
-    explicit GamsParamTableModel(const QString &normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject *parent = nullptr);
-    explicit GamsParamTableModel(const QList<OptionItem*> &itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    explicit GamsParamTableModel(const QString& callstr, const QString &normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    explicit GamsParamTableModel(const QString& callstr, const QList<OptionItem*> &itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

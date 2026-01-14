@@ -34,7 +34,7 @@ class OptionDefinitionModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    OptionDefinitionModel(Option* data, int optionGroup=0, QObject* parent=nullptr);
+    OptionDefinitionModel(const QString& callstr, Option* data, int optionGroup=0, QObject* parent=nullptr);
     ~OptionDefinitionModel() override;
 
     QVariant data(const QModelIndex& index, int role) const override;
@@ -76,6 +76,7 @@ public slots:
 protected:
     void setupTreeItemModelData(Option* option, OptionDefinitionItem* parent);
 
+    QString mCallstr;
     int mOptionGroup;
     Option* mOption;
     OptionDefinitionItem *rootItem;

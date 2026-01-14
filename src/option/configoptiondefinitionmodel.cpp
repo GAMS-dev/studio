@@ -28,11 +28,13 @@ namespace gams {
 namespace studio {
 namespace option {
 
-ConfigOptionDefinitionModel::ConfigOptionDefinitionModel(Option *data, int optionGroup, QObject *parent):
-    OptionDefinitionModel (data, optionGroup, parent)
+ConfigOptionDefinitionModel::ConfigOptionDefinitionModel(const QString& callstr,
+                                                         Option *data,
+                                                         int optionGroup, QObject *parent):
+    OptionDefinitionModel (callstr, data, optionGroup, parent)
 {
     QList<QVariant> rootData;
-    rootData << "Parameter" << "Synonym" << "DefValue" << "Range"
+    rootData << callstr << "Synonym" << "DefValue" << "Range"
              << "Type" << "Description" << "Debug Entry" ;
     rootItem = new OptionDefinitionItem(rootData);
 

@@ -44,7 +44,7 @@ GamsConfigEditor::GamsConfigEditor(const QString &fileName, const QString &optio
 {
     ui->setupUi(this);
 
-    mConfigParamEditor = new ConfigParamEditor(mGuc->readCommandLineParameters(), "UTF-8", this);
+    mConfigParamEditor = new ConfigParamEditor(FileKind::Guc, mGuc->readCommandLineParameters(), "UTF-8", this);
     ui->GamsCfgTabWidget->addTab(mConfigParamEditor, ConfigEditorName.at(static_cast<int>(ConfigEditorType::commandLineParameter)) );
     mEnvVarConfigEditor = new EnvVarConfigEditor(mGuc->readEnvironmentVariables(), this);
     ui->GamsCfgTabWidget->addTab( mEnvVarConfigEditor, ConfigEditorName.at(static_cast<int>(ConfigEditorType::environmentVariable)) );

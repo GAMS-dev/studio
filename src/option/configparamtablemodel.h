@@ -33,7 +33,7 @@ class ConfigParamTableModel : public OptionTableModel
 {
      Q_OBJECT
 public:
-    ConfigParamTableModel(const QList<ParamConfigItem *> &itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    ConfigParamTableModel(const QString& callstr, const QList<ParamConfigItem *> &itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

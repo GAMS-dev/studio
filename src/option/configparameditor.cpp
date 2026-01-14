@@ -28,8 +28,11 @@ namespace gams {
 namespace studio {
 namespace option {
 
-ConfigParamEditor::ConfigParamEditor(const QList<ConfigItem *> &initParamItems, const QString &encodingName, QWidget *parent) :
-    OptionWidget(true, parent),
+ConfigParamEditor::ConfigParamEditor(FileKind kind,
+                                     const QList<ConfigItem *> &initParamItems,
+                                     const QString &encodingName,
+                                     QWidget *parent) :
+    OptionWidget(true, kind, parent),
     mEncoding(encodingName.isEmpty() ? "UTF-8" : encodingName),
     mModified(false),
     mFileHasChangedExtern(false)
@@ -41,9 +44,11 @@ ConfigParamEditor::ConfigParamEditor(const QList<ConfigItem *> &initParamItems, 
     for(ConfigItem* item: initParamItems) {
         optionItem.append( new ParamConfigItem(-1, item->key, item->value, item->minVersion, item->maxVersion) );
     }
-    mParameterTableModel = new ConfigParamTableModel(optionItem, mOptionTokenizer, this);
+    mParameterTableModel = new ConfigParamTableModel(mFileKind==FileKind::Opt ? "Option" : "Parameter",
+                                                     optionItem, mOptionTokenizer, this);
 
-    mDefinitionModel = new ConfigOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
+    mDefinitionModel = new ConfigOptionDefinitionModel(mFileKind==FileKind::Opt ? "Option" : "Parameter",
+                                                       mOptionTokenizer->getOption(), 0, this);
 
     initActions();
     initToolBar();

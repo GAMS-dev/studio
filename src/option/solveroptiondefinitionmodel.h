@@ -29,7 +29,7 @@ namespace option {
 class SolverOptionDefinitionModel : public OptionDefinitionModel
 {
 public:
-    SolverOptionDefinitionModel(Option* data, int optionGroup=0, QObject* parent=nullptr);
+    SolverOptionDefinitionModel(const QString& callstr, Option* data, int optionGroup=0, QObject* parent=nullptr);
 
     QStringList mimeTypes() const override;
     QMimeData* mimeData(const QModelIndexList & indexes) const override;

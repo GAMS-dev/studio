@@ -46,7 +46,6 @@ public:
 
     ~SolverOptionEditor() override;
 
-    inline FileKind fileKind() const { return mFileKind; }
     inline FileId fileId() const     { return mFileId;   }
 
     inline bool isModified() const         { return mModified;     }
@@ -122,7 +121,6 @@ protected:
     QString mLocation;
     QString mDefinitionFileName;
 
-    FileKind mFileKind = FileKind::None;
     FileId mFileId = 0;
 
     bool mModified = false;

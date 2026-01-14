@@ -43,12 +43,11 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
                                        const FileId &id,
                                        const QString &encodingName,
                                        QWidget *parent) :
-    OptionWidget(true, parent),
+    OptionWidget(true, kind, parent),
     mSolverName(solverName),
     mEncoding(encodingName.isEmpty() ? "UTF-8" : encodingName),
     mLocation(optionFilePath),
     mDefinitionFileName(optDefFileName),
-    mFileKind(kind),
     mFileId(id),
     mModified(false),
     mFileHasChangedExtern(false)
@@ -58,9 +57,10 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
         EXCEPT() << "Could not find or load OPT library for opening '" << mLocation << "'. Please check your GAMS installation.";
 
     const QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(optionFilePath, encodingName);
-    mOptionModel = new SolverOptionTableModel(optionItem, mOptionTokenizer,  this);
-
-    mDefinitionModel = new SolverOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
+    mOptionModel = new SolverOptionTableModel(mFileKind==FileKind::Opt ? "Option" : "Parameter",
+                                              optionItem, mOptionTokenizer,  this);
+    mDefinitionModel = new SolverOptionDefinitionModel( mFileKind==FileKind::Opt ? "Option" : "Parameter",
+                                                        mOptionTokenizer->getOption(), 0, this );
 
     initActions();
     initToolBar();

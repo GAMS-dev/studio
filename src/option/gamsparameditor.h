@@ -36,7 +36,8 @@ class GamsParamEditor : public OptionWidget
 {
     Q_OBJECT
 public:
-    explicit GamsParamEditor(const QString &commandLineParameter,
+    explicit GamsParamEditor(FileKind kind,
+                             const QString &commandLineParameter,
                              OptionTokenizer* tokenizer,
                              QWidget *parent = nullptr);
 

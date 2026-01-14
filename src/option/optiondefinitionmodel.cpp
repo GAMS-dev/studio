@@ -27,8 +27,10 @@ namespace gams {
 namespace studio {
 namespace option {
 
-OptionDefinitionModel::OptionDefinitionModel(Option* data, int optionGroup, QObject* parent)
-    : QAbstractItemModel(parent), mOptionGroup(optionGroup), mOption(data)
+OptionDefinitionModel::OptionDefinitionModel(const QString& callstr,
+                                             Option* data,
+                                             int optionGroup, QObject* parent)
+    : QAbstractItemModel(parent), mCallstr(callstr), mOptionGroup(optionGroup), mOption(data)
 {
 }
 

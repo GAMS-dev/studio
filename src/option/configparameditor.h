@@ -36,7 +36,8 @@ class ConfigParamEditor : public OptionWidget
 {
     Q_OBJECT
 public:
-    explicit ConfigParamEditor(const QList<ConfigItem *> &initParamItems,
+    explicit ConfigParamEditor(FileKind kind,
+                               const QList<ConfigItem *> &initParamItems,
                                const QString &encodingName,
                                QWidget *parent = nullptr);
     ~ConfigParamEditor() override;
@@ -106,7 +107,6 @@ protected:
     OptionTokenizer* mOptionTokenizer;
 
     QString mEncoding = "UTF-8";
-    FileKind mFileKind = FileKind::None;
     FileId mFileId = 0;
 
     bool mModified = false;

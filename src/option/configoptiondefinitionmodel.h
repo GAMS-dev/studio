@@ -29,7 +29,7 @@ namespace option {
 class ConfigOptionDefinitionModel : public OptionDefinitionModel
 {
 public:
-    ConfigOptionDefinitionModel(Option* data, int optionGroup=0, QObject* parent=nullptr);
+    ConfigOptionDefinitionModel(const QString& callstr, Option* data, int optionGroup=0, QObject* parent=nullptr);
 
     QStringList mimeTypes() const override;
     QMimeData* mimeData(const QModelIndexList & indexes) const override;

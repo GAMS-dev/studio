@@ -51,7 +51,7 @@ GamsParameterWidget::GamsParameterWidget(QAction *aRun, QAction *aCompile, QActi
     mExtendedEditor = new QDockWidget("GAMS Parameters", this);
     mExtendedEditor->setObjectName("gamsArguments");
 
-    mDockChild = new GamsParamEditor(ui->gamsParameterCommandLine->lineEdit()->text(), mOptionTokenizer, mExtendedEditor);
+    mDockChild = new GamsParamEditor(FileKind::None, ui->gamsParameterCommandLine->lineEdit()->text(), mOptionTokenizer, mExtendedEditor);
     mExtendedEditor->setWidget(mDockChild);
     mDockChild->layout()->setContentsMargins(0,0,0,0);
 
