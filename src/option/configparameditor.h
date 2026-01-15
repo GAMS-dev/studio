@@ -74,6 +74,10 @@ protected slots:
         return;
     };
 
+    void on_openAsTextButton_clicked(bool checked = false) override   { Q_UNUSED(checked)    return; };
+    void on_compactViewCheckBox_stateChanged(int checkState) override { Q_UNUSED(checkState) return; };
+    void on_messageViewCheckBox_stateChanged(int checkState) override { Q_UNUSED(checkState) return; };
+
     void addOptionModelFromDefinition(int row, const QModelIndex &definitionIndex,
                                                const QModelIndex &parentDefinitionIndex) override;
     void addCommentModelFromDefinition(int row, const QModelIndex &descriptionIndex)   override {

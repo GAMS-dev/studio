@@ -261,6 +261,7 @@ void SolverOptionEditor::on_compactViewCheckBox_stateChanged(int checkState)
     } else {
         mOptionTokenizer->logger()->append(QString("deactivated Compact View, comments are now visible and all actions are allowed"), LogMsgType::Info);
     }
+    updateActionsState();
     emit compactViewChanged(isViewCompact);
 }
 
@@ -301,9 +302,6 @@ void SolverOptionEditor::on_openAsTextButton_clicked(bool checked)
 
 void SolverOptionEditor::insertOption()
 {
-    if (isViewCompact())
-        return;
-
     if (isEditing()) {
         QLineEdit* editor = qobject_cast<QLineEdit *>(mOptionCompleter->lastEditor());
         if (editor) emit editor->editingFinished();
@@ -386,9 +384,6 @@ void SolverOptionEditor::updateTableColumnSpan()
 
 void SolverOptionEditor::insertComment()
 {
-    if  (isViewCompact())
-        return;
-
     if (isEditing()) {
         QLineEdit* editor = qobject_cast<QLineEdit *>(mOptionCompleter->lastEditor());
         if (editor) emit editor->editingFinished();

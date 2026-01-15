@@ -93,22 +93,9 @@ protected slots:
     virtual void moveOptionUp()   = 0;
     virtual void moveOptionDown() = 0;
 
-    virtual void on_openAsTextButton_clicked(bool checked = false) {
-        Q_UNUSED(checked)
-        if (!mIsFileEditor)
-            return;
-    }
-    virtual void on_compactViewCheckBox_stateChanged(int checkState) {
-        Q_UNUSED(checkState)
-        if (!mIsFileEditor)
-            return;
-    }
-
-    virtual void on_messageViewCheckBox_stateChanged(int checkState) {
-        Q_UNUSED(checkState)
-        if (!mIsFileEditor)
-            return;
-    }
+    virtual void on_openAsTextButton_clicked(bool checked = false) = 0;
+    virtual void on_compactViewCheckBox_stateChanged(int checkState) = 0;
+    virtual void on_messageViewCheckBox_stateChanged(int checkState) = 0;
 
     virtual bool isCommentToggleable() = 0;
     virtual void updateTableColumnSpan() = 0;

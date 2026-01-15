@@ -758,6 +758,7 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
         getMainWindow()->getAdvancedActions(&ret);
         for(QAction *action : std::as_const(ret)) {
             if (action->objectName().compare("actionComment")==0) {
+                action->setEnabled( isCommentToggleable() && !isViewCompact() );
                 menu.addAction(action);
                 menu.addSeparator();
                 break;
@@ -926,11 +927,11 @@ void OptionWidget::updateActionsState()
     std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() < b.row(); });
 
     ui->actionInsert->setEnabled( true );
-    ui->actionInsert_Comment->setEnabled( isCommentToggleable() );
+    ui->actionInsert_Comment->setEnabled( isCommentToggleable() && !isViewCompact() );
     ui->actionDelete->setEnabled(  thereIsSelection ? idxSelection.first().row() < optionModel()->rowCount() : false );
 
-    ui->actionMoveUp->setEnabled( thereIsSelection ? idxSelection.first().row() > 0 : false );
-    ui->actionMoveDown->setEnabled( thereIsSelection ? idxSelection.last().row() < optionModel()->rowCount()-1 : false );
+    ui->actionMoveUp->setEnabled( !isViewCompact() && thereIsSelection ? idxSelection.first().row() > 0 : false );
+    ui->actionMoveDown->setEnabled( !isViewCompact() && thereIsSelection ? idxSelection.last().row() < optionModel()->rowCount()-1 : false );
 
     ui->actionSelect_Current_Row->setEnabled( thereIsSelection && !isEachRowSelected());
     ui->actionSelectAll->setEnabled( thereIsSelection && ui->optionTableView->model()->rowCount()>idxSelection.size());
@@ -986,10 +987,14 @@ void OptionWidget::updateActionsState(const QModelIndex &index)
     }
 
     ui->actionInsert->setEnabled( true );
-    ui->actionInsert_Comment->setEnabled( isCommentToggleable() );
+    ui->actionInsert_Comment->setEnabled( isCommentToggleable() && !isViewCompact() );
     ui->actionDelete->setEnabled( thereIsSelection && idxSelection.first().row() < optionModel()->rowCount() );
-    ui->actionMoveUp->setEnabled(   (singleSelection || singleSelectionIsRow || multiSelectionIsRow || multiSelectionIsCell_sameRow) && idxSelection.first().row() > 0 );
-    ui->actionMoveDown->setEnabled( (singleSelection || singleSelectionIsRow || multiSelectionIsRow || multiSelectionIsCell_sameRow) && idxSelection.last().row() < optionModel()->rowCount()-1 );
+    ui->actionMoveUp->setEnabled( !isViewCompact()
+                                 && (singleSelection || singleSelectionIsRow || multiSelectionIsRow || multiSelectionIsCell_sameRow)
+                                 && idxSelection.first().row() > 0 );
+    ui->actionMoveDown->setEnabled( !isViewCompact()
+                                    && (singleSelection || singleSelectionIsRow || multiSelectionIsRow || multiSelectionIsCell_sameRow)
+                                    && idxSelection.last().row() < optionModel()->rowCount()-1 );
     ui->actionSelect_Current_Row->setEnabled( thereIsSelection );
     ui->actionSelectAll->setEnabled( thereIsSelection );
     bool showOptionEnbaled = ( thereIsSelection
