@@ -42,8 +42,6 @@ void RecentData::setEditor(FileMeta *fileMeta, QWidget *edit)
     if (!mMainWindow) EXCEPT() << "Warning: RecentData isn't initialized";
 
     if (QWidget *lastEdit = editor()) {
-//        if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(lastEdit)) {
-//        MainWindow::disconnect(soEdit, &option::SolverOptionWidget::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
         if (option::SolverOptionEditor* soEdit = ViewHelper::toSolverOptionEdit(lastEdit)) {
             MainWindow::disconnect(soEdit, &option::SolverOptionEditor::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
         } else {
@@ -81,8 +79,6 @@ void RecentData::setEditor(FileMeta *fileMeta, QWidget *edit)
         mPath = CommonPaths::defaultWorkingDir();
     }
 
-//    if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
-//        MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
     if (option::SolverOptionEditor* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
             MainWindow::connect(soEdit, &option::SolverOptionEditor::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
     } else {
@@ -94,9 +90,6 @@ void RecentData::setEditor(FileMeta *fileMeta, QWidget *edit)
         } else if (option::SolverOptionEditor* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
             MainWindow::connect(soEdit, &option::SolverOptionEditor::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
         }
-//        } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
-//            MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
-//        }
         if (TextView* tv = ViewHelper::toTextView(edit)) {
             MainWindow::connect(tv, &TextView::selectionChanged, mMainWindow, &MainWindow::updateStatusPos, Qt::UniqueConnection);
             MainWindow::connect(tv, &TextView::blockCountChanged, mMainWindow, &MainWindow::updateStatusLineCount, Qt::UniqueConnection);

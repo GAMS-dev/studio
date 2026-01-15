@@ -4596,6 +4596,9 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     logNode->linkToProcess(projectProc);
     projectProc->setParameters(project->analyzeParameters(workDir.relativeFilePath(gmsFilePath), projectProc->defaultParameters()
                                                           , itemList, opt , comMode, logOption));
+    qDeleteAll(itemList);
+    itemList.clear();
+
     if (projectProc->parameters().isEmpty())
         return false;
 
