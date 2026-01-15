@@ -61,7 +61,9 @@ void OptionWidget::initActions()
     ui->actionInsert->setToolTip(QString("Add/Insert new %1").arg(callstr()));
     ui->actionInsert_Comment->setEnabled(true);
     ui->actionDelete->setEnabled(false);
-    ui->actionDelete->setToolTip(QString("Delete selected %1").arg(callstr()));
+    ui->actionDelete->setToolTip(QString("Delete %1%2%3").arg(isCommentToggleable() ? "selection" : "")
+                                                         .arg(isCommentToggleable() ? "" : "selected ")
+                                                         .arg(isCommentToggleable() ? "" : callstr()));
     ui->actionMoveUp->setEnabled(false);
     ui->actionMoveDown->setEnabled(false);
 
