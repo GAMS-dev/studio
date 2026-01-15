@@ -81,11 +81,9 @@ bool GamsParamEditor::isEditorExtended()
 
 void GamsParamEditor::insertOption()
 {
-    qDebug() << "103:" << (mExtended ? "extended":"not extended") << ", hasFocus:" << (ui->optionTableView->hasFocus() ? "Focus": "NO focus");
-    if (!mExtended || !ui->optionTableView->hasFocus() )
+    if (!mExtended)
         return;
 
-    qDebug() << "107:";
     QModelIndexList indexSelection = ui->optionTableView->selectionModel()->selectedIndexes();
     for(const QModelIndex index : std::as_const(indexSelection)) {
         ui->optionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );

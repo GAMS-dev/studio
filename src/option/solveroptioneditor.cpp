@@ -80,7 +80,6 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
         const QString msg2 = QString("'%1' is not a valid solver name").arg(mSolverName);
         mOptionTokenizer->logger()->append(QString("%1. %2").arg(msg1, msg2), LogMsgType::Error);
         mOptionTokenizer->logger()->append(QString("An operation on the file contents might not be saved. Try 'Save As' or 'Open As Text' instead."), LogMsgType::Warning);
-//        return false;
     }
     else {
         connect(ui->optionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionEditor::on_selectAndToggleRow, Qt::UniqueConnection);
@@ -97,7 +96,6 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
         connect(this, &SolverOptionEditor::compactViewChanged, mDefinitionModel, &SolverOptionDefinitionModel::on_compactViewChanged, Qt::UniqueConnection);
 
         mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
-//        return true;
     }
 
 }

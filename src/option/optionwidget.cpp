@@ -369,7 +369,6 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
                                                             : ui->definitionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
     QVariant definitionID           = ui->definitionTreeView->model()->data(optionIdIndex, Qt::DisplayRole);
     int rowToBeAdded = ui->optionTableView->model()->rowCount();
-    qDebug() << "371: row="<< rowToBeAdded << ", definitionID=" << definitionID << ", definitionName=" << definitionName;
     Settings* settings = Settings::settings();
     if (settings && settings->toBool(skSoOverrideExisting)) {
         QModelIndexList indices = ui->optionTableView->model()->match(ui->optionTableView->model()->index(0, optionModel()->column_id()),

@@ -201,7 +201,6 @@ SOURCES += \
     networkmanager.cpp \
     numerics/doubleFormat.c \
     numerics/doubleformatter.cpp \
-    option/addoptionheaderview.cpp \
     option/commandline.cpp \
     option/configoptiondefinitionmodel.cpp \
     option/definitionitemdelegate.cpp \
@@ -442,7 +441,6 @@ HEADERS += \
     networkmanager.h \
     numerics/doubleFormat.h \
     numerics/doubleformatter.h \
-    option/addoptionheaderview.h \
     option/commandline.h \
     option/configoptiondefinitionmodel.h \
     option/definitionitemdelegate.h \
