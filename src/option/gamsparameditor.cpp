@@ -33,11 +33,10 @@ GamsParamEditor::GamsParamEditor(FileKind kind,
     OptionWidget(false, kind, parent), mOptionTokenizer(tokenizer)
 {
     QList<OptionItem *> optionItem = mOptionTokenizer->tokenize(commandLineParameter);
-//    QString normalizedText = mOptionTokenizer->normalize(optionItem);
-    mOptionModel = new GamsParamTableModel(mFileKind==FileKind::Opt ? "Option" : "Parameter",
+    mOptionModel = new GamsParamTableModel(callstr(),
                                            optionItem, mOptionTokenizer,  this);
 
-    mDefinitionModel = new GamsOptionDefinitionModel(mFileKind==FileKind::Opt ? "Option" : "Parameter",
+    mDefinitionModel = new GamsOptionDefinitionModel(callstr(),
                                                      mOptionTokenizer->getOption(), 0, this);
 
     initActions();

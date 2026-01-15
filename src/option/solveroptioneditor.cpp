@@ -57,9 +57,9 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
         EXCEPT() << "Could not find or load OPT library for opening '" << mLocation << "'. Please check your GAMS installation.";
 
     const QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(optionFilePath, encodingName);
-    mOptionModel = new SolverOptionTableModel(mFileKind==FileKind::Opt ? "Option" : "Parameter",
-                                              optionItem, mOptionTokenizer,  this);
-    mDefinitionModel = new SolverOptionDefinitionModel( mFileKind==FileKind::Opt ? "Option" : "Parameter",
+    mOptionModel = new SolverOptionTableModel( callstr(),
+                                               optionItem, mOptionTokenizer,  this );
+    mDefinitionModel = new SolverOptionDefinitionModel( callstr(),
                                                         mOptionTokenizer->getOption(), 0, this );
 
     initActions();
@@ -95,7 +95,7 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
 
         connect(this, &SolverOptionEditor::compactViewChanged, mDefinitionModel, &SolverOptionDefinitionModel::on_compactViewChanged, Qt::UniqueConnection);
 
-        mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
+        mOptionTokenizer->logger()->append(QString("Loading %1s from %2").arg(callstr().toLower()).arg(mLocation), LogMsgType::Info);
     }
 
 }

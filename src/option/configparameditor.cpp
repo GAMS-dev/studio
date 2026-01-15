@@ -21,7 +21,6 @@
 #include "option/gamsuserconfig.h"
 #include "option/optiondefinitionmodel.h"
 #include "option/configparameditor.h"
-//#include "msgbox.h"
 #include "ui_optionwidget.h"
 
 namespace gams {
@@ -44,10 +43,10 @@ ConfigParamEditor::ConfigParamEditor(FileKind kind,
     for(ConfigItem* item: initParamItems) {
         optionItem.append( new ParamConfigItem(-1, item->key, item->value, item->minVersion, item->maxVersion) );
     }
-    mParameterTableModel = new ConfigParamTableModel(mFileKind==FileKind::Opt ? "Option" : "Parameter",
+    mParameterTableModel = new ConfigParamTableModel(callstr(),
                                                      optionItem, mOptionTokenizer, this);
 
-    mDefinitionModel = new ConfigOptionDefinitionModel(mFileKind==FileKind::Opt ? "Option" : "Parameter",
+    mDefinitionModel = new ConfigOptionDefinitionModel(callstr(),
                                                        mOptionTokenizer->getOption(), 0, this);
 
     initActions();

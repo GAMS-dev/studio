@@ -51,6 +51,7 @@ public:
     ~OptionWidget() override;
 
     inline FileKind fileKind() const { return mFileKind; }
+    inline QString callstr() const   { return (mFileKind==FileKind::Opt ? "Option" : "Parameter"); }
 
 protected:
    void initActions();

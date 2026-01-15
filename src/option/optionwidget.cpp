@@ -57,15 +57,20 @@ OptionWidget::~OptionWidget()
 void OptionWidget::initActions()
 {
     ui->actionInsert->setEnabled(true);
+    ui->actionInsert->setText(QString("Insert new %1").arg(callstr()));
+    ui->actionInsert->setToolTip(QString("Add/Insert new %1").arg(callstr()));
     ui->actionInsert_Comment->setEnabled(true);
     ui->actionDelete->setEnabled(false);
+    ui->actionDelete->setToolTip(QString("Delete selected %1").arg(callstr()));
     ui->actionMoveUp->setEnabled(false);
     ui->actionMoveDown->setEnabled(false);
 
     ui->actionSelect_Current_Row->setEnabled(true);
     ui->actionSelectAll->setEnabled(true);
     ui->actionShow_Option_Definition->setEnabled(false);
+    ui->actionShow_Option_Definition->setText(QString("Show %1 definition").arg(callstr()));
     ui->actionShowRecurrence->setEnabled(false);
+    ui->actionShowRecurrence->setText(QString("Show all %1s of the same definition").arg(callstr()));
 
     ui->actionAdd_This_Parameter->setEnabled(false);
     ui->actionRemove_This_Parameter->setEnabled(false);
