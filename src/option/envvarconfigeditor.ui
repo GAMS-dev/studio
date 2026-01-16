@@ -39,7 +39,7 @@
     <string>Insert</string>
    </property>
    <property name="toolTip">
-    <string>Insert Environment Variables</string>
+    <string>Append/Insert Environment Variable</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Ins</string>
@@ -54,7 +54,7 @@
     <string>Delete</string>
    </property>
    <property name="toolTip">
-    <string>Delete Environment Variable</string>
+    <string>Delete selected Environment Variable</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Del</string>

@@ -67,7 +67,7 @@ void EnvVarConfigEditor::selectionChanged(const QItemSelection &selected, const 
         return;
     }
 
-    updateActionsState(selected.indexes().first());
+    updateActionsState();
 }
 
 void EnvVarConfigEditor::updateActionsState(const QModelIndex &index)
