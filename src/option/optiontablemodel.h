@@ -77,10 +77,10 @@ public:
                 tooltipText.append("\n");
             switch(type) {
             case OptionErrorType::Invalid_Key:
-                tooltipText.append( QString("Unknown option '%1'").arg(key) );
+                tooltipText.append( QString("Unknown %1 '%2'").arg(mCallstr, key) );
                 break;
             case OptionErrorType::Incorrect_Value_Type:
-                tooltipText.append( QString("%1 key '%2' has a value of incorrect type").arg(mCallstr, key));
+                tooltipText.append( QString("%1 '%2' has a value of incorrect type").arg(mCallstr, key));
                 break;
             case OptionErrorType::Value_Out_Of_Range:
                 tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(value, key));
@@ -101,7 +101,7 @@ public:
             if (recurrent) {
                 if (!tooltipText.isEmpty())
                     tooltipText.append("\n");
-                tooltipText.append( QString("Recurrent parameter '%1', only last entry of same parameters will not be ignored").arg(key));
+                tooltipText.append( QString("Recurrent %1 '%2', only last entry of same parameters will not be ignored").arg(mCallstr, key));
             }
         }
         return QVariant(tooltipText);
@@ -132,24 +132,24 @@ public:
         if (disabled) {
             return QVariant(key);
         } else if (value.isEmpty()) {
-                return QVariant( QString("Missing value for %2 key '%1' ").arg(key, mCallstr.toLower()) );
+                return QVariant( QString("Missing value for %2 '%1' ").arg(key, mCallstr.toLower()) );
         } else {
             QString tooltipText = "";
             switch(type) {
             case OptionErrorType::Missing_Value:
-                tooltipText.append( QString("Missing value for %2 key '%1' ").arg(key, mCallstr.toLower()) );
+                tooltipText.append( QString("Missing value for %2  '%1' ").arg(key, mCallstr.toLower()) );
                 break;
             case OptionErrorType::Invalid_Key:
                 tooltipText.append( QString("Unknown %1 '%2'").arg(mCallstr.toLower(), key));
                 break;
             case OptionErrorType::Incorrect_Value_Type:
-                tooltipText.append( QString("%1 key '%2' has a value of incorrect type").arg(mCallstr).arg(key) );
+                tooltipText.append( QString("%1 '%2' has a value of incorrect type").arg(mCallstr).arg(key) );
                 break;
             case OptionErrorType::Value_Out_Of_Range:
                 tooltipText.append( QString("Value '%1' for %3 key '%2' is out of range").arg(value, key, mCallstr.toLower()) );
                 break;
             case OptionErrorType::Deprecated_Option:
-                tooltipText.append( QString("%1 '%2' is deprecated, will be eventually ignored").arg(mCallstr).arg(key) );
+                tooltipText.append( QString("%1 '%2' is deprecated, will be ignored when run").arg(mCallstr).arg(key) );
                 break;
             case OptionErrorType::UserDefined_Error:
                 tooltipText.append( QString("Invalid %1 key or value or comment defined").arg(mCallstr.toLower()) );
@@ -166,7 +166,7 @@ public:
             if (recurrent) {
                 if (!tooltipText.isEmpty())
                     tooltipText.append("\n");
-                tooltipText.append( QString("Recurrent %1 '%2', only last entry of same %1s will not be ignored").arg(mCallstr.toLower(), key));
+                tooltipText.append( QString("Recurrent %1 '%2', only last entry value of '%2' will not be ignored when run").arg(mCallstr.toLower(), key));
             }
             return QVariant(tooltipText);
         }
