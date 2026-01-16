@@ -747,7 +747,7 @@ void OptionWidget::selectionChanged(const QItemSelection &selected, const QItemS
         return;
     }
 
-    updateActionsState(selected.indexes().first());
+    updateActionsState();
 }
 
 void OptionWidget::showOptionContextMenu(const QPoint &pos)
