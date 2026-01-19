@@ -77,7 +77,6 @@ public:
     QDockWidget* extendedEditor() const;
 
 signals:
-//    void parameterLoaded(const QString &location);
     void ParameterTableModelChanged(const QString &commandLineStr);
     void commandLineChanged(QLineEdit* lineEdit, const QList<gams::studio::option::OptionItem*> &optionItems);
     void optionsChanged(const QString &commandLineStr);

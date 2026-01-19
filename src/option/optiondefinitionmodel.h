@@ -51,11 +51,6 @@ public:
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
     OptionDefinitionItem* getItem(const QModelIndex &index) const;
-    void insertItem(int position, OptionDefinitionItem* item, const QModelIndex &parent);
-    bool removeItem(const QModelIndex &index);
-
-//    virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
-    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
 
     virtual QStringList mimeTypes() const override = 0;
     virtual QMimeData* mimeData(const QModelIndexList & indexes) const override = 0;
