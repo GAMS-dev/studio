@@ -55,11 +55,11 @@ GamsConfigEditor::GamsConfigEditor(const QString &fileName, const QString &optio
     ui->GamsCfgTabWidget->setCurrentIndex(static_cast<int>(ConfigEditorType::commandLineParameter));
 
     setFocusProxy(ui->GamsCfgTabWidget);
-//    QList<QHeaderView*> headers;
-//    headers << mConfigParamEditor->headers() << mEnvVarConfigEditor->headers();
-//    for (QHeaderView *header : std::as_const(headers)) {
-//        headerRegister(header);
-//    }
+    QList<QHeaderView*> headers;
+    headers << mConfigParamEditor->headers() << mEnvVarConfigEditor->headers();
+    for (QHeaderView *header : std::as_const(headers)) {
+        headerRegister(header);
+    }
 }
 
 GamsConfigEditor::~GamsConfigEditor()
