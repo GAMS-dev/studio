@@ -24,6 +24,7 @@
 
 #include "option/optiontokenizer.h"
 #include "theme.h"
+#include "msgbox.h"
 
 namespace gams {
 namespace studio {
@@ -169,6 +170,35 @@ public:
                 tooltipText.append( QString("Recurrent %1 '%2', only last entry value of '%2' will not be ignored when run").arg(mCallstr.toLower(), key));
             }
             return QVariant(tooltipText);
+        }
+    };
+
+    int questionEntryExisted(QList<int> &overrideIdRowList) {
+        Q_ASSERT(overrideIdRowList.size() > 0);
+        if (overrideIdRowList.size() == 1) { // singleEntryExisted
+            const QString option = data(index(overrideIdRowList.at(0), COLUMN_KEY)).toString();
+            const QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
+                                                 .arg(getOptionTableEntry(overrideIdRowList.at(0)),
+                "When a file contains multiple entries of the same "+mCallstr.toLower()+", only the value of the last entry will be utilized.",
+                "The value of all other entries except the last entry will be ignored.");
+            return MsgBox::question(mCallstr+" Entry exists", mCallstr+" '" + option + "' already exists.",
+                                     "How do you want to proceed?", detailText,
+                                     nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
+        } else if (overrideIdRowList.size() > 1) { //  multipleEntryExisted
+            QString option = data(index(overrideIdRowList.at(0), COLUMN_KEY)).toString();
+            QString entryDetailedText = QString("Entries:\n");
+            int i = 0;
+            for (const int id : overrideIdRowList)
+                entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getOptionTableEntry(id)));
+            const QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
+                                                                            "When a file contains multiple entries of the same "+mCallstr.toLower()+", only the value of the last entry will be utilized.",
+                                                                            "The value of all other entries except the last entry will be ignored.");
+            return MsgBox::question("Multiple "+mCallstr+" entries exist",
+                                    "Multiple entries of "+mCallstr+" '" + option + "' already exist.",
+                                    "How do you want to proceed?", detailText, nullptr,
+                                    "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
+        } else {
+            return -1;
         }
     };
 

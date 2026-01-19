@@ -377,69 +377,50 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
 
         bool replaceExistingEntry = false;
-        const bool singleEntryExisted = (overrideIdRowList.size()==1);
-        const bool multipleEntryExisted = (overrideIdRowList.size()>1);
-        if (singleEntryExisted) {
-            const QString option = data(index(overrideIdRowList.at(0), COLUMN_KEY)).toString();
-            const QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
-                .arg(getOptionTableEntry(overrideIdRowList.at(0)),
-                "When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
-                "The value of all other entries except the last entry will be ignored.");
-            int answer = MsgBox::question("Option Entry exists", "Option '" + option + "' already exists in your option file.",
-                                          "How do you want to proceed?", detailText,
-                                          nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
-            switch(answer) {
-            case 0: // replace
-                replaceExistingEntry = true;
-                beginRow = overrideIdRowList.at(0);
-                break;
-            case 1: // add
-                break;
-            default:
-                qDeleteAll(itemList);
-                itemList.clear();
-                return false;
-            }
-        } else if (multipleEntryExisted) {
-            QString option = data(index(overrideIdRowList.at(0), COLUMN_KEY)).toString();
-            QString entryDetailedText = QString("Entries:\n");
-            int i = 0;
-            for (const int id : overrideIdRowList)
-                entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getOptionTableEntry(id)));
-            const QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
-                "When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
-                "The value of all other entries except the last entry will be ignored.");
-            const int answer = MsgBox::question("Multiple Option Entries exist",
-                                          "Multiple entries of Option '" + option + "' already exist.",
-                                          "How do you want to proceed?", detailText, nullptr,
-                                          "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
-            switch(answer) {
-            case 0: { // delete and replace
-                int prev = -1;
-                for(int i=overrideIdRowList.count()-1; i>=0; i--) {
-                    const int current = overrideIdRowList[i];
-                    if (i==0)
-                        continue;
-                    if (current != prev) {
-                        const QString text = getOptionTableEntry(current);
-                        removeRows( current, 1 );
-                        mOptionTokenizer->logger()->append(QString("Option entry '%1' has been deleted").arg(text), LogMsgType::Info);
-                        prev = current;
-                    }
+        if (overrideIdRowList.size() > 0) {
+            int answer = questionEntryExisted(overrideIdRowList);
+            if (overrideIdRowList.size()==1) { // singleEntryExisted)
+                switch(answer) {
+                case 0: // replace
+                    replaceExistingEntry = true;
+                    beginRow = overrideIdRowList.at(0);
+                    break;
+                case 1: // add
+                    break;
+                default:
+                    qDeleteAll(itemList);
+                    itemList.clear();
+                    return false;
                 }
+            } else if (overrideIdRowList.size()>1) { // multipleEntryExisted
+                switch(answer) {
+                case 0: { // delete and replace
+                    int prev = -1;
+                    for(int i=overrideIdRowList.count()-1; i>=0; i--) {
+                        const int current = overrideIdRowList[i];
+                        if (i==0)
+                            continue;
+                        if (current != prev) {
+                            const QString text = getOptionTableEntry(current);
+                            removeRows( current, 1 );
+                            mOptionTokenizer->logger()->append(QString(mCallstr+" entry '%1' has been deleted").arg(text), LogMsgType::Info);
+                            prev = current;
+                        }
+                    }
 
-                replaceExistingEntry = true;
-                beginRow = overrideIdRowList.at(0);
-                break;
-            }
-            case 1: { // add
-                break;
-            }
-            default: {
-                qDeleteAll(itemList);
-                itemList.clear();
-                return false;
-            }
+                    replaceExistingEntry = true;
+                    beginRow = overrideIdRowList.at(0);
+                    break;
+                }
+                case 1: { // add
+                    break;
+                }
+                default: {
+                    qDeleteAll(itemList);
+                    itemList.clear();
+                    return false;
+                }
+                }
             }
         } // else entry not exist
 

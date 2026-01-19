@@ -395,9 +395,9 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
         if (singleEntryExisted ) {
             const QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
             .arg(optionModel()->getOptionTableEntry(indices.at(0).row()),
-                 "When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
+                 "When a file contains multiple entries of the same "+callstr().toLower()+", only the value of the last entry will be utilized.",
                  "The value of all other entries except the last entry will be ignored.");
-            const int answer = MsgBox::question("Option Entry exists", "Option '" + definitionName + "' already exists.",
+            const int answer = MsgBox::question(callstr()+" Entry exists", callstr()+" '" + definitionName + "' already exists.",
                                                 "How do you want to proceed?", detailText,
                                                 nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
             switch(answer) {
@@ -424,10 +424,10 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
             for (const QModelIndex &idx : std::as_const(indices))
                 entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(optionModel()->getOptionTableEntry(idx.row())));
             const QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
-                                                                            "When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
+                                                                            "When a file contains multiple entries of the same "+callstr().toLower()+""+callstr().toLower()+", only the value of the last entry will be utilized.",
                                                                             "The value of all other entries except the last entry will be ignored.");
-            const int answer = MsgBox::question("Multiple Option Entries exist",
-                                                "Multiple entries of Option '" + definitionName + "' already exist.",
+            const int answer = MsgBox::question("Multiple "+callstr()+" Entries exist",
+                                                "Multiple entries of "+callstr()+" '" + definitionName + "' already exist.",
                                                 "How do you want to proceed?", detailText, nullptr,
                                                 "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
             switch(answer) {

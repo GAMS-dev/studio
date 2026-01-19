@@ -359,97 +359,64 @@ bool GamsParamTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction
         beginRow = rowCount(QModelIndex());
     }
 
-    Settings* settings = Settings::settings();
     if (action ==  Qt::CopyAction) {
         QList<OptionItem*> itemList;
         itemList.reserve(newItems.size());
         QList<int> overrideIdRowList;
         for (const QString &text : std::as_const(newItems)) {
             const QStringList textList = text.split("=");
-            const int optionid = mOptionTokenizer->getOption()->getOptionDefinition(textList.at(0)).number;
+            const int optionid = mOptionTokenizer->getOption()->getOptionDefinition(textList.at(COLUMN_KEY)).number;
             itemList.append(new OptionItem(optionid, textList.at( COLUMN_KEY ), textList.at( COLUMN_VALUE )));
-            QModelIndexList indices = match(index(GamsParamTableModel::COLUMN_KEY, columnCount()), Qt::DisplayRole,
+            QModelIndexList indices = match(index(0, COLUMN_ID), Qt::DisplayRole,
                                             QVariant(optionid), Qt::MatchRecursive);
-            if (settings && settings->toBool(skSoOverrideExisting)) {
-                for(const QModelIndex &idx : std::as_const(indices)) {
-                    overrideIdRowList.append(idx.row());
-                }
-            }
-            if (settings && settings->toBool(skSoDeleteCommentsAbove)) {
-                for(const QModelIndex &idx : indices) {
-                    for(int r=idx.row()-1; r>=0; --r) {
-                        if (headerData(r, Qt::Vertical, static_cast<int>(Qt::CheckStateRole)).toInt()!=static_cast<int>(Qt::PartiallyChecked))
-                            break;
-                        if (!overrideIdRowList.contains(r))
-                            overrideIdRowList.append(r);
-                    }
-                }
+            for(const QModelIndex &idx : std::as_const(indices)) {
+                overrideIdRowList.append(idx.row());
             }
         }
         std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
 
         bool replaceExistingEntry = false;
-        const bool singleEntryExisted = (overrideIdRowList.size()==1);
-        const bool multipleEntryExisted = (overrideIdRowList.size()>1);
-        if (singleEntryExisted) {
-            const QString param = data(index(overrideIdRowList.at(0), COLUMN_KEY)).toString();
-            const QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
-                                           .arg(getParameterTableEntry(overrideIdRowList.at(0)),
-                                                "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
-                                                "The value of all other entries except the last entry will be ignored.");
-            const int answer = MsgBox::question("Parameter Entry exists", "Parameter '" + param + "' already exists.",
-                                                "How do you want to proceed?", detailText,
-                                                nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
-            switch(answer) {
-            case 0: // replace
-                replaceExistingEntry = true;
-                beginRow = overrideIdRowList.at(0);
-                break;
-            case 1: // add
-                break;
-            default:
-                itemList.clear();
-                return false;
-            }
-        } else if (multipleEntryExisted) {
-            const QString param = data(index(overrideIdRowList.at(0), COLUMN_KEY)).toString();
-            QString entryDetailedText = QString("Entries:\n");
-            int i = 0;
-            for (const int id : overrideIdRowList)
-                entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getParameterTableEntry(id)));
-            const QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
-                                                                            "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by the GAMS.",
-                                                                            "The value of all other entries except the last entry will be ignored.");
-            const int answer = MsgBox::question("Multiple Parameter Entries exist",
-                                                "Multiple entries of Parameter '" + param + "' already exist.",
-                                                "How do you want to proceed?", detailText, nullptr,
-                                                "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
-            switch(answer) {
-            case 0: { // delete and replace
-                int prev = -1;
-                for(int i=overrideIdRowList.count()-1; i>=0; i--) {
-                    const int current = overrideIdRowList[i];
-                    if (i==0)
-                        continue;
-                    if (current != prev) {
-                        removeRows( current, 1 );
-                        prev = current;
-                    }
+        if (overrideIdRowList.size() > 0) {
+            int answer = questionEntryExisted(overrideIdRowList);
+            if (overrideIdRowList.size()==1) { // singleEntryExisted)
+                switch(answer) {
+                case 0: // replace
+                    replaceExistingEntry = true;
+                    beginRow = overrideIdRowList.at(0);
+                    break;
+                case 1: // add
+                    break;
+                default:
+                    itemList.clear();
+                    return false;
                 }
-
-                replaceExistingEntry = true;
-                beginRow = overrideIdRowList.at(0);
-                break;
+            } else if (overrideIdRowList.size()>1) { // multipleEntryExisted
+                switch(answer) {
+                case 0: { // delete and replace
+                    int prev = -1;
+                    for(int i=overrideIdRowList.count()-1; i>=0; i--) {
+                        const int current = overrideIdRowList[i];
+                        if (i==0)
+                            continue;
+                        if (current != prev) {
+                            removeRows( current, 1 );
+                            prev = current;
+                        }
+                    }
+                    replaceExistingEntry = true;
+                    beginRow = overrideIdRowList.at(0);
+                    break;
+                }
+                case 1: { // add
+                    break;
+                }
+                default: {
+                    itemList.clear();
+                    return false;
+                }
+                }
             }
-            case 1: { // add
-                break;
-            }
-            default: {
-                itemList.clear();
-                return false;
-            }
-            }
-        } // else entry not exist
+        }
 
         for (const OptionItem* item : itemList) {
             if (!replaceExistingEntry)
