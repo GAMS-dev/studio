@@ -327,14 +327,11 @@ QString GamsParamEditor::getSelectedParameterName(QWidget *widget) const
         const QModelIndexList selection = ui->definitionTreeView->selectionModel()->selectedRows();
         if (selection.count() > 0) {
             const QModelIndex index = selection.at(0);
-            const QModelIndex  parentIndex =  mDefinitionModel->parent(index);
-            if (parentIndex.row() >= 0) {
-                return mDefinitionModel->data( parentIndex.sibling(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME),
-                                               Qt::DisplayRole ).toString();
-            } else {
-                return mDefinitionModel->data( index.sibling(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME),
-                                               Qt::DisplayRole ).toString();
-            }
+            const QModelIndex  parentIndex =  ui->definitionTreeView->model()->parent(index);
+            if (parentIndex.row() >= 0)
+                return parentIndex.siblingAtColumn( OptionDefinitionModel::COLUMN_OPTION_NAME ).data(Qt::DisplayRole).toString();
+            else
+                return index.siblingAtColumn( OptionDefinitionModel::COLUMN_OPTION_NAME ).data(Qt::DisplayRole).toString();
         }
     }
     return "";
