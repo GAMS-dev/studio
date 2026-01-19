@@ -53,6 +53,12 @@ public:
     inline FileKind fileKind() const { return mFileKind; }
     inline QString callstr() const   { return (mFileKind==FileKind::Opt ? "Option" : "Parameter"); }
 
+    inline bool isModified() const         { return mModified;     }
+    inline void setModified(bool modified) {
+        mModified = modified;
+        emit modificationChanged(modified);
+    }
+
 protected:
    void initActions();
    void initToolBar();
@@ -181,6 +187,8 @@ protected:
 
     bool mIsFileEditor = false;
     SystemLogEdit *mLogEdit = nullptr;
+
+    bool mModified = false;
 };
 
 

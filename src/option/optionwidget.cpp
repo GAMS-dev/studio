@@ -357,7 +357,7 @@ void OptionWidget::selectSearchField() const
 
 void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
 {
-    emit modificationChanged(true);
+    setModified(true);
 
     const QModelIndex parentIndex =  ui->definitionTreeView->model()->parent(definitionIndex);
     const QModelIndex optionNameIndex = (parentIndex.row()<0) ? definitionIndex.siblingAtColumn(OptionDefinitionModel::COLUMN_OPTION_NAME)

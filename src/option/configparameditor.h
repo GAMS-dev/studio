@@ -42,11 +42,6 @@ public:
                                QWidget *parent = nullptr);
     ~ConfigParamEditor() override;
 
-    inline bool isModified() const   { return mModified; }
-    inline void setModified(bool modified) {
-        mModified = modified;
-    }
-
     bool isInFocus(QWidget* focusWidget) const;
     QList<QHeaderView*> headers();
     QString getSelectedParameterName(QWidget* widget) const;

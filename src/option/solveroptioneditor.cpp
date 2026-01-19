@@ -84,8 +84,6 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
     else {
         connect(ui->optionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionEditor::on_selectAndToggleRow, Qt::UniqueConnection);
 
-        connect(this, &SolverOptionEditor::modificationChanged, this, &SolverOptionEditor::setModified, Qt::UniqueConnection);
-
         connect(mOptionModel, &QAbstractTableModel::dataChanged, this, &SolverOptionEditor::on_dataItemChanged, Qt::UniqueConnection);
         connect(mOptionModel, &QAbstractTableModel::dataChanged, mOptionModel, &SolverOptionTableModel::on_updateOptionItem, Qt::UniqueConnection);
         connect(mOptionModel, &SolverOptionTableModel::solverOptionItemModelChanged, mOptionModel, &SolverOptionTableModel::updateRecurrentStatus, Qt::UniqueConnection);

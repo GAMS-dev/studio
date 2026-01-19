@@ -48,9 +48,6 @@ public:
 
     inline FileId fileId() const     { return mFileId;   }
 
-    inline bool isModified() const         { return mModified;     }
-    inline void setModified(bool modified) { mModified = modified; }
-
     inline void setFileChangedExtern(bool value) { mFileHasChangedExtern = value;  }
 
     bool saveAs(const QString &location);

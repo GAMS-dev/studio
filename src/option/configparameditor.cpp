@@ -63,7 +63,6 @@ ConfigParamEditor::ConfigParamEditor(FileKind kind,
     connect(mParameterTableModel, &ConfigParamTableModel::configParamModelChanged, mDefinitionModel, &ConfigOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
     connect(mParameterTableModel, &ConfigParamTableModel::optionItemRemoved, mParameterTableModel, &ConfigParamTableModel::on_removeOptionItem, Qt::UniqueConnection);
 
-    connect(this, &ConfigParamEditor::modificationChanged, this, &ConfigParamEditor::setModified, Qt::UniqueConnection);
     emit mParameterTableModel->configParamModelChanged(optionItem);
 
     QTimer::singleShot(0, this, [this]() {
@@ -166,21 +165,11 @@ void ConfigParamEditor::on_reloadGamsUserConfigFile(const QList<ConfigItem *> &i
     setModified(false);
 }
 
-//QList<ParamConfigItem *> ConfigParamEditor::parameterConfigItems()
-//{
-//    QList<ConfigItem *> itemList;
-//    itemList.reserve(mParameterTableModel->parameterConfigItems().size());
-//    for(ParamConfigItem* item : mParameterTableModel->parameterConfigItems()) {
-//        itemList.append( new ConfigItem(item->key, item->value, item->minVersion, item->maxVersion) );
-//    }
-//    return itemList;
-//}
-
 void ConfigParamEditor::on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
     Q_UNUSED(bottomRight)
     Q_UNUSED(roles)
-    emit modificationChanged(true);
+    setModified(true);
 
     QModelIndexList toDefinitionItems = ui->definitionTreeView->model()->match(ui->definitionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
                                                                                 Qt::DisplayRole,
@@ -262,7 +251,7 @@ void ConfigParamEditor::insertOption()
     connect(mParameterTableModel, &QAbstractTableModel::dataChanged,
             mParameterTableModel, &ConfigParamTableModel::on_updateOptionItem, Qt::UniqueConnection);
 
-    emit modificationChanged(true);
+    setModified(true);
 
     ui->definitionTreeView->clearSelection();
     ui->optionTableView->selectionModel()->clearSelection();
@@ -305,7 +294,7 @@ void ConfigParamEditor::deleteOption()
                 prev = current;
             }
         }
-        emit modificationChanged(true);
+        setModified(true);
         updateActionsState();
     }
 }
@@ -334,7 +323,7 @@ void ConfigParamEditor::moveOptionUp()
                                        QModelIndex(), idx.row()-1);
     }
 
-    emit modificationChanged(true);
+    setModified(true);
     updateActionsState();
 
 }
@@ -362,7 +351,7 @@ void ConfigParamEditor::moveOptionDown()
         mParameterTableModel->moveRows(QModelIndex(), idx.row(), 1,
                                        QModelIndex(), idx.row()+2);
     }
-    emit modificationChanged(true);
+    setModified(true);
     updateActionsState( );
 
 }
