@@ -955,7 +955,7 @@ void OptionWidget::updateActionsState()
     ui->actionMoveDown->setEnabled( !isViewCompact() && thereIsSelection ? idxSelection.last().row() < optionModel()->rowCount()-1 : false );
 
     ui->actionSelect_Current_Row->setEnabled( thereIsSelection && !isEachRowSelected());
-    ui->actionSelectAll->setEnabled( thereIsSelection && ui->optionTableView->model()->rowCount()>idxSelection.size());
+    ui->actionSelectAll->setEnabled( thereIsSelection && !isViewCompact() && ui->optionTableView->model()->rowCount()>idxSelection.size());
 
     bool showOptionEnbaled = ( thereIsSelection
                                 ? ( optionModel()->headerData(idxSelection.first().row(),Qt::Vertical, Qt::CheckStateRole) == Qt::PartiallyChecked
@@ -1017,7 +1017,7 @@ void OptionWidget::updateActionsState(const QModelIndex &index)
                                     && (singleSelection || singleSelectionIsRow || multiSelectionIsRow || multiSelectionIsCell_sameRow)
                                     && idxSelection.last().row() < optionModel()->rowCount()-1 );
     ui->actionSelect_Current_Row->setEnabled( thereIsSelection );
-    ui->actionSelectAll->setEnabled( thereIsSelection );
+    ui->actionSelectAll->setEnabled( thereIsSelection && !isViewCompact() );
     bool showOptionEnbaled = ( thereIsSelection
                                   ? ( optionModel()->headerData(idxSelection.first().row(),Qt::Vertical, Qt::CheckStateRole) == Qt::PartiallyChecked
                                          ? false
@@ -1025,7 +1025,7 @@ void OptionWidget::updateActionsState(const QModelIndex &index)
                                      )
                                   : false );
     ui->actionShow_Option_Definition->setEnabled( showOptionEnbaled );
-    ui->actionResize_Columns_To_Contents->setEnabled( thereIsSelection );
+    ui->actionResize_Columns_To_Contents->setEnabled( thereIsSelection || ui->definitionTreeView->selectionModel()->selectedIndexes().size() > 0);
     ui->actionShowRecurrence->setEnabled( false );
 
     ui->actionInsert->icon().pixmap( QSize(16, 16), ui->actionInsert->isEnabled() ? QIcon::Selected : QIcon::Disabled,
