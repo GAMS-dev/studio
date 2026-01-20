@@ -243,6 +243,9 @@
    <property name="shortcut">
     <string>Ctrl+Ins</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
+   </property>
   </action>
   <action name="actionDelete">
    <property name="icon">
@@ -257,6 +260,9 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Del</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="actionMoveUp">
@@ -273,6 +279,9 @@
    <property name="shortcut">
     <string>Ctrl+Up</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
+   </property>
   </action>
   <action name="actionMoveDown">
    <property name="icon">
@@ -288,6 +297,9 @@
    <property name="shortcut">
     <string>Ctrl+Down</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
+   </property>
   </action>
   <action name="actionSelectAll">
    <property name="text">
@@ -299,6 +311,9 @@
    <property name="shortcut">
     <string>Ctrl+A</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
+   </property>
   </action>
   <action name="actionResize_Columns_To_Contents">
    <property name="text">
@@ -306,6 +321,9 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="actionShow_Option_Definition">
@@ -318,6 +336,9 @@
    <property name="shortcut">
     <string>Ctrl+F1</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
+   </property>
   </action>
   <action name="actionShowRecurrence">
    <property name="text">
@@ -328,6 +349,9 @@
    </property>
    <property name="shortcut">
     <string>Shift+F1</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="actionAdd_This_Parameter">
@@ -340,6 +364,9 @@
    </property>
    <property name="shortcut">
     <string>Return</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="actionRemove_This_Parameter">
@@ -356,6 +383,9 @@
    <property name="shortcut">
     <string>Del</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
+   </property>
   </action>
   <action name="actionSelect_Current_Row">
    <property name="text">
@@ -366,6 +396,9 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+B</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="actionInsert_Comment">
@@ -381,6 +414,9 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+Ins</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
  </widget>
