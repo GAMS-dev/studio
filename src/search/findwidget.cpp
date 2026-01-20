@@ -52,27 +52,30 @@ FindWidget::~FindWidget()
 
 void FindWidget::setEditWidget(QWidget *widget)
 {
-    if (mEdit) {
-        disconnect(mEdit, &QWidget::destroyed, this, &FindWidget::editDestroyed);
-        if (CodeEdit* ce = ViewHelper::toCodeEdit(mEdit)) {
-            disconnect(ce, &CodeEdit::allowReplaceChanged, this, &FindWidget::allowReplaceChanged);
-            disconnect(ce, &CodeEdit::endFind, this, &FindWidget::on_bClose_clicked);
-        }
+    if (mFinder) {
+        if (mFinder->widget() == widget)
+            return;
+        FindAdapter *finder = mFinder;
+        mFinder = nullptr;
+        delete finder;
     }
-    mEdit = widget;
-    if (mEdit)
-        connect(mEdit, &QWidget::destroyed, this, &FindWidget::editDestroyed);
-
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(mEdit)) {
-        connect(ce, &CodeEdit::allowReplaceChanged, this, &FindWidget::allowReplaceChanged);
-        connect(ce, &CodeEdit::endFind, this, &FindWidget::on_bClose_clicked);
-        if (mActive) show();
-        ce->updateExtraSelections();
-    } else if (TextView* tv = ViewHelper::toTextView(mEdit)) {
-        if (mActive) show();
-        tv->updateExtraSelections();
-    } else hide();
-    allowReplaceChanged(mEdit);
+    mFinder = FindAdapter::createAdapter(widget);
+    if (!mFinder) {
+        hide();
+        return;
+    }
+    connect(mFinder, &FindAdapter::destroyed, this, &FindWidget::editDestroyed);
+    connect(mFinder, &FindAdapter::allowReplaceChanged, this, &FindWidget::allowReplaceChanged);
+    connect(mFinder, &FindAdapter::endFind, this, &FindWidget::on_bClose_clicked);
+    if (mActive)
+        show();
+    if (!ui->edFind->text().isEmpty()) {
+        FindOptions options;
+        if (ui->edFind->exactMatch()) options.setFlag(foExactMatch);
+        if (ui->edFind->isCaseSensitive()) options.setFlag(foCaseSense);
+        mFinder->setFindTerm(termRegEx(), options);
+    }
+    updateButtonStates();
 }
 
 bool FindWidget::isActive() const
@@ -85,8 +88,8 @@ void FindWidget::setActive(bool newActive)
     mActive = newActive;
     if (!mActive) {
         hide();
-        if (mEdit)
-            mEdit->setFocus();
+        if (mFinder)
+            mFinder->setFocus();
     }
 }
 
@@ -96,8 +99,7 @@ void FindWidget::updateButtonStates()
     ui->bNext->setEnabled(canFind);
     ui->bPrev->setEnabled(canFind);
 
-    CodeEdit *edit = ViewHelper::toCodeEdit(mEdit);
-    bool canReplace = canFind  && edit && !edit->isReadOnly() && edit->hasSelectedFind();
+    bool canReplace = canFind  && mFinder->canReplace();
     ui->bReplace->setEnabled(canReplace);
     ui->bReplaceAll->setEnabled(canReplace);
 }
@@ -149,43 +151,38 @@ QTextDocument::FindFlags FindWidget::findFlags(bool backwards)
     return res;
 }
 
-bool FindWidget::find(FindOptions options, bool keepSearch)
+bool FindWidget::find(FindOptions options, bool keepSearchTerm)
 {
+    if (!mFinder) return false;
+
     if (!mLastMatch.isEmpty())
         mLastMatch = QString();
     QString match;
     size_t pos = 0;
-    if (CodeEdit *edit = ViewHelper::toCodeEdit(mEdit)) {
-        if (!edit->hasSelectedFind() && !keepSearch) {
-            QString term = edit->currentFindSelection(false);
-            if (!term.isEmpty())
-                ui->edFind->setText(term);
-        }
-        edit->findLoop(termRegEx(), findFlags(options.testFlag(foBackwards)), options.testFlag(foContinued));
-        if (options.testFlag(foFocusEdit))
-            edit->setFocus();
-        match = edit->textCursor().selectedText();
-        if (match.isEmpty()) {
-            edit->removeSelectedFind();
-            QTextCursor cur = edit->textCursor();
-            if (cur.hasSelection()) {
-                cur.setPosition(cur.anchor());
-                edit->setTextCursor(cur);
-            }
-        }
-
-    } else if (TextView *view = ViewHelper::toTextView(mEdit)) {
-        bool continued = options.testFlag(foContinued);
-        view->findText(termRegEx(), findFlags(options.testFlag(foBackwards)), continued);
-        if (options.testFlag(foFocusEdit))
-            view->edit()->setFocus();
-        match = view->selectedText();
+    if (!mFinder->hasSelection() && !keepSearchTerm) {
+        QString term = mFinder->currentFindSelection();
+        if (!term.isEmpty())
+            ui->edFind->setText(term);
     }
+    if (ui->edFind->exactMatch()) options.setFlag(foExactMatch);
+    if (ui->edFind->isCaseSensitive()) options.setFlag(foCaseSense);
+    bool found = mFinder->findText(termRegEx(), options);
+    if (options.testFlag(foFocusEdit))
+        mFinder->setFocus();
+    match = mFinder->currentFindSelection();
+    if (!found)
+        mFinder->invalidateSelection();
+
     if (!match.isEmpty())
         setLastMatch(match, pos);
 
     return !match.isEmpty();
+}
 
+QString FindWidget::currentFindSelection()
+{
+    if (!mFinder) return QString();
+    return mFinder->currentFindSelection();
 }
 
 QString FindWidget::replacementText() const
@@ -213,19 +210,21 @@ void FindWidget::keyPressEvent(QKeyEvent *event)
         event->accept();
     } else if (event->key() == Qt::Key_Escape) {
         event->accept();
-        if (mEdit)
-            mEdit->setFocus();
+        if (mFinder)
+            mFinder->setFocus();
     } else if (event->key() == Qt::Key_R && event->modifiers().testFlag(Qt::ControlModifier)) {
         event->accept();
-        ui->bToggleReplace->setChecked(!ui->bToggleReplace->isChecked());
-        on_bToggleReplace_clicked();
+        if (mFinder->canReplace()) {
+            ui->bToggleReplace->setChecked(!ui->bToggleReplace->isChecked());
+            on_bToggleReplace_clicked();
+        }
     } else
         QWidget::keyPressEvent(event);
 }
 
 void FindWidget::editDestroyed()
 {
-    mEdit = nullptr;
+    mFinder = nullptr;
 }
 
 void FindWidget::termChanged()
@@ -237,7 +236,7 @@ void FindWidget::termChanged()
 
 void FindWidget::allowReplaceChanged(QWidget *edit)
 {
-    if (edit == mEdit)
+    if (edit == mFinder->widget())
        updateButtonStates();
 }
 
@@ -264,15 +263,16 @@ void FindWidget::on_bReplace_clicked()
 
 void FindWidget::on_bReplaceAll_clicked()
 {
-    if (ui->edReplace->text().isEmpty()) return;
+    if (!mFinder || !mFinder->canReplace()) return;
 
-    if (CodeEdit *edit = ViewHelper::toCodeEdit(mEdit)) {
-        int count = edit->findReplaceAll(termRegEx(), findFlags(), ui->edReplace->text());
-        edit->setFocus();
-        QString countText = (count ? QString::number(count) : QString("No"));
-        DEB() << QString("%1 occurrencies replaced").arg(countText);
-        // TODO(JM) show count of replacements
-    }
+    FindOptions options;
+    if (ui->edFind->exactMatch()) options.setFlag(foExactMatch);
+    if (ui->edFind->isCaseSensitive()) options.setFlag(foCaseSense);
+    int count = mFinder->findReplaceAll(termRegEx(), options, ui->edReplace->text());
+    mFinder->setFocus();
+    QString countText = (count ? QString::number(count) : QString("No"));
+    DEB() << QString("%1 occurrencies replaced").arg(countText);
+    // TODO(JM) show count of replacements
 }
 
 void FindWidget::on_edFind_textEdited(const QString &term)
@@ -283,21 +283,14 @@ void FindWidget::on_edFind_textEdited(const QString &term)
 
 bool FindWidget::replace(bool cursorToStart)
 {
-    if (ui->edReplace->text().isEmpty()) return false;
+    if (!mFinder || !mFinder->canReplace()) return false;
 
     if (!mLastMatch.isEmpty())
         mLastMatch = QString();
-    if (CodeEdit *edit = ViewHelper::toCodeEdit(mEdit)) {
-        edit->findReplace(ui->edReplace->text());
-        if (cursorToStart) {
-            QTextCursor cursor = edit->textCursor();
-            cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, ui->edReplace->text().length());
-            edit->setTextCursor(cursor);
-        }
-    } else {
-        return false;
-    }
-    return true;
+    FindOptions options;
+    if (ui->edFind->exactMatch()) options.setFlag(foExactMatch);
+    if (ui->edFind->isCaseSensitive()) options.setFlag(foCaseSense);
+    return mFinder->findReplace(termRegEx(), options, ui->edReplace->text());
 }
 
 void FindWidget::on_edReplace_textChanged(const QString &)

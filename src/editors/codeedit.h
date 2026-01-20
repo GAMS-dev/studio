@@ -134,7 +134,7 @@ public:
     void setSearchSelectionActive(bool active) override;
     void updateSearchSelection() override;
     void findInSelection(QList<search::Result> &results) override;
-    bool findLoop(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued);
+    bool findText(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued);
     int findReplaceAll(const QRegularExpression &rex, QTextDocument::FindFlags options, const QString &replacement);
     void replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope) override;
     int replaceAll(FileMeta *fm, const QRegularExpression &regex, const QString &replaceText,
@@ -143,7 +143,10 @@ public:
     void setHasProfiler(bool hasProfiler);
     void lockSelectedFind();
     bool hasSelectedFind();
+    void setFindTerm(const QRegularExpression &rex, QTextDocument::FindFlags options);
     bool findReplace(const QString &replacement);
+
+    static int findAlphaNum(const QString &text, int start, bool back);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -228,7 +231,7 @@ public slots:
     void unfold(const QTextBlock &block) override;
     void breakpointsChanged(const gams::studio::SortedIntMap &bpLines, const gams::studio::SortedIntMap &abpLines);
     void setPausedPos(int line);
-    void removeSelectedFind();
+    void clearSelectedFind();
 
 protected slots:
     void marksChanged(const QSet<int> &dirtyLines = QSet<int>()) override;
@@ -265,7 +268,6 @@ private:
     void showCompleter();
     QStringList tabsToSpaces(const QStringList &source, int indent, int tabSize);
 
-    static int findAlphaNum(const QString &text, int start, bool back);
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
     void updateLinkAppearance(QPoint pos, bool active = true);

@@ -24,6 +24,8 @@
 #include <QRegularExpression>
 #include <QTextDocument>
 
+#include "findadapter.h"
+
 namespace gams {
 namespace studio {
 namespace find {
@@ -31,14 +33,6 @@ namespace find {
 namespace Ui {
 class FindWidget;
 }
-
-enum FindOption {
-    foFocusEdit = 1,
-    foFocusTerm = 2,
-    foBackwards = 4,
-    foContinued = 8,
-};
-typedef QFlags<FindOption> FindOptions;
 
 class FindWidget : public QWidget
 {
@@ -57,7 +51,8 @@ public:
     bool setFindText(const QString &text);
     QRegularExpression termRegEx();
     QTextDocument::FindFlags findFlags(bool backwards = false);
-    bool find(FindOptions options = FindOptions(), bool keepSearch = false);
+    bool find(FindOptions options = FindOptions(), bool keepSearchTerm = false);
+    QString currentFindSelection();
     QString replacementText() const;
 
 protected:
@@ -86,7 +81,9 @@ private:
 private:
     Ui::FindWidget *ui;
     QWidget *mEdit = nullptr;
+    FindAdapter *mFinder = nullptr;
     bool mActive = false;
+    bool mReplaceVisible = false;
     QString mLastMatch;
     size_t mLastPos = 0;
 };

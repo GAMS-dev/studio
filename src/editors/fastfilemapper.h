@@ -80,7 +80,8 @@ public:
 
     QString lines(int localLineNrFrom, int lineCount) const override;
     QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;
-    bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind) override;
+    bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool *continueFind = nullptr) override;
+    bool searchText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind) override;
 
     QString selectedText() const override;
     QString positionLine() const override;
@@ -90,6 +91,8 @@ public:
     void setPosToAbsEnd(QTextCursor::MoveMode mode = QTextCursor::MoveAnchor) override;
     void selectAll() override;
     void clearSelection() override;
+    void hideCursor() override;
+    void setSelectionDirection(Qt::LayoutDirection direction) override;
     QPoint position(bool local = false) const override;
     QPoint anchor(bool local = false) const override;
     bool hasSelection() const override;

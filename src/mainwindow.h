@@ -72,6 +72,9 @@ class ProjectFilterHandler;
 namespace search {
 class SearchDialog;
 }
+namespace find {
+class FindWidget;
+}
 namespace option {
 class GamsParameterWidget;
 }
@@ -214,7 +217,6 @@ public slots:
     void closeProject(gams::studio::PExProjectNode *project);
     void closeFileEditors(const FileId &fileId, bool willReopen = false);
     void updateResults(search::SearchResultModel* model);
-    void findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool focusEditor);
     void continueFind(bool backwards);
     void continueSearch(bool backwards);
     void closeResultsView();
@@ -512,7 +514,7 @@ private:
     PExProjectNode *currentProject();
     PExProjectNode *openProjectIfExists(const QString &projectFileName);
     int pinViewTabIndex();
-
+    find::FindWidget *currentFindWidget(QWidget *&sourceEdit);
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
     bool requestCloseChanged(QVector<FileMeta*> changedFiles);

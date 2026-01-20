@@ -252,6 +252,7 @@ SOURCES += \
     reference/symbolreferencewidget.cpp \
     reference/symboltablemodel.cpp \
     search/fileworker.cpp \
+    search/findadapter.cpp \
     search/findwidget.cpp \
     search/result.cpp \
     search/resultitem.cpp \
@@ -495,6 +496,7 @@ HEADERS += \
     reference/symboltablemodel.h \
     search/abstractsearchfilehandler.h \
     search/fileworker.h \
+    search/findadapter.h \
     search/findwidget.h \
     search/result.h \
     search/resultitem.h \

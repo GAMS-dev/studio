@@ -417,7 +417,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
 
         } else if (TextView* t = ViewHelper::toTextView(mSearchDialog->currentEditor())) {
             mSplitSearchContinue = !firstLevel;
-            found = t->findText(mParameters.regex, options, mSplitSearchContinue);
+            found = t->searchText(mParameters.regex, options, mSplitSearchContinue);
         }
     }
 

@@ -32,6 +32,10 @@ class QLabel;
 namespace gams {
 namespace studio {
 
+namespace find {
+class FindWidget;
+}
+
 #ifdef QWEBENGINE
 class Overview;
 #endif
@@ -53,6 +57,7 @@ public:
     bool canShowReleaseOverview();
     bool showReleaseOverview();
     FileState getChangelogPath(QString &path);
+    find::FindWidget *findWidget();
 
 signals:
     void openFilePath(const QString &filePath);

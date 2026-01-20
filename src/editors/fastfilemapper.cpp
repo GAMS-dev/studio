@@ -180,12 +180,30 @@ QString FastFileMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFo
     return res;
 }
 
-bool FastFileMapper::findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
+bool FastFileMapper::findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool *continueFind)
+{
+
+    // QPoint startPos = mPosition;
+    // bool backwards = flags.testFlag(QTextDocument::FindBackward);
+
+    // int liSpan = backwards ? -500 : 500; // maximal lines per call
+    // QString data = mCache.loadCache(mSearchPos.y(), liSpan);
+    // while () {
+    //     if (backwards) {
+    //         if (mSearchPos.y() - liSpan < 0)
+    //             liSpan = mSearchPos.y();
+    //         liSpan = -liSpan;
+    //     }
+    // }
+    return false;
+}
+
+bool FastFileMapper::searchText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
 {
     int tempLineCount = lineCount();
     bool backwards = flags.testFlag(QTextDocument::FindBackward);
 
-    // TODO(JM) Make this size-dependant instead of line-numbers
+    // TODO(JM) Make this size-dependent instead of line-numbers
     int liSpan = 500; // maximal lines per call
     if (!continueFind) {
         mSearchPos = mPosition;
@@ -195,6 +213,8 @@ bool FastFileMapper::findText(QRegularExpression searchRegex, QTextDocument::Fin
             liSpan = qMin(liSpan, qAbs(mAnchor.y() - mPosition.y()));
         }
         mSearchEndPos = (mSearchPos == mPosition) ? mAnchor : mPosition;
+        if (mSearchPos.y() < 0) mSearchPos = QPoint(0,0);
+        if (mSearchEndPos.y() < 0) mSearchEndPos = QPoint(0,0);
     }
     if (backwards) {
         if (mSearchPos.y() - liSpan < 0)
@@ -211,12 +231,13 @@ bool FastFileMapper::findText(QRegularExpression searchRegex, QTextDocument::Fin
 
     QRegularExpressionMatch match;
     const QString data = mCache.loadCache(mSearchPos.y(), liSpan);
-    int index = backwards ? data.lastIndexOf(searchRegex, mSearchPos.x() - mCache.lineLength(mSearchPos.y()), &match)
+    int index = backwards ? data.lastIndexOf(searchRegex, mSearchPos.x() - 1 - mCache.lineLength(mSearchPos.y()), &match)
                           : data.indexOf(searchRegex, mSearchPos.x(), &match);
     if (index >= 0) {
         QPoint pos = mCache.posForOffset(index);
-        if (pos.y() != mSearchEndPos.y() || (backwards ? pos.x() < mSearchEndPos.x()
-                                                       : pos.x() > mSearchEndPos.x() + match.capturedLength())) {
+        if (pos.y() != mSearchEndPos.y() || !continueFind
+            || (backwards ? pos.x() < mSearchEndPos.x()
+                          : pos.x() + match.capturedLength() < mSearchEndPos.x())) {
             mAnchor = pos;
             mPosition = mAnchor;
             mPosition.rx() += match.capturedLength();
@@ -230,8 +251,24 @@ bool FastFileMapper::findText(QRegularExpression searchRegex, QTextDocument::Fin
     if (mSearchEndPos.y() == (backwards ? mCache.firstCacheLine() : mCache.lastCacheLine())) {
         continueFind = false;
     } else {
-        mSearchPos.setY(qMin(qMax(mSearchPos.y() + liSpan, 0), tempLineCount));
-        mSearchPos.setX(0);
+        continueFind = true;
+        if (backwards && mCache.firstCacheLine() == 0) {
+            // loop to end
+            mSearchPos.setY(tempLineCount);
+            int x = -1;
+            if (mLoadAmount >= 1. && knownLineNrs() >= tempLineCount && tempLineCount > 1) {
+                QMutexLocker locker(&mMutex);
+                x = mLineByte.at(tempLineCount) - mLineByte.at(tempLineCount - 1);
+            }
+            mSearchPos.setX(x);
+        } else if (!backwards && mCache.lastCacheLine() == tempLineCount) {
+            // loop to start
+            mSearchPos.setY(0);
+            mSearchPos.setX(0);
+        } else {
+            mSearchPos.setY(qMin(qMax(mSearchPos.y() + liSpan, 0), tempLineCount));
+            mSearchPos.setX(0);
+        }
     }
     mCache.reset();
     return false;
@@ -295,12 +332,22 @@ void FastFileMapper::selectAll()
 
 void FastFileMapper::clearSelection()
 {
-    if (mAnchor != mPosition)
-        mAnchor = mPosition;
-    else {
-        mPosition = QPoint(0,-1);
-        mAnchor = QPoint(0,-1);
-    }
+    mAnchor = mPosition;
+}
+
+void FastFileMapper::hideCursor()
+{
+    mPosition = QPoint(0,-1);
+    mAnchor = QPoint(0,-1);
+}
+
+void FastFileMapper::setSelectionDirection(Qt::LayoutDirection direction)
+{
+    if (mPosition == mAnchor) return;
+    bool forward = mAnchor.y() < mPosition.y() || (mAnchor.y() == mPosition.y() && mAnchor.x() <= mPosition.x());
+    Qt::LayoutDirection currentDirection = forward ? Qt::LeftToRight : Qt::RightToLeft;
+    if (currentDirection != direction)
+        qSwap(mAnchor, mPosition);
 }
 
 QPoint FastFileMapper::position(bool local) const
@@ -325,7 +372,7 @@ QPoint FastFileMapper::anchor(bool local) const
 
 bool FastFileMapper::hasSelection() const
 {
-    return mPosition != mAnchor;
+    return mPosition != mAnchor && mPosition.y() >= 0;
 }
 
 int FastFileMapper::selectionSize() const
@@ -413,7 +460,7 @@ qint64 FastFileMapper::checkField(FastFileMapper::Field field) const
     switch (field) {
     case fVirtualLastLineEnd: {
         QMutexLocker locker(&mMutex);
-        return mLineByte.size() ? mLineByte.last() : -1;
+        return mLineByte.isEmpty() ? -1 : mLineByte.last();
     }
     case fCacheFirst:
         return mCache.firstCacheLine();
@@ -658,7 +705,7 @@ int FastFileMapper::LinesCache::cachedLineCount() const
 
 QPoint FastFileMapper::LinesCache::posForOffset(int offset)
 {
-    if (!mLineChar.size()) return QPoint();
+    if (mLineChar.isEmpty()) return QPoint();
     int a = 0;
     int b = cachedLineCount();
     while (a + 1 < b) {
@@ -679,7 +726,7 @@ int FastFileMapper::LinesCache::lineLength(int lineNr) const
 
     if (lineNr < mCacheOffsetLine || lineNr >= mCacheOffsetLine + cachedLineCount())
         getLines(lineNr, 1);
-    if (!mLineChar.size())
+    if (mLineChar.isEmpty())
         return 0;
     int localLine = lineNr - mCacheOffsetLine;
     return mLineChar.at(localLine + 1) - mLineChar.at(localLine) - mMapper->delimiter().size();

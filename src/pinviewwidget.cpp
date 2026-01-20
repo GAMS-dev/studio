@@ -203,7 +203,7 @@ void PinViewWidget::find(const QRegularExpression &rex, QTextDocument::FindFlags
     QString match;
     int pos = 0;
     if (CodeEdit *edit = ViewHelper::toCodeEdit(mWidget)) {
-        edit->findLoop(rex, options, continued);
+        edit->findText(rex, options, continued);
         if (focusEditor)
             edit->setFocus();
         match = edit->textCursor().selectedText();
@@ -211,7 +211,7 @@ void PinViewWidget::find(const QRegularExpression &rex, QTextDocument::FindFlags
     }
     else if (TextView *view = ViewHelper::toTextView(mWidget)) {
         bool dummy = false;
-        view->findText(rex, options, dummy);
+        view->searchText(rex, options, dummy);
         if (focusEditor)
             view->edit()->setFocus();
         match = view->selectedText();

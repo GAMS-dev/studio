@@ -60,12 +60,17 @@ public:
     void copySelection();
     QString selectedText() const;
     QString wordUnderCursor() const;
-    QString currentFindSelection() const;
+    QString currentFindSelection(bool keep);
     void selectAllText();
     void clearSelection();
     AbstractEdit *edit();
     void setLineWrapMode(QPlainTextEdit::LineWrapMode mode);
-    bool findText(const QRegularExpression &searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
+    void setFindTerm(const QRegularExpression &rex, QTextDocument::FindFlags options);
+    bool findText(const QRegularExpression &rex, QTextDocument::FindFlags options, bool next);
+    bool searchText(const QRegularExpression &searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
+    void lockSelectedFind();
+    bool hasSelectedFind();
+    void clearSelectedFind();
     void findInSelection(const QRegularExpression &searchRegex, FileMeta *file, QList<search::Result> *results, bool showResults);
     void clearSearchSelection();
     void setSearchSelectionActive(bool active);
@@ -106,7 +111,7 @@ private slots:
     void outerScrollAction(int action);
     void horizontalScrollAction(int action);
     void editKeyPressEvent(QKeyEvent *event);
-    void updatePosAndAnchor();
+    void updatePosAndAnchor(bool toWordStart = false);
     void findClosestLstRef(const QTextCursor &cursor);
     void updateVScrollZone();
 
@@ -135,6 +140,7 @@ private:
 
     AbstractTextMapper *mMapper = nullptr;
     TextViewEdit *mEdit;
+    QPair<QPoint, int> mFindSpan;
     qreal mPartialScroll = 0.0;
     bool *mStayAtTail = nullptr;
     bool mSliderStartedAtTail = false;
@@ -143,6 +149,7 @@ private:
     int mCurrentVisibleTopLine = -1;
     int mCurrentDataLength = -1;
     QList<LineFormat> mCurrentFormats;
+    QString mCurrentWord;
 
 private:
 

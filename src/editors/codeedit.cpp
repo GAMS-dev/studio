@@ -350,9 +350,8 @@ bool CodeEdit::hasSelection() const
 QString CodeEdit::currentFindSelection(bool keep)
 {
     if (textCursor().hasSelection() && !textCursor().hasComplexSelection()) {
-        if (textCursor().block() == document()->findBlock(textCursor().anchor())) {
+        if (textCursor().block() == document()->findBlock(textCursor().anchor()))
             return textCursor().selectedText();
-        }
     }
     recalcWordUnderCursor(!keep);
     if (!mWordUnderCursor.isEmpty())
@@ -933,7 +932,7 @@ void CodeEdit::setHasProfiler(bool hasProfiler)
 
 void CodeEdit::lockSelectedFind()
 {
-    connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::removeSelectedFind, Qt::UniqueConnection);
+    connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::clearSelectedFind, Qt::UniqueConnection);
     mSelectedFind = true;
     emit allowReplaceChanged(this);
 }
@@ -941,6 +940,21 @@ void CodeEdit::lockSelectedFind()
 bool CodeEdit::hasSelectedFind()
 {
     return mSelectedFind;
+}
+
+void CodeEdit::setFindTerm(const QRegularExpression &rex, QTextDocument::FindFlags options)
+{
+    if (mFindREx) {
+        delete mFindREx;
+        mFindREx = nullptr;
+    }
+    if (rex.isValid()) {
+        mFindREx = new QRegularExpression(rex);
+        QRegularExpression::PatternOptions rexOpt = mFindREx->patternOptions();
+        rexOpt.setFlag(QRegularExpression::CaseInsensitiveOption, !options.testFlag(QTextDocument::FindCaseSensitively));
+        mFindREx->setPatternOptions(rexOpt);
+    }
+    updateExtraSelections();
 }
 
 bool CodeEdit::findReplace(const QString &replacement)
@@ -955,9 +969,9 @@ bool CodeEdit::findReplace(const QString &replacement)
     return res;
 }
 
-void CodeEdit::removeSelectedFind()
+void CodeEdit::clearSelectedFind()
 {
-    disconnect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::removeSelectedFind);
+    disconnect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::clearSelectedFind);
     mSelectedFind = false;
     emit allowReplaceChanged(this);
 }
@@ -2286,7 +2300,7 @@ void CodeEdit::findInSelection(QList<search::Result> &results)
     }
 }
 
-bool CodeEdit::findLoop(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued)
+bool CodeEdit::findText(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued)
 {
     int pos = textCursor().hasSelection() ? textCursor().anchor() : textCursor().position();
     if (continued)
@@ -2302,13 +2316,7 @@ bool CodeEdit::findLoop(const QRegularExpression &rex, QTextDocument::FindFlags 
         setTextCursor(cur);
         lockSelectedFind();
     }
-    if (mFindREx)
-        delete mFindREx;
-    mFindREx = new QRegularExpression(rex);
-    QRegularExpression::PatternOptions rexOpt = mFindREx->patternOptions();
-    rexOpt.setFlag(QRegularExpression::CaseInsensitiveOption, !options.testFlag(QTextDocument::FindCaseSensitively));
-    mFindREx->setPatternOptions(rexOpt);
-    updateExtraSelections();
+    setFindTerm(rex, options);
     return !cur.isNull();
 }
 
@@ -2319,7 +2327,7 @@ int CodeEdit::findReplaceAll(const QRegularExpression &rex, QTextDocument::FindF
     QTextCursor cur = textCursor();
     cur.setPosition(0);
     setTextCursor(cur);
-    while (findLoop(rex, options, true)) {
+    while (findText(rex, options, true)) {
         findReplace(replacement);
         ++count;
     }

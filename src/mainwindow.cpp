@@ -617,6 +617,7 @@ void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
     mWp->setProperty("SYS", "WP");
+
     //JM: Changed the parameter from (const QString &var) to (QString var) to avoid crash.
     //    When the labels have been recalculated, the string that belongs to the label becomes invalid.
     connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
@@ -4227,6 +4228,27 @@ int MainWindow::pinViewTabIndex()
     return ui->mainTabs->indexOf(wid);
 }
 
+find::FindWidget *MainWindow::currentFindWidget(QWidget *&sourceEdit)
+{
+    QList<QWidget*> parents {mWp, mPinView, ui->mainTabs};
+    QWidget* wid = qApp->focusWidget();
+    while (wid->parentWidget() != nullptr) {
+        if (wid == mWp)
+            return mWp->findWidget();
+        if (wid == mPinView)
+            return mPinView->findWidget();
+        if (wid == ui->mainTabs)
+            return ui->findWidget;
+        // if (wid == ui->logTabs)
+        //     return ui->logFindWidget;
+        wid = wid->parentWidget();
+    }
+    QWidget *ed = currentEdit();
+    if (ViewHelper::toCodeEdit(ed) || ViewHelper::toTextView(ed))
+        return (ed == mPinView->widget()) ? mPinView->findWidget() : ui->findWidget;
+    return nullptr;
+}
+
 void MainWindow::openFilesDialog(OpenGroupOption opt)
 {
     OpenPathScope pathScope = opt == ogCurrentGroup ? opProject : opFile;
@@ -6011,16 +6033,9 @@ void MainWindow::on_actionFind_triggered()
         find::FindWidget *findWid = ed == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
         findWid->find(find::foFocusTerm);
 
-        QString term;
-        bool keep = !findWid->getFindText().isEmpty();
-        if (CodeEdit *edit = ViewHelper::toCodeEdit(ed)) {
-            term = edit->currentFindSelection(keep);
-        } else if (TextView *view = ViewHelper::toTextView(ed)) {
-            term = view->currentFindSelection();
-        }
-
-        if (!term.isEmpty())
-            findWid->setFindText(term);
+        // QString term = findWid->currentFindSelection();
+        // if (!term.isEmpty())
+        //     findWid->setFindText(term);
 
         findWid->setActive(true);
         findWid->setVisible(findWid->isActive());
@@ -6127,30 +6142,6 @@ void MainWindow::updateResults(search::SearchResultModel* model)
     ui->logTabs->setCurrentWidget(mResultsView);
 
     mResultsView->resizeColumnsToContent();
-}
-
-void MainWindow::findInCurrentTab(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool focusEditor)
-{
-    QString match;
-    size_t pos = 0;
-    QWidget *widget = currentEdit();
-    if (CodeEdit *edit = ViewHelper::toCodeEdit(widget)) {
-        edit->findLoop(rex, options, continued);
-        if (focusEditor)
-            edit->setFocus();
-        match = edit->textCursor().selectedText();
-
-    } else if (TextView *view = ViewHelper::toTextView(widget)) {
-        bool dummy = false;
-        view->findText(rex, options, dummy);
-        if (focusEditor)
-            view->edit()->setFocus();
-        match = view->selectedText();
-    }
-    if (!match.isEmpty()) {
-        find::FindWidget *findWid = widget == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
-        findWid->setLastMatch(match, pos);
-    }
 }
 
 void MainWindow::continueFind(bool backwards)

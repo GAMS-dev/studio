@@ -249,14 +249,22 @@ QString TextView::selectedText() const
 
 QString TextView::wordUnderCursor() const
 {
-    return mEdit->wordUnderCursor();
+    return mCurrentWord;
 }
 
-QString TextView::currentFindSelection() const
+QString TextView::currentFindSelection(bool keep)
 {
-    if (mMapper->position().y() == mMapper->anchor().y())
+    if (mMapper->position().x() != mMapper->anchor().x() &&
+        mMapper->position().y() == mMapper->anchor().y())
         return selectedText();
-    return wordUnderCursor();
+    if (keep)
+        return wordUnderCursor();
+
+    mEdit->recalcWordUnderCursor(true);
+    QPoint pos = mMapper->position(true);
+    mMapper->setPosRelative(pos.y(), mEdit->textCursor().positionInBlock());
+    updatePosAndAnchor();
+    return mEdit->wordUnderCursor();
 }
 
 void TextView::selectAllText()
@@ -266,8 +274,8 @@ void TextView::selectAllText()
 
 void TextView::clearSelection()
 {
-    mEdit->clearSelection();
-    mMapper->clearSelection();
+    mEdit->clearSelection(); // this also updates the mapper
+    emit selectionChanged();
 }
 
 AbstractEdit *TextView::edit()
@@ -282,15 +290,65 @@ void TextView::setLineWrapMode(QPlainTextEdit::LineWrapMode mode)
     mEdit->setLineWrapMode(QPlainTextEdit::NoWrap);
 }
 
-bool TextView::findText(const QRegularExpression &searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
+void TextView::setFindTerm(const QRegularExpression &rex, QTextDocument::FindFlags options)
 {
-    bool found = mMapper->findText(searchRegex, flags, continueFind);
+    mEdit->setFindTerm(rex, options);
+}
+
+bool TextView::findText(const QRegularExpression &rex, QTextDocument::FindFlags options, bool next)
+{
+    if (hasSelectedFind()) {
+        // recent find is selected -> this is a find next/previous
+        DEB() << "before:  POS " << mMapper->position() << "  ANC " << mMapper->anchor();
+        mMapper->setSelectionDirection(options.testFlag(QTextDocument::FindBackward) ? Qt::RightToLeft : Qt::LeftToRight);
+        DEB() << "after:   POS " << mMapper->position() << "  ANC " << mMapper->anchor();
+    }
+    if (next)
+        mMapper->clearSelection();
+
+    mEdit->setFindTerm(rex, options);
+    bool found = false;
+    bool goOn = false;
+    while (!(found = mMapper->searchText(rex, options, goOn)))
+        if (!goOn) break;
+
     if (found) {
+        DEB() << "FOUND";
+        mFindSpan = QPair<QPoint, int>(mMapper->position(), mMapper->anchor().x());
         updateView();
+        updatePosAndAnchor();
         emit selectionChanged();
         mEdit->ensureCursorVisible();
     }
     return found;
+}
+
+bool TextView::searchText(const QRegularExpression &searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
+{
+    bool found = mMapper->searchText(searchRegex, flags, continueFind);
+    if (found) {
+        updateView();
+        updatePosAndAnchor();
+        emit selectionChanged();
+        mEdit->ensureCursorVisible();
+    }
+    return found;
+}
+
+bool TextView::hasSelectedFind()
+{
+    return (mFindSpan.second != mFindSpan.first.x()
+            && mFindSpan.second == mMapper->anchor().x()
+            && mFindSpan.first == mMapper->position());
+}
+
+void TextView::clearSelectedFind()
+{
+    bool doClear = hasSelectedFind();
+    mFindSpan = {{0,0},0};
+    if (doClear) {
+        clearSelection();
+    }
 }
 
 void TextView::findInSelection(const QRegularExpression &searchRegex, FileMeta* file,
@@ -715,13 +773,19 @@ void TextView::reset()
     mMapper->reset();
 }
 
-void TextView::updatePosAndAnchor()
+void TextView::updatePosAndAnchor(bool toWordStart)
 {
     QPoint pos = mMapper->position(true);
     QPoint anchor = mMapper->anchor(true);
+    // if anchor or selection has changed after marking the find -> invalidate the find-span
+    if (mFindSpan.first != mMapper->position() ||
+        mFindSpan.second != mMapper->anchor().x() ||
+        mMapper->position().y() != mMapper->anchor().y() )
+        mFindSpan = {{0,0},0};
     if (pos.y() == AbstractTextMapper::cursorInvalid
             || ( pos.y() < AbstractTextMapper::cursorInvalid && (pos.y() == anchor.y() || !mMapper->hasSelection()) )) {
         mEdit->setCursorWidth(0);
+        mCurrentWord = "";
         return;
     }
     mEdit->setCursorWidth( (pos.y() > AbstractTextMapper::cursorInvalid) ? 2 : 0 );
@@ -762,6 +826,18 @@ void TextView::updatePosAndAnchor()
     mEdit->setTextCursor(cursor);
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
     horizontalScrollAction(0);
+    if (!mMapper->hasSelection()) {
+        mCurrentWord = mEdit->wordUnderCursor();
+        if (toWordStart) {
+            int offset = mEdit->textCursor().positionInBlock();
+            mEdit->recalcWordUnderCursor(toWordStart);
+            offset -= mEdit->textCursor().positionInBlock();
+            QPoint relPos = mMapper->position(true);
+            mMapper->setPosRelative(relPos.y(), relPos.x() - offset);
+        }
+    } else {
+        mCurrentWord = "";
+    }
 }
 
 QString findLstHRef(const QTextBlock &block)

@@ -824,6 +824,9 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="gams::studio::find::FindWidget" name="edFindWidget" native="true"/>
+         </item>
         </layout>
        </widget>
       </widget>
@@ -842,6 +845,12 @@
     <signal>relayModLibLoad(QString)</signal>
     <signal>relayOpenDoc(QString,QString)</signal>
    </slots>
+  </customwidget>
+  <customwidget>
+   <class>gams::studio::find::FindWidget</class>
+   <extends>QWidget</extends>
+   <header>search/findwidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

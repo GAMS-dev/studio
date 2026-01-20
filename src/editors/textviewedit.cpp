@@ -287,9 +287,10 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
             return;
         }
         if (e->buttons() == Qt::LeftButton) {
-            if (!mClickStart)
-                mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), QTextCursor::KeepAnchor);
-            else mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), QTextCursor::MoveAnchor);
+            QTextCursor::MoveMode moveMode = mClickStart ? QTextCursor::MoveAnchor : QTextCursor::KeepAnchor;
+            mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), moveMode);
+            recalcWordUnderCursor();
+            emit updatePosAndAnchor();
         }
     }
     CodeEdit::mousePressEvent(e);

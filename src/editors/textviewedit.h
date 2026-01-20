@@ -44,7 +44,7 @@ public:
 
 signals:
     void keyPressed(QKeyEvent *event);
-    void updatePosAndAnchor();
+    void updatePosAndAnchor(bool toWordStart = false);
     void recalcVisibleLines();
     void topLineMoved();
     void findClosestLstRef(const QTextCursor &cursor);

@@ -382,7 +382,15 @@ QString ChunkTextMapper::lines(int localLineNrFrom, int lineCount, QVector<LineF
     return lines(localLineNrFrom, lineCount);
 }
 
-bool ChunkTextMapper::findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
+bool ChunkTextMapper::findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool *continueFind)
+{
+    bool contFind = false;
+    if (continueFind == nullptr)
+        continueFind = &contFind;
+    return searchText(searchRegex, flags, *continueFind);
+}
+
+bool ChunkTextMapper::searchText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
 {
     bool backwards = flags.testFlag(QTextDocument::FindBackward);
     int part = backwards ? 2 : 1;
@@ -809,6 +817,20 @@ void ChunkTextMapper::selectAll()
 void ChunkTextMapper::clearSelection()
 {
     mAnchor = CursorPosition();
+}
+
+void ChunkTextMapper::hideCursor()
+{
+    mAnchor = CursorPosition();
+    mPosition = CursorPosition();
+}
+
+void ChunkTextMapper::setSelectionDirection(Qt::LayoutDirection direction)
+{
+    if (mPosition == mAnchor) return;
+    Qt::LayoutDirection currentDirection = mAnchor < mPosition ? Qt::LeftToRight : Qt::RightToLeft;
+    if (currentDirection != direction)
+        qSwap(mAnchor, mPosition);
 }
 
 QPoint ChunkTextMapper::convertPosLocal(const CursorPosition &pos) const

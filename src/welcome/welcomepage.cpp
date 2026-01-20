@@ -47,6 +47,7 @@ WelcomePage::WelcomePage(MainWindow *parent)
         initReleaseOverview();
     checkReleaseNotes();
     ui->textBrowserChangelog->document()->setIndentWidth(16);
+    ui->edFindWidget->setEditWidget(ui->textBrowserChangelog);
 
     connect(this, &WelcomePage::relayActionWp, mMain, [this](const QString &action) {
         if (action == "whatsNew") {
@@ -201,6 +202,13 @@ FileState WelcomePage::getChangelogPath(QString &path)
 #endif
     path = QString();
     return fsMiss;
+}
+
+find::FindWidget *WelcomePage::findWidget()
+{
+    if (ui->stackedWidget->currentIndex() == 2)
+        return ui->edFindWidget;
+    return nullptr;
 }
 
 FileState WelcomePage::checkReleaseNotes()
