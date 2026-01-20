@@ -88,6 +88,20 @@ void OptionWidget::initActions()
 
     ui->actionAdd_This_Parameter->setIcon(Theme::icon(":/%1/plus", true));
     ui->actionRemove_This_Parameter->setIcon(Theme::icon(":/%1/delete-all", true));
+
+    addAction(ui->actionInsert);
+    addAction(ui->actionInsert_Comment);
+    addAction(ui->actionDelete);
+    addAction(ui->actionMoveUp);
+    addAction(ui->actionMoveDown);
+    addAction(ui->actionSelect_Current_Row);
+    addAction(ui->actionSelectAll);
+    addAction(ui->actionShow_Option_Definition);
+    addAction(ui->actionShowRecurrence);
+    addAction(ui->actionResize_Columns_To_Contents);
+
+    addAction(ui->actionAdd_This_Parameter);
+    addAction(ui->actionRemove_This_Parameter);
 }
 
 void OptionWidget::initToolBar()
