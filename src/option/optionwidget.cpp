@@ -809,6 +809,7 @@ void OptionWidget::showDefinitionContextMenu(const QPoint &pos)
     QModelIndexList selection = ui->definitionTreeView->selectionModel()->selectedRows();
     if (selection.count() <= 0)
         return;
+    updateDefinitionActionsState(selection.first());
 
     QMenu menu(this);
     menu.addAction(ui->actionAdd_This_Parameter);
