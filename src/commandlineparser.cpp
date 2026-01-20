@@ -75,9 +75,11 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
     if (isSet("skip-check-for-update"))
         mSkipCheckForUpdate = true;
     if (isSet("integrated-help")) {
-        mActiveHelpView = value("integrated-help").compare("on", Qt::CaseInsensitive) == 0 ? 1 :
-                          value("integrated-help").compare("off", Qt::CaseInsensitive) == 0 ? 0 : -1;
-        if (mActiveHelpView < 0)
+        if (value("integrated-help").compare("on", Qt::CaseInsensitive) == 0)
+            mActiveHelpView = true;
+        else if (value("integrated-help").compare("off", Qt::CaseInsensitive) == 0)
+            mActiveHelpView = false;
+        else
             return CommandLineError;
     }
     if (isSet("network-log"))
@@ -117,9 +119,8 @@ QString CommandLineParser::gamsDir() const
     return mGamsDir;
 }
 
-int CommandLineParser::activeHelpView()
+bool CommandLineParser::activeHelpView()
 {
-    // Switch the HelpView (QWebEngine) on(1) off(0) unchanged(-1)
     return mActiveHelpView;
 }
 

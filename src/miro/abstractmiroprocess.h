@@ -45,6 +45,7 @@ public:
     void setModelName(const QString &modelFile);
 
     QString modelPath() const;
+    void setModelPath(const QString &path);
 
 signals:
     void executeMiro();
@@ -69,6 +70,7 @@ private:
 private:
     QString mMiroPath;
     QString mModelName;
+    QString mModelPath;
     QProcess mMiro;
 };
 

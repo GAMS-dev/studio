@@ -21,7 +21,6 @@
 #define MODELDIALOG_H
 
 #include <QDialog>
-#include "libraryitem.h"
 
 class QTableView;
 class QSortFilterProxyModel;
@@ -33,6 +32,8 @@ namespace modeldialog {
 namespace Ui {
 class ModelDialog;
 }
+
+class LibraryItem;
 
 class ModelDialog : public QDialog
 {
@@ -64,8 +65,8 @@ private:
     Ui::ModelDialog *ui;
     LibraryItem* mSelectedLibraryItem;
 
-    QList<QTableView*> tableViewList;
-    QList<QSortFilterProxyModel*> proxyModelList;
+    QList<QTableView*> mTableViewList;
+    QList<QSortFilterProxyModel*> mProxyModelList;
 
     QString mUserLibPath;
     QString mIconUserLib = ":/%1/user";

@@ -674,6 +674,7 @@ void MainWindow::initSettingsDialog()
     connect(mSettingsDialog, &SettingsDialog::userGamsTypeChanged, this,[this]() {
         QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserGamsTypes));
         mFileMetaRepo.setUserGamsTypes(suffixes);
+        updateMiroEnabled();
     });
     DEB() << "settings initialized";
     connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFonts);
@@ -694,8 +695,7 @@ void MainWindow::initSettingsDialog()
         ui->actionOpenAlternative->setText(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
         ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
         mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
-        if (mSettingsDialog->miroSettingsEnabled())
-            updateMiroEnabled();
+        updateMiroEnabled();
     });
 }
 
@@ -3759,6 +3759,7 @@ void MainWindow::on_actionBase_mode_triggered()
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.project()->workDir());
     miroProcess->setModelName(mRecent.project()->mainModelName());
+    miroProcess->setModelPath(mRecent.project()->mainFile()->location());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
@@ -3774,6 +3775,7 @@ void MainWindow::on_actionConfiguration_mode_triggered()
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.project()->workDir());
     miroProcess->setModelName(mRecent.project()->mainModelName());
+    miroProcess->setModelPath(mRecent.project()->mainFile()->location());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
@@ -3833,6 +3835,7 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
     process->setMiroPath(miro::MiroCommon::path( Settings::settings()->toString(skMiroInstallPath)));
     process->setWorkingDirectory(mRecent.project()->workDir());
     process->setModelName(mRecent.project()->mainModelName());
+    process->setModelPath(mRecent.project()->mainFile()->location());
     process->setTestDeployment(testDeploy);
     process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
 

@@ -55,6 +55,17 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, MainWindow* p
 
     restoreSettings();
     connect(&mSearch, &Search::updateUI, this, &SearchDialog::updateDialogState);
+    connect(this, &QDialog::rejected, this, [this]{
+        if (selectedScope() == Scope::Selection || selectedScope() == Scope::ThisFile) {
+            ResultsView *view = mMain ? mMain->resultsView() : nullptr;
+            if (view && view->isVisible())
+                return;
+            mSearch.reset();
+            clearSelection();
+            clearResultsView();
+            updateEditHighlighting();
+        }
+    });
 }
 
 SearchDialog::~SearchDialog()

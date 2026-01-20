@@ -107,7 +107,12 @@ void AbstractMiroProcess::setModelName(const QString &modelFile)
 }
 
 QString AbstractMiroProcess::modelPath() const {
-    return workingDirectory() + "/" + modelName() + ".gms";
+    return mModelPath;
+}
+
+void AbstractMiroProcess::setModelPath(const QString &path)
+{
+    mModelPath = path;
 }
 
 void AbstractMiroProcess::readStdOut()
