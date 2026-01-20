@@ -41,8 +41,6 @@ GamsParameterWidget::GamsParameterWidget(QAction *aRun, QAction *aCompile, QActi
     ui->setupUi(this);
 
     mOptionTokenizer = new OptionTokenizer(GamsOptDefFile);
-    //    if (!mOptionTokenizer->getOption()->available())
-    //        EXCEPT() << "Could not find or load OPT library for opening '" << mLocation << "'. Please check your GAMS installation.";
 
     setRunsActionGroup();
     setInterruptActionGroup();
@@ -82,12 +80,12 @@ GamsParameterWidget::GamsParameterWidget(QAction *aRun, QAction *aCompile, QActi
 GamsParameterWidget::~GamsParameterWidget()
 {
     delete ui;
+    if (mOptionTokenizer)
+        delete mOptionTokenizer;
     if (mDockChild)
         delete mDockChild;
     if (mExtendedEditor)
         delete mExtendedEditor;
-    if (mOptionTokenizer)
-        delete mOptionTokenizer;
 }
 
 QString GamsParameterWidget::on_runAction(RunActionState state)
@@ -207,6 +205,7 @@ void GamsParameterWidget::setEditorExtended(bool extended)
                    this, &GamsParameterWidget::updateParameterTableModel );
 
         mDockChild->clearDefintionSelection();
+        mDockChild->on_actionResize_Columns_To_Contents_triggered();
         emit ParameterTableModelChanged(ui->gamsParameterCommandLine->currentText());
     } else  {
         connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged,
