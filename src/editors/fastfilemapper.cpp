@@ -231,7 +231,7 @@ bool FastFileMapper::searchText(QRegularExpression searchRegex, QTextDocument::F
 
     QRegularExpressionMatch match;
     const QString data = mCache.loadCache(mSearchPos.y(), liSpan);
-    int index = backwards ? data.lastIndexOf(searchRegex, mSearchPos.x() - 1 - mCache.lineLength(mSearchPos.y()), &match)
+    int index = backwards ? data.lastIndexOf(searchRegex, -1, &match)
                           : data.indexOf(searchRegex, mSearchPos.x(), &match);
     if (index >= 0) {
         QPoint pos = mCache.posForOffset(index);
@@ -746,7 +746,7 @@ const QString FastFileMapper::LinesCache::loadCache(int lineNr, int count) const
         return mData;
     }
     if (count < 0) {
-        lineNr += count + 1;
+        lineNr += count;
         count = -count;
     }
     mCacheOffsetLine = lineNr;
