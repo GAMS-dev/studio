@@ -937,9 +937,14 @@ void CodeEdit::lockSelectedFind()
     emit allowReplaceChanged(this);
 }
 
-bool CodeEdit::hasSelectedFind()
+bool CodeEdit::hasSelectedFind() const
 {
     return mSelectedFind;
+}
+
+bool CodeEdit::hasFindTerm() const
+{
+    return mFindREx;
 }
 
 void CodeEdit::setFindTerm(const QRegularExpression &rex, QTextDocument::FindFlags options)
@@ -2300,19 +2305,19 @@ void CodeEdit::findInSelection(QList<search::Result> &results)
     }
 }
 
-bool CodeEdit::findText(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued)
+bool CodeEdit::findText(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool loop)
 {
     int pos = textCursor().hasSelection() ? textCursor().anchor() : textCursor().position();
     if (continued)
         pos += options.testFlag(QTextDocument::FindBackward) ? -1 : 1;
     QTextCursor cur = document()->find(rex, pos, options);
-    if (cur.isNull()) {
+    if (loop && cur.isNull()) {
         pos = options.testFlag(QTextDocument::FindBackward) ? document()->characterCount()-1 : 0;
         cur = document()->find(rex, pos, options);
     }
-    if (cur.isNull())
+    if (cur.isNull()) {
         textCursor().clearSelection();
-    else {
+    } else {
         setTextCursor(cur);
         lockSelectedFind();
     }
@@ -2325,12 +2330,14 @@ int CodeEdit::findReplaceAll(const QRegularExpression &rex, QTextDocument::FindF
     int count = 0;
     QTextCursor startCursor = textCursor();
     QTextCursor cur = textCursor();
+    cur.beginEditBlock();
     cur.setPosition(0);
     setTextCursor(cur);
-    while (findText(rex, options, true)) {
+    while (findText(rex, options, true, false)) {
         findReplace(replacement);
         ++count;
     }
+    cur.endEditBlock();
     if (!count)
         setTextCursor(startCursor);
     return count;

@@ -64,7 +64,7 @@
      <item>
       <widget class="QStackedWidget" name="stackedWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="pageMain">
         <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -837,6 +837,12 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>gams::studio::find::FindWidget</class>
+   <extends>QWidget</extends>
+   <header>search/findwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>gams::studio::WpLabel</class>
    <extends>QLabel</extends>
    <header location="global">welcome/wplabel.h</header>
@@ -845,12 +851,6 @@
     <signal>relayModLibLoad(QString)</signal>
     <signal>relayOpenDoc(QString,QString)</signal>
    </slots>
-  </customwidget>
-  <customwidget>
-   <class>gams::studio::find::FindWidget</class>
-   <extends>QWidget</extends>
-   <header>search/findwidget.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

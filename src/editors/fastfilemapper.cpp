@@ -180,24 +180,6 @@ QString FastFileMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFo
     return res;
 }
 
-bool FastFileMapper::findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool *continueFind)
-{
-
-    // QPoint startPos = mPosition;
-    // bool backwards = flags.testFlag(QTextDocument::FindBackward);
-
-    // int liSpan = backwards ? -500 : 500; // maximal lines per call
-    // QString data = mCache.loadCache(mSearchPos.y(), liSpan);
-    // while () {
-    //     if (backwards) {
-    //         if (mSearchPos.y() - liSpan < 0)
-    //             liSpan = mSearchPos.y();
-    //         liSpan = -liSpan;
-    //     }
-    // }
-    return false;
-}
-
 bool FastFileMapper::searchText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
 {
     int tempLineCount = lineCount();

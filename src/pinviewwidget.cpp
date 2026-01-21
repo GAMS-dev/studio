@@ -198,29 +198,6 @@ void PinViewWidget::splitterMoved(int pos, int index)
     Settings::settings()->setSize(skPinViewSize, preferredSize());
 }
 
-void PinViewWidget::find(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool focusEditor)
-{
-    QString match;
-    int pos = 0;
-    if (CodeEdit *edit = ViewHelper::toCodeEdit(mWidget)) {
-        edit->findText(rex, options, continued);
-        if (focusEditor)
-            edit->setFocus();
-        match = edit->textCursor().selectedText();
-        pos = edit->textCursor().position();
-    }
-    else if (TextView *view = ViewHelper::toTextView(mWidget)) {
-        bool dummy = false;
-        view->searchText(rex, options, dummy);
-        if (focusEditor)
-            view->edit()->setFocus();
-        match = view->selectedText();
-    }
-    if (!match.isEmpty())
-        mFindWidget->setLastMatch(match, pos);
-
-}
-
 void PinViewWidget::onSwitchOrientation()
 {
     setOrientation(mSplitter->orientation() == Qt::Horizontal ? Qt::Vertical : Qt::Horizontal);

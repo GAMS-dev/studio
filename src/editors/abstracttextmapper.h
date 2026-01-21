@@ -100,7 +100,6 @@ public:
 
     virtual QString lines(int localLineNrFrom, int lineCount) const = 0;
     virtual QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const = 0;
-    virtual bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool *continueFind = nullptr) = 0;
     virtual bool searchText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind) = 0;
 
     virtual QString selectedText() const = 0;

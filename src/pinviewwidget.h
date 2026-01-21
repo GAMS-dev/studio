@@ -61,7 +61,6 @@ signals:
 
 private slots:
     void splitterMoved(int pos, int index);
-    void find(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool focusEditor);
 
     void onSwitchOrientation();
     void onSyncScroll(bool checked);

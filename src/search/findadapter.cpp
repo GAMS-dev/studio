@@ -112,7 +112,7 @@ QWidget *EditFindAdapter::widget() const
 
 bool EditFindAdapter::canReplace() const
 {
-    return mEdit && !mEdit->isReadOnly() && mEdit->hasSelectedFind();
+    return mEdit && !mEdit->isReadOnly();
 }
 
 bool EditFindAdapter::hasSelection() const

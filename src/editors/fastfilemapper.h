@@ -80,7 +80,6 @@ public:
 
     QString lines(int localLineNrFrom, int lineCount) const override;
     QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;
-    bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool *continueFind = nullptr) override;
     bool searchText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind) override;
 
     QString selectedText() const override;

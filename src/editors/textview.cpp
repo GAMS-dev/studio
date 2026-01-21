@@ -299,9 +299,7 @@ bool TextView::findText(const QRegularExpression &rex, QTextDocument::FindFlags 
 {
     if (hasSelectedFind()) {
         // recent find is selected -> this is a find next/previous
-        DEB() << "before:  POS " << mMapper->position() << "  ANC " << mMapper->anchor();
         mMapper->setSelectionDirection(options.testFlag(QTextDocument::FindBackward) ? Qt::RightToLeft : Qt::LeftToRight);
-        DEB() << "after:   POS " << mMapper->position() << "  ANC " << mMapper->anchor();
     }
     if (next)
         mMapper->clearSelection();
@@ -313,7 +311,6 @@ bool TextView::findText(const QRegularExpression &rex, QTextDocument::FindFlags 
         if (!goOn) break;
 
     if (found) {
-        DEB() << "FOUND";
         mFindSpan = QPair<QPoint, int>(mMapper->position(), mMapper->anchor().x());
         updateView();
         updatePosAndAnchor();

@@ -294,6 +294,7 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
         }
     }
     CodeEdit::mousePressEvent(e);
+    updateExtraSelections();
 }
 
 void TextViewEdit::mouseMoveEvent(QMouseEvent *e)

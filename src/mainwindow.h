@@ -356,6 +356,7 @@ private slots:
 
     void on_actionSettings_triggered();
     void on_actionFind_triggered();
+    void on_action_FindReplace_triggered();
     void on_actionSearch_triggered();
     void on_actionRedo_triggered();
     void on_actionUndo_triggered();
@@ -447,6 +448,8 @@ protected:
     void checkForEngineJob();
     void ensureWorkspace();
     void continueAsyncCall();
+    find::FindWidget *getCurrentFindWidget();
+    QWidget *getViewOrEdit(find::FindWidget *findWidget);
 
 private slots:
     void updateAndSaveSettings();

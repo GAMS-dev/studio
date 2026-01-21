@@ -382,14 +382,6 @@ QString ChunkTextMapper::lines(int localLineNrFrom, int lineCount, QVector<LineF
     return lines(localLineNrFrom, lineCount);
 }
 
-bool ChunkTextMapper::findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool *continueFind)
-{
-    bool contFind = false;
-    if (continueFind == nullptr)
-        continueFind = &contFind;
-    return searchText(searchRegex, flags, *continueFind);
-}
-
 bool ChunkTextMapper::searchText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
 {
     bool backwards = flags.testFlag(QTextDocument::FindBackward);

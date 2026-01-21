@@ -34,6 +34,7 @@
 #include "encodingsdialog.h"
 #include "file/uncpath.h"
 #include "welcome/welcomepage.h"
+#include "welcome/overview.h"
 #include "modeldialog/modeldialog.h"
 #include "navigator/navigatordialog.h"
 #include "navigator/navigatorlineedit.h"
@@ -6028,20 +6029,75 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::on_actionFind_triggered()
 {
-    QWidget *ed = currentEdit();
-    if (ViewHelper::toCodeEdit(ed) || ViewHelper::toTextView(ed)) {
-        find::FindWidget *findWid = ed == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
+    if (find::FindWidget *findWid = getCurrentFindWidget()) {
         findWid->find(find::foFocusTerm);
-
-        // QString term = findWid->currentFindSelection();
-        // if (!term.isEmpty())
-        //     findWid->setFindText(term);
-
         findWid->setActive(true);
         findWid->setVisible(findWid->isActive());
         if (findWid->isVisible())
             findWid->setFocus();
     }
+}
+
+void MainWindow::on_action_FindReplace_triggered()
+{
+    if (find::FindWidget *findWid = getCurrentFindWidget()) {
+        if (!findWid->canReplace())
+            return;
+        findWid->find(find::foFocusTerm);
+        findWid->setActive(true);
+        findWid->setVisible(findWid->isActive());
+        if (findWid->isVisible())
+            findWid->toggleReplace(true);
+    }
+}
+
+find::FindWidget *MainWindow::getCurrentFindWidget()
+{
+    QWidget *parent = qApp->focusWidget();
+    while (parent && parent->parentWidget()) {
+        parent = parent->parentWidget();
+        QList<find::FindWidget*> findWidgets = parent->findChildren<find::FindWidget*>(Qt::FindDirectChildrenOnly);
+        if (!findWidgets.isEmpty()) {
+            find::FindWidget* fw = findWidgets.at(0);
+            fw->setEditWidget(getViewOrEdit(fw));
+            return fw;
+        }
+    }
+    return nullptr;
+}
+
+QWidget *MainWindow::getViewOrEdit(find::FindWidget* findWidget)
+{
+    if (!findWidget) return nullptr;
+    QWidget *parent = findWidget->parentWidget();
+    if (!parent) return nullptr;
+
+    QWidget *res = nullptr;
+
+    if (!parent->findChildren<QTabWidget*>(Qt::FindDirectChildrenOnly).isEmpty()) {
+        if (parent->findChildren<QTabWidget*>(Qt::FindDirectChildrenOnly).at(0) == ui->mainTabs)
+            res = ui->mainTabs->currentWidget();
+        else if (parent->findChildren<QTabWidget*>(Qt::FindDirectChildrenOnly).at(0) == ui->logTabs)
+            res = ui->logTabs->currentWidget();
+    }
+    else if (!parent->findChildren<TextView*>(Qt::FindDirectChildrenOnly).isEmpty())
+        res = parent->findChildren<TextView*>(Qt::FindDirectChildrenOnly).at(0);
+
+    else if (!parent->findChildren<CodeEdit*>(Qt::FindDirectChildrenOnly).isEmpty())
+        res = parent->findChildren<CodeEdit*>(Qt::FindDirectChildrenOnly).at(0);
+
+    else if (!parent->findChildren<SystemLogEdit*>(Qt::FindDirectChildrenOnly).isEmpty())
+        res = parent->findChildren<SystemLogEdit*>(Qt::FindDirectChildrenOnly).at(0);
+
+    else if (!parent->findChildren<QTextBrowser*>(Qt::FindDirectChildrenOnly).isEmpty())
+        res = parent->findChildren<QTextBrowser*>(Qt::FindDirectChildrenOnly).at(0);
+
+    else if (!parent->findChildren<Overview*>(Qt::FindDirectChildrenOnly).isEmpty())
+        res = parent->findChildren<Overview*>(Qt::FindDirectChildrenOnly).at(0);
+
+    if (!res)
+        DEB() << "Couldn't detect the viewer/editor for Find.";
+    return res;
 }
 
 void MainWindow::on_actionSearch_triggered()
@@ -7558,7 +7614,6 @@ void MainWindow::updateProjectSortIcon()
     tt = tt.arg(ttKey.at(mProjectFilterHandler->sortKey()), ttOrder.at(mProjectFilterHandler->sortOrder()));
     ui->projectSort->setToolTip(tt);
 }
-
 
 
 

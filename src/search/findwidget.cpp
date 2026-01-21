@@ -95,11 +95,11 @@ void FindWidget::setActive(bool newActive)
 
 void FindWidget::updateButtonStates()
 {
-    bool canFind = !ui->edFind->text().isEmpty();
+    bool canFind = mFinder && !ui->edFind->text().isEmpty();
     ui->bNext->setEnabled(canFind);
     ui->bPrev->setEnabled(canFind);
 
-    bool canReplace = canFind  && mFinder->canReplace();
+    bool canReplace = canFind  && this->canReplace();
     ui->bReplace->setEnabled(canReplace);
     ui->bReplaceAll->setEnabled(canReplace);
 }
@@ -185,6 +185,22 @@ QString FindWidget::currentFindSelection()
     return mFinder->currentFindSelection();
 }
 
+bool FindWidget::canReplace() const
+{
+    return mFinder && mFinder->canReplace();
+}
+
+void FindWidget::toggleReplace(bool ensureVisible)
+{
+    if (canReplace()) {
+        if (!ensureVisible || !ui->bToggleReplace->isChecked())
+            ui->bToggleReplace->setChecked(!ui->bToggleReplace->isChecked());
+        on_bToggleReplace_clicked();
+        if (ui->bToggleReplace->isChecked())
+            ui->edReplace->setFocus();
+    }
+}
+
 QString FindWidget::replacementText() const
 {
     return ui->edReplace->text();
@@ -214,10 +230,7 @@ void FindWidget::keyPressEvent(QKeyEvent *event)
             mFinder->setFocus();
     } else if (event->key() == Qt::Key_R && event->modifiers().testFlag(Qt::ControlModifier)) {
         event->accept();
-        if (mFinder->canReplace()) {
-            ui->bToggleReplace->setChecked(!ui->bToggleReplace->isChecked());
-            on_bToggleReplace_clicked();
-        }
+        toggleReplace();
     } else
         QWidget::keyPressEvent(event);
 }
@@ -236,8 +249,7 @@ void FindWidget::termChanged()
 
 void FindWidget::allowReplaceChanged(QWidget *edit)
 {
-    if (edit == mFinder->widget())
-       updateButtonStates();
+    updateButtonStates();
 }
 
 void FindWidget::on_bClose_clicked()

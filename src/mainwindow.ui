@@ -243,6 +243,7 @@
     <addaction name="separator"/>
     <addaction name="menuEncoding"/>
     <addaction name="actionFind"/>
+    <addaction name="action_FindReplace"/>
     <addaction name="actionSearch"/>
     <addaction name="actionGo_To"/>
     <addaction name="actionNavigator"/>
@@ -1908,18 +1909,41 @@
      <normaloff>:/solid/search</normaloff>:/solid/search</iconset>
    </property>
    <property name="text">
-    <string>&amp;Find &amp;&amp; Replace</string>
+    <string>&amp;Find</string>
    </property>
    <property name="toolTip">
-    <string>Quick Find &amp; Replace</string>
+    <string>Quick Find in the current file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
    </property>
   </action>
+  <action name="action_FindReplace">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/replace</normaloff>:/solid/replace</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Find &amp;&amp; Replace</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens Replace for the current file</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::TextHeuristicRole</enum>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
+  <customwidget>
+   <class>gams::studio::FilterLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>filterlineedit.h</header>
+  </customwidget>
   <customwidget>
    <class>gams::studio::ProjectTreeView</class>
    <extends>QTreeView</extends>
@@ -1947,11 +1971,6 @@
    <class>gams::studio::CheckParentMenu</class>
    <extends>QMenu</extends>
    <header>checkmenu.h</header>
-  </customwidget>
-  <customwidget>
-   <class>gams::studio::FilterLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>filterlineedit.h</header>
   </customwidget>
   <customwidget>
    <class>gams::studio::find::FindWidget</class>

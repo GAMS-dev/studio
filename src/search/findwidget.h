@@ -53,6 +53,8 @@ public:
     QTextDocument::FindFlags findFlags(bool backwards = false);
     bool find(FindOptions options = FindOptions(), bool keepSearchTerm = false);
     QString currentFindSelection();
+    bool canReplace() const;
+    void toggleReplace(bool ensureVisible = false);
     QString replacementText() const;
 
 protected:
