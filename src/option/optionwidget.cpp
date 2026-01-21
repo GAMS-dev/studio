@@ -501,8 +501,8 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
     }
     if (firstRow<0)
         firstRow = 0;
-    optionModel()->on_updateOptionItem( ui->definitionTreeView->model()->index(firstRow, lastColumn),
-                                        ui->definitionTreeView->model()->index(lastRow, lastColumn),
+    optionModel()->on_updateOptionItem( ui->optionTableView->model()->index(firstRow, lastColumn),
+                                        ui->optionTableView->model()->index(lastRow, lastColumn),
                                         {Qt::EditRole});
 
     if (isCommentToggleable())
@@ -510,7 +510,7 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &definitionIndex)
     if (isViewCompact())
         refreshOptionTableModel(true);
     showOptionDefinition(true);
-    emit itemCountChanged(ui->definitionTreeView->model()->rowCount());
+    emit itemCountChanged(ui->optionTableView->model()->rowCount());
 
     ui->optionTableView->resizeColumnToContents(OptionTableModel::COLUMN_KEY);
     ui->optionTableView->resizeColumnToContents(OptionTableModel::COLUMN_VALUE);
