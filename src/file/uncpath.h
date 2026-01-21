@@ -61,8 +61,8 @@ public:
     ///
     /// \brief Generate a mapping for a free drive letter (Windows only)
     /// \param localDrive The drive letter to map to
-    /// \param uncPath the UNC path. Credentials needs to be already unlocked.
-    /// \return TRUE if the mapping suceeded
+    /// \param uncPath the UNC path. Credentials need to be already unlocked.
+    /// \return TRUE if the mapping succeeded
     ///
     bool mapNetworkDrive(const QString &localDrive, const QString &uncPath);
 
