@@ -26,8 +26,8 @@
 #include "option/solveroptioneditor.h"
 #include "option/solveroptiondefinitionmodel.h"
 #include "file/filetype.h"
+#include "editors/sysloglocator.h"
 
-#include "exception.h"
 #include "msgbox.h"
 #include "settings.h"
 #include "ui_optionwidget.h"
@@ -54,7 +54,9 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
 {
     mOptionTokenizer = new OptionTokenizer(mDefinitionFileName);
     if (!mOptionTokenizer->getOption()->available())
-        EXCEPT() << "Could not find or load OPT library for opening '" << mLocation << "'. Please check your GAMS installation.";
+        SysLogLocator::systemLog()->append(QString("Missing a library for opening '%1', %2 editor might not function properly. Please check your GAMS installation.")
+                                                   .arg(mLocation).arg(mFileKind==FileKind::Opt ? "Solver option file ":"Parameter file"),
+                                           LogMsgType::Error);
 
     const QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(optionFilePath, encodingName);
     mOptionModel = new SolverOptionTableModel( callstr(),

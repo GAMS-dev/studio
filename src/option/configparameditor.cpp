@@ -22,6 +22,7 @@
 #include "option/optiondefinitionmodel.h"
 #include "option/configparameditor.h"
 #include "ui_optionwidget.h"
+#include "editors/sysloglocator.h"
 
 namespace gams {
 namespace studio {
@@ -37,6 +38,9 @@ ConfigParamEditor::ConfigParamEditor(FileKind kind,
     mFileHasChangedExtern(false)
 {
     mOptionTokenizer = new OptionTokenizer(GamsOptDefFile);
+    if (!mOptionTokenizer->getOption()->available())
+        SysLogLocator::systemLog()->append(QString("Missing a library from GAMS installation, GAMS User Configuration editor might not function properly. Please check your GAMS installation."),
+                                           LogMsgType::Error);
 
     QList<ParamConfigItem *> optionItem;
     optionItem.reserve(initParamItems.size());
