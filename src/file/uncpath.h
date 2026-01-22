@@ -58,23 +58,16 @@ public:
     ///
     QString toMappedPath(const QString &uncPath, bool forceGenerate = false);
 
-    ///
-    /// \brief Generate a mapping for a free drive letter (Windows only)
-    /// \param localDrive The drive letter to map to
-    /// \param uncPath the UNC path. Credentials need to be already unlocked.
-    /// \return TRUE if the mapping succeeded
-    ///
-    bool mapNetworkDrive(const QString &localDrive, const QString &uncPath);
-
 signals:
     // remark: Signal destroyed is used to set the static member mUnc to nullptr.
 
 private:
     static UncPath *mUnc;
     QStringList mTempMapped;
-    explicit UncPath(QObject *parent = nullptr);
 
 private:
+    explicit UncPath(QObject *parent = nullptr);
+    bool mapNetworkDrive(const QString &localDrive, const QString &uncPath);
     bool unmapDrive(const QString &driveLetter, bool force = false);
 };
 
