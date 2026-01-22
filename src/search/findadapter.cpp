@@ -224,23 +224,6 @@ void ViewFindAdapter::invalidateSelection()
     mView->clearSelectedFind();
 }
 
-bool ViewFindAdapter::eventFilter(QObject *watched, QEvent *event)
-{
-    if (event->type() == QEvent::KeyPress) {
-        DEB() << "KeyEvent filtered";
-        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        if (keyEvent->key() == Qt::Key_Escape)
-            emit endFind();
-        else if (keyEvent->key() == Qt::Key_F3) {
-            if (keyEvent->modifiers().testFlag(Qt::ShiftModifier))
-                emit findNext(true);
-            else
-                emit findNext(false);
-        }
-    }
-    return FindAdapter::eventFilter(watched, event);
-}
-
 
 // -------------------------- ChangelogFindAdapter
 
@@ -249,6 +232,7 @@ ChangelogFindAdapter::ChangelogFindAdapter(QTextBrowser *view)
 {
     // add handler for endFind (to close on ESC), F3, and Shift+F3
     mView->installEventFilter(this);
+    mView->viewport()->installEventFilter(this);
 
     connect(mView, &QTextBrowser::selectionChanged, this, [this](){
         mSelection = mTakeSelection ? mView->textCursor().selectedText() : QString();
@@ -348,11 +332,10 @@ void ChangelogFindAdapter::calcExtraSelections()
         return;
     }
 
-    // TODO(JM) calculate the extraSelections
+    // calculate the extraSelections
     QTextCursor curFrom = mView->cursorForPosition({0,0});
     QTextCursor curTo = mView->cursorForPosition({mView->viewport()->size().width(),
                                                   mView->viewport()->size().height()});
-    DEB() << "Visible lines from " << curFrom.blockNumber() << "  to " << curTo.blockNumber();
     QList<QTextEdit::ExtraSelection> selections;
     QTextBlock block = curFrom.block();
     while (block.blockNumber() <= curTo.blockNumber()) {
@@ -376,6 +359,21 @@ void ChangelogFindAdapter::calcExtraSelections()
     mView->setExtraSelections(selections);
 }
 
+bool ChangelogFindAdapter::eventFilter(QObject *watched, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Escape)
+            emit endFind();
+        else if (keyEvent->key() == Qt::Key_F3) {
+            if (keyEvent->modifiers().testFlag(Qt::ShiftModifier))
+                emit findNext(true);
+            else
+                emit findNext(false);
+        }
+    }
+    return FindAdapter::eventFilter(watched, event);
+}
 
 } // namespace find
 } // namespace studio

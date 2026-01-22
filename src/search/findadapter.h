@@ -199,7 +199,6 @@ public:
     bool findText(const QRegularExpression &rex, FindOptions options) override;
     QString currentFindSelection(bool &isCurrentWord) override;
     void invalidateSelection() override;
-    bool eventFilter(QObject *watched, QEvent *event) override;
 
 protected:
     friend class FindAdapter;
@@ -225,6 +224,7 @@ public:
     bool findText(const QRegularExpression &rex, FindOptions options) override;
     QString currentFindSelection(bool &isCurrentWord) override;
     void invalidateSelection() override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 protected:
     friend class FindAdapter;
