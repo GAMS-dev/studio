@@ -4,6 +4,7 @@ Version 1.24.0 *
 - Changed the start directory of the file open dialog to the base directory of the current project.
 - Improved search and replace file pattern, i.e. the default pattern has been changed from `*` to `*.gms`. The change is applied to all the cases where a file pattern can be configured.
 - Add GAMS system directory configuration to settings dialog, i.e. to switch between different GAMS installations.
+- Translate UNC path to a local path for the license dialog, i.e. when the `Documents` folder on Windows has been moved to a server.
 
 Version 1.23.4 *
 ==================
