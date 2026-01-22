@@ -900,17 +900,17 @@ void OptionWidget::deSelectOptions()
 
 int OptionWidget::getItemCount() const
 {
-    return ui->definitionTreeView->model()->rowCount();
+    return ui->optionTableView->model()->rowCount();
 }
 
 void OptionWidget::on_selectRow(int logicalIndex) const
 {
-    if (ui->definitionTreeView->model()->rowCount() <= 0)
+    if (ui->optionTableView->model()->rowCount() <= 0)
         return;
 
     QItemSelectionModel *selectionModel = ui->optionTableView->selectionModel();
-    const QModelIndex topLeft = ui->definitionTreeView->model()->index(logicalIndex, OptionTableModel::COLUMN_ID, QModelIndex());
-    const QModelIndex  bottomRight = ui->definitionTreeView->model()->index(logicalIndex, optionModel()->columnCount()-1, QModelIndex());
+    const QModelIndex topLeft = ui->optionTableView->model()->index(logicalIndex, OptionTableModel::COLUMN_ID, QModelIndex());
+    const QModelIndex  bottomRight = ui->optionTableView->model()->index(logicalIndex, optionModel()->columnCount()-1, QModelIndex());
     const QItemSelection selection( topLeft, bottomRight);
     selectionModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
 }
