@@ -6028,8 +6028,10 @@ void MainWindow::on_actionSettings_triggered()
 void MainWindow::on_actionFind_triggered()
 {
     if (find::FindWidget *findWid = getCurrentFindWidget()) {
-        findWid->find(find::foFocusTerm);
-        findWid->setActive(true);
+        bool valid = findWid->editWidget();
+        if (valid)
+            findWid->find(find::foFocusTerm);
+        findWid->setActive(valid);
         findWid->setVisible(findWid->isActive());
         if (findWid->isVisible())
             findWid->setFocus();
@@ -6085,9 +6087,6 @@ QWidget *MainWindow::getViewOrEdit(find::FindWidget* findWidget)
 
     else if (!parent->findChildren<SystemLogEdit*>(Qt::FindDirectChildrenOnly).isEmpty())
         res = parent->findChildren<SystemLogEdit*>(Qt::FindDirectChildrenOnly).at(0);
-
-    else if (!parent->findChildren<QTextBrowser*>(Qt::FindDirectChildrenOnly).isEmpty())
-        res = parent->findChildren<QTextBrowser*>(Qt::FindDirectChildrenOnly).at(0);
 
     else if (!parent->findChildren<QWebEngineView*>(Qt::FindDirectChildrenOnly).isEmpty())
         res = parent->findChildren<QWebEngineView*>(Qt::FindDirectChildrenOnly).at(0);
@@ -6622,6 +6621,8 @@ void MainWindow::on_actionCopy_triggered()
         ce->copySelection();
     } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(mRecent.editor())) {
         ae->copy();
+    } else if (QTextBrowser *changelog = qobject_cast<QTextBrowser*>(focusWidget())) {
+        changelog->copy();
     }
 }
 

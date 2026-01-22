@@ -40,6 +40,28 @@ bool prepareScaling()
     return res;
 }
 
+
+// class KeySpy : public QObject {
+// protected:
+//     bool eventFilter(QObject *obj, QEvent *event) override {
+//         if (event->type() == QEvent::KeyPress) {
+//             QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+//             qDebug() << "Key Pressed:" << QKeySequence(keyEvent->key()).toString()
+//                      << "Destination Widget:" << obj->objectName()
+//                      << "Class:" << obj->metaObject()->className();
+//         }
+//         if (event->type() == QEvent::Shortcut) {
+//             QShortcutEvent *keyEvent = static_cast<QShortcutEvent *>(event);
+//             qDebug() << "Shortcut Pressed:" << QKeySequence(keyEvent->key()).toString()
+//                      << "Destination Widget:" << obj->objectName()
+//                      << "Class:" << obj->metaObject()->className();
+//         }
+//         return false; // Don't stop the event, just spy on it
+//     }
+// };
+
+
+
 int main(int argc, char *argv[])
 {
 #ifdef _WIN64
@@ -51,6 +73,14 @@ int main(int argc, char *argv[])
 
     Application app(argc, argv);
     app.setAttribute(Qt::AA_DontShowIconsInMenus, false);
+
+
+
+    // TEMP Installation
+    // KeySpy *spy = new KeySpy();
+    // qApp->installEventFilter(spy);
+
+
 
     QSystemSemaphore sem(app.serverName(), 1, QSystemSemaphore::Open);
     sem.acquire();

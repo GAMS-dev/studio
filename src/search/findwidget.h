@@ -42,6 +42,7 @@ public:
     explicit FindWidget(QWidget *parent = nullptr);
     ~FindWidget();
     void setEditWidget(QWidget *widget);
+    QWidget *editWidget() const;
     bool isActive() const;
     void setActive(bool newActive);
     void updateButtonStates();
@@ -52,7 +53,7 @@ public:
     QRegularExpression termRegEx();
     QTextDocument::FindFlags findFlags(bool backwards = false);
     bool find(FindOptions options = FindOptions(), bool keepSearchTerm = false);
-    QString currentFindSelection();
+    QString currentFindSelection(bool &isCurrentWord);
     bool canReplace() const;
     void toggleReplace(bool ensureVisible = false);
     QString replacementText() const;

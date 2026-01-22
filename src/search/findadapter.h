@@ -23,6 +23,8 @@
 #include <QWidget>
 #include <QTextDocument>
 
+class QTextBrowser;
+
 namespace gams {
 namespace studio {
 
@@ -32,12 +34,14 @@ class TextView;
 namespace find {
 
 enum FindOption {
+    foNone       = 0x00,
     foFocusEdit  = 0x01,
     foFocusTerm  = 0x02,
     foBackwards  = 0x04,
     foExactMatch = 0x08,
-    foCaseSense  = 0x16,
-    foContinued  = 0x32,
+    foCaseSense  = 0x10,
+    foContinued  = 0x20,
+    foSkipFind   = 0x40,    // At start of search when the selection is already set
 };
 typedef QFlags<FindOption> FindOptions;
 
@@ -118,7 +122,7 @@ public:
     ///
     /// \brief currentFindSelection Gets the current selection resulting from a find action. Other selections are ignored
     ///
-    virtual QString currentFindSelection() const = 0;
+    virtual QString currentFindSelection(bool &isCurrentWord) = 0;
 
     ///
     /// \brief invalidateSelection Performs a deselect in the widget if the selection is a result from a find action
@@ -135,6 +139,12 @@ signals:
     /// \brief endFind Signals when the find should be closed
     ///
     void endFind();
+
+    ///
+    /// \brief findNext Signals find next/previous for adapters whose widget doesn't implement it
+    /// \param backwards
+    ///
+    void findNext(bool backwards);
 
 protected slots:
     void widgetDestroyed();
@@ -162,7 +172,7 @@ public:
     bool findText(const QRegularExpression &rex, FindOptions options) override;
     int findReplaceAll(const QRegularExpression &rex, FindOptions options, const QString &replacement) override;
     bool findReplace(const QRegularExpression &rex, FindOptions options, const QString &replacement) override;
-    QString currentFindSelection() const override;
+    QString currentFindSelection(bool &isCurrentWord) override;
     void invalidateSelection() override;
 
 protected:
@@ -187,8 +197,9 @@ public:
     void setFindTerm(const QRegularExpression &rex, FindOptions options) override;
     bool hasFindTerm() override;
     bool findText(const QRegularExpression &rex, FindOptions options) override;
-    QString currentFindSelection() const override;
+    QString currentFindSelection(bool &isCurrentWord) override;
     void invalidateSelection() override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 protected:
     friend class FindAdapter;
@@ -198,6 +209,35 @@ private:
     TextView *mView;
 };
 
+
+// ------------------
+
+
+class ChangelogFindAdapter : public FindAdapter
+{
+    Q_OBJECT
+public:
+    ~ChangelogFindAdapter() override;
+    QWidget *widget() const override;
+    bool hasSelection() const override;
+    void setFindTerm(const QRegularExpression &rex, FindOptions options) override;
+    bool hasFindTerm() override;
+    bool findText(const QRegularExpression &rex, FindOptions options) override;
+    QString currentFindSelection(bool &isCurrentWord) override;
+    void invalidateSelection() override;
+
+protected:
+    friend class FindAdapter;
+    ChangelogFindAdapter(QTextBrowser *view = nullptr);
+    void calcExtraSelections();
+
+private:
+    QTextBrowser *mView;
+    QRegularExpression *mRex = nullptr;
+    FindOptions mOptions = foNone;
+    bool mTakeSelection = false;
+    QString mSelection;
+};
 
 } // namespace find
 } // namespace studio

@@ -23,6 +23,8 @@
 #include "editors/codeedit.h"
 #include "editors/textview.h"
 
+#include <QTextBrowser>
+
 namespace gams {
 namespace studio {
 namespace find {
@@ -38,6 +40,9 @@ FindAdapter *FindAdapter::createAdapter(QWidget *widget)
 
     if (TextView *tv = ViewHelper::toTextView(widget))
         res = new ViewFindAdapter(tv);
+
+    if (QTextBrowser *browser = qobject_cast<QTextBrowser*>(widget))
+        res = new ChangelogFindAdapter(browser);
 
     if (res)
         connect(widget, &QWidget::destroyed, res, &FindAdapter::widgetDestroyed);
@@ -104,7 +109,7 @@ EditFindAdapter::EditFindAdapter(CodeEdit *edit)
 }
 
 EditFindAdapter::~EditFindAdapter()
-{ }
+{}
 
 QWidget *EditFindAdapter::widget() const
 {
@@ -151,7 +156,7 @@ int EditFindAdapter::findReplaceAll(const QRegularExpression &rex, FindOptions o
     return mEdit->findReplaceAll(rex, findFlags(options), replacement);
 }
 
-QString EditFindAdapter::currentFindSelection() const
+QString EditFindAdapter::currentFindSelection(bool &isCurrentWord)
 {
     return mEdit->currentFindSelection(false);
 }
@@ -166,6 +171,7 @@ void EditFindAdapter::invalidateSelection()
     }
 }
 
+
 // -------------------------- ViewFindAdapter
 
 ViewFindAdapter::ViewFindAdapter(TextView *view)
@@ -177,9 +183,7 @@ ViewFindAdapter::ViewFindAdapter(TextView *view)
 }
 
 ViewFindAdapter::~ViewFindAdapter()
-{
-
-}
+{}
 
 QWidget *ViewFindAdapter::widget() const
 {
@@ -210,14 +214,166 @@ bool ViewFindAdapter::findText(const QRegularExpression &rex, FindOptions option
     return mView->findText(rex, findFlags(options), options.testFlag(foContinued));
 }
 
-QString ViewFindAdapter::currentFindSelection() const
+QString ViewFindAdapter::currentFindSelection(bool &isCurrentWord)
 {
-    return mView->currentFindSelection(false);
+    return mView->currentFindSelection(isCurrentWord);
 }
 
 void ViewFindAdapter::invalidateSelection()
 {
     mView->clearSelectedFind();
+}
+
+bool ViewFindAdapter::eventFilter(QObject *watched, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress) {
+        DEB() << "KeyEvent filtered";
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Escape)
+            emit endFind();
+        else if (keyEvent->key() == Qt::Key_F3) {
+            if (keyEvent->modifiers().testFlag(Qt::ShiftModifier))
+                emit findNext(true);
+            else
+                emit findNext(false);
+        }
+    }
+    return FindAdapter::eventFilter(watched, event);
+}
+
+
+// -------------------------- ChangelogFindAdapter
+
+ChangelogFindAdapter::ChangelogFindAdapter(QTextBrowser *view)
+    : FindAdapter(view), mView(view)
+{
+    // add handler for endFind (to close on ESC), F3, and Shift+F3
+    mView->installEventFilter(this);
+
+    connect(mView, &QTextBrowser::selectionChanged, this, [this](){
+        mSelection = mTakeSelection ? mView->textCursor().selectedText() : QString();
+        mTakeSelection = false;
+    });
+
+    connect(mView->verticalScrollBar(), &QScrollBar::sliderMoved, this, [this](){
+        calcExtraSelections();
+    });
+}
+
+ChangelogFindAdapter::~ChangelogFindAdapter()
+{}
+
+QWidget *ChangelogFindAdapter::widget() const
+{
+    return mView;
+}
+
+bool ChangelogFindAdapter::hasSelection() const
+{
+    return !mSelection.isEmpty();
+}
+
+void ChangelogFindAdapter::setFindTerm(const QRegularExpression &rex, FindOptions options)
+{
+    if (mRex)
+        delete mRex;
+    mRex = rex.isValid() ? new QRegularExpression(rex) : nullptr;
+
+    calcExtraSelections();
+}
+
+bool ChangelogFindAdapter::hasFindTerm()
+{
+    return mRex && mRex->isValid();
+}
+
+bool ChangelogFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
+{
+    int pos = mView->textCursor().hasSelection() ? mView->textCursor().anchor()
+                                                 : mView->textCursor().position();
+    QTextDocument::FindFlags docOpt = findFlags(options);
+    if (options.testFlag(foContinued))
+        pos += docOpt.testFlag(QTextDocument::FindBackward) ? -1 : 1;
+    QTextCursor cur = mView->textCursor();
+    if (!options.testFlag(foSkipFind))
+        cur = mView->document()->find(rex, pos, docOpt);
+    if (cur.isNull()) {
+        pos = docOpt.testFlag(QTextDocument::FindBackward) ? mView->document()->characterCount()-1 : 0;
+        cur = mView->document()->find(rex, pos, docOpt);
+    }
+    if (cur.isNull()) {
+        mView->textCursor().clearSelection();
+    } else {
+        mTakeSelection = true;
+        mView->setTextCursor(cur);
+    }
+    setFindTerm(rex, options);
+    return !cur.isNull();
+}
+
+QString ChangelogFindAdapter::currentFindSelection(bool &isCurrentWord)
+{
+    isCurrentWord = false;
+    if (!mSelection.isEmpty())
+        return mSelection;
+
+    if (!mView->textCursor().hasSelection()) {
+        QTextCursor cur = mView->textCursor();
+        cur.movePosition(QTextCursor::EndOfWord);
+        cur.movePosition(QTextCursor::StartOfWord, QTextCursor::KeepAnchor);
+        if (mView->textCursor().position() >= cur.position() && mView->textCursor().position() <= cur.anchor()) {
+            mTakeSelection = true;
+            isCurrentWord = true;
+            mView->setTextCursor(cur);
+        }
+    }
+    if (mView->textCursor().hasSelection()) {
+        QTextCursor anc = mView->textCursor();
+        anc.setPosition(anc.anchor());
+        if (mView->textCursor().blockNumber() == anc.blockNumber())
+            return mView->textCursor().selectedText();
+    }
+    return QString();
+}
+
+void ChangelogFindAdapter::invalidateSelection()
+{
+    mSelection.clear();
+}
+
+void ChangelogFindAdapter::calcExtraSelections()
+{
+    if (!hasFindTerm()) {
+        mView->setExtraSelections({});
+        return;
+    }
+
+    // TODO(JM) calculate the extraSelections
+    QTextCursor curFrom = mView->cursorForPosition({0,0});
+    QTextCursor curTo = mView->cursorForPosition({mView->viewport()->size().width(),
+                                                  mView->viewport()->size().height()});
+    DEB() << "Visible lines from " << curFrom.blockNumber() << "  to " << curTo.blockNumber();
+    QList<QTextEdit::ExtraSelection> selections;
+    QTextBlock block = curFrom.block();
+    while (block.blockNumber() <= curTo.blockNumber()) {
+        QRegularExpressionMatchIterator i = mRex->globalMatch(block.text());
+
+        while (i.hasNext()) {
+            QRegularExpressionMatch m = i.next();
+            QTextEdit::ExtraSelection selection;
+            QTextCursor tc(mView->document());
+            tc.setPosition(block.position() + int(m.capturedStart(0)));
+            tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, int(m.capturedLength(0)));
+
+            selection.cursor = tc;
+            selection.format.setForeground(Qt::white);
+            selection.format.setBackground(toColor(Theme::Edit_findBg));
+            selections << selection;
+        }
+
+        block = block.next();
+    }
+    mView->setExtraSelections(selections);
 }
 
 

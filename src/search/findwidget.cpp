@@ -67,6 +67,10 @@ void FindWidget::setEditWidget(QWidget *widget)
     connect(mFinder, &FindAdapter::destroyed, this, &FindWidget::editDestroyed);
     connect(mFinder, &FindAdapter::allowReplaceChanged, this, &FindWidget::allowReplaceChanged);
     connect(mFinder, &FindAdapter::endFind, this, &FindWidget::on_bClose_clicked);
+    connect(mFinder, &FindAdapter::findNext, this, [this](bool backwards) {
+        if (backwards) on_bPrev_clicked();
+        else on_bNext_clicked();
+    });
     if (mActive)
         show();
     if (!ui->edFind->text().isEmpty()) {
@@ -76,6 +80,12 @@ void FindWidget::setEditWidget(QWidget *widget)
         mFinder->setFindTerm(termRegEx(), options);
     }
     updateButtonStates();
+}
+
+QWidget *FindWidget::editWidget() const
+{
+    if (mFinder) return mFinder->widget();
+    return nullptr;
 }
 
 bool FindWidget::isActive() const
@@ -162,8 +172,11 @@ bool FindWidget::find(FindOptions options, bool keepSearchTerm)
         mLastMatch = QString();
     QString match;
     size_t pos = 0;
+    bool isCurrentWord = false;
     if (!mFinder->hasSelection() && !keepSearchTerm) {
-        QString term = mFinder->currentFindSelection();
+        QString term = mFinder->currentFindSelection(isCurrentWord);
+        if (isCurrentWord && !options.testFlag(foContinued))
+            options.setFlag(foSkipFind);
         if (!term.isEmpty()) {
             ui->edFind->setText(term);
             updateButtonStates();
@@ -174,7 +187,7 @@ bool FindWidget::find(FindOptions options, bool keepSearchTerm)
     bool found = mFinder->findText(termRegEx(), options);
     if (options.testFlag(foFocusEdit))
         mFinder->setFocus();
-    match = mFinder->currentFindSelection();
+    match = mFinder->currentFindSelection(isCurrentWord);
     if (!found)
         mFinder->invalidateSelection();
 
@@ -184,10 +197,10 @@ bool FindWidget::find(FindOptions options, bool keepSearchTerm)
     return !match.isEmpty();
 }
 
-QString FindWidget::currentFindSelection()
+QString FindWidget::currentFindSelection(bool &isCurrentWord)
 {
     if (!mFinder) return QString();
-    return mFinder->currentFindSelection();
+    return mFinder->currentFindSelection(isCurrentWord);
 }
 
 bool FindWidget::canReplace() const
