@@ -23,7 +23,6 @@
 #include "option/solveroptiontablemodel.h"
 #include "settings.h"
 #include "theme.h"
-#include "msgbox.h"
 
 namespace gams {
 namespace studio {

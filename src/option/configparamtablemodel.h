@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef CONFIGTABLEMODEL_H
-#define CONFIGTABLEMODEL_H
+#ifndef CONFIGPARMTABLEMODEL_H
+#define CONFIGPARMTABLEMODEL_H
 
 #include <QAbstractTableModel>
 

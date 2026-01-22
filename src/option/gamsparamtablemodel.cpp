@@ -26,8 +26,6 @@
 #include "option/option.h"
 
 #include "theme.h"
-#include "msgbox.h"
-#include "settings.h"
 
 namespace gams {
 namespace studio {

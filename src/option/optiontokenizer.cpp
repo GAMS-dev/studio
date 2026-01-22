@@ -25,7 +25,6 @@
 #include "option/optiontokenizer.h"
 #include "gclgms.h"
 #include "option/option.h"
-//#include "logger.h"
 #include "theme.h"
 #include "commonpaths.h"
 #include "editors/defaultsystemlogger.h"

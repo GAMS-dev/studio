@@ -23,6 +23,8 @@
 #include "commonpaths.h"
 #include "exception.h"
 #include "common.h"
+#include "gclgms.h"
+#include "gucapi.h"
 
 namespace gams {
 namespace studio {

@@ -22,9 +22,7 @@
 
 #include <QObject>
 
-#include "gclgms.h"
 #include "guccc.h"
-#include "gucapi.h"
 
 namespace gams {
 namespace studio {

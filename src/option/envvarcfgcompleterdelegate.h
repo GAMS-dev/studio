@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef PARAMCFGCOMPLETERDELEGATE_H
-#define PARAMCFGCOMPLETERDELEGATE_H
+#ifndef ENVVARCFGCOMPLETERDELEGATE_H
+#define ENVVARCFGCOMPLETERDELEGATE_H
 
 #include <QStyledItemDelegate>
 

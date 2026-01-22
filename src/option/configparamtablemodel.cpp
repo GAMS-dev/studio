@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "theme.h"
-#include "msgbox.h"
 
 #include "option/configparamtablemodel.h"
 
