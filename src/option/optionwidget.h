@@ -64,7 +64,7 @@ protected:
    void initToolBar();
    void initOptionTableView();
    void initOptionTableControl();
-   void initDefintionTreeView();
+   void initDefinitionTreeView();
    void initTabNavigation(bool visible=false);
    void initMessageControl(bool visible=false);
 

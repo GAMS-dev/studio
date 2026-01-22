@@ -56,7 +56,7 @@ ConfigParamEditor::ConfigParamEditor(FileKind kind,
     initActions();
     initToolBar();
     initOptionTableView();
-    initDefintionTreeView();
+    initDefinitionTreeView();
     initTabNavigation( false );
     initMessageControl( false );
 

@@ -53,51 +53,41 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
     mFileHasChangedExtern(false)
 {
     mOptionTokenizer = new OptionTokenizer(mDefinitionFileName);
-    if (!mOptionTokenizer->getOption()->available())
-        SysLogLocator::systemLog()->append(QString("Missing a library for opening '%1', %2 editor might not function properly. Please check your GAMS installation.")
-                                                   .arg(mLocation).arg(mFileKind==FileKind::Opt ? "Solver option file ":"Parameter file"),
-                                           LogMsgType::Error);
+    if (!mOptionTokenizer->getOption()->available())  {
+        ui->definitionSearch->setReadOnly(true);
+        ui->compactViewCheckBox->setEnabled(false);
 
+        const QString msg1 = QString("Unable to open %1 Properly").arg(mLocation);
+        const QString msg2 = QString("Either '%1' is not a valid solver name or missing a library from GAMS installation.").arg(mSolverName);
+        mOptionTokenizer->logger()->append(QString("%1. %2").arg(msg1, msg2), LogMsgType::Error);
+        mOptionTokenizer->logger()->append(QString("An operation on the file contents might not be saved. Try 'Save As' or 'Open As Text' instead."), LogMsgType::Info);
+    }
     const QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(optionFilePath, encodingName);
     mOptionModel = new SolverOptionTableModel( callstr(),
                                                optionItem, mOptionTokenizer,  this );
     mDefinitionModel = new SolverOptionDefinitionModel( callstr(),
                                                         mOptionTokenizer->getOption(), 0, this );
-
     initActions();
     initToolBar();
     initOptionTableView();
-    initDefintionTreeView();
+    initDefinitionTreeView();
     initTabNavigation( mIsFileEditor );
     initMessageControl( mIsFileEditor );
 
     if (isCommentToggleable())
         updateTableColumnSpan();
 
-    if (!mOptionTokenizer->getOption()->available())  {
-        ui->definitionSearch->setReadOnly(true);
-        ui->compactViewCheckBox->setEnabled(false);
+    connect(ui->optionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionEditor::on_selectAndToggleRow, Qt::UniqueConnection);
 
-        const QString msg1 = QString("Unable to open %1 Properly").arg(mLocation);
-        const QString msg2 = QString("'%1' is not a valid solver name").arg(mSolverName);
-        mOptionTokenizer->logger()->append(QString("%1. %2").arg(msg1, msg2), LogMsgType::Error);
-        mOptionTokenizer->logger()->append(QString("An operation on the file contents might not be saved. Try 'Save As' or 'Open As Text' instead."), LogMsgType::Warning);
-    }
-    else {
-        connect(ui->optionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionEditor::on_selectAndToggleRow, Qt::UniqueConnection);
+    connect(this, &SolverOptionEditor::compactViewChanged, mDefinitionModel, &SolverOptionDefinitionModel::on_compactViewChanged, Qt::UniqueConnection);
+    connect(mOptionModel, &QAbstractTableModel::dataChanged, this, &SolverOptionEditor::on_dataItemChanged, Qt::UniqueConnection);
+    connect(mOptionModel, &QAbstractTableModel::dataChanged, mOptionModel, &SolverOptionTableModel::on_updateOptionItem, Qt::UniqueConnection);
+    connect(mOptionModel, &SolverOptionTableModel::solverOptionItemModelChanged, mOptionModel, &SolverOptionTableModel::updateRecurrentStatus, Qt::UniqueConnection);
+    connect(mOptionModel, &SolverOptionTableModel::solverOptionModelChanged, mDefinitionModel, &SolverOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
+    connect(mOptionModel, &SolverOptionTableModel::solverOptionItemModelChanged, mDefinitionModel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem, Qt::UniqueConnection);
+    connect(mOptionModel, &OptionTableModel::optionItemRemoved, mOptionModel, &SolverOptionTableModel::on_removeOptionItem, Qt::UniqueConnection);
 
-        connect(mOptionModel, &QAbstractTableModel::dataChanged, this, &SolverOptionEditor::on_dataItemChanged, Qt::UniqueConnection);
-        connect(mOptionModel, &QAbstractTableModel::dataChanged, mOptionModel, &SolverOptionTableModel::on_updateOptionItem, Qt::UniqueConnection);
-        connect(mOptionModel, &SolverOptionTableModel::solverOptionItemModelChanged, mOptionModel, &SolverOptionTableModel::updateRecurrentStatus, Qt::UniqueConnection);
-        connect(mOptionModel, &SolverOptionTableModel::solverOptionModelChanged, mDefinitionModel, &SolverOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
-        connect(mOptionModel, &SolverOptionTableModel::solverOptionItemModelChanged, mDefinitionModel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem, Qt::UniqueConnection);
-        connect(mOptionModel, &OptionTableModel::optionItemRemoved, mOptionModel, &SolverOptionTableModel::on_removeOptionItem, Qt::UniqueConnection);
-
-        connect(this, &SolverOptionEditor::compactViewChanged, mDefinitionModel, &SolverOptionDefinitionModel::on_compactViewChanged, Qt::UniqueConnection);
-
-        mOptionTokenizer->logger()->append(QString("Loading %1s from %2").arg(callstr().toLower()).arg(mLocation), LogMsgType::Info);
-    }
-
+    mOptionTokenizer->logger()->append(QString("Loading %1s from %2").arg(callstr().toLower()).arg(mLocation), LogMsgType::Info);
 }
 
 SolverOptionEditor::~SolverOptionEditor()

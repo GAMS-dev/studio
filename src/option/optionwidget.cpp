@@ -165,7 +165,7 @@ void OptionWidget::initOptionTableView()
     connect(optionModel(), &OptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped, Qt::UniqueConnection);
 }
 
-void OptionWidget::initDefintionTreeView()
+void OptionWidget::initDefinitionTreeView()
 {
     Q_ASSERT( optionModel() );
     Q_ASSERT( definitionModel() );
