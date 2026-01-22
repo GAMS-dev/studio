@@ -153,8 +153,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>325</width>
-                  <height>479</height>
+                  <width>83</width>
+                  <height>16</height>
                  </rect>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_2a">
@@ -245,8 +245,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>326</width>
-                  <height>479</height>
+                  <width>83</width>
+                  <height>16</height>
                  </rect>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -328,8 +328,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>325</width>
-                  <height>479</height>
+                  <width>168</width>
+                  <height>408</height>
                  </rect>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -824,9 +824,6 @@
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="gams::studio::find::FindWidget" name="edFindWidget" native="true"/>
-         </item>
         </layout>
        </widget>
       </widget>
@@ -836,12 +833,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>gams::studio::find::FindWidget</class>
-   <extends>QWidget</extends>
-   <header>search/findwidget.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>gams::studio::WpLabel</class>
    <extends>QLabel</extends>

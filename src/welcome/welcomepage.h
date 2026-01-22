@@ -57,7 +57,7 @@ public:
     bool canShowReleaseOverview();
     bool showReleaseOverview();
     FileState getChangelogPath(QString &path);
-    find::FindWidget *findWidget();
+    QWidget *currentViewer();
 
 signals:
     void openFilePath(const QString &filePath);

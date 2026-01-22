@@ -95,7 +95,8 @@ void FindWidget::setActive(bool newActive)
 
 void FindWidget::updateButtonStates()
 {
-    bool canFind = mFinder && !ui->edFind->text().isEmpty();
+    bool canFind = mFinder && !ui->edFind->text().isEmpty()
+                   && (!ui->edFind->isRegEx() || ui->edFind->regExp().isValid());
     ui->bNext->setEnabled(canFind);
     ui->bPrev->setEnabled(canFind);
 
@@ -124,7 +125,9 @@ bool FindWidget::setFindText(const QString &text)
 {
     if (mLastMatch.isEmpty() || text != mLastMatch) {
         ui->edFind->setText(text);
-        find();
+        if (!ui->edFind->isRegEx() || ui->edFind->regExp().isValid())
+            find();
+        updateButtonStates();
         return true;
     }
     return false;
@@ -161,8 +164,10 @@ bool FindWidget::find(FindOptions options, bool keepSearchTerm)
     size_t pos = 0;
     if (!mFinder->hasSelection() && !keepSearchTerm) {
         QString term = mFinder->currentFindSelection();
-        if (!term.isEmpty())
+        if (!term.isEmpty()) {
             ui->edFind->setText(term);
+            updateButtonStates();
+        }
     }
     if (ui->edFind->exactMatch()) options.setFlag(foExactMatch);
     if (ui->edFind->isCaseSensitive()) options.setFlag(foCaseSense);
@@ -242,12 +247,12 @@ void FindWidget::editDestroyed()
 
 void FindWidget::termChanged()
 {
-    if (ui->edFind->isRegEx() && !ui->edFind->regExp().isValid())
-        return;
-    find(foFocusTerm);
+    if (!ui->edFind->isRegEx() || !ui->edFind->regExp().isValid())
+        find(foFocusTerm);
+    updateButtonStates();
 }
 
-void FindWidget::allowReplaceChanged(QWidget *edit)
+void FindWidget::allowReplaceChanged()
 {
     updateButtonStates();
 }
@@ -312,7 +317,7 @@ void FindWidget::on_edReplace_textChanged(const QString &)
 
 void FindWidget::on_bToggleReplace_clicked()
 {
-    bool visible = ui->bToggleReplace->isChecked();
+    bool visible = ui->bToggleReplace->isChecked() && mFinder;
     ui->bToggleReplace->setIcon(Theme::icon(visible ? ":/%1/hide" :":/%1/show"));
     ui->bToggleReplace->setToolTip(visible ? "Hide Replace" : "Show Replace");
     ui->edReplace->setVisible(visible);

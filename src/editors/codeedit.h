@@ -219,7 +219,7 @@ signals:
     void getProfilerMaxData(QList<QPair<int, qreal>> &maxTimeContLine, QList<QPair<int,int>> &maxStepsContLine);
     void jumpToContinuousLine(int contLine);
     void takeCheckedPaths(QStringList &filePaths);
-    void allowReplaceChanged(QWidget *edit);
+    void allowReplaceChanged();
 
 public slots:
     void clearSelection();

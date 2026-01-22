@@ -4234,8 +4234,6 @@ find::FindWidget *MainWindow::currentFindWidget(QWidget *&sourceEdit)
     QList<QWidget*> parents {mWp, mPinView, ui->mainTabs};
     QWidget* wid = qApp->focusWidget();
     while (wid->parentWidget() != nullptr) {
-        if (wid == mWp)
-            return mWp->findWidget();
         if (wid == mPinView)
             return mPinView->findWidget();
         if (wid == ui->mainTabs)
@@ -6075,10 +6073,9 @@ QWidget *MainWindow::getViewOrEdit(find::FindWidget* findWidget)
     QWidget *res = nullptr;
 
     if (!parent->findChildren<QTabWidget*>(Qt::FindDirectChildrenOnly).isEmpty()) {
-        if (parent->findChildren<QTabWidget*>(Qt::FindDirectChildrenOnly).at(0) == ui->mainTabs)
-            res = ui->mainTabs->currentWidget();
-        else if (parent->findChildren<QTabWidget*>(Qt::FindDirectChildrenOnly).at(0) == ui->logTabs)
-            res = ui->logTabs->currentWidget();
+        res = parent->findChildren<QTabWidget*>(Qt::FindDirectChildrenOnly).at(0)->currentWidget();
+        if (res == mWp)
+            res = mWp->currentViewer();
     }
     else if (!parent->findChildren<TextView*>(Qt::FindDirectChildrenOnly).isEmpty())
         res = parent->findChildren<TextView*>(Qt::FindDirectChildrenOnly).at(0);
@@ -6092,8 +6089,8 @@ QWidget *MainWindow::getViewOrEdit(find::FindWidget* findWidget)
     else if (!parent->findChildren<QTextBrowser*>(Qt::FindDirectChildrenOnly).isEmpty())
         res = parent->findChildren<QTextBrowser*>(Qt::FindDirectChildrenOnly).at(0);
 
-    else if (!parent->findChildren<Overview*>(Qt::FindDirectChildrenOnly).isEmpty())
-        res = parent->findChildren<Overview*>(Qt::FindDirectChildrenOnly).at(0);
+    else if (!parent->findChildren<QWebEngineView*>(Qt::FindDirectChildrenOnly).isEmpty())
+        res = parent->findChildren<QWebEngineView*>(Qt::FindDirectChildrenOnly).at(0);
 
     if (!res)
         DEB() << "Couldn't detect the viewer/editor for Find.";

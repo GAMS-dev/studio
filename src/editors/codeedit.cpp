@@ -934,7 +934,7 @@ void CodeEdit::lockSelectedFind()
 {
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::clearSelectedFind, Qt::UniqueConnection);
     mSelectedFind = true;
-    emit allowReplaceChanged(this);
+    emit allowReplaceChanged();
 }
 
 bool CodeEdit::hasSelectedFind() const
@@ -978,7 +978,7 @@ void CodeEdit::clearSelectedFind()
 {
     disconnect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::clearSelectedFind);
     mSelectedFind = false;
-    emit allowReplaceChanged(this);
+    emit allowReplaceChanged();
 }
 
 bool CodeEdit::ensureUnfolded(int line)

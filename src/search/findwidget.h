@@ -64,7 +64,7 @@ protected:
 private slots:
     void editDestroyed();
     void termChanged();
-    void allowReplaceChanged(QWidget *edit);
+    void allowReplaceChanged();
 
     void on_bClose_clicked();
     void on_bNext_clicked();

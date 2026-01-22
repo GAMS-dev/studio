@@ -19,6 +19,7 @@
  */
 #include "findadapter.h"
 #include "viewhelper.h"
+#include "logger.h"
 #include "editors/codeedit.h"
 #include "editors/textview.h"
 
@@ -125,6 +126,11 @@ void EditFindAdapter::setFindTerm(const QRegularExpression &rex, FindOptions opt
     mEdit->setFindTerm(rex, findFlags(options));
 }
 
+bool EditFindAdapter::hasFindTerm()
+{
+    return mEdit->hasFindTerm();
+}
+
 bool EditFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
     return mEdit->findText(rex, findFlags(options), options.testFlag(foContinued));
@@ -165,7 +171,7 @@ void EditFindAdapter::invalidateSelection()
 ViewFindAdapter::ViewFindAdapter(TextView *view)
     : FindAdapter(view), mView(view)
 {
-    CodeEdit* edit = ViewHelper::toCodeEdit(view->edit());
+    CodeEdit* edit = static_cast<CodeEdit*>(view->edit());
     connect(edit, &CodeEdit::endFind, this, &FindAdapter::endFind);
     view->updateExtraSelections();
 }
@@ -188,6 +194,11 @@ bool ViewFindAdapter::hasSelection() const
 void ViewFindAdapter::setFindTerm(const QRegularExpression &rex, FindOptions options)
 {
     mView->setFindTerm(rex, findFlags(options));
+}
+
+bool ViewFindAdapter::hasFindTerm()
+{
+    return static_cast<CodeEdit*>(mView->edit())->hasFindTerm();
 }
 
 bool ViewFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
