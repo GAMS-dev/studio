@@ -314,11 +314,11 @@ QString OptionWidget::getSelectedOptionName(QWidget *widget) const
         const QModelIndexList selection = ui->optionTableView->selectionModel()->selectedIndexes();
         if (selection.count() > 0) {
             const QModelIndex index = selection.at(0);
-            const QVariant headerData = ui->definitionTreeView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
+            const QVariant headerData = ui->optionTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
             if (Qt::CheckState(headerData.toUInt())==Qt::PartiallyChecked) {
                 return "";
             }
-            const QVariant data = ui->definitionTreeView->model()->data( index.sibling(index.row(),0), Qt::DisplayRole );
+            const QVariant data = ui->optionTableView->model()->data( index.sibling(index.row(), OptionTableModel::COLUMN_KEY), Qt::DisplayRole );
             if (optionTokenizer()->getOption()->isValid(data.toString()))
                 return data.toString();
             else if (optionTokenizer()->getOption()->isASynonym(data.toString()))
@@ -650,7 +650,7 @@ void OptionWidget::showOptionRecurrence()
 
     QItemSelection selection = ui->optionTableView->selectionModel()->selection();
     for(const int row : std::as_const(rowList)) {
-        selection.select(ui->definitionTreeView->model()->index(row, 0), ui->definitionTreeView->model()->index(row, 0));
+        selection.select(ui->optionTableView->model()->index(row, OptionTableModel::COLUMN_ID), ui->optionTableView->model()->index(row, 0));
     }
 
     ui->optionTableView->selectionModel()->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
