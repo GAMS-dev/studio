@@ -269,7 +269,7 @@ void FindWidget::editDestroyed()
 void FindWidget::termChanged()
 {
     if (!ui->edFind->isRegEx() || !ui->edFind->regExp().isValid())
-        find(foFocusTerm, true);
+        find(foFocusTerm);
     updateButtonStates();
 }
 
@@ -286,19 +286,19 @@ void FindWidget::on_bClose_clicked()
 void FindWidget::on_bNext_clicked()
 {
     if (mFinder && mFinder->hasFindTerm())
-        find(FindOptions(foFocusEdit | foContinued), true);
+        find(FindOptions(foFocusEdit | foContinued));
 }
 
 void FindWidget::on_bPrev_clicked()
 {
     if (mFinder && mFinder->hasFindTerm())
-        find(FindOptions(foFocusEdit | foBackwards | foContinued), true);
+        find(FindOptions(foFocusEdit | foBackwards | foContinued));
 }
 
 void FindWidget::on_bReplace_clicked()
 {
     if (replace())
-        find(foContinued, true);
+        find(foContinued);
 }
 
 void FindWidget::on_bReplaceAll_clicked()

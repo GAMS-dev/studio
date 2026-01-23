@@ -53,7 +53,7 @@ public:
     bool hasTerm();
     QRegularExpression termRegEx();
     QTextDocument::FindFlags findFlags(bool backwards = false);
-    bool find(FindOptions options = FindOptions(), bool keepSearchTerm = false);
+    bool find(FindOptions options = FindOptions(), bool keepSearchTerm = true);
     QString currentFindSelection(bool &isCurrentWord);
     bool canReplace() const;
     void toggleReplace(bool ensureVisible = false);

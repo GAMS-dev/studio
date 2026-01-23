@@ -6074,7 +6074,7 @@ void MainWindow::on_actionFind_triggered()
         if (find::FindWidget *findWid = getCurrentFindWidget()) {
             bool valid = findWid->editWidget();
             if (valid)
-                findWid->find(find::foFocusTerm);
+                findWid->find(find::foFocusTerm, false);
             findWid->setActive(valid);
             findWid->setVisible(findWid->isActive());
             if (findWid->isVisible())
@@ -6212,7 +6212,7 @@ void MainWindow::continueFind(bool backwards)
             return;
         find::FindOptions options = {find::foFocusEdit | find::foContinued};
         if (backwards) options.setFlag(find::foBackwards);
-        findWid->find(options, true);
+        findWid->find(options);
     }
 }
 
