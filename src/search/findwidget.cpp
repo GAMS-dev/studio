@@ -98,8 +98,11 @@ void FindWidget::setActive(bool newActive)
     mActive = newActive;
     if (!mActive) {
         hide();
-        if (mFinder)
+        if (mFinder) {
             mFinder->setFocus();
+            mFinder->setFindTerm(QRegularExpression(), foNone);
+        }
+        ui->edFind->clear();
     }
 }
 
@@ -277,12 +280,14 @@ void FindWidget::on_bClose_clicked()
 
 void FindWidget::on_bNext_clicked()
 {
-    find(FindOptions(foFocusEdit | foContinued), true);
+    if (mFinder && mFinder->hasFindTerm())
+        find(FindOptions(foFocusEdit | foContinued), true);
 }
 
 void FindWidget::on_bPrev_clicked()
 {
-    find(FindOptions(foFocusEdit | foBackwards | foContinued), true);
+    if (mFinder && mFinder->hasFindTerm())
+        find(FindOptions(foFocusEdit | foBackwards | foContinued), true);
 }
 
 void FindWidget::on_bReplace_clicked()

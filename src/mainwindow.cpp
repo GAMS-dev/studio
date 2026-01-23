@@ -6198,13 +6198,13 @@ void MainWindow::updateResults(search::SearchResultModel* model)
 
 void MainWindow::continueFind(bool backwards)
 {
-    QWidget *edit = currentEdit();
-    if (!ViewHelper::toCodeEdit(edit) && !ViewHelper::toTextView(edit))
-        return;
-    find::FindWidget *fw = edit == mPinView->widget() ? mPinView->findWidget() : ui->findWidget;
-    find::FindOptions options = {find::foFocusEdit | find::foContinued};
-    if (backwards) options.setFlag(find::foBackwards);
-    emit fw->find(options, true);
+    if (find::FindWidget *findWid = getCurrentFindWidget()) {
+        if (!findWid->termRegEx().isValid())
+            return;
+        find::FindOptions options = {find::foFocusEdit | find::foContinued};
+        if (backwards) options.setFlag(find::foBackwards);
+        findWid->find(options, true);
+    }
 }
 
 void MainWindow::continueSearch(bool backwards)
