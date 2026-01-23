@@ -35,6 +35,9 @@ FindAdapter *FindAdapter::createAdapter(QWidget *widget)
 {
     FindAdapter *res = nullptr;
 
+    if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(widget))
+        lxi->textView()->setFocus();
+
     if (CodeEdit *ce = ViewHelper::toCodeEdit(widget))
         res = new EditFindAdapter(ce);
 
@@ -121,7 +124,7 @@ bool EditFindAdapter::canReplace() const
     return mEdit && !mEdit->isReadOnly();
 }
 
-bool EditFindAdapter::hasSelection() const
+bool EditFindAdapter::hasSelectedFind() const
 {
     return mEdit->hasSelectedFind();
 }
@@ -190,7 +193,7 @@ QWidget *ViewFindAdapter::widget() const
     return mView;
 }
 
-bool ViewFindAdapter::hasSelection() const
+bool ViewFindAdapter::hasSelectedFind() const
 {
     return mView->hasSelectedFind();
 }
@@ -252,7 +255,7 @@ QWidget *ChangelogFindAdapter::widget() const
     return mView;
 }
 
-bool ChangelogFindAdapter::hasSelection() const
+bool ChangelogFindAdapter::hasSelectedFind() const
 {
     return !mSelection.isEmpty();
 }

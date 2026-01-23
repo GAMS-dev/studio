@@ -77,9 +77,9 @@ public:
     virtual bool canReplace() const;
 
     ///
-    /// \brief hasSelection Checks if the widget has a selection that results from a find action
+    /// \brief hasSelectedFind Checks if the widget has a selection that results from a find action
     ///
-    virtual bool hasSelection() const = 0;
+    virtual bool hasSelectedFind() const = 0;
 
     ///
     /// \brief setFindTerm Sets the findTerm and triggers a find action
@@ -166,7 +166,7 @@ public:
     ~EditFindAdapter() override;
     QWidget *widget() const override;
     bool canReplace() const override;
-    bool hasSelection() const override;
+    bool hasSelectedFind() const override;
     void setFindTerm(const QRegularExpression &rex, FindOptions options) override;
     bool hasFindTerm() override;
     bool findText(const QRegularExpression &rex, FindOptions options) override;
@@ -193,7 +193,7 @@ class ViewFindAdapter : public FindAdapter
 public:
     ~ViewFindAdapter() override;
     QWidget *widget() const override;
-    bool hasSelection() const override;
+    bool hasSelectedFind() const override;
     void setFindTerm(const QRegularExpression &rex, FindOptions options) override;
     bool hasFindTerm() override;
     bool findText(const QRegularExpression &rex, FindOptions options) override;
@@ -218,7 +218,7 @@ class ChangelogFindAdapter : public FindAdapter
 public:
     ~ChangelogFindAdapter() override;
     QWidget *widget() const override;
-    bool hasSelection() const override;
+    bool hasSelectedFind() const override;
     void setFindTerm(const QRegularExpression &rex, FindOptions options) override;
     bool hasFindTerm() override;
     bool findText(const QRegularExpression &rex, FindOptions options) override;

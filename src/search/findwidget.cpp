@@ -181,7 +181,7 @@ bool FindWidget::find(FindOptions options, bool keepSearchTerm)
     QString match;
     size_t pos = 0;
     bool isCurrentWord = false;
-    if (!mFinder->hasSelection() && !keepSearchTerm) {
+    if (!mFinder->hasSelectedFind() && (!keepSearchTerm || !mFinder->hasFindTerm())) {
         QString term = mFinder->currentFindSelection(isCurrentWord);
         if (isCurrentWord && !options.testFlag(foContinued))
             options.setFlag(foSkipFind);

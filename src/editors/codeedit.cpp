@@ -2233,6 +2233,7 @@ void CodeEdit::clearFindings()
     if (mFindREx) {
         delete mFindREx;
         mFindREx = nullptr;
+        clearSelectedFind();
         updateExtraSelections();
         emit endFind();
     }
