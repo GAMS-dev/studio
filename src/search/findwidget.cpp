@@ -264,7 +264,7 @@ void FindWidget::editDestroyed()
 void FindWidget::termChanged()
 {
     if (!ui->edFind->isRegEx() || !ui->edFind->regExp().isValid())
-        find(foFocusTerm);
+        find(foFocusTerm, true);
     updateButtonStates();
 }
 
