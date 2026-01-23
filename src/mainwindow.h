@@ -437,6 +437,7 @@ protected:
     bool event(QEvent *event) override;
     void moveEvent(QMoveEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
+
     void updateRecentEdit(QWidget *old, QWidget *now);
     void checkDefaultWorkDir();
     int logTabCount();
@@ -445,6 +446,7 @@ protected:
     void initGamsStandardPaths();
     QWidget *otherEdit();
     void initEdit(FileMeta *fileMeta, QWidget *edit);
+    bool checkCustomFindHandlers();
     void checkForEngineJob();
     void ensureWorkspace();
     void continueAsyncCall();

@@ -146,6 +146,11 @@ bool FindWidget::setFindText(const QString &text)
     return false;
 }
 
+bool FindWidget::hasTerm()
+{
+    return mFinder->hasFindTerm();
+}
+
 QRegularExpression FindWidget::termRegEx()
 {
     QRegularExpression res;

@@ -50,6 +50,7 @@ public:
     bool checkLastMatch(const QString &text, size_t pos);
     QString getFindText() const;
     bool setFindText(const QString &text);
+    bool hasTerm();
     QRegularExpression termRegEx();
     QTextDocument::FindFlags findFlags(bool backwards = false);
     bool find(FindOptions options = FindOptions(), bool keepSearchTerm = false);

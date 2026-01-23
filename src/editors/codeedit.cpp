@@ -2312,6 +2312,7 @@ bool CodeEdit::findText(const QRegularExpression &rex, QTextDocument::FindFlags 
         pos += options.testFlag(QTextDocument::FindBackward) ? -1 : 1;
     QTextCursor cur = document()->find(rex, pos, options);
     if (loop && cur.isNull()) {
+        // not found in the remain -> resume at start/end
         pos = options.testFlag(QTextDocument::FindBackward) ? document()->characterCount()-1 : 0;
         cur = document()->find(rex, pos, options);
     }

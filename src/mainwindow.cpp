@@ -5590,6 +5590,49 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
     }
 }
 
+bool MainWindow::checkCustomFindHandlers()
+{
+    // help view
+    if (ui->dockHelpView->isAncestorOf(QApplication::focusWidget()) ||
+        ui->dockHelpView->isAncestorOf(QApplication::activeWindow())) {
+#ifdef QWEBENGINE
+        if (mHelpWidget) mHelpWidget->on_searchHelp();
+#endif
+        return true;
+    // parameter editor
+    } else if (mGamsParameterEditor->isAParameterEditorFocused(QApplication::focusWidget()) ||
+               mGamsParameterEditor->isAParameterEditorFocused(QApplication::activeWindow())) {
+        mGamsParameterEditor->selectSearchField();
+        return true;
+    } else {
+        //  other alternative editors
+        PExFileNode *fn = mProjectRepo.findFileNode(mRecent.editor());
+        if (fn /*  && !fn->file()->document() */ ) { // TODO(JM) We could offer search in text mode
+            if (fn->file()->kind() == FileKind::Gdx) {
+                gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
+                gdx->selectSearchField();
+                return true;
+            }
+            if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(mRecent.editor())) {
+                refViewer->selectSearchField();
+                return true;
+            }
+            if (option::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+                sow->selectSearchField();
+                return true;
+            }
+            if (option::GamsConfigEditor *gce = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
+                return gce->selectSearchField();
+            }
+            if (efi::EfiEditor *efi = ViewHelper::toEfiEditor(mRecent.editor())) {
+                efi->selectFilter();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void MainWindow::openFileNode(PExAbstractNode *node, bool focus, const QString &encoding, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     if (!node) return;
@@ -6027,14 +6070,16 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::on_actionFind_triggered()
 {
-    if (find::FindWidget *findWid = getCurrentFindWidget()) {
-        bool valid = findWid->editWidget();
-        if (valid)
-            findWid->find(find::foFocusTerm);
-        findWid->setActive(valid);
-        findWid->setVisible(findWid->isActive());
-        if (findWid->isVisible())
-            findWid->setFocus();
+    if (!checkCustomFindHandlers()) {
+        if (find::FindWidget *findWid = getCurrentFindWidget()) {
+            bool valid = findWid->editWidget();
+            if (valid)
+                findWid->find(find::foFocusTerm);
+            findWid->setActive(valid);
+            findWid->setVisible(findWid->isActive());
+            if (findWid->isVisible())
+                findWid->setFocus();
+        }
     }
 }
 
@@ -6103,43 +6148,7 @@ void MainWindow::on_actionSearch_triggered()
 
 void MainWindow::toggleSearchDialog()
 {
-    // help view
-    if (ui->dockHelpView->isAncestorOf(QApplication::focusWidget()) ||
-        ui->dockHelpView->isAncestorOf(QApplication::activeWindow())) {
-#ifdef QWEBENGINE
-        if (mHelpWidget) mHelpWidget->on_searchHelp();
-#endif
-    // parameter editor
-    } else if (mGamsParameterEditor->isAParameterEditorFocused(QApplication::focusWidget()) ||
-               mGamsParameterEditor->isAParameterEditorFocused(QApplication::activeWindow())) {
-                mGamsParameterEditor->selectSearchField();
-    } else {
-        //  other alternative editors
-        PExFileNode *fn = mProjectRepo.findFileNode(mRecent.editor());
-        if (fn /*  && !fn->file()->document() */ ) { // TODO(JM) We could offer search in text mode
-            if (fn->file()->kind() == FileKind::Gdx) {
-                gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
-                gdx->selectSearchField();
-                return;
-            }
-            if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(mRecent.editor())) {
-                refViewer->selectSearchField();
-                return;
-            }
-            if (option::SolverOptionEditor *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
-                sow->selectSearchField();
-                return;
-            }
-            if (option::GamsConfigEditor *gce = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
-                if (gce->selectSearchField())
-                   return;
-            }
-            if (efi::EfiEditor *efi = ViewHelper::toEfiEditor(mRecent.editor())) {
-                efi->selectFilter();
-                return;
-            }
-        }
-
+    if (!checkCustomFindHandlers()) {
         // e.g. needed for KDE to raise the search dialog when minimized
         if (mSearchDialog->isMinimized()) {
             mSearchDialog->setWindowState(Qt::WindowMaximized);
@@ -6199,7 +6208,7 @@ void MainWindow::updateResults(search::SearchResultModel* model)
 void MainWindow::continueFind(bool backwards)
 {
     if (find::FindWidget *findWid = getCurrentFindWidget()) {
-        if (!findWid->termRegEx().isValid())
+        if (!findWid->hasTerm())
             return;
         find::FindOptions options = {find::foFocusEdit | find::foContinued};
         if (backwards) options.setFlag(find::foBackwards);
