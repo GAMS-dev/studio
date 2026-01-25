@@ -172,10 +172,12 @@ void FilterLineEdit::updateRegExp()
         }
     }
     // TODO(JM) Check if we should use the flag QRegularExpression::UseUnicodePropertiesOption
-    mRegExp = QRegularExpression(filter, QRegularExpression::CaseInsensitiveOption);
+    QRegularExpression rex = QRegularExpression(filter, QRegularExpression::CaseInsensitiveOption);
 
-    if (mRegExp.isValid())
+    if (rex.isValid() && rex != mRegExp) {
+        mRegExp = rex;
         emit regExpChanged(mRegExp);
+    }
 }
 
 QAbstractButton *FilterLineEdit::createButton(const QStringList &iconPaths, const QStringList &toolTips)
