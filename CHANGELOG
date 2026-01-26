@@ -1,22 +1,19 @@
-Version 1.24.0 *
+Version 1.24.0
 ==================
-- Added Show the LST line number in debug mode when the execution is paused. The information is visible at the very button of the debugger.
-- Changed the start directory of the file open dialog to the base directory of the current project.
-- Improved search and replace file pattern, i.e. the default pattern has been changed from `*` to `*.gms`. The change is applied to all the cases where a file pattern can be configured.
-- Add GAMS system directory configuration to settings dialog, i.e. to switch between different GAMS installations.
-- Translate UNC path to a local path for the license dialog, i.e. when the `Documents` folder on Windows has been moved to a server.
-- Added a quick-find to the bottom of text editors for searching in the current file, called "find".
-  - The "find" is evoked with `Ctrl + F` and uses `F3` / `Shift + F3` to find next / previous.
-  - The complex "search" dialog is now evoked with `Ctrl + Shift + F` and uses `F4` / `Shift + F4` to search next / previous.
-
-Version 1.23.4 *
-==================
-- Fixed the path to the main file when running MIRO. Before, the main file path always corresponded to the working directory path.
-- Fixed enable MIRO menu. Before, the MIRO menu was not enabeld in some cases although a correct path has been configured.
+- Fixed the path to the main file when running MIRO. Before, the main file path always corresponded to the working directory.
+- Fixed enable MIRO menu. Before, the MIRO menu was not enabled in some cases although a correct path has been configured.
 - Fixed wildcard matching for the Model Library dialog, i.e. when wildcard matching was enabled not all models matching the pattern were listed.
 - Improved search and replace dialog selection behavior. Now the result selection is removed when the dialog is closed and no search result list is open.
-- Ensure closing lst files on file system when corresponding tab is closed.
+- Ensure closing lst files on the file system when the corresponding tab is closed.
 - Improved behavior of `--integrated-help=on/off` command line option, to ensure the Help View is not unexpectedly disabled when started.
+- Show the LST line number in debug mode when the execution is paused. The information is visible at the very bottom of the debugger.
+- Changed the start directory of the file open dialog to the base directory of the current project.
+- Improved search and replace file pattern, i.e. the default pattern has been changed from `*` to `*.gms`. The change is applied to all the cases where a file pattern can be configured.
+- Added GAMS system directory configuration to settings dialog to switch between different GAMS installations.
+- Translate UNC path to a local path for the license dialog, i.e. when the `Documents` folder on Windows has been moved to a server.
+- Added a quick-find to the bottom of text editors for searching in the current file, called "find".
+  - The quick "find" is evoked with `Ctrl + F` and uses `F3` / `Shift + F3` to find next / previous.
+  - The complex "search" dialog is now evoked with `Ctrl + Shift + F` and uses `F4` / `Shift + F4` to search next / previous.
 
 Version 1.23.3
 ==================
