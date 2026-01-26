@@ -57,6 +57,20 @@ OptionDefinitionItem *OptionDefinitionModel::getItem(const QModelIndex &index) c
     return rootItem;
 }
 
+bool OptionDefinitionModel::removeRows(int row, int count, const QModelIndex &parent)
+{
+    OptionDefinitionItem* parentItem = getItem(parent);
+    bool success = false;
+
+    if (count > 0) {
+        beginRemoveRows(parent, row, row + count - 1);
+        success = parentItem->removeChildren(row, count);
+        endRemoveRows();
+    }
+
+    return success;
+}
+
 void OptionDefinitionModel::loadOptionFromGroup(const int group)
 {
     mOptionGroup = group;

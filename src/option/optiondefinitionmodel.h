@@ -55,6 +55,8 @@ public:
     virtual QStringList mimeTypes() const override = 0;
     virtual QMimeData* mimeData(const QModelIndexList & indexes) const override = 0;
 
+    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
+
     static const int COLUMN_OPTION_NAME = 0;
     static const int COLUMN_SYNONYM = 1;
     static const int COLUMN_DEF_VALUE = 2;

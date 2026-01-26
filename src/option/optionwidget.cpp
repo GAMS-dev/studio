@@ -234,7 +234,8 @@ void OptionWidget::initDefinitionTreeView()
     });
 
     connect(ui->definitionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int groupindex) {
-        definitionModel()->loadOptionFromGroup( groupindex );
+        definitionModel()->loadOptionFromGroup( groupModel->data(groupModel->index(groupindex, 1)).toInt() );
+        optionModel()->on_groupDefinitionReloaded();
     });
 
     connect(ui->definitionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
