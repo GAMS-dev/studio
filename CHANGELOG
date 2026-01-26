@@ -5,6 +5,9 @@ Version 1.24.0 *
 - Improved search and replace file pattern, i.e. the default pattern has been changed from `*` to `*.gms`. The change is applied to all the cases where a file pattern can be configured.
 - Add GAMS system directory configuration to settings dialog, i.e. to switch between different GAMS installations.
 - Translate UNC path to a local path for the license dialog, i.e. when the `Documents` folder on Windows has been moved to a server.
+- Added a quick-find to the bottom of text editors for searching in the current file, called "find".
+  - The "find" is evoked with `Ctrl + F` and uses `F3` / `Shift + F3` to find next / previous.
+  - The complex "search" dialog is now evoked with `Ctrl + Shift + F` and uses `F4` / `Shift + F4` to search next / previous.
 
 Version 1.23.4 *
 ==================
