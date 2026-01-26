@@ -123,7 +123,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
         break;
     }
     case Qt::TextAlignmentRole: {
-        return int(Qt::AlignLeft | Qt::AlignVCenter);
+        return static_cast<int>(Qt::AlignLeft | Qt::AlignVCenter);
     }
     case Qt::ToolTipRole: {
         return dataTooltip(mOptionItem.at(row)->disabled, mOptionItem.at(row)->recurrent,
@@ -267,7 +267,7 @@ bool SolverOptionTableModel::removeRows(int row, int count, const QModelIndex &p
 
 bool SolverOptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
 {
-    if (mOptionItem.size() == 0 || count < 1 || destinationChild < 0 ||  destinationChild > mOptionItem.size())
+    if (mOptionItem.isEmpty() || count < 1 || destinationChild < 0 ||  destinationChild > mOptionItem.size())
          return false;
 
     Q_UNUSED(sourceParent)
@@ -362,7 +362,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                     }
                 }
                 if (settings && settings->toBool(skSoDeleteCommentsAbove)) {
-                    for(const QModelIndex &idx : indices) {
+                    for(const QModelIndex &idx : std::as_const(indices)) {
                         for(int r=idx.row()-1; r>=0; --r) {
                             if (headerData(r, Qt::Vertical, static_cast<int>(Qt::CheckStateRole)).toInt()!=static_cast<int>(Qt::PartiallyChecked))
                                 break;
@@ -377,7 +377,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
 
         bool replaceExistingEntry = false;
         if (overrideIdRowList.size() > 0) {
-            int answer = questionEntryExisted(overrideIdRowList);
+            const int answer = questionEntryExisted(overrideIdRowList);
             if (overrideIdRowList.size()==1) { // singleEntryExisted)
                 switch(answer) {
                 case 0: // replace
@@ -423,17 +423,17 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
             }
         } // else entry not exist
 
-        for (SolverOptionItem * item : std::as_const(itemList)) {
+        for (const SolverOptionItem * item : std::as_const(itemList)) {
             if (item->disabled) {
                 insertRows(beginRow, 1, QModelIndex());
-                QModelIndex idx = index(beginRow, COLUMN_KEY);
+                const QModelIndex idx = index(beginRow, COLUMN_KEY);
                 setData(idx, item->key, Qt::EditRole);
                 setHeaderData( idx.row(), Qt::Vertical, Qt::CheckState(Qt::PartiallyChecked), Qt::CheckStateRole );
             } else {
                 if (!replaceExistingEntry)
                     insertRows(beginRow, 1, QModelIndex());
 
-                QModelIndex idx = index(beginRow, COLUMN_KEY);
+                const QModelIndex idx = index(beginRow, COLUMN_KEY);
                 setHeaderData( idx.row(), Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
                 setData(idx, item->key, Qt::EditRole);
                 setData( index(beginRow, COLUMN_VALUE), item->value, Qt::EditRole);

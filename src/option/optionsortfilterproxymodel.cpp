@@ -52,7 +52,7 @@ bool OptionSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
 bool OptionSortFilterProxyModel::filterAcceptsSelfRow(int sourceRow, const QModelIndex &sourceParent) const
 {
     for (int col=0; col < sourceModel()->columnCount(); ++col) {
-        QModelIndex keyIndex = sourceModel()->index(sourceRow, col, sourceParent);
+        const QModelIndex keyIndex = sourceModel()->index(sourceRow, col, sourceParent);
         if (!keyIndex.isValid())
            continue;
 

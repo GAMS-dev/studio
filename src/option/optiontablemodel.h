@@ -144,13 +144,13 @@ public:
                 tooltipText.append( QString("Unknown %1 '%2'").arg(mCallstr.toLower(), key));
                 break;
             case OptionErrorType::Incorrect_Value_Type:
-                tooltipText.append( QString("%1 '%2' has a value of incorrect type").arg(mCallstr).arg(key) );
+                tooltipText.append( QString("%1 '%2' has a value of incorrect type").arg(mCallstr, key) );
                 break;
             case OptionErrorType::Value_Out_Of_Range:
                 tooltipText.append( QString("Value '%1' for %3 key '%2' is out of range").arg(value, key, mCallstr.toLower()) );
                 break;
             case OptionErrorType::Deprecated_Option:
-                tooltipText.append( QString("%1 '%2' is deprecated, will be ignored when run").arg(mCallstr).arg(key) );
+                tooltipText.append( QString("%1 '%2' is deprecated, will be ignored when run").arg(mCallstr, key) );
                 break;
             case OptionErrorType::UserDefined_Error:
                 tooltipText.append( QString("Invalid %1 key or value or comment defined").arg(mCallstr.toLower()) );

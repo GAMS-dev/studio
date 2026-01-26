@@ -61,8 +61,8 @@ void DefinitionItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
         QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &opt);
         painter->fillRect(textRect, index.data(Qt::BackgroundRole).value<QColor>());
 
-        auto view = qobject_cast<const QTreeView*>(opt.widget);
-        int indent = level * (view ? view->indentation() : 10);
+        const auto view = qobject_cast<const QTreeView*>(opt.widget);
+        const int indent = level * (view ? view->indentation() : 10);
 
        opt.rect.adjust(indent, 0, 0, 0);
        style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);

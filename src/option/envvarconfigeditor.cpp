@@ -77,10 +77,10 @@ void EnvVarConfigEditor::updateActionsState(const QModelIndex &index)
 
     QModelIndexList idxSelection = ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
 
-    bool thereIsSelection = (isThereARow() && !idxSelection.isEmpty());
+    const bool thereIsSelection = (isThereARow() && !idxSelection.isEmpty());
 
-    bool singleSelection = (idxSelection.size() ==1);
-    bool singleSelectionIsRow = (singleSelection && ui->EnvVarConfigTableView->selectionModel()->isRowSelected(idxSelection.first().row()));
+    const bool singleSelection = (idxSelection.size() ==1);
+    const bool singleSelectionIsRow = (singleSelection && ui->EnvVarConfigTableView->selectionModel()->isRowSelected(idxSelection.first().row()));
     bool multiSelectionIsRow = false;
     bool multiSelectionIsCell_sameRow = multiSelectionIsRow;
     if (!singleSelection) {
@@ -122,7 +122,7 @@ void EnvVarConfigEditor::updateActionsState()
                                       ? ui->EnvVarConfigTableView->selectionModel()->selectedIndexes()
                                       : ui->EnvVarConfigTableView->selectionModel()->selectedRows() );
 
-    bool thereIsSelection = (isThereARow() && !idxSelection.isEmpty());
+    const bool thereIsSelection = (isThereARow() && !idxSelection.isEmpty());
 
     ui->actionInsert->setEnabled( true );
     ui->actionDelete->setEnabled( thereIsSelection ? idxSelection.first().row() < mEnvVarTableModel->rowCount() : false );

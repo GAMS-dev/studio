@@ -276,7 +276,7 @@ bool OptionWidget::isThereARow() const
 
 bool OptionWidget::isThereAnIndexSelection() const
 {
-    QModelIndexList selection = ui->optionTableView->selectionModel()->selectedIndexes();
+    const QModelIndexList selection = ui->optionTableView->selectionModel()->selectedIndexes();
     return (selection.count() > 0);
 }
 

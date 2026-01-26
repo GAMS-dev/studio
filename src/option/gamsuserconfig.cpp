@@ -138,7 +138,7 @@ void GamsUserConfig::updateCommandLineParameters(const QList<ConfigItem *> &item
     for (int ipos=0; ipos<gucGetItemCount(mGUCfg); ipos++) {
         int gsec,  isset;
         char sval[GMS_SSSIZE];
-        int rc = gucGetItemKV(mGUCfg, ipos, guciGSection, &isset, &gsec, sval, sizeof(sval));
+        const int rc = gucGetItemKV(mGUCfg, ipos, guciGSection, &isset, &gsec, sval, sizeof(sval));
         if (rc > 1)
             break;
         if (rc==1)

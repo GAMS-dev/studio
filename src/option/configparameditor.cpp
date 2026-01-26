@@ -290,7 +290,7 @@ void ConfigParamEditor::deleteOption()
         std::sort(rows.begin(), rows.end());
         int prev = -1;
         for(int i=rows.count()-1; i>=0; i--) {
-            int current = rows[i];
+            const int current = rows[i];
             if (current != prev) {
                 const QString text = mParameterTableModel->getOptionTableEntry(current);
                 ui->optionTableView->model()->removeRows( current, 1 );

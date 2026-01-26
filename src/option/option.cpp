@@ -162,7 +162,7 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
      }
      case optTypeEnumInt : {
          bool isCorrectDataType = false;
-         int n = value.toInt(&isCorrectDataType);
+         const int n = value.toInt(&isCorrectDataType);
          if (isCorrectDataType) {
             for (const OptionValue &optValue: getValueList(key)) {
                if (optValue.value.toInt() == n) { // && !optValue.hidden) {
@@ -204,7 +204,7 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
 
                  bool isCorrectDataType = false;
                  double d = value.toDouble(&isCorrectDataType);
-                 int ivalue = static_cast<int>(d);
+                 const int ivalue = static_cast<int>(d);
                  if (qAbs(d-ivalue) < 0.01)
                      n = ivalue;
                  else

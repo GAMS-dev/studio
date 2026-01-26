@@ -39,7 +39,7 @@ ConfigParamTableModel::ConfigParamTableModel(const QString& callstr,
     mHeader << "id" << "Key"  << "Value" << "minVersion" << "maxVersion";
 
     for(ParamConfigItem* item : itemList) {
-        QList<OptionErrorType> errorType = mOptionTokenizer->validate(item);
+        const QList<OptionErrorType> errorType = mOptionTokenizer->validate(item);
         item->error =  (errorType.isEmpty() ? OptionErrorType::No_Error : errorType.at(0));
     }
     updateCheckState();

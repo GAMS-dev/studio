@@ -92,7 +92,7 @@ QString GamsParameterWidget::on_runAction(RunActionState state)
 {
     Q_ASSERT( mOptionTokenizer );
 
-    Settings::settings()->setInt(skLastRun, int(state));
+    Settings::settings()->setInt(skLastRun, static_cast<int>(state));
     QString commandLineStr =  ui->gamsParameterCommandLine->getParameterString();
 
     if (!commandLineStr.endsWith(" "))

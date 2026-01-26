@@ -70,7 +70,7 @@ void EnvVarCfgCompleterDelegate::setEditorData(QWidget *editor, const QModelInde
     emit currentEditedIndexChanged(index);
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
-        QVariant data = index.model()->data( index.model()->index(index.row(), index.column()) );
+        const QVariant data = index.model()->data( index.model()->index(index.row(), index.column()) );
         lineEdit->setText(  data.toString() ) ;
         return;
     }

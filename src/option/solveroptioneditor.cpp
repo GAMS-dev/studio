@@ -87,7 +87,7 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
     connect(mOptionModel, &SolverOptionTableModel::solverOptionItemModelChanged, mDefinitionModel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem, Qt::UniqueConnection);
     connect(mOptionModel, &OptionTableModel::optionItemRemoved, mOptionModel, &SolverOptionTableModel::on_removeOptionItem, Qt::UniqueConnection);
 
-    mOptionTokenizer->logger()->append(QString("Loading %1s from %2").arg(callstr().toLower()).arg(mLocation), LogMsgType::Info);
+    mOptionTokenizer->logger()->append(QString("Loading %1s from %2").arg(callstr().toLower(), mLocation), LogMsgType::Info);
 }
 
 SolverOptionEditor::~SolverOptionEditor()
