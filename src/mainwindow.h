@@ -519,7 +519,6 @@ private:
     PExProjectNode *currentProject();
     PExProjectNode *openProjectIfExists(const QString &projectFileName);
     int pinViewTabIndex();
-    // find::FindWidget *currentFindWidget(QWidget *&sourceEdit);
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
     bool requestCloseChanged(QVector<FileMeta*> changedFiles);
