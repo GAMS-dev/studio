@@ -70,11 +70,15 @@ bool FindAdapter::canReplace() const
 
 int FindAdapter::findReplaceAll(const QRegularExpression &rex, FindOptions options, const QString &replacement)
 {
+    Q_UNUSED(rex)
+    Q_UNUSED(options)
+    Q_UNUSED(replacement)
     return 0;
 }
 
-bool FindAdapter::findReplace(const QRegularExpression &rex, FindOptions options, const QString &replacement)
+bool FindAdapter::findReplace(const QString &replacement)
 {
+    Q_UNUSED(replacement)
     return false;
 }
 
@@ -144,7 +148,7 @@ bool EditFindAdapter::findText(const QRegularExpression &rex, FindOptions option
     return mEdit->findText(rex, findFlags(options), options.testFlag(foContinued));
 }
 
-bool EditFindAdapter::findReplace(const QRegularExpression &rex, FindOptions options, const QString &replacement)
+bool EditFindAdapter::findReplace(const QString &replacement)
 {
     if (!mEdit->findReplace(replacement))
         return false;
@@ -161,6 +165,8 @@ int EditFindAdapter::findReplaceAll(const QRegularExpression &rex, FindOptions o
 
 QString EditFindAdapter::currentFindSelection(bool &isCurrentWord)
 {
+    // TODO(JM) Check usage of isCurrentWord!
+
     return mEdit->currentFindSelection(false);
 }
 
@@ -265,6 +271,7 @@ void ChangelogFindAdapter::setFindTerm(const QRegularExpression &rex, FindOption
     if (mRex)
         delete mRex;
     mRex = rex.isValid() ? new QRegularExpression(rex) : nullptr;
+    mOptions = options;
 
     calcExtraSelections();
 }

@@ -80,7 +80,7 @@ private slots:
 
 
 private:
-    bool replace(bool cursorToStart = false);
+    bool replace();
 
 private:
     Ui::FindWidget *ui;

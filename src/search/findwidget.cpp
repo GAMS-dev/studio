@@ -321,7 +321,7 @@ void FindWidget::on_edFind_textEdited(const QString &term)
     termChanged();
 }
 
-bool FindWidget::replace(bool cursorToStart)
+bool FindWidget::replace()
 {
     if (!mFinder || !mFinder->canReplace()) return false;
 
@@ -330,7 +330,7 @@ bool FindWidget::replace(bool cursorToStart)
     FindOptions options;
     if (ui->edFind->exactMatch()) options.setFlag(foExactMatch);
     if (ui->edFind->isCaseSensitive()) options.setFlag(foCaseSense);
-    return mFinder->findReplace(termRegEx(), options, ui->edReplace->text());
+    return mFinder->findReplace(ui->edReplace->text());
 }
 
 void FindWidget::on_edReplace_textChanged(const QString &)

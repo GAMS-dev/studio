@@ -112,12 +112,10 @@ public:
 
     ///
     /// \brief findReplace Replace the current find selection with the replacement
-    /// \param rex The find term
-    /// \param options Options for the find action
     /// \param replacement The replacement text
     /// \return TRUE if the replace has been successful
     ///
-    virtual bool findReplace(const QRegularExpression &rex, FindOptions options, const QString &replacement);
+    virtual bool findReplace(const QString &replacement);
 
     ///
     /// \brief currentFindSelection Gets the current selection resulting from a find action. Other selections are ignored
@@ -171,7 +169,7 @@ public:
     bool hasFindTerm() override;
     bool findText(const QRegularExpression &rex, FindOptions options) override;
     int findReplaceAll(const QRegularExpression &rex, FindOptions options, const QString &replacement) override;
-    bool findReplace(const QRegularExpression &rex, FindOptions options, const QString &replacement) override;
+    bool findReplace(const QString &replacement) override;
     QString currentFindSelection(bool &isCurrentWord) override;
     void invalidateSelection() override;
 

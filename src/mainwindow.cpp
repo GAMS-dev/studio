@@ -4229,24 +4229,24 @@ int MainWindow::pinViewTabIndex()
     return ui->mainTabs->indexOf(wid);
 }
 
-find::FindWidget *MainWindow::currentFindWidget(QWidget *&sourceEdit)
-{
-    QList<QWidget*> parents {mWp, mPinView, ui->mainTabs};
-    QWidget* wid = qApp->focusWidget();
-    while (wid->parentWidget() != nullptr) {
-        if (wid == mPinView)
-            return mPinView->findWidget();
-        if (wid == ui->mainTabs)
-            return ui->findWidget;
-        // if (wid == ui->logTabs)
-        //     return ui->logFindWidget;
-        wid = wid->parentWidget();
-    }
-    QWidget *ed = currentEdit();
-    if (ViewHelper::toCodeEdit(ed) || ViewHelper::toTextView(ed))
-        return (ed == mPinView->widget()) ? mPinView->findWidget() : ui->findWidget;
-    return nullptr;
-}
+// find::FindWidget *MainWindow::currentFindWidget(QWidget *&sourceEdit)
+// {
+//     QList<QWidget*> parents {mWp, mPinView, ui->mainTabs};
+//     QWidget* wid = qApp->focusWidget();
+//     while (wid->parentWidget() != nullptr) {
+//         if (wid == mPinView)
+//             return mPinView->findWidget();
+//         if (wid == ui->mainTabs)
+//             return ui->findWidget;
+//         // if (wid == ui->logTabs)
+//         //     return ui->logFindWidget;
+//         wid = wid->parentWidget();
+//     }
+//     QWidget *ed = currentEdit();
+//     if (ViewHelper::toCodeEdit(ed) || ViewHelper::toTextView(ed))
+//         return (ed == mPinView->widget()) ? mPinView->findWidget() : ui->findWidget;
+//     return nullptr;
+// }
 
 void MainWindow::openFilesDialog(OpenGroupOption opt)
 {
