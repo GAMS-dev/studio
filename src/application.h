@@ -117,7 +117,7 @@ private:
     ///
     void listen();
 
-    void setSystemDirectory();
+    SysDirSelector setSystemDirectory();
 
 private:
     QSharedPointer<MainWindow> mMainWindow;

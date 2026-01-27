@@ -61,6 +61,21 @@ void logToFile(QtMsgType type, const QMessageLogContext &context, const QString 
         vOriginalLogHandler(type, context, msg);
 }
 
+QString sdsToString(SysDirSelector sds)
+{
+    switch (sds) {
+    case sdsManual:
+        return "Using manual GAMS path";
+    case sdsLocal:
+        return "Using local GAMS path";
+    case sdsSystem:
+        return "Using GAMS path from PATH environment";
+    case sdsMac:
+        return "Using GAMS path from macOS installation";
+    }
+}
+
+
 
 Application::Application(int& argc, char** argv)
     : QApplication(argc, argv)
@@ -104,7 +119,7 @@ void Application::init()
     Settings::createSettings(mCmdParser.ignoreSettings(),
                              mCmdParser.resetSettings(),
                              mCmdParser.resetView());
-    setSystemDirectory();
+    SysDirSelector sds = setSystemDirectory();
     if (Settings::settings()->toBool(skEnableLog) && mCmdParser.logFile().isEmpty())
         vCustomLogFile = CommonPaths::studioDocumentsDir() + "/studio.log";
     else if (!mCmdParser.logFile().isEmpty() && mCmdParser.logFile() != "-")
@@ -123,6 +138,7 @@ void Application::init()
         } else
             DEB() << "Error: Couldn't register log file in missing path " << log.absolutePath();
     }
+    DEB() << sdsToString(sds); // delayed to get it into the log
     Settings::settings()->setBool(skSupressWebEngine, !mCmdParser.activeHelpView());
     initEnvironment();
 
@@ -236,26 +252,28 @@ void Application::listen()
     mServer.listen(mServerName);
 }
 
-void Application::setSystemDirectory()
+SysDirSelector Application::setSystemDirectory()
 {
     QString path;
+    SysDirSelector sds = sdsManual;
     if (!mCmdParser.gamsDir().isEmpty())
         path = mCmdParser.gamsDir();
     else if (!Settings::settings()->toString(skSystemDirectory).isEmpty())
         path = Settings::settings()->toString(skSystemDirectory);
 
     if (path.isEmpty()) {
-        CommonPaths::setSystemDir();
-        return;
+        sds = CommonPaths::setSystemDir();
+        return sds;
     }
     QDir dir(path);
     QFileInfo fi(path+"/gamsstmp.txt");
     if (dir.exists() && fi.exists()) {
-        CommonPaths::setSystemDir(path);
+        sds = CommonPaths::setSystemDir(path);
         Settings::settings()->setString(skSystemDirectory, path);
     } else {
-        CommonPaths::setSystemDir();
+        sds = CommonPaths::setSystemDir();
     }
+    return sds;
 }
 
 void Application::newConnection()

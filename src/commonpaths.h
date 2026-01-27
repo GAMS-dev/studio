@@ -25,6 +25,13 @@
 namespace gams {
 namespace studio {
 
+enum SysDirSelector {
+    sdsManual,
+    sdsLocal,
+    sdsSystem,
+    sdsMac,
+};
+
 /// this macro is needed to deactivate resolving of symlinks on macos.
 /// if not deactivated a workaround breaks that allows users to circumvent file naming limitations.
 /// to be specific, files or pathes containing spaces.
@@ -52,12 +59,12 @@ public:
 
     ///
     /// \brief Set GAMS system directory.
-    /// \return Returns the GAMS system directory.
+    /// \return Returns which source decided the selection
     /// \remark If GAMS Studio is part of the GAMS distribution a relateive
     ///         path based on the executable location is returned;
     ///         otherwise the PATH environment variable used to find GAMS.
     ///
-    static void setSystemDir(const QString &sysdir = QString());
+    static SysDirSelector setSystemDir(const QString &sysdir = QString());
 
     ///
     /// \brief Checks if the current system directory is a valid GAMS directory.

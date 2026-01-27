@@ -86,16 +86,18 @@ const QString& CommonPaths::systemDir()
     return SystemDir;
 }
 
-void CommonPaths::setSystemDir(const QString &sysdir)
+SysDirSelector CommonPaths::setSystemDir(const QString &sysdir)
 {
+    SysDirSelector res = sdsManual;
     if (!sysdir.isEmpty()) {
         auto path = QFileInfo(QStandardPaths::findExecutable("gams", {sysdir})).absolutePath();
         SystemDir = QDir::cleanPath(path);
-        return;
+        return res;
     }
 
 #ifdef __APPLE__
     SystemDir = MacOSPathFinder::systemDir();
+    res = sdsMac;
 #else
     QString gamsPath;
     const QString subPath = "/..";
@@ -108,11 +110,14 @@ void CommonPaths::setSystemDir(const QString &sysdir)
 #endif
 
     gamsPath = QFileInfo(QStandardPaths::findExecutable("gams", { gamsPath })).absolutePath();
+    res = sdsLocal;
     if (gamsPath.isEmpty()) {
         gamsPath = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+        res = sdsSystem;
     }
     SystemDir = QDir::cleanPath(gamsPath);
 #endif
+    return res;
 }
 
 bool CommonPaths::isSystemDirValid()
