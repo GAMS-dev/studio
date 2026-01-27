@@ -48,7 +48,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 {
     ui->setupUi(this);
     setCheckForUpdateState();
-    ui->gamsEdit->setText(CommonPaths::systemDir());
+    ui->gamsEdit->setPlaceholderText(QDir::toNativeSeparators(CommonPaths::systemDir()));
     auto app = qobject_cast<Application*>(qApp);
     if (app && app->skipCheckForUpdate()) {
         mC4U.reset(new support::CheckForUpdate(!app->skipCheckForUpdate(), this));
@@ -232,6 +232,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 
     ui->edUserGamsTypes->installEventFilter(this);
     ui->edAutoReloadTypes->installEventFilter(this);
+    ui->gamsEdit->installEventFilter(this);
     setModifiedStatus(false);
 }
 
@@ -363,7 +364,9 @@ void SettingsDialog::loadSettings()
     ui->nextCheckLabel->setText(nextCheckDate().toString());
 
     // GAMS system directory
-    auto sysdir = mSettings->toString(skSystemDirectory);
+    QString sysdir = mSettings->toString(skSystemDirectory);
+    if (!sysdir.isEmpty())
+        ui->gamsEdit->setText(QDir::toNativeSeparators(sysdir));
 
     QTimer::singleShot(0, this, &SettingsDialog::afterLoad);
 }
@@ -550,16 +553,19 @@ void SettingsDialog::saveSettings()
     mSettings->setDate(skNextUpdateCheckDate, nextCheckDate());
 
     // GAMS system directory
-    QDir gamsDir(ui->gamsEdit->text());
-    QFileInfo fi(ui->gamsEdit->text()+"/gamsstmp.txt");
+    QString path = ui->gamsEdit->text().isEmpty() ? CommonPaths::systemDir()
+                                                  : QDir::fromNativeSeparators(ui->gamsEdit->text());
+    QDir gamsDir(path);
+    QFileInfo fi(path + "/gamsstmp.txt");
 
-    if (gamsDir.exists() && fi.exists() && gamsDir.path() != mSettings->toString(skSystemDirectory)) {
+    if (gamsDir.exists() && fi.exists()
+        && QDir::fromNativeSeparators(ui->gamsEdit->text()) != mSettings->toString(skSystemDirectory)) {
         QString msg("The GAMS system directory has changed. Please restart Studio.");
         mMain->appendSystemLogWarning(msg);
-        mSettings->setString(skSystemDirectory, ui->gamsEdit->text());
-        CommonPaths::setSystemDir(ui->gamsEdit->text());
+        mSettings->setString(skSystemDirectory, QDir::fromNativeSeparators(ui->gamsEdit->text()));
+        CommonPaths::setSystemDir(path);
     } else {
-        ui->gamsEdit->setText(mSettings->toString(skSystemDirectory));
+        ui->gamsEdit->setText(QDir::toNativeSeparators(mSettings->toString(skSystemDirectory)));
         ui->gamsLabel->setText(QString());
     }
 
@@ -775,11 +781,15 @@ bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
             }
             return true;
         }
-    }
-    if ((watched == ui->edUserGamsTypes || watched == ui->edAutoReloadTypes) && (event->type() == QEvent::ToolTip)) {
+
+    } else if ((watched == ui->edUserGamsTypes || watched == ui->edAutoReloadTypes) && event->type() == QEvent::ToolTip) {
         QWidget *edit = static_cast<QWidget*>(watched);
         QToolTip::showText(edit->mapToGlobal(QPoint(0, 6)), edit->toolTip());
         event->ignore();
+        return true;
+
+    } else if (watched == ui->gamsEdit && ui->gamsEdit->text().isEmpty() && event->type() == QEvent::MouseButtonDblClick) {
+        ui->gamsEdit->setText(ui->gamsEdit->placeholderText());
         return true;
     }
 
@@ -889,20 +899,17 @@ void SettingsDialog::on_miroBrowseButton_clicked()
 void SettingsDialog::on_gamsBrowseButton_clicked()
 {
     QString dir;
-    if (mSettings->toString(skSystemDirectory).isEmpty()) {
+    if (mSettings->toString(skSystemDirectory).isEmpty())
         dir = CommonPaths::systemDir();
-        mSettings->setString(skSystemDirectory, dir);
-    } else {
+    else
         dir = mSettings->toString(skSystemDirectory);
-    }
-    auto gams = QFileDialog::getExistingDirectory(this,
-                                                  "Open Directory",
-                                                  dir,
+
+    auto gams = QFileDialog::getExistingDirectory(this, "Select GAMS Directory", dir,
                                                   QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (gams.isEmpty())
         return;
     setModifiedStatus(true);
-    ui->gamsEdit->setText(gams);
+    ui->gamsEdit->setText(QDir::toNativeSeparators(gams));
 }
 
 void SettingsDialog::miroPathTextChanged(const QString &text)
@@ -1265,14 +1272,20 @@ void SettingsDialog::updateNumericalPrecision()
 void SettingsDialog::gamsSystemDirChanged()
 {
     setModifiedStatus(true);
-    QDir dir(ui->gamsEdit->text());
-    QFileInfo fi(ui->gamsEdit->text()+"/gamsstmp.txt");
+    QString path = ui->gamsEdit->text().isEmpty() ? CommonPaths::systemDir()
+                                                  : QDir::fromNativeSeparators(ui->gamsEdit->text());
+    QDir dir(path);
+    QFileInfo fi(path + "/gamsstmp.txt");
     if (!dir.exists())
-        ui->gamsLabel->setText("The given directory does not exist. Please update the system directory path; otherwise the previous value will be restored.");
+        ui->gamsLabel->setText("The given directory does not exist. Please update the system directory path, "
+                               "otherwise the previous value will be restored.");
     else if (!fi.exists())
-        ui->gamsLabel->setText("The given directory does not seem to be a valid GAMS system directory. Please update the system directory path; otherwise the previous value will be restored.");
-    else
+        ui->gamsLabel->setText("The given directory does not seem to be a valid GAMS system directory. "
+                               "Please update the system directory path, otherwise the previous value will be restored.");
+    else if (QDir::fromNativeSeparators(ui->gamsEdit->text()) != mSettings->toString(skSystemDirectory))
         ui->gamsLabel->setText("<b>The GAMS system directory has changed. Please restart Studio.</b>");
+    else
+        ui->gamsLabel->setText("");
 }
 
 void SettingsDialog::checkForUpdates()

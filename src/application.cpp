@@ -239,14 +239,13 @@ void Application::listen()
 void Application::setSystemDirectory()
 {
     QString path;
-    if (!mCmdParser.gamsDir().isEmpty()) {
+    if (!mCmdParser.gamsDir().isEmpty())
         path = mCmdParser.gamsDir();
-    } else if (!Settings::settings()->toString(skSystemDirectory).isEmpty()) {
+    else if (!Settings::settings()->toString(skSystemDirectory).isEmpty())
         path = Settings::settings()->toString(skSystemDirectory);
-    }
+
     if (path.isEmpty()) {
         CommonPaths::setSystemDir();
-        Settings::settings()->setString(skSystemDirectory, CommonPaths::systemDir());
         return;
     }
     QDir dir(path);
@@ -256,7 +255,6 @@ void Application::setSystemDirectory()
         Settings::settings()->setString(skSystemDirectory, path);
     } else {
         CommonPaths::setSystemDir();
-        Settings::settings()->setString(skSystemDirectory, CommonPaths::systemDir());
     }
 }
 
