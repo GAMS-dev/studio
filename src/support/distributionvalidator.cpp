@@ -55,7 +55,7 @@ void DistributionValidator::checkCompatibility()
     if (locVersion.at(0).toInt() == minVersion.at(0).toInt() &&
         locVersion.at(1).toInt() >= minVersion.at(1).toInt())
         return;
-    QString error = QString("Found incompatible GAMS %1 but GAMS %2 or higher was expected. Please upgrade your GAMS.")
+    QString error = QString("Found outdated GAMS %1 but GAMS %2 or higher was expected. Please upgrade your GAMS.")
             .arg(localVersion, GAMS_DISTRIB_VERSION_SHORT);
     emit newWarning(error);
 }
