@@ -213,9 +213,14 @@ bool ViewFindAdapter::hasFindTerm()
 
 bool ViewFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
-    if (!options.testFlag(foContinued)) {
-        QPoint absPos = options.testFlag(foBackwards) ? mView->anchor() : mView->position();
-        mView->jumpTo(absPos.y(), absPos.x());
+    if (!options.testFlag(foContinued) && mView->anchor().y() == mView->position().y()) {
+        QPoint pos = mView->position();
+        QPoint anc = mView->anchor();
+        if (pos.x() < anc.x())
+            qSwap(pos, anc);
+        if (!options.testFlag(foBackwards))
+            qSwap(pos, anc);
+        mView->jumpTo(pos.y(), pos.x());
     }
     return mView->findText(rex, findFlags(options), options.testFlag(foContinued));
 }
