@@ -263,7 +263,7 @@ QString FastFileMapper::selectedText() const
     QPoint p1 = pas == PosBeforeAnc ? mPosition : mAnchor;
     QPoint p2 = pas == PosBeforeAnc ? mAnchor : mPosition;
     QString res = mCache.getLines(p1.y(), p2.y() - p1.y() + 1);
-    int from = p1.x();
+    int from = qMin(p1.x(), res.length() - 1);
     int len = res.length() - from - mCache.lineLength(p2.y()) + p2.x();
     return res.sliced(from, len);
 }
@@ -692,7 +692,7 @@ QPoint FastFileMapper::LinesCache::posForOffset(int offset)
     int b = cachedLineCount();
     while (a + 1 < b) {
         int i = (a + b) / 2;
-        if (offset > mLineChar.at(i)) a = i;
+        if (offset >= mLineChar.at(i)) a = i;
         else b = i;
     }
     return QPoint(offset - mLineChar.at(a), a + mCacheOffsetLine);

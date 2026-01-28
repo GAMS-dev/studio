@@ -35,9 +35,6 @@ FindAdapter *FindAdapter::createAdapter(QWidget *widget)
 {
     FindAdapter *res = nullptr;
 
-    if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(widget))
-        QTimer::singleShot(0, lxi, [lxi]() {lxi->textView()->setFocus();});
-
     if (CodeEdit *ce = ViewHelper::toCodeEdit(widget))
         res = new EditFindAdapter(ce);
 
