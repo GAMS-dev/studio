@@ -109,9 +109,11 @@ SysDirSelector CommonPaths::setSystemDir(const QString &sysdir)
     gamsPath = QCoreApplication::applicationDirPath().append(subPath);
 #endif
 
-    gamsPath = QFileInfo(QStandardPaths::findExecutable("gams", { gamsPath })).absolutePath();
+    // Find gams in parent and grandparent directory
+    gamsPath = QFileInfo(QStandardPaths::findExecutable("gams", { gamsPath, gamsPath+subPath })).absolutePath();
     res = sdsLocal;
     if (gamsPath.isEmpty()) {
+        // Find GAMS in the system, i.e. using the PATH environment
         gamsPath = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
         res = sdsSystem;
     }

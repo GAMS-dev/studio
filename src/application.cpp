@@ -65,9 +65,9 @@ QString sdsToString(SysDirSelector sds)
 {
     switch (sds) {
     case sdsManual:
-        return "Using manual GAMS path";
+        return "Using user defined GAMS path";
     case sdsLocal:
-        return "Using local GAMS path";
+        return "Using local parent GAMS path";
     case sdsSystem:
         return "Using GAMS path from PATH environment";
     case sdsMac:
