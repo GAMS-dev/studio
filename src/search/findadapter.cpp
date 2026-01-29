@@ -226,7 +226,12 @@ bool ViewFindAdapter::findText(const QRegularExpression &rex, FindOptions option
             qSwap(pos, anc);
         mView->jumpTo(pos.y(), pos.x());
     }
-    return mView->findText(rex, findFlags(options), options.testFlag(foContinued));
+    bool res = mView->findText(rex, findFlags(options), options.testFlag(foContinued));
+    if (!res && options.testFlag(foBackwards)) {
+        mView->jumpToEnd();
+        res = mView->findText(rex, findFlags(options), options.testFlag(foContinued));
+    }
+    return res;
 }
 
 QString ViewFindAdapter::currentFindSelection(bool &isCurrentWord)

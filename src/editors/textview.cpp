@@ -497,6 +497,7 @@ void TextView::jumpToEnd()
 {
     if (mMapper->lineCount() > 0) {
         mMapper->setVisibleTopLine(mMapper->lineCount() - mMapper->reducedVisibleLineCount());
+        mMapper->setPosToAbsEnd();
         if (mStayAtTail) *mStayAtTail = mMapper->atTail();
     } else {
         mMapper->setVisibleTopLine(1.0);

@@ -198,10 +198,12 @@ bool FastFileMapper::searchText(QRegularExpression searchRegex, QTextDocument::F
         if (mSearchPos.y() < 0) mSearchPos = QPoint(0,0);
         if (mSearchEndPos.y() < 0) mSearchEndPos = QPoint(0,0);
     }
+    int cut = -1;
     if (backwards) {
         if (mSearchPos.y() - liSpan < 0)
             liSpan = mSearchPos.y();
         liSpan = -liSpan;
+        cut = mSearchPos.x() - mCache.lineLength(mSearchPos.y()) - 1;
     } else {
         if (mSearchPos.y() + liSpan > tempLineCount)
             liSpan = tempLineCount - mSearchPos.y();
@@ -213,7 +215,7 @@ bool FastFileMapper::searchText(QRegularExpression searchRegex, QTextDocument::F
 
     QRegularExpressionMatch match;
     const QString data = mCache.loadCache(mSearchPos.y(), liSpan);
-    int index = backwards ? data.lastIndexOf(searchRegex, -1, &match)
+    int index = backwards ? data.lastIndexOf(searchRegex, cut, &match)
                           : data.indexOf(searchRegex, mSearchPos.x(), &match);
     if (index >= 0) {
         QPoint pos = mCache.posForOffset(index);
@@ -723,13 +725,9 @@ qint64 FastFileMapper::LinesCache::linePos(int line) const
 
 const QString FastFileMapper::LinesCache::loadCache(int lineNr, int count) const
 {
-    if (count == 0) {
-        mData.clear();
-        return mData;
-    }
-    if (count < 0) {
+    if (count <= 0) {
         lineNr += count;
-        count = -count;
+        count = -count + 1;
     }
     mCacheOffsetLine = lineNr;
     int toLine = lineNr + count;
