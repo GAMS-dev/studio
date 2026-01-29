@@ -120,7 +120,7 @@ public:
     EditorType type() const override;
     QString wordUnderCursor() const;
     virtual bool hasSelection() const;
-    QString currentFindSelection(bool keep);
+    QString currentFindSelection(bool keep, bool &isCurrentWord);
     void disconnectTimers() override;
     int foldStart(int line, bool &folded, QString *closingSymbol = nullptr, const QString *usedParenheses = nullptr) const;
     void foldAll(bool onlyDCO = false);

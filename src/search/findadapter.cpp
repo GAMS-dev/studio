@@ -166,9 +166,7 @@ int EditFindAdapter::findReplaceAll(const QRegularExpression &rex, FindOptions o
 
 QString EditFindAdapter::currentFindSelection(bool &isCurrentWord)
 {
-    // TODO(JM) Check usage of isCurrentWord!
-
-    return mEdit->currentFindSelection(false);
+    return mEdit->currentFindSelection(false, isCurrentWord);
 }
 
 void EditFindAdapter::invalidateSelection()

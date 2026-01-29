@@ -347,15 +347,18 @@ bool CodeEdit::hasSelection() const
     return textCursor().hasSelection();
 }
 
-QString CodeEdit::currentFindSelection(bool keep)
+QString CodeEdit::currentFindSelection(bool keep, bool &isCurrentWord)
 {
+    isCurrentWord = false;
     if (textCursor().hasSelection() && !textCursor().hasComplexSelection()) {
         if (textCursor().block() == document()->findBlock(textCursor().anchor()))
             return textCursor().selectedText();
     }
     recalcWordUnderCursor(!keep);
-    if (!mWordUnderCursor.isEmpty())
+    if (!mWordUnderCursor.isEmpty()) {
+        isCurrentWord = true;
         return mWordUnderCursor;
+    }
     return QString();
 }
 
