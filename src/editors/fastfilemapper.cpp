@@ -492,7 +492,7 @@ void FastFileMapper::closeAndReset()
     closeFile();
     mFile.setFileName(mFile.fileName()); // JM: Workaround for file kept locked (close wasn't enough)
     mSize = 0;
-    reset();
+    reset();   // the clang warning is invalid as this class is final
 }
 
 

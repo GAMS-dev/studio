@@ -6106,6 +6106,12 @@ QWidget *MainWindow::getViewOrEdit(find::FindWidget* findWidget)
     else if (!parent->findChildren<TextView*>(Qt::FindDirectChildrenOnly).isEmpty())
         res = parent->findChildren<TextView*>(Qt::FindDirectChildrenOnly).at(0);
 
+    else if (!parent->findChildren<lxiviewer::LxiViewer*>(Qt::FindDirectChildrenOnly).isEmpty())
+        res = parent->findChildren<lxiviewer::LxiViewer*>(Qt::FindDirectChildrenOnly).at(0);
+
+    else if (ViewHelper::toLxiViewer(parent))
+        res = ViewHelper::toLxiViewer(parent);
+
     else if (!parent->findChildren<CodeEdit*>(Qt::FindDirectChildrenOnly).isEmpty())
         res = parent->findChildren<CodeEdit*>(Qt::FindDirectChildrenOnly).at(0);
 

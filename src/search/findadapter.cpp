@@ -22,6 +22,7 @@
 #include "logger.h"
 #include "editors/codeedit.h"
 #include "editors/textview.h"
+#include "lxiviewer/lxiviewer.h"
 
 #include <QTextBrowser>
 
@@ -40,6 +41,9 @@ FindAdapter *FindAdapter::createAdapter(QWidget *widget)
 
     if (TextView *tv = ViewHelper::toTextView(widget))
         res = new ViewFindAdapter(tv);
+
+    if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(widget))
+        res = new ViewFindAdapter(lxi->textView());
 
     if (QTextBrowser *browser = qobject_cast<QTextBrowser*>(widget))
         res = new ChangelogFindAdapter(browser);

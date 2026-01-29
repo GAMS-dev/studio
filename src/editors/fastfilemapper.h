@@ -29,7 +29,7 @@
 namespace gams {
 namespace studio {
 
-class FastFileMapper : public AbstractTextMapper
+class FastFileMapper final : public AbstractTextMapper
 {
 private:
     friend class LinesCache;
