@@ -34,6 +34,7 @@ ChunkTextMapper::ChunkTextMapper(QObject *parent): AbstractTextMapper(parent)
 {
     setMappingSizes();
     setPosAbsolute(nullptr, 0, 0);
+    mDelimiter = "\n";
 }
 
 bool ChunkTextMapper::updateMaxTop() // to be updated on change of size or mVisibleLineCount
@@ -261,6 +262,8 @@ void ChunkTextMapper::scrollToPosition()
         QPoint pos = position(true);
         if (pos.y() < visibleLineCount() / 5 || pos.y() == cursorBeyondEnd || pos.y() > (visibleLineCount() * 4) / 5)
             setVisibleTopLine(cm->startLineNr + mPosition.localLine - visibleLineCount() / 2);
+        if (pos.y() == cursorBeforeStart)
+            setVisibleTopLine(cm->startLineNr + mPosition.localLine);
     } else {
         double region = double(mPosition.absLineStart + mPosition.effectiveCharNr()) / double(size());
         setVisibleTopLine(region);
@@ -407,8 +410,9 @@ bool ChunkTextMapper::searchText(QRegularExpression searchRegex, QTextDocument::
         int ind = backwards ? -1 : 0;
 
         if (part == 1) {
-            auto delimIndex = textBlock.lastIndexOf(mDelimiter);
-            textBlock = textBlock.left( (delimIndex>-1 ? mDelimiter.size()+delimIndex : 0) + refPos->charNr);
+            int end = textBlock.endsWith('\n') ? -2 : -1;
+            auto delimIndex = textBlock.lastIndexOf(mDelimiter, end);
+            textBlock = textBlock.left( (delimIndex >= 0 ? mDelimiter.size()+delimIndex : 0) + refPos->charNr);
         }
         if (part == 2 && !backwards) {
             ind = refPos->charNr;

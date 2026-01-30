@@ -240,6 +240,7 @@ private slots:
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeMainTabChanged(int index);
+    void activeLogTabChanged(int index);
     void tabBarClicked(int index);
     void fileChanged(const FileId &fileId);
     void fileModifiedChanged(const FileId &fileId, bool modified);

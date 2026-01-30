@@ -191,6 +191,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
     ui->findWidget->setVisible(false);
+    ui->findWidgetLog->setVisible(false);
 
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
@@ -2355,6 +2356,12 @@ void MainWindow::activeMainTabChanged(int index)
     updateStatusPos();
 
     updateCursorHistoryAvailability();
+}
+
+void MainWindow::activeLogTabChanged(int index)
+{
+    QWidget *editWidget = (index < 0 ? nullptr : ui->logTabs->widget(index));
+    ui->findWidgetLog->setEditWidget(editWidget);
 }
 
 void MainWindow::tabBarClicked(int index)
@@ -4539,9 +4546,12 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), getEditorFont(fgLog), logNode->file()->encoding());
         logNode->file()->addToTab(ui->logTabs, wid);
+
         // wid->setFont(getEditorFont(fgLog));
-        if (TextView* tv = ViewHelper::toTextView(wid))
+        if (TextView* tv = ViewHelper::toTextView(wid)) {
             tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
+            connect(tv, &TextView::continueFindPressed, this, &MainWindow::continueFind);
+        }
     }
     if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
         connect(tv, &TextView::selectionChanged, this, &MainWindow::updateStatusPos, Qt::UniqueConnection);
