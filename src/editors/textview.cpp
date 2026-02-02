@@ -307,8 +307,18 @@ bool TextView::findText(const QRegularExpression &rex, QTextDocument::FindFlags 
     mEdit->setFindTerm(rex, options);
     bool found = false;
     bool goOn = false;
-    while (!(found = mMapper->searchText(rex, options, goOn)))
+    while (!found) {
+        found = mMapper->searchText(rex, options, goOn);
+        if (found) {
+            // TODO(JM) find a way to skip hidden matches
+            updateView();
+            updatePosAndAnchor();
+            emit selectionChanged();
+            if (!mEdit->hasSelection())
+                found = false;
+        }
         if (!goOn) break;
+    }
 
     if (found) {
         mFindSpan = QPair<QPoint, int>(mMapper->position(), mMapper->anchor().x());
