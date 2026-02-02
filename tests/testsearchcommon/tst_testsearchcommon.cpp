@@ -50,8 +50,7 @@ private slots:
     void test_fileName();
 
     void test_parametersDefault();
-    //void test_parametersAssignEqual();
-    //void test_parametersAssignNonEqual();
+    void test_parametersGetSet();
 
 private:
     QStringList applyRegEx(const QStringList &paths,
@@ -646,63 +645,57 @@ void TestSearchCommon::test_fileName()
 void TestSearchCommon::test_parametersDefault()
 {
     Parameters p;
-    QCOMPARE(p.regex, QRegularExpression());
-    QCOMPARE(p.searchTerm, QString());
-    QCOMPARE(p.replaceTerm, QString());
-    QVERIFY(!p.useRegex);
-    QVERIFY(!p.caseSensitive);
-    QVERIFY(!p.searchBackwards);
-    QVERIFY(!p.showResults);
-    QVERIFY(!p.ignoreReadOnly);
-    QVERIFY(!p.includeSubdirs);
-    QVERIFY(p.scope == Scope::Selection);
-    QCOMPARE(p.path, QString());
-    QCOMPARE(p.excludeFilter, QStringList());
-    QCOMPARE(p.includeFilter, QStringList());
+    QCOMPARE(p.searchTerm(), QString());
+    QCOMPARE(p.replaceTerm(), QString());
+    QVERIFY(!p.caseSensitive());
+    QVERIFY(!p.useRegex());
+    QVERIFY(!p.wholeWords());
+    QVERIFY(!p.searchBackwards());
+    QVERIFY(p.scope() == Scope::ThisFile);
+    QCOMPARE(p.includeFilter(), QStringList());
+    QCOMPARE(p.excludeFilter(), QStringList());
+    QCOMPARE(p.directory(), QString());
+    QVERIFY(p.includeSubdirs());
+    QVERIFY(!p.showResults());
+    QVERIFY(!p.ignoreReadOnly());
+    QCOMPARE(p.regex(), QRegularExpression());
+    QCOMPARE(Parameters::listSeparator(), QChar(';'));
 }
 
-//void TestSearchCommon::test_parametersAssignEqual()
-//{ // TODO decide about this
-//    Parameters p1;
-//    p1.regex = QRegularExpression("*");
-//    p1.searchTerm = "e";
-//    p1.replaceTerm = "ok";
-//    p1.useRegex = true;
-//    p1.caseSensitive = true;
-//    p1.searchBackwards = true;
-//    p1.showResults = true;
-//    p1.ignoreReadOnly = true;
-//    p1.includeSubdirs = true;
-//    p1.scope = Scope::ThisProject;
-//    p1.path = ".";
-//    p1.excludeFilter << "*.gdx";
-//    p1.includeFilter = { "*.gms", "*.ref" };
-//    Parameters p2 = p1;
-//    QVERIFY(p1 == p2);
-//    QVERIFY(!(p1 != p2));
-//}
-
-//void TestSearchCommon::test_parametersAssignNonEqual()
-//{ // TODO decide about this
-//    Parameters p1;
-//    p1.regex = QRegularExpression("*");
-//    p1.searchTerm = "e";
-//    p1.replaceTerm = "ok";
-//    p1.useRegex = true;
-//    p1.caseSensitive = true;
-//    p1.searchBackwards = true;
-//    p1.showResults = true;
-//    p1.ignoreReadOnly = true;
-//    p1.includeSubdirs = true;
-//    p1.scope = Scope::ThisProject;
-//    p1.path = ".";
-//    p1.excludeFilter << "*.gdx";
-//    p1.includeFilter = { "*.gms", "*.ref" };
-//    Parameters p2 = p1;
-//    p2.useRegex = false;
-//    QVERIFY(p1 != p2);
-//    QVERIFY(!(p1 == p2));
-//}
+void TestSearchCommon::test_parametersGetSet()
+{
+    Parameters p;
+    p.setSearchTerm("some Text!");
+    QCOMPARE(p.searchTerm(), QString("some Text!"));
+    p.setReplaceTerm("e");
+    QCOMPARE(p.replaceTerm(), QString("e"));
+    p.setCaseSensitive(true);
+    QVERIFY(p.caseSensitive());
+    p.setUseRegex(true);
+    QVERIFY(p.useRegex());
+    p.setWholeWords(true);
+    QVERIFY(p.wholeWords());
+    p.setSearchBackwards(true);
+    QVERIFY(p.searchBackwards());
+    p.setScope(Scope::Folder);
+    QVERIFY(p.scope() == Scope::Folder);
+    QStringList filter { "*.gms", "*.ref", "t*" };
+    p.setIncludeFilter(filter);
+    QCOMPARE(p.includeFilter(), filter);
+    p.setExcludeFilter(filter);
+    QCOMPARE(p.excludeFilter(), filter);
+    p.setDirectory("/some/path");
+    QCOMPARE(p.directory(), QString("/some/path"));
+    p.setIncludeSubdirs(false);
+    QVERIFY(!p.includeSubdirs());
+    p.setShowResults(true);
+    QVERIFY(p.showResults());
+    p.setIgnoreReadOnly(true);
+    QVERIFY(p.ignoreReadOnly());
+    QRegularExpression regex("^seattle$");
+    p.setRegex(regex);
+    QCOMPARE(p.regex(), regex);
+}
 
 QStringList TestSearchCommon::applyRegEx(const QStringList &paths,
                                          const QList<QRegularExpression> &patterns,

@@ -35,6 +35,7 @@
 #include "exception.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
+#include "search/searchcommon.h"
 
 namespace gams {
 namespace studio {
@@ -336,9 +337,21 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skHelpZoomFactor, scSys, {"help","zoom"}, 1.0);
 
     // search widget
-    safelyAdd(res, skSearchUseRegex, scSys, {"search", "regex"}, false);
-    safelyAdd(res, skSearchCaseSens, scSys, {"search", "caseSens"}, false);
-    safelyAdd(res, skSearchWholeWords, scSys, {"search", "wholeWords"}, false);
+    search::Parameters defaultParams;
+    safelyAdd(res, skSearchTerm, scSys, {"search", "term"}, defaultParams.searchTerm());
+    safelyAdd(res, skSearchTermList, scSys, {"search", "termList"}, QString());
+    safelyAdd(res, skSearchReplace, scSys, {"search", "replace"}, defaultParams.replaceTerm());
+    safelyAdd(res, skSearchUseRegex, scSys, {"search", "useregex"}, defaultParams.useRegex());
+    safelyAdd(res, skSearchCaseSens, scSys, {"search", "caseSens"}, defaultParams.caseSensitive());
+    safelyAdd(res, skSearchWholeWords, scSys, {"search", "wholeWords"}, defaultParams.wholeWords());
+    safelyAdd(res, skSearchScope, scSys, {"search", "scope"}, int(defaultParams.scope()));
+    safelyAdd(res, skSearchIncludeFilter, scSys, {"search", "includeFilter"}, defaultParams.includeFilter());
+    safelyAdd(res, skSearchIncludeFilterList, scSys, {"search", "includeFilterList"}, QString());
+    safelyAdd(res, skSearchExcludeFilter, scSys, {"search", "excludeFilter"}, defaultParams.excludeFilter());
+    safelyAdd(res, skSearchExcludeFilterList, scSys, {"search", "excludeFilterList"}, QString());
+    safelyAdd(res, skSearchDirectory, scSys, {"search", "directory"}, defaultParams.excludeFilter());
+    safelyAdd(res, skSearchDirectoryList, scSys, {"search", "directoryList"}, QString());
+    safelyAdd(res, skSearchIncludeSubdirs, scSys, {"search", "includeSubdirs"}, defaultParams.includeSubdirs());
 
     // general settings page
     safelyAdd(res, skDefaultWorkspace, scUser, {"defaultWorkspace"}, "");

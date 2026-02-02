@@ -85,9 +85,20 @@ enum SettingsKey {
     skHelpZoomFactor,
 
     // search widget
+    skSearchTerm,
+    skSearchTermList,
+    skSearchReplace,
     skSearchUseRegex,
     skSearchCaseSens,
     skSearchWholeWords,
+    skSearchScope,
+    skSearchIncludeFilter,
+    skSearchIncludeFilterList,
+    skSearchExcludeFilter,
+    skSearchExcludeFilterList,
+    skSearchDirectory,
+    skSearchDirectoryList,
+    skSearchIncludeSubdirs,
 
     // general settings page
     skDefaultWorkspace,

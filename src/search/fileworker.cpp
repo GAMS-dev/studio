@@ -46,14 +46,14 @@ QList<SearchFile> FileWorker::collectFilesInFolder()
 {
     QList<SearchFile> files;
 
-    if (mParameters.path.isEmpty()) {
+    if (mParameters.directory().isEmpty()) {
         qWarning() << "SearchParameter path is empty but needed for file collection in folder";
         return files;
     }
 
-    QDir dir(mParameters.path);
+    QDir dir(mParameters.directory());
 
-    QDirIterator::IteratorFlag options = mParameters.includeSubdirs
+    QDirIterator::IteratorFlag options = mParameters.includeSubdirs()
                                              ? QDirIterator::Subdirectories
                                              : QDirIterator::NoIteratorFlags;
     QDirIterator it(dir.path(), QDir::Files, options);
@@ -76,15 +76,15 @@ void FileWorker::filterFiles(const QList<SearchFile> &files,
                              const Parameters &params,
                              QList<SearchFile> &matched)
 {
-    bool ignoreWildcard = params.scope == Scope::ThisFile || params.scope == Scope::Selection;
+    bool ignoreWildcard = params.scope() == Scope::ThisFile || params.scope() == Scope::Selection;
 
     // create list of include filter regexes
     QList<QRegularExpression> includeFilterList;
-    SearchCommon::includeFilters(params.includeFilter, includeFilterList);
+    SearchCommon::includeFilters(params.includeFilter(), includeFilterList);
 
     // create list of exclude filters
     QList<QRegularExpression> excludeFilterList;
-    SearchCommon::excludeFilters(params.excludeFilter, excludeFilterList);
+    SearchCommon::excludeFilters(params.excludeFilter(), excludeFilterList);
 
     // filter files
     for (const SearchFile &sf : std::as_const(files)) {
@@ -110,7 +110,7 @@ void FileWorker::filterFiles(const QList<SearchFile> &files,
 
         // if we can get an fm check if that file is read only
         FileMeta* fm = mFileHandler->findFile(sf.path());
-        if ((include || ignoreWildcard) && (!params.ignoreReadOnly || (fm && !fm->isReadOnly()))) {
+        if ((include || ignoreWildcard) && (!params.ignoreReadOnly() || (fm && !fm->isReadOnly()))) {
             matched << ((fm && fm->isModified()) ? sf : sf.path());
         }
     }

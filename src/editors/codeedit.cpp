@@ -2279,15 +2279,15 @@ void CodeEdit::findInSelection(QList<search::Result> &results)
     }
 
     QFlags<QTextDocument::FindFlag> searchOptions;
-    searchOptions.setFlag(QTextDocument::FindCaseSensitively, SearchLocator::search()->parameters().caseSensitive);
+    searchOptions.setFlag(QTextDocument::FindCaseSensitively, SearchLocator::search()->parameters().caseSensitive());
 
     mBlockEditSelection->blockText();
     QTextBlock block = document()->findBlockByNumber(mBlockEditSelection->startLine());
     int first = mBlockEditSelection->column();
     int last = mBlockEditSelection->column() + mBlockEditSelection->size();
 
-    QRegularExpression rex = SearchLocator::search()->parameters().regex;
-    if (SearchLocator::search()->parameters().caseSensitive)
+    QRegularExpression rex = SearchLocator::search()->parameters().regex();
+    if (SearchLocator::search()->parameters().caseSensitive())
         rex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
     while (block.isValid()) {
         int from = first;
@@ -2607,7 +2607,7 @@ void CodeEdit::updateExtraSelections()
     extraSelMarks(selections);
     if (!mBlockEdit) {
         QString selectedText = textCursor().selectedText();
-        QRegularExpression rex = search::SearchLocator::search()->parameters().regex;
+        QRegularExpression rex = search::SearchLocator::search()->parameters().regex();
 
         // word boundary (\b) only matches start-of-string when first character is \w
         // so \b will only be added when first character of selectedText is a \w
@@ -2764,11 +2764,11 @@ void CodeEdit::extraSelFindMatches(QList<QTextEdit::ExtraSelection> &selections)
 void CodeEdit::extraSelSearchMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
     search::Search* search = search::SearchLocator::search();
-    if (search->parameters().regex.pattern().isEmpty() || search->filteredResultList(ViewHelper::location(this)).isEmpty())
+    if (search->parameters().regex().pattern().isEmpty() || search->filteredResultList(ViewHelper::location(this)).isEmpty())
         return;
 
-    QRegularExpression regEx = search->parameters().regex;
-    bool limitHighlighting = search->parameters().scope == Scope::Selection;
+    QRegularExpression regEx = search->parameters().regex();
+    bool limitHighlighting = search->parameters().scope() == Scope::Selection;
 
     QTextBlock block = firstVisibleBlock();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());

@@ -25,6 +25,147 @@ namespace gams {
 namespace studio {
 namespace search {
 
+QString Parameters::searchTerm() const
+{
+    return mSearchTerm;
+}
+
+void Parameters::setSearchTerm(const QString &newSearchTerm)
+{
+    mSearchTerm = newSearchTerm;
+}
+
+QString Parameters::replaceTerm() const
+{
+    return mReplaceTerm;
+}
+
+void Parameters::setReplaceTerm(const QString &newReplaceTerm)
+{
+    mReplaceTerm = newReplaceTerm;
+}
+
+bool Parameters::caseSensitive() const
+{
+    return mCaseSensitive;
+}
+
+void Parameters::setCaseSensitive(bool newCaseSensitive)
+{
+    mCaseSensitive = newCaseSensitive;
+}
+
+bool Parameters::useRegex() const
+{
+    return mUseRegex;
+}
+
+void Parameters::setUseRegex(bool newUseRegex)
+{
+    mUseRegex = newUseRegex;
+}
+
+bool Parameters::wholeWords() const
+{
+    return mWholeWords;
+}
+
+void Parameters::setWholeWords(bool newWholeWords)
+{
+    mWholeWords = newWholeWords;
+}
+
+Scope Parameters::scope() const
+{
+    return mScope;
+}
+
+void Parameters::setScope(Scope newScope)
+{
+    mScope = newScope;
+}
+
+QStringList Parameters::includeFilter() const
+{
+    return mIncludeFilter;
+}
+
+void Parameters::setIncludeFilter(const QStringList &newIncludeFilter)
+{
+    mIncludeFilter = newIncludeFilter;
+}
+
+QStringList Parameters::excludeFilter() const
+{
+    return mExcludeFilter;
+}
+
+void Parameters::setExcludeFilter(const QStringList &newExcludeFilter)
+{
+    mExcludeFilter = newExcludeFilter;
+}
+
+QString Parameters::directory() const
+{
+    return mDirectory;
+}
+
+void Parameters::setDirectory(const QString &newDirectory)
+{
+    mDirectory = newDirectory;
+}
+
+bool Parameters::includeSubdirs() const
+{
+    return mIncludeSubdirs;
+}
+
+void Parameters::setIncludeSubdirs(bool newIncludeSubdirs)
+{
+    mIncludeSubdirs = newIncludeSubdirs;
+}
+
+bool Parameters::ignoreReadOnly() const
+{
+    return mIgnoreReadOnly;
+}
+
+void Parameters::setIgnoreReadOnly(bool newIgnoreReadOnly)
+{
+    mIgnoreReadOnly = newIgnoreReadOnly;
+}
+
+QRegularExpression Parameters::regex() const
+{
+    return mRegex;
+}
+
+void Parameters::setRegex(const QRegularExpression &newRegex)
+{
+    mRegex = newRegex;
+}
+
+bool Parameters::searchBackwards() const
+{
+    return mSearchBackwards;
+}
+
+void Parameters::setSearchBackwards(bool newSearchBackwards)
+{
+    mSearchBackwards = newSearchBackwards;
+}
+
+bool Parameters::showResults() const
+{
+    return mShowResults;
+}
+
+void Parameters::setShowResults(bool newShowResults)
+{
+    mShowResults = newShowResults;
+}
+
+
 SearchCommon::SearchCommon()
 {
 

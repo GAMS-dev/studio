@@ -67,7 +67,7 @@
         <number>0</number>
        </property>
        <item row="0" column="1">
-        <widget class="QComboBox" name="combo_search">
+        <widget class="QComboBox" name="termComboBox">
          <property name="sizePolicy">
           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
            <horstretch>9</horstretch>
@@ -283,7 +283,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QComboBox" name="combo_scope">
+          <widget class="QComboBox" name="scopeComboBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -351,7 +351,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="btn_back">
+          <widget class="QPushButton" name="btn_backward">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -406,7 +406,7 @@
         </layout>
        </item>
        <item row="1" column="1">
-        <widget class="QLineEdit" name="txt_replace">
+        <widget class="QLineEdit" name="replaceEdit">
          <property name="sizePolicy">
           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
            <horstretch>9</horstretch>
@@ -540,7 +540,7 @@
            <number>6</number>
           </property>
           <item row="1" column="1">
-           <widget class="QComboBox" name="combo_fileExcludePattern">
+           <widget class="QComboBox" name="combo_excludePattern">
             <property name="enabled">
              <bool>false</bool>
             </property>
@@ -581,7 +581,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="combo_filePattern">
+           <widget class="QComboBox" name="combo_includePattern">
             <property name="enabled">
              <bool>false</bool>
             </property>
@@ -694,7 +694,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="combo_path">
+           <widget class="QComboBox" name="directoryComboBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
               <horstretch>9</horstretch>
@@ -721,7 +721,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Path:</string>
+             <string>Folder:</string>
             </property>
            </widget>
           </item>
@@ -776,18 +776,18 @@
  </widget>
  <layoutdefault spacing="6" margin="9"/>
  <tabstops>
-  <tabstop>combo_search</tabstop>
-  <tabstop>txt_replace</tabstop>
-  <tabstop>combo_filePattern</tabstop>
-  <tabstop>combo_fileExcludePattern</tabstop>
-  <tabstop>combo_path</tabstop>
+  <tabstop>termComboBox</tabstop>
+  <tabstop>replaceEdit</tabstop>
+  <tabstop>combo_includePattern</tabstop>
+  <tabstop>combo_excludePattern</tabstop>
+  <tabstop>directoryComboBox</tabstop>
   <tabstop>btn_browse</tabstop>
   <tabstop>cb_subdirs</tabstop>
   <tabstop>cb_caseSens</tabstop>
   <tabstop>cb_regex</tabstop>
   <tabstop>cb_wholeWords</tabstop>
-  <tabstop>combo_scope</tabstop>
-  <tabstop>btn_back</tabstop>
+  <tabstop>scopeComboBox</tabstop>
+  <tabstop>btn_backward</tabstop>
   <tabstop>btn_forward</tabstop>
   <tabstop>btn_clear</tabstop>
   <tabstop>btn_Replace</tabstop>

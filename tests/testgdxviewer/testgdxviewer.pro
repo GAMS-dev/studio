@@ -49,8 +49,8 @@ SOURCES += \
     $$SRCPATH/settings.cpp \
     $$SRCPATH/svgengine.cpp \
     $$SRCPATH/encoding.cpp \
-    $$SRCPATH/theme.cpp
-
+    $$SRCPATH/theme.cpp \
+    $$SRCPATH/search/searchcommon.cpp
 
 HEADERS += \
     $$SRCPATH/abstractview.h \
@@ -98,4 +98,5 @@ HEADERS += \
     $$SRCPATH/settings.h \
     $$SRCPATH/svgengine.h \
     $$SRCPATH/encoding.h \
-    $$SRCPATH/theme.h
+    $$SRCPATH/theme.h   \
+    $$SRCPATH/search/searchcommon.h

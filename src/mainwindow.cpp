@@ -1796,7 +1796,7 @@ void MainWindow::openRecentFile()
 
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
-    if (!searchDialog()->search()->parameters().regex.pattern().isEmpty())
+    if (!searchDialog()->search()->parameters().regex().pattern().isEmpty())
         searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
 
@@ -3271,9 +3271,7 @@ void MainWindow::updateAndSaveSettings()
     settings->setBool(skViewOption, optionEditorVisibility());
     settings->setString(skEncodings, encodings().join(','));
 
-    settings->setBool(skSearchUseRegex, searchDialog()->regex());
-    settings->setBool(skSearchCaseSens, searchDialog()->caseSens());
-    settings->setBool(skSearchWholeWords, searchDialog()->wholeWords());
+    searchDialog()->updateSettings();
 
     int runOptions = (ui->action1_Create_GDX->isChecked() ? 1 : 0) +
                      (ui->action2_Create_RF->isChecked() ? 2 : 0) +

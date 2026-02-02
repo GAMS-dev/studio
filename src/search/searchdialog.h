@@ -48,37 +48,31 @@ public:
 
     void editorChanged(QWidget *editor);
 
-    QRegularExpression createRegex();
-    bool regex();
-    bool caseSens();
-    bool wholeWords();
-    QString searchTerm();
-
-    Scope selectedScope();
-    void setSelectedScope(int index);
-
     void clearResultsView();
-    void clearSearch();
 
     void autofillSearchDialog();
 
     Search* search();
 
-    void setSearchStatus(Search::Status status, int hits = 0);
-
+    ///
     /// \brief jumpToResult jumps to a search result identified by an index.
     ///        Does not jump if the search cache is outdated.
     /// \param index index of a search result in a valid cache
+    ///
     void jumpToResult(int index);
 
+    ///
     /// \brief jumpToResult jumpts to a search result identified by a Result object.
     ///        Jump position can be wrong if the document changed since the result was generated.
     /// \param r SearchResult to jump to
+    ///
     void jumpToResult(Result r);
 
-    void show(QPoint pos);
     QPoint lastPosition();
     bool hasLastPosition();
+    void show(const QPoint &pos);
+    void updateSettings();
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 public slots:
     void on_searchNext();
@@ -93,20 +87,12 @@ public slots:
     void updateDialogState();
 
 private slots:
-    void on_btn_FindAll_clicked();
-    void on_btn_Replace_clicked();
-    void on_btn_ReplaceAll_clicked();
-    void on_combo_scope_currentIndexChanged(int scope);
-    void on_btn_back_clicked();
-    void on_btn_forward_clicked();
-    void on_combo_search_currentTextChanged(const QString&);
-    void on_cb_caseSens_stateChanged(int);
-    void on_cb_wholeWords_stateChanged(int);
-    void on_cb_regex_stateChanged(int);
-    void on_btn_browse_clicked();
-    void on_cb_subdirs_stateChanged(int);
-    void on_combo_path_currentTextChanged(const QString&);
-    void on_combo_fileExcludePattern_currentTextChanged(const QString&);
+    void findAll();
+    void replace();
+    void replaceAll();
+    void changeScope(int scope);
+    void browse();
+    void searchParameterChanged();
 
 signals:
     void closeResults();
@@ -118,17 +104,21 @@ signals:
     void updateResults(gams::studio::search::SearchResultModel* resultModel);
 
 protected:
-    void showEvent(QShowEvent *event);
-    void keyPressEvent(QKeyEvent *e);
-    void closeEvent(QCloseEvent *event);
-    void moveEvent(QMoveEvent *event);
+    void showEvent(QShowEvent *event) override;
+    void keyPressEvent(QKeyEvent *e) override;
+    void closeEvent(QCloseEvent *event) override;
+    void moveEvent(QMoveEvent *event) override;
 
 private:
+    void setupConnections();
     void restoreSettings();
+    QRegularExpression createRegex();
+    void clearSearch();
+    Scope selectedScope() const;
+    void setSearchStatus(Search::Status status, int hits = 0);
     QList<SearchFile> getFilesByScope(const Parameters &parameters);
     int updateLabelByCursorPos(int lineNr = -1, int colNr = -1);
     void insertHistory();
-    void searchParameterChanged();
     void updateEditHighlighting();
     void clearSelection();
     void setSearchSelectionActive(bool active);
@@ -143,8 +133,8 @@ private:
     void updateComponentAvailability();
     void updateClearButton();
     Parameters createSearchParameters(bool showResults,
-                                            bool ignoreReadonly = false,
-                                            bool searchBackwards = false);
+                                      bool ignoreReadonly = false,
+                                      bool searchBackwards = false);
 
 private:
     Ui::SearchDialog *ui;

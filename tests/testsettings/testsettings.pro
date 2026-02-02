@@ -11,8 +11,9 @@ HEADERS += \
     $$SRCPATH/svgengine.h \
     $$SRCPATH/colors/palettemanager.h \
     $$SRCPATH/editors/sysloglocator.h \
-    $$SRCPATH/editors/abstractsystemlogger.h
-    $$SRCPATH/editors/defaultsystemlogger.h
+    $$SRCPATH/editors/abstractsystemlogger.h \
+    $$SRCPATH/editors/defaultsystemlogger.h \
+    $$SRCPATH/search/searchcommon.h
 
 SOURCES += \
     testsettings.cpp \
@@ -25,4 +26,5 @@ SOURCES += \
     $$SRCPATH/svgengine.cpp \
     $$SRCPATH/colors/palettemanager.cpp \
     $$SRCPATH/editors/sysloglocator.cpp \
-    $$SRCPATH/editors/defaultsystemlogger.cpp
+    $$SRCPATH/editors/defaultsystemlogger.cpp   \
+    $$SRCPATH/search/searchcommon.cpp
