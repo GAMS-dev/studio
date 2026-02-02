@@ -30,6 +30,8 @@
 namespace gams {
 namespace studio {
 
+const int COverScroll = 8;
+
 ChunkTextMapper::ChunkTextMapper(QObject *parent): AbstractTextMapper(parent)
 {
     setMappingSizes();
@@ -260,10 +262,12 @@ void ChunkTextMapper::scrollToPosition()
     if (!cm) return;
     if (cm->hasLineNrs()) {
         QPoint pos = position(true);
-        if (pos.y() < visibleLineCount() / 5 || pos.y() == cursorBeyondEnd || pos.y() > (visibleLineCount() * 4) / 5)
-            setVisibleTopLine(cm->startLineNr + mPosition.localLine - visibleLineCount() / 2);
-        if (pos.y() == cursorBeforeStart)
-            setVisibleTopLine(cm->startLineNr + mPosition.localLine);
+        if (pos.y() != cursorInvalid) {
+            if (pos.y() == cursorBeforeStart || pos.y() == 0)
+                setVisibleTopLine(cm->startLineNr + mPosition.localLine - visibleLineCount() / COverScroll);
+            else if (pos.y() == cursorBeyondEnd || pos.y() > visibleLineCount() - 2)
+                setVisibleTopLine(cm->startLineNr + mPosition.localLine - visibleLineCount() * (COverScroll-1) / COverScroll);
+        }
     } else {
         double region = double(mPosition.absLineStart + mPosition.effectiveCharNr()) / double(size());
         setVisibleTopLine(region);
@@ -670,7 +674,8 @@ void ChunkTextMapper::setPosToAbsEnd(QTextCursor::MoveMode mode)
     if (!chunkCount()) return;
     Chunk *chunk = getChunk(chunkCount()-1, false);
     int lastLine = chunk->lineCount()-1;
-    setPosAbsolute(chunk, lastLine, chunk->lineBytes.at(lastLine) - chunk->lineBytes.at(lastLine-1), mode);
+    int charNr = lastLine > 0 ? chunk->lineBytes.at(lastLine) - chunk->lineBytes.at(lastLine-1) : 0;
+    setPosAbsolute(chunk, lastLine, charNr, mode);
 }
 
 void ChunkTextMapper::setPosAbsolute(ChunkTextMapper::Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode)
