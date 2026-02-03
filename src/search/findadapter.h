@@ -274,6 +274,7 @@ public:
     QString currentFindSelection(bool &isCurrentWord) override;
     void invalidateSelection() override;
     bool supportsRegEx() override { return false; }
+    bool eventFilter(QObject *watched, QEvent *event);
 
 protected:
     friend class FindAdapter;

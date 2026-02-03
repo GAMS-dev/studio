@@ -285,7 +285,10 @@ ChangelogFindAdapter::ChangelogFindAdapter(QTextBrowser *view)
 }
 
 ChangelogFindAdapter::~ChangelogFindAdapter()
-{}
+{
+    mView->removeEventFilter(this);
+    mView->viewport()->removeEventFilter(this);
+}
 
 QWidget *ChangelogFindAdapter::widget() const
 {
@@ -423,11 +426,13 @@ bool ChangelogFindAdapter::eventFilter(QObject *watched, QEvent *event)
 WebViewFindAdapter::WebViewFindAdapter(QWebEngineView *view)
 {
     mView = view;
-    mView->installEventFilter(this);
+    mView->parent()->installEventFilter(this);
 }
 
 WebViewFindAdapter::~WebViewFindAdapter()
-{}
+{
+    mView->parent()->removeEventFilter(this);
+}
 
 QWidget *WebViewFindAdapter::widget() const
 {
@@ -436,11 +441,13 @@ QWidget *WebViewFindAdapter::widget() const
 
 bool WebViewFindAdapter::hasSelectedFind() const
 {
-    return true;
+    return false;
 }
 
 void WebViewFindAdapter::setFindTerm(const QRegularExpression &rex, FindOptions options)
 {
+    Q_UNUSED(rex)
+    Q_UNUSED(options)
     DEB() << "Regular Expression not supported in WebEngineView";
 }
 
@@ -451,6 +458,8 @@ bool WebViewFindAdapter::hasFindTerm()
 
 bool WebViewFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
+    Q_UNUSED(rex)
+    Q_UNUSED(options)
     DEB() << "Regular Expression not supported in WebEngineView";
     return false;
 }
@@ -467,6 +476,7 @@ bool WebViewFindAdapter::findText(const QString &text, FindOptions options)
 
 QString WebViewFindAdapter::currentFindSelection(bool &isCurrentWord)
 {
+    Q_UNUSED(isCurrentWord)
     QString sel = mView->selectedText();
     if (sel.contains('\n'))
         sel = QString();
@@ -475,6 +485,23 @@ QString WebViewFindAdapter::currentFindSelection(bool &isCurrentWord)
 
 void WebViewFindAdapter::invalidateSelection()
 {
+    findText(QString(), {});
+}
+
+bool WebViewFindAdapter::eventFilter(QObject *watched, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Escape)
+            emit endFind();
+        else if (keyEvent->key() == Qt::Key_F3) {
+            if (keyEvent->modifiers().testFlag(Qt::ShiftModifier))
+                emit findNext(true);
+            else
+                emit findNext(false);
+        }
+    }
+    return FindAdapter::eventFilter(watched, event);
 }
 
 

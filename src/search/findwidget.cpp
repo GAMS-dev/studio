@@ -101,6 +101,7 @@ void FindWidget::setActive(bool newActive)
         if (mFinder) {
             mFinder->setFocus();
             mFinder->setFindTerm(QRegularExpression(), foNone);
+            mFinder->invalidateSelection();
         }
         ui->edFind->clear();
     }
@@ -181,7 +182,9 @@ bool FindWidget::find(FindOptions options, bool keepSearchTerm)
     QString match;
     size_t pos = 0;
     bool isCurrentWord = false;
-    if (!mFinder->hasSelectedFind() && (!keepSearchTerm || !mFinder->hasFindTerm())) {
+    if (!mFinder->hasFindTerm() && mFinder->supportsRegEx())
+        keepSearchTerm = false;
+    if (!mFinder->hasSelectedFind() && !keepSearchTerm) {
         QString term = mFinder->currentFindSelection(isCurrentWord);
         if (isCurrentWord && !options.testFlag(foContinued))
             options.setFlag(foSkipFind);
@@ -286,13 +289,13 @@ void FindWidget::on_bClose_clicked()
 
 void FindWidget::on_bNext_clicked()
 {
-    if (mFinder && mFinder->hasFindTerm())
+    if (mFinder && (mFinder->hasFindTerm() || !mFinder->supportsRegEx()))
         find(FindOptions(foFocusEdit | foContinued));
 }
 
 void FindWidget::on_bPrev_clicked()
 {
-    if (mFinder && mFinder->hasFindTerm())
+    if (mFinder && (mFinder->hasFindTerm() || !mFinder->supportsRegEx()))
         find(FindOptions(foFocusEdit | foBackwards | foContinued));
 }
 
