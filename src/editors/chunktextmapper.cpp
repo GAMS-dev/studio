@@ -264,7 +264,7 @@ void ChunkTextMapper::scrollToPosition()
         QPoint pos = position(true);
         if (pos.y() != cursorInvalid) {
             if (pos.y() == cursorBeforeStart || pos.y() == 0)
-                setVisibleTopLine(cm->startLineNr + mPosition.localLine - visibleLineCount() / COverScroll);
+                setVisibleTopLine(qMax(0, cm->startLineNr + mPosition.localLine - visibleLineCount() / COverScroll));
             else if (pos.y() == cursorBeyondEnd || pos.y() > visibleLineCount() - 2)
                 setVisibleTopLine(cm->startLineNr + mPosition.localLine - visibleLineCount() * (COverScroll-1) / COverScroll);
         }
@@ -828,7 +828,7 @@ void ChunkTextMapper::hideCursor()
 
 void ChunkTextMapper::setSelectionDirection(Qt::LayoutDirection direction)
 {
-    if (mPosition == mAnchor) return;
+    if (mPosition == mAnchor || mAnchor == CursorPosition()) return;
     Qt::LayoutDirection currentDirection = mAnchor < mPosition ? Qt::LeftToRight : Qt::RightToLeft;
     if (currentDirection != direction)
         qSwap(mAnchor, mPosition);

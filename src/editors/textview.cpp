@@ -299,7 +299,8 @@ bool TextView::findText(const QRegularExpression &rex, QTextDocument::FindFlags 
 {
     if (hasSelectedFind()) {
         // recent find is selected -> this is a find next/previous
-        mMapper->setSelectionDirection(options.testFlag(QTextDocument::FindBackward) ? Qt::RightToLeft : Qt::LeftToRight);
+        mMapper->setSelectionDirection(options.testFlag(QTextDocument::FindBackward) ? Qt::RightToLeft
+                                                                                     : Qt::LeftToRight);
     }
     if (next)
         mMapper->clearSelection();
@@ -311,13 +312,15 @@ bool TextView::findText(const QRegularExpression &rex, QTextDocument::FindFlags 
         found = mMapper->searchText(rex, options, goOn);
         if (found) {
             // TODO(JM) find a way to skip hidden matches
+            mMapper->scrollToPosition();
             updateView();
             updatePosAndAnchor();
             emit selectionChanged();
-            if (!mEdit->hasSelection())
+            if (!mEdit->textCursor().hasSelection())
                 found = false;
+        } else if (!goOn) {
+            break;
         }
-        if (!goOn) break;
     }
 
     if (found) {
