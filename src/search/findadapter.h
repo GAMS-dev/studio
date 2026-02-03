@@ -25,6 +25,10 @@
 
 class QTextBrowser;
 
+#ifdef QWEBENGINE
+class QWebEngineView;
+#endif
+
 namespace gams {
 namespace studio {
 
@@ -102,6 +106,14 @@ public:
     virtual bool findText(const QRegularExpression &rex, FindOptions options) = 0;
 
     ///
+    /// \brief findText Triggers a find action
+    /// \param text The find term
+    /// \param options Options for the find action
+    /// \return TRUE if the find term has been found
+    ///
+    virtual bool findText(const QString &text, FindOptions options);
+
+    ///
     /// \brief findReplaceAll Replace all occurrencies in the content of the widget
     /// \param rex The find term
     /// \param options Options for the find action
@@ -126,6 +138,12 @@ public:
     /// \brief invalidateSelection Performs a deselect in the widget if the selection is a result from a find action
     ///
     virtual void invalidateSelection() = 0;
+
+    ///
+    /// \brief RegExSupported determines if this adapter supports QRegularExpression
+    /// \return TRUE by default
+    ///
+    virtual bool supportsRegEx() { return true; }
 
 signals:
     ///
@@ -236,6 +254,35 @@ private:
     bool mTakeSelection = false;
     QString mSelection;
 };
+
+
+// ------------------
+
+
+#ifdef QWEBENGINE
+class WebViewFindAdapter : public FindAdapter
+{
+    Q_OBJECT
+public:
+    ~WebViewFindAdapter() override;
+    QWidget *widget() const override;
+    bool hasSelectedFind() const override;
+    void setFindTerm(const QRegularExpression &rex, FindOptions options) override;
+    bool hasFindTerm() override;
+    bool findText(const QRegularExpression &rex, FindOptions options) override;
+    bool findText(const QString &text, FindOptions options) override;
+    QString currentFindSelection(bool &isCurrentWord) override;
+    void invalidateSelection() override;
+    bool supportsRegEx() override { return false; }
+
+protected:
+    friend class FindAdapter;
+    WebViewFindAdapter(QWebEngineView *view = nullptr);
+
+private:
+    QWebEngineView *mView;
+};
+#endif
 
 } // namespace find
 } // namespace studio

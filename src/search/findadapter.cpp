@@ -26,6 +26,10 @@
 
 #include <QTextBrowser>
 
+#ifdef QWEBENGINE
+#include <QWebEngineView>
+#endif
+
 namespace gams {
 namespace studio {
 namespace find {
@@ -48,6 +52,11 @@ FindAdapter *FindAdapter::createAdapter(QWidget *widget)
     if (QTextBrowser *browser = qobject_cast<QTextBrowser*>(widget))
         res = new ChangelogFindAdapter(browser);
 
+#ifdef QWEBENGINE
+    if (QWebEngineView *browser = qobject_cast<QWebEngineView*>(widget))
+        res = new WebViewFindAdapter(browser);
+#endif
+
     if (res)
         connect(widget, &QWidget::destroyed, res, &FindAdapter::widgetDestroyed);
     return res;
@@ -67,6 +76,19 @@ void FindAdapter::setFocus()
 bool FindAdapter::canReplace() const
 {
     return false;
+}
+
+bool FindAdapter::findText(const QString &text, FindOptions options)
+{
+    QString filter;
+    QRegularExpression::WildcardConversionOptions opt = QRegularExpression::NonPathWildcardConversion;
+    if (!options.testFlag(foExactMatch))
+        opt.setFlag(QRegularExpression::UnanchoredWildcardConversion);
+    filter = QRegularExpression::wildcardToRegularExpression(text, opt);
+    if (options.testFlag(foExactMatch))
+        filter = "\\b"+text+"\\b";
+    QRegularExpression rex = QRegularExpression(filter, QRegularExpression::CaseInsensitiveOption);
+    return findText(rex, options);
 }
 
 int FindAdapter::findReplaceAll(const QRegularExpression &rex, FindOptions options, const QString &replacement)
@@ -393,6 +415,70 @@ bool ChangelogFindAdapter::eventFilter(QObject *watched, QEvent *event)
     }
     return FindAdapter::eventFilter(watched, event);
 }
+
+
+#ifdef QWEBENGINE
+// -------------------------- ChangelogFindAdapter
+
+WebViewFindAdapter::WebViewFindAdapter(QWebEngineView *view)
+{
+    mView = view;
+    mView->installEventFilter(this);
+}
+
+WebViewFindAdapter::~WebViewFindAdapter()
+{}
+
+QWidget *WebViewFindAdapter::widget() const
+{
+    return mView;
+}
+
+bool WebViewFindAdapter::hasSelectedFind() const
+{
+    return true;
+}
+
+void WebViewFindAdapter::setFindTerm(const QRegularExpression &rex, FindOptions options)
+{
+    DEB() << "Regular Expression not supported in WebEngineView";
+}
+
+bool WebViewFindAdapter::hasFindTerm()
+{
+    return false;
+}
+
+bool WebViewFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
+{
+    DEB() << "Regular Expression not supported in WebEngineView";
+    return false;
+}
+
+bool WebViewFindAdapter::findText(const QString &text, FindOptions options)
+{
+    auto resFunc = std::function<void(const QWebEngineFindTextResult &)>();
+    QWebEnginePage::FindFlags opt = {};
+    if (options.testFlag(foBackwards)) opt.setFlag(QWebEnginePage::FindBackward);
+    if (options.testFlag(foCaseSense)) opt.setFlag(QWebEnginePage::FindCaseSensitively);
+    mView->findText(text, opt);
+    return true;
+}
+
+QString WebViewFindAdapter::currentFindSelection(bool &isCurrentWord)
+{
+    QString sel = mView->selectedText();
+    if (sel.contains('\n'))
+        sel = QString();
+    return sel;
+}
+
+void WebViewFindAdapter::invalidateSelection()
+{
+}
+
+
+#endif
 
 } // namespace find
 } // namespace studio

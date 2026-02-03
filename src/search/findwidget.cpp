@@ -192,7 +192,8 @@ bool FindWidget::find(FindOptions options, bool keepSearchTerm)
     }
     if (ui->edFind->exactMatch()) options.setFlag(foExactMatch);
     if (ui->edFind->isCaseSensitive()) options.setFlag(foCaseSense);
-    bool found = mFinder->findText(termRegEx(), options);
+    bool found = mFinder->supportsRegEx() ? mFinder->findText(termRegEx(), options)
+                                          : mFinder->findText(ui->edFind->text(), options);
     if (options.testFlag(foFocusEdit))
         mFinder->setFocus();
     match = mFinder->currentFindSelection(isCurrentWord);
