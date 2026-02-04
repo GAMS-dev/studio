@@ -80,6 +80,8 @@ bool FindAdapter::canReplace() const
 
 bool FindAdapter::findText(const QString &text, FindOptions options)
 {
+    if (text.isEmpty())
+        return false;
     QString filter;
     QRegularExpression::WildcardConversionOptions opt = QRegularExpression::NonPathWildcardConversion;
     if (!options.testFlag(foExactMatch))
@@ -237,6 +239,8 @@ bool ViewFindAdapter::hasFindTerm()
 
 bool ViewFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
+    if (rex.pattern().isEmpty())
+        return false;
     if (!options.testFlag(foContinued) && mView->anchor().y() == mView->position().y()) {
         QPoint pos = mView->position();
         QPoint anc = mView->anchor();
@@ -317,6 +321,8 @@ bool ChangelogFindAdapter::hasFindTerm()
 
 bool ChangelogFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
+    if (rex.pattern().isEmpty())
+        return false;
     int pos = mView->textCursor().hasSelection() ? mView->textCursor().anchor()
                                                  : mView->textCursor().position();
     QTextDocument::FindFlags docOpt = findFlags(options);
@@ -382,7 +388,7 @@ void ChangelogFindAdapter::calcExtraSelections()
                                                   mView->viewport()->size().height()});
     QList<QTextEdit::ExtraSelection> selections;
     QTextBlock block = curFrom.block();
-    while (block.blockNumber() <= curTo.blockNumber()) {
+    while (block.isValid() && block.blockNumber() <= curTo.blockNumber()) {
         QRegularExpressionMatchIterator i = mRex->globalMatch(block.text());
 
         while (i.hasNext()) {
@@ -466,6 +472,8 @@ bool WebViewFindAdapter::findText(const QRegularExpression &rex, FindOptions opt
 
 bool WebViewFindAdapter::findText(const QString &text, FindOptions options)
 {
+    if (text.isEmpty())
+        return false;
     auto resFunc = std::function<void(const QWebEngineFindTextResult &)>();
     QWebEnginePage::FindFlags opt = {};
     if (options.testFlag(foBackwards)) opt.setFlag(QWebEnginePage::FindBackward);

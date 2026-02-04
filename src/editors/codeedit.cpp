@@ -956,7 +956,7 @@ void CodeEdit::setFindTerm(const QRegularExpression &rex, QTextDocument::FindFla
         delete mFindREx;
         mFindREx = nullptr;
     }
-    if (rex.isValid()) {
+    if (rex.isValid() && !rex.pattern().isEmpty()) {
         mFindREx = new QRegularExpression(rex);
         QRegularExpression::PatternOptions rexOpt = mFindREx->patternOptions();
         rexOpt.setFlag(QRegularExpression::CaseInsensitiveOption, !options.testFlag(QTextDocument::FindCaseSensitively));
@@ -2747,7 +2747,7 @@ void CodeEdit::extraSelFindMatches(QList<QTextEdit::ExtraSelection> &selections)
         top += qRound(blockBoundingRect(block).height());
         QRegularExpressionMatchIterator i = mFindREx->globalMatch(block.text());
 
-        while (i.hasNext()) {
+        while (i.isValid() && i.hasNext()) {
             QRegularExpressionMatch m = i.next();
             QTextEdit::ExtraSelection selection;
             QTextCursor tc(document());

@@ -2,9 +2,9 @@ Closes #TICKETNUMBER
 
 **Please test the MR on**
 
-- [ ] Linux (@jparnjai @afust)
-- [ ] macOS (@jmonki)
-- [ ] Windows (@cwestphal @jmonki)
+- [ ] Linux - @jparnjai 
+- [ ] macOS - @jmonki
+- [ ] Windows - @cwestphal 
 - [ ] T.b.d. add the reporter and his platform to test the issue
 
 **Review**

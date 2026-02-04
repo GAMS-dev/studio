@@ -297,6 +297,8 @@ void TextView::setFindTerm(const QRegularExpression &rex, QTextDocument::FindFla
 
 bool TextView::findText(const QRegularExpression &rex, QTextDocument::FindFlags options, bool next)
 {
+    if (rex.pattern().isEmpty())
+        return false;
     if (hasSelectedFind()) {
         // recent find is selected -> this is a find next/previous
         mMapper->setSelectionDirection(options.testFlag(QTextDocument::FindBackward) ? Qt::RightToLeft
