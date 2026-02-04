@@ -228,7 +228,10 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
         ui->nextCheckLabel->setText(nextCheckDate().toString());
         setModifiedStatus(true);
     });
-    connect(ui->gamsEdit, &QLineEdit::textChanged, this, &SettingsDialog::gamsSystemDirChanged);
+    connect(ui->gamsEdit, &QLineEdit::textChanged, this, [this]() {
+        setModifiedStatus(true);
+        checkGamsSystemDir(false);
+    } );
 
     ui->edUserGamsTypes->installEventFilter(this);
     ui->edAutoReloadTypes->installEventFilter(this);
@@ -365,8 +368,7 @@ void SettingsDialog::loadSettings()
 
     // GAMS system directory
     QString sysdir = mSettings->toString(skSystemDirectory);
-    if (!sysdir.isEmpty())
-        ui->gamsEdit->setText(QDir::toNativeSeparators(sysdir));
+    ui->gamsEdit->setText(QDir::toNativeSeparators(sysdir));
 
     QTimer::singleShot(0, this, &SettingsDialog::afterLoad);
 }
@@ -648,6 +650,7 @@ void SettingsDialog::editorBaseColorChanged()
 void SettingsDialog::afterLoad()
 {
     setModifiedStatus(false);
+    checkGamsSystemDir(true);
     mNeedRehighlight = false;
 }
 
@@ -1269,19 +1272,18 @@ void SettingsDialog::updateNumericalPrecision()
     mRestoreSqZeroes = gdxviewer::NumericalFormatController::update(ui->cbFormat, ui->sbPrecision, ui->cbSqueezeTrailingZeroes, mRestoreSqZeroes);
 }
 
-void SettingsDialog::gamsSystemDirChanged()
+void SettingsDialog::checkGamsSystemDir(bool fromLoad)
 {
-    setModifiedStatus(true);
     QString path = ui->gamsEdit->text().isEmpty() ? CommonPaths::systemDir()
                                                   : QDir::fromNativeSeparators(ui->gamsEdit->text());
     QDir dir(path);
     QFileInfo fi(path + "/gamsstmp.txt");
+    QString restoreHint = fromLoad ? " Please remove the entry or select a valid GAMS directory."
+                                   : " Please update the system directory path, otherwise the previous value will be restored.";
     if (!dir.exists())
-        ui->gamsLabel->setText("The given directory does not exist. Please update the system directory path, "
-                               "otherwise the previous value will be restored.");
+        ui->gamsLabel->setText(QString("The given directory does not exist.%1").arg(restoreHint));
     else if (!fi.exists())
-        ui->gamsLabel->setText("The given directory does not seem to be a valid GAMS system directory. "
-                               "Please update the system directory path, otherwise the previous value will be restored.");
+        ui->gamsLabel->setText(QString("The given directory does not seem to be a valid GAMS system directory.%1").arg(restoreHint));
     else if (QDir::fromNativeSeparators(ui->gamsEdit->text()) != mSettings->toString(skSystemDirectory))
         ui->gamsLabel->setText("<b>The GAMS system directory has changed. Please restart Studio.</b>");
     else

@@ -128,7 +128,7 @@ private slots:
     void on_rb_decSepStudio_toggled(bool checked);
     void updateNumericalPrecision();
 
-    void gamsSystemDirChanged();
+    void checkGamsSystemDir(bool fromLoad);
     void checkForUpdates();
 
 private:

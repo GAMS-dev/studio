@@ -53,6 +53,9 @@
            <layout class="QHBoxLayout" name="horizontalLayout_13">
             <item>
              <widget class="QLineEdit" name="gamsEdit">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The directory to the GAMS System.&lt;/p&gt;&lt;p&gt;- If not defined, Studio looks for it on each start and shows the path in gray. (default)&lt;/p&gt;&lt;p&gt;- If definded, Studio uses this path even after a major GAMS update.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="clearButtonEnabled">
                <bool>true</bool>
               </property>
@@ -1225,8 +1228,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>100</width>
+            <height>30</height>
            </rect>
           </property>
           <attribute name="label">
