@@ -165,7 +165,7 @@ pack-leg:
   # create appimage without libnss3.so and libnssutil3.so (currently these libs cause a crash)
   - linuxdeploy-x86_64.AppImage --appdir=appdir --plugin=qt --desktop-file=appdir/usr/share/studio.desktop
   - rm appdir/usr/lib/libnss3.so appdir/usr/lib/libnssutil3.so
-  - cp /opt/Qt/${QT_VERSION}/resources/v8_context_snapshot.bin appdir/usr/resources
+  - cp /opt/Qt/${QT_VERSION}/gcc_64/resources/v8_context_snapshot.bin appdir/usr/resources
   - linuxdeploy-plugin-appimage-x86_64.AppImage --appdir=appdir
   # rename the AppImage... for MR artifact exposure
   - mv GAMS_Studio-${LINUXDEPLOY_OUTPUT_VERSION}-x86_64.AppImage GAMS_Studio-leg-x86_64.AppImage
@@ -182,8 +182,8 @@ pack-wei:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-${QT_IMAGE_VERSION}:latest
   needs: [build-wei]
   variables:
-    vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
-    cmd_vcvars: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat
+    vcinsdir: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC
+    cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat
   script:
     - $env:Path = "C:\Qt\Tools\icu\bin64;" + $env:PATH
     - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
@@ -192,8 +192,8 @@ pack-wei:
     # setup and fill studio directory
     - mkdir studio
     - cp build/src/bin/* studio
-    - cp "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Redist/MSVC/14.44.35112/x64/Microsoft.VC143.CRT/*" "studio"
-    - cp "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Redist/MSVC/14.44.35112/vc_redist.x64.exe" "studio"
+    - cp "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Redist/MSVC/14.44.35112/x64/Microsoft.VC143.CRT/*" "studio"
+    - cp "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Redist/MSVC/14.44.35112/vc_redist.x64.exe" "studio"
     - Copy-Item "build/libssl-3-x64.dll" "studio"
     - Copy-Item "build/libcrypto-3-x64.dll" "studio"
     - cd studio
@@ -202,22 +202,13 @@ pack-wei:
     - windeployqt --release --compiler-runtime --force studio.exe
     - cp ../CHANGELOG "resources/Changelog"
     # sign and verify studio
-    - |+
-      try {
-        $bytes = $([System.Convert]::FromBase64String($GAMS_COMODO_CERT))
-        Set-Content comodo_cert.p12 -Value $bytes -Encoding Byte
-        signtool sign /v /fd SHA256 /f comodo_cert.p12 /p $GAMS_COMODO_CERT_PASSWORD /t http://timestamp.comodoca.com studio.exe
-        rm comodo_cert.p12
-      } catch {
-        $_
-      } finally {
-        if (Test-Path -Path "comodo_cert.p12" -PathType Leaf) {
-          rm comodo_cert.p12
-        }
-      }
-      signtool verify /v /pa studio.exe
-      if ($LastExitCode -ne 0) {
-        exit 1
+    - |
+      if ($env:CI_COMMIT_REF_NAME -match '^(v\d+\.\d+\.\d+.*|release.*|develop)$') {
+        Write-Host "Build trigger detected ($env:CI_COMMIT_REF_NAME) - Signing studio.exe"
+        & signtool sign /v /fd SHA256 /tr http://timestamp.acs.microsoft.com -td SHA256 -dlib $env:LOCALAPPDATA/Microsoft/MicrosoftArtifactSigningClientTools/Azure.CodeSigning.Dlib.dll -dmdf $env:SIGNTOOL_METADATA_JSON studio.exe
+        & signtool verify /v /pa studio.exe
+      } else {
+        Write-Host "Not a release, develop, or tagged build. Skipping signing studio.exe!"
       }
     # zip studio directory... for MR artifact exposure
     - cd ..
