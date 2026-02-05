@@ -109,7 +109,7 @@ private:
 
     // Strings
     QString mTxtRemoveGroup = "Remove Files of this &Folder";
-    QString mTxtRemoveProject = "Remove &Project";
+    QString mTxtRemoveProject = "&Close Project";
     QString mTxtDeleteProject = "&Delete Project File";
     QString mTxtRemoveFile = "&Remove from Project";
     QString mTxtDeleteFile = "&Delete File";
