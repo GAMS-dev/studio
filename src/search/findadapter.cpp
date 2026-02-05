@@ -239,8 +239,10 @@ bool ViewFindAdapter::hasFindTerm()
 
 bool ViewFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
-    if (rex.pattern().isEmpty())
+    if (rex.pattern().isEmpty()) {
+        mView->setFindTerm(rex, findFlags(options));
         return false;
+    }
     if (!options.testFlag(foContinued) && mView->anchor().y() == mView->position().y()) {
         QPoint pos = mView->position();
         QPoint anc = mView->anchor();
@@ -308,7 +310,7 @@ void ChangelogFindAdapter::setFindTerm(const QRegularExpression &rex, FindOption
 {
     if (mRex)
         delete mRex;
-    mRex = rex.isValid() ? new QRegularExpression(rex) : nullptr;
+    mRex = rex.isValid() && !rex.pattern().isEmpty() ? new QRegularExpression(rex) : nullptr;
     mOptions = options;
 
     calcExtraSelections();
@@ -316,13 +318,19 @@ void ChangelogFindAdapter::setFindTerm(const QRegularExpression &rex, FindOption
 
 bool ChangelogFindAdapter::hasFindTerm()
 {
-    return mRex && mRex->isValid();
+    return mRex && mRex->isValid() && !mRex->pattern().isEmpty();
 }
 
 bool ChangelogFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
-    if (rex.pattern().isEmpty())
+    if (rex.pattern().isEmpty()) {
+        invalidateSelection();
+        setFindTerm(rex, options);
+        QTextCursor cur = mView->textCursor();
+        cur.clearSelection();
+        mView->setTextCursor(cur);
         return false;
+    }
     int pos = mView->textCursor().hasSelection() ? mView->textCursor().anchor()
                                                  : mView->textCursor().position();
     QTextDocument::FindFlags docOpt = findFlags(options);
@@ -472,13 +480,13 @@ bool WebViewFindAdapter::findText(const QRegularExpression &rex, FindOptions opt
 
 bool WebViewFindAdapter::findText(const QString &text, FindOptions options)
 {
-    if (text.isEmpty())
-        return false;
     auto resFunc = std::function<void(const QWebEngineFindTextResult &)>();
     QWebEnginePage::FindFlags opt = {};
     if (options.testFlag(foBackwards)) opt.setFlag(QWebEnginePage::FindBackward);
     if (options.testFlag(foCaseSense)) opt.setFlag(QWebEnginePage::FindCaseSensitively);
     mView->findText(text, opt);
+    if (text.isEmpty())
+        return false;
     return true;
 }
 

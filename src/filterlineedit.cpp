@@ -162,6 +162,10 @@ void FilterLineEdit::updateRegExp()
                 filter = "^"+text()+"$";
             else
                 filter = "\\b"+text()+"\\b";
+        } else if (mNoWildcards) {
+            filter = QRegularExpression::escape(text());
+            if (mBoundaryMode == bmWordBound && buttonState(mExactButton))
+                filter = "\\b"+text()+"\\b";
         } else {
             QRegularExpression::WildcardConversionOptions opt = QRegularExpression::NonPathWildcardConversion;
             if (!buttonState(mExactButton) || mBoundaryMode == bmWordBound)
@@ -250,6 +254,16 @@ QAbstractButton *FilterLineEdit::button(FilterLineEditFlag option)
     case foCaSens: return mCaseSenseButton;
     default: return nullptr;
     }
+}
+
+bool FilterLineEdit::noWildcards() const
+{
+    return mNoWildcards;
+}
+
+void FilterLineEdit::setNoWildcards(bool newNoWildcards)
+{
+    mNoWildcards = newNoWildcards;
 }
 
 FilterLineEdit::BoundaryMode FilterLineEdit::docMode() const

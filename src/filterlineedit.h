@@ -72,6 +72,8 @@ public:
     bool isCaseSensitive();
     BoundaryMode docMode() const;
     void setBoundaryMode(BoundaryMode newDocMode);
+    bool noWildcards() const;
+    void setNoWildcards(bool newNoWildcards);
 
 signals:
     void regExpChanged(QRegularExpression regExp);
@@ -98,6 +100,7 @@ private:
     QRegularExpression mRegExp;
     BoundaryMode mBoundaryMode = bmLineBound;
     bool mCanClear = true;
+    bool mNoWildcards = false;
     int mKeyColumn = -1;
 };
 

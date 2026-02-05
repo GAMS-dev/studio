@@ -35,6 +35,7 @@ FindWidget::FindWidget(QWidget *parent)
     ui->setupUi(this);
     ui->edFind->showOptions(FilterLineEdit::foCaSens);
     ui->edFind->setBoundaryMode(FilterLineEdit::bmWordBound);
+    ui->edFind->setNoWildcards(true);
     ui->bClose->setIcon(Theme::icon(":/%1/remove"));
     ui->bNext->setIcon(Theme::icon(":/%1/sort-desc"));
     ui->bPrev->setIcon(Theme::icon(":/%1/sort-asc"));
