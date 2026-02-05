@@ -98,7 +98,6 @@ void FileWorker::filterFiles(const QList<SearchFile> &files,
                 break; // one match is enough, dont overwrite result
             }
         }
-
         // check if file is included but shall be exlcuded
         if (include) {
             for (const QRegularExpression &pattern : std::as_const(excludeFilterList)) {
@@ -107,10 +106,11 @@ void FileWorker::filterFiles(const QList<SearchFile> &files,
                     break;
             }
         }
-
+        if (sf.path().endsWith(".gdx")) // TODO Mind read only files!
+            continue;
         // if we can get an fm check if that file is read only
         FileMeta* fm = mFileHandler->findFile(sf.path());
-        if ((include || ignoreWildcard) && (!params.ignoreReadOnly() || (fm && !fm->isReadOnly()))) {
+        if (include || ignoreWildcard) {
             matched << ((fm && fm->isModified()) ? sf : sf.path());
         }
     }

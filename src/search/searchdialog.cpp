@@ -602,8 +602,8 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
                                     );
         break;
     case Search::Ok:
-        ui->lbl_nrResults->setText(QString::number(hits) + ((hits == 1)
-                                    ? " match" : " matches") + inXFiles + ".");
+        ui->lbl_nrResults->setText("Searched"  + inXFiles + ": " + QString::number(hits) + ((hits == 1)
+                                    ? " match" : " matches") + ".");
         break;
     case Search::NoResults:
         if (selectedScope() == Scope::Selection && !mSearch.hasSearchSelection())

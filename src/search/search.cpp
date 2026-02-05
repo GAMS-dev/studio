@@ -116,6 +116,9 @@ void Search::runSearch(const QList<SearchFile> &files)
 
     FileMeta* currentFile = mFileHandler->fileMeta(mSearchDialog->currentEditor());
     for (const SearchFile& sf : std::as_const(files)) {
+        //if (auto* fm = mFileHandler->findFile(sf.path())) { // TODO AF: use?
+        //    // skip certain file types
+        //    if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Ref)
         if (FileMeta* fm = sf.fileMeta()) {
             if (skipFileType(fm->kind()))
                 continue;
@@ -126,8 +129,7 @@ void Search::runSearch(const QList<SearchFile> &files)
                 else
                     modified << fm;
             } else {
-                if (fm == currentFile)
-                    unmodified.insert(0, sf);
+                unmodified << fm;
             }
         } else {
             unmodified << sf;
@@ -136,8 +138,10 @@ void Search::runSearch(const QList<SearchFile> &files)
     mSearchDialog->setSearchedFiles(modified.count() + unmodified.count());
 
     // process modified files before the parallel part starts
-    for (const SearchFile &sf : std::as_const(modified))
-        findInDoc(sf.fileMeta());
+    for (const SearchFile &sf : std::as_const(modified)) {
+        if (auto* fm = mFileHandler->findFile(sf.path()))
+            findInDoc(fm);
+    }
 
     // start background task first
     SearchWorker* sw = new SearchWorker(unmodified, mParameters.regex(), &mResults,
@@ -472,25 +476,26 @@ bool Search::hasResultsForFile(const QString &filePath)
 
 ///
 /// \brief SearchDialog::replaceUnopened replaces in files where there is currently no editor open
-/// \param fm file
+/// \param filePath The full file path.
 /// \param regex find
 /// \param replaceTerm replace with
 ///
-int Search::replaceUnopened(FileMeta* fm, const Parameters &parameters)
+int Search::replaceUnopened(const QString &filePath, const Parameters &parameters)
 {
-    QFile file(fm->location());
-    QStringDecoder decoder = Encoding::createDecoder(fm->encoding());
+    QFile file(filePath);
+    QStringDecoder decoder = Encoding::createDecoder(Encoding::defaultEncoding());
     int hits = 0;
 
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        SysLogLocator::systemLog()->append("Unable to open file " + fm->location(), LogMsgType::Error);
+        SysLogLocator::systemLog()->append("Unable to open file " + filePath, LogMsgType::Error);
         return 0;
     }
 
     QString content;
     while (!file.atEnd()) {
         QByteArray arry = file.readLine();
-        // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+        // TODO(JM) when switching back to QTextStream this can be removed,
+        // as stream doesn't append the \n
         if (arry.endsWith('\n')) {
             if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
                 arry.chop(2);
@@ -526,12 +531,11 @@ int Search::replaceUnopened(FileMeta* fm, const Parameters &parameters)
         content += line + "\n";
     }
     file.close();
-    if (hits) {
-        // write temp-file
+    if (hits) { // write temp-file
         TextFileSaver outFile;
-        if (!outFile.open(fm->location()))
+        if (!outFile.open(filePath))
             return 0;
-        QStringEncoder encoder = Encoding::createEncoder(fm->encoding());
+        QStringEncoder encoder = Encoding::createEncoder(Encoding::defaultEncoding());
         outFile.write(encoder.encode(content));
         outFile.close();
     }
@@ -625,56 +629,44 @@ void Search::replaceAll(Parameters parameters)
     if (parameters.regex().pattern().isEmpty())
         return;
 
-    QList<FileMeta*> opened;
-    QList<FileMeta*> unopened;
+    QSet<FileMeta*> opened;
+    QSet<QString> unopened;
 
     // sort and filter FMs by editability and modification state
     QList<SearchFile> files = mSearchDialog->getFilesByScope(parameters);
     mParameters = parameters;
 
     int matchedFiles = 0;
-
     for (const SearchFile &file : std::as_const(files)) {
-        FileMeta* fm = file.fileMeta();
-
-        if (!fm)
-            fm = mFileHandler->findFile(file.path());
-
+        FileMeta* fm = mFileHandler->findFile(file.path());
         if (fm && fm->document()) {
-            if (!opened.contains(fm))
-                opened << fm;
+            opened << fm;
         } else {
-            if (!unopened.contains(fm))
-                unopened << fm;
+            unopened << file.path();
         }
-
         matchedFiles++;
     }
 
-    QString fileName = !files.count()
-                           ? "" : files.first().fileMeta() ? files.first().fileMeta()->name()
-                                                 : QFileInfo(files.first().path()).fileName();
-
     // user interaction
     QMessageBox msgBox;
-    if (files.size() == 0) {
+    auto fileName = files.isEmpty() ? QString() : QFileInfo(files.first().path()).fileName();
+    if (files.isEmpty()) {
         msgBox.setText("No files matching criteria.");
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.exec();
         return;
-
     } else if (matchedFiles == 1 && mSearchDialog->selectedScope() != Scope::Selection) {
-        msgBox.setText("Are you sure you want to replace all occurrences of '" + parameters.searchTerm()
-                       + "' with '" + parameters.replaceTerm() + "' in file " + fileName + "?");
+        msgBox.setText("Replacing all occurrences of '" + parameters.searchTerm()
+                       + "' with '" + parameters.replaceTerm() + "' in file " + fileName +
+                       "\nAre you sure?");
     } else if (mSearchDialog->selectedScope() == Scope::Selection) {
-        msgBox.setText("Are you sure you want to replace all occurrences of '" + parameters.searchTerm()
-                       + "' with '" + parameters.replaceTerm() + "' in the selected text in file "
-                       + fileName + "?");
+        msgBox.setText("Replacing all occurrences of '" + parameters.searchTerm()
+                       + "' with '" + parameters.replaceTerm() + "' in the selection of file "
+                       + fileName + "\nAre you sure?");
     } else {
-        msgBox.setText("Are you sure you want to replace all occurrences of '" +
-                       parameters.searchTerm() + "' with '" + parameters.replaceTerm() + "' in "
-                       + QString::number(matchedFiles) + " files? " +
-                       "This action cannot be undone!");
+        msgBox.setText("Replacing all occurrences of '" + parameters.searchTerm() + "' (if found) with '"
+                       + parameters.replaceTerm() + "' in " + QString::number(matchedFiles)
+                       + " files.\nAre you sure? This action cannot be undone!");
         QString detailedText;
         msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
 
@@ -694,13 +686,11 @@ void Search::replaceAll(Parameters parameters)
     int hits = 0;
     msgBox.exec();
     if (msgBox.clickedButton() == ok) {
-
         mSearchDialog->setSearchStatus(Search::Replacing);
         for (FileMeta* fm : std::as_const(opened))
             hits += replaceOpened(fm, parameters);
-        for (FileMeta* fm : std::as_const(unopened))
-            hits += replaceUnopened(fm, parameters);
-
+        for (const auto& fp : std::as_const(unopened))
+            hits += replaceUnopened(fp, parameters);
         mSearchDialog->searchParameterChanged();
     } else if (msgBox.clickedButton() == preview) {
         parameters.setShowResults(true);

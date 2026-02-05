@@ -96,7 +96,7 @@ private:
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
 
     int replaceOpened(FileMeta* fm, const Parameters &parameters);
-    int replaceUnopened(FileMeta* fm, const Parameters &parameters);
+    int replaceUnopened(const QString &filePath, const Parameters &parameters);
 
     QPair<int, int> cursorPosition();
     int findNextEntryInCache(Search::Direction direction);

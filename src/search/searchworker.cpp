@@ -40,7 +40,6 @@ SearchWorker::SearchWorker(const SearchFile &file,
 {
     // for now, searching with bounds works without extra thread
     mFindInSelection = true;
-
     // convert 0-based line counting to 1-based
     mFrom += QPoint(0,1);
     mTo += QPoint(0,1);
@@ -68,7 +67,8 @@ void SearchWorker::findInFiles()
     emit update(0); // initial update to set label to "Searching"
 
     for (const SearchFile &sf : std::as_const(mFiles)) {
-        if (cacheFull || thread()->isInterruptionRequested()) break;
+        if (cacheFull || thread()->isInterruptionRequested())
+            break;
 
         if (sf.fileMeta())
             projectGroup = sf.fileMeta()->projectId();
@@ -79,7 +79,8 @@ void SearchWorker::findInFiles()
             while (!file.atEnd() && !cacheFull) { // read file
 
                 lineCounter++;
-                if (thread()->isInterruptionRequested()) break;
+                if (thread()->isInterruptionRequested())
+                    break;
 
                 QByteArray arry = file.readLine();
                 // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
