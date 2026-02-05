@@ -265,6 +265,7 @@ MainWindow::MainWindow(QWidget *parent)
     mCodecGroupSwitch = new QActionGroup(this);
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeMainTabChanged);
+    connect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::activeLogTabChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::on_menuFile_aboutToShow);
     connect(ui->logTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
     connect(ui->logTabs, &TabWidget::closeTab, this, &MainWindow::on_logTabs_tabCloseRequested);
@@ -2360,8 +2361,8 @@ void MainWindow::activeMainTabChanged(int index)
 
 void MainWindow::activeLogTabChanged(int index)
 {
-    QWidget *editWidget = (index < 0 ? nullptr : ui->logTabs->widget(index));
-    ui->findWidgetLog->setEditWidget(editWidget);
+    QWidget *logWidget = (index < 0 ? nullptr : ui->logTabs->widget(index));
+    ui->findWidgetLog->setEditWidget(logWidget);
 }
 
 void MainWindow::tabBarClicked(int index)
