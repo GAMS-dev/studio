@@ -249,9 +249,8 @@ void FindWidget::keyPressEvent(QKeyEvent *event)
         && ui->edReplace->hasFocus() && ui->bReplace->isEnabled()) {
         on_bReplace_clicked();
     } else if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return || event->key() == Qt::Key_F3) {
-        FindOptions options = foFocusEdit;
+        FindOptions options = foContinued;
         if (event->modifiers().testFlag(Qt::ShiftModifier)) options.setFlag(foBackwards);
-        if (event->key() == Qt::Key_F3) options.setFlag(foContinued);
         find(options);
         event->accept();
     } else if (event->key() == Qt::Key_Escape) {

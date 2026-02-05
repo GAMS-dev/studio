@@ -45,7 +45,6 @@ public:
     QWidget *editWidget() const;
     bool isActive() const;
     void setActive(bool newActive);
-    void updateButtonStates();
     void setLastMatch(const QString &text, size_t pos);
     bool checkLastMatch(const QString &text, size_t pos);
     QString getFindText() const;
@@ -67,6 +66,7 @@ private slots:
     void editDestroyed();
     void termChanged();
     void allowReplaceChanged();
+    void updateButtonStates();
 
     void on_bClose_clicked();
     void on_bNext_clicked();
@@ -75,7 +75,6 @@ private slots:
     void on_bReplaceAll_clicked();
     void on_edFind_textEdited(const QString &term);
     void on_edReplace_textChanged(const QString &);
-
     void on_bToggleReplace_clicked();
 
 

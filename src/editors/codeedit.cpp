@@ -2238,8 +2238,8 @@ void CodeEdit::clearFindings()
         mFindREx = nullptr;
         clearSelectedFind();
         updateExtraSelections();
-        emit endFind();
     }
+    emit endFind();
 }
 
 void CodeEdit::clearSearchSelection()

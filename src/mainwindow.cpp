@@ -6125,9 +6125,6 @@ QWidget *MainWindow::getViewOrEdit(find::FindWidget* findWidget)
     else if (!parent->findChildren<CodeEdit*>(Qt::FindDirectChildrenOnly).isEmpty())
         res = parent->findChildren<CodeEdit*>(Qt::FindDirectChildrenOnly).at(0);
 
-    else if (!parent->findChildren<SystemLogEdit*>(Qt::FindDirectChildrenOnly).isEmpty())
-        res = parent->findChildren<SystemLogEdit*>(Qt::FindDirectChildrenOnly).at(0);
-
     else if (!parent->findChildren<QWebEngineView*>(Qt::FindDirectChildrenOnly).isEmpty())
         res = parent->findChildren<QWebEngineView*>(Qt::FindDirectChildrenOnly).at(0);
 
