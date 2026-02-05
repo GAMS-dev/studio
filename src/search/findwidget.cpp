@@ -80,6 +80,13 @@ void FindWidget::setEditWidget(QWidget *widget)
         if (ui->edFind->isCaseSensitive()) options.setFlag(foCaseSense);
         mFinder->setFindTerm(termRegEx(), options);
     }
+    if (canReplace() && mReplaceVisible) {
+        if (!ui->bToggleReplace->isChecked())
+            setReplaceVisible(true);
+    } else if (ui->bToggleReplace->isChecked()) {
+        setReplaceVisible(false);
+    }
+
     updateButtonStates();
 }
 
@@ -345,6 +352,13 @@ void FindWidget::on_edReplace_textChanged(const QString &)
 void FindWidget::on_bToggleReplace_clicked()
 {
     bool visible = ui->bToggleReplace->isChecked() && mFinder;
+    mReplaceVisible = visible;
+    setReplaceVisible(visible);
+}
+
+void FindWidget::setReplaceVisible(bool visible)
+{
+    ui->bToggleReplace->setChecked(visible);
     ui->bToggleReplace->setIcon(Theme::icon(visible ? ":/%1/hide" :":/%1/show"));
     ui->bToggleReplace->setToolTip(visible ? "Hide Replace" : "Show Replace");
     ui->edReplace->setVisible(visible);

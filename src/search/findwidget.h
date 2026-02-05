@@ -79,6 +79,7 @@ private slots:
 
 
 private:
+    void setReplaceVisible(bool visible);
     bool replace();
 
 private:
