@@ -3,6 +3,7 @@ Version 1.24.1 *
 - Added the search and replace configuration to the settings and restore the configuration when Studio is started.
 - Fixed search and replace in `Folder`. Before, all files unknown to Studio have been ignored by the replace.
 - Upgraded to Qt 6.10.2
+- Improved settings field for GAMS System Directory.
 
 Version 1.24.0
 ==================
