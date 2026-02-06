@@ -279,7 +279,7 @@ void FindWidget::editDestroyed()
 
 void FindWidget::termChanged()
 {
-    if (!ui->edFind->isRegEx() || !ui->edFind->regExp().isValid())
+    if (!ui->edFind->isRegEx() || (!ui->edFind->regExp().pattern().isEmpty() && ui->edFind->regExp().isValid()))
         find(foFocusTerm);
     updateButtonStates();
 }
