@@ -749,8 +749,8 @@ void MainWindow::updateProfilerAction()
         bool enabled = project->doProfile();
         if (!enabled) {
             option::OptionTokenizer *opt = mGamsParameterEditor->getOptionTokenizer();
-            QList<option::OptionItem*> optList = opt->tokenize(mGamsParameterEditor->getCurrentCommandLineData());
-            for (option::OptionItem* item : optList) {
+            const QList<option::OptionItem*> optList = opt->tokenize(mGamsParameterEditor->getCurrentCommandLineData());
+            for (const option::OptionItem* item : optList) {
                 if (item->key.compare("profile", Qt::CaseInsensitive) == 0) {
                     enabled = true;
                     break;
@@ -2746,7 +2746,7 @@ void MainWindow::postGamsLibRun()
             node->file()->load(node->file()->encoding());
     }
     openFileNode(node);
-    if (mProjectRepo.focussedProject()) {
+    if (node && mProjectRepo.focussedProject()) {
         focusProject(node->assignedProject());
     }
     if (mLibProcess) {
@@ -5969,11 +5969,11 @@ void MainWindow::on_referenceJumpTo(const reference::ReferenceItem &item)
         }
 
         PExFileNode* fn = mProjectRepo.findOrCreateFileNode(item.location, currentProject());
-        if (fn) {
-            PExProjectNode* project =  fn->assignedProject();
-            mProjectRepo.findOrCreateFileNode(fi.absoluteFilePath(), project);
-        }
+        if (!fn)
+            return;
 
+        PExProjectNode* project =  fn->assignedProject();
+        mProjectRepo.findOrCreateFileNode(fi.absoluteFilePath(), project);
         switchToMainTab(fn->file());
         if (!fn->file()->isOpen()) {
             openFilePath(fi.absoluteFilePath(), nullptr, ogCurrentGroup, true);
