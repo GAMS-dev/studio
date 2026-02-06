@@ -4,6 +4,7 @@ Version 1.24.1 *
 - Fixed search and replace in `Folder`. Before, all files unknown to Studio have been ignored by the replace.
 - Upgraded to Qt 6.10.2
 - Improved settings field for GAMS System Directory.
+- Renamed 'Remove Project' to 'Close Project' in the Project Explorer context menu.
 
 Version 1.24.0
 ==================
