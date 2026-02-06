@@ -49,7 +49,7 @@ private:
         QPoint posForOffset(int offset);
         int lineLength(int lineNr) const;
         int firstCacheLine() const { return mCacheOffsetLine; }
-        int lastCacheLine() const { return mCacheOffsetLine + mLineChar.size() - 2; }
+        int lastCacheLine() const { return mCacheOffsetLine + mLineChar.size() - 1; }
         qint64 linePos(int line) const;
     };
 
