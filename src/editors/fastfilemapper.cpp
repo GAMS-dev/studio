@@ -182,12 +182,13 @@ QString FastFileMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFo
 
 bool FastFileMapper::searchText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
 {
-    int tempLineCount = lineCount();
+    int iLineCount = lineCount();
     bool backwards = flags.testFlag(QTextDocument::FindBackward);
 
     // TODO(JM) Make this size-dependent instead of line-numbers
     int liSpan = 500; // maximal lines per call
     if (!continueFind) {
+        mLooped = false;
         mSearchPos = mPosition;
         if (hasSelection()) {
             if (backwards && isBefore(mAnchor, mPosition)) mSearchPos = mAnchor;
@@ -195,8 +196,16 @@ bool FastFileMapper::searchText(QRegularExpression searchRegex, QTextDocument::F
             liSpan = qMin(liSpan, qAbs(mAnchor.y() - mPosition.y()));
         }
         mSearchEndPos = (mSearchPos == mPosition) ? mAnchor : mPosition;
-        if (mSearchPos.y() < 0) mSearchPos = QPoint(0,0);
-        if (mSearchEndPos.y() < 0) mSearchEndPos = QPoint(0,0);
+        if (mSearchPos.y() < 0)
+            mSearchPos = QPoint(0,0);
+        if (mSearchEndPos.y() < 0)
+            mSearchEndPos = QPoint(0,0);
+        QPoint lastPos(mCache.lineLength(lineCount()-1), lineCount()-1);
+        if (mSearchPos == lastPos && !backwards) {
+            mSearchPos = QPoint(0,0);
+            continueFind = true;
+            return false;
+        }
     }
     int cut = -1;
     if (backwards) {
@@ -205,8 +214,8 @@ bool FastFileMapper::searchText(QRegularExpression searchRegex, QTextDocument::F
         liSpan = -liSpan;
         cut = mSearchPos.x() - mCache.lineLength(mSearchPos.y()) - 1;
     } else {
-        if (mSearchPos.y() + liSpan > tempLineCount)
-            liSpan = tempLineCount - mSearchPos.y();
+        if (mSearchPos.y() + liSpan > iLineCount)
+            liSpan = iLineCount - mSearchPos.y();
     }
     if (continueFind &&
         qMin(mSearchPos.y(), mSearchPos.y() + liSpan) < mSearchEndPos.y() &&
@@ -238,20 +247,27 @@ bool FastFileMapper::searchText(QRegularExpression searchRegex, QTextDocument::F
         continueFind = true;
         if (backwards && mCache.firstCacheLine() == 0) {
             // loop to end
-            mSearchPos.setY(tempLineCount);
+            mLooped = true;
+            mSearchPos.setY(iLineCount);
             int x = -1;
-            if (mLoadAmount >= 1. && knownLineNrs() >= tempLineCount && tempLineCount > 1) {
+            if (mLoadAmount >= 1. && knownLineNrs() >= iLineCount && iLineCount > 1) {
                 QMutexLocker locker(&mMutex);
-                x = mLineByte.at(tempLineCount) - mLineByte.at(tempLineCount - 1);
+                x = mLineByte.at(iLineCount) - mLineByte.at(iLineCount - 1);
             }
             mSearchPos.setX(x);
-        } else if (!backwards && mCache.lastCacheLine() == tempLineCount) {
+        } else if (!backwards && mCache.lastCacheLine() == iLineCount) {
             // loop to start
+            mLooped = true;
             mSearchPos.setY(0);
             mSearchPos.setX(0);
         } else {
-            mSearchPos.setY(qMin(qMax(mSearchPos.y() + liSpan, 0), tempLineCount));
+            mSearchPos.setY(qMin(qMax(0, mSearchPos.y() + liSpan), iLineCount));
             mSearchPos.setX(0);
+            // if beyond searchEndPos - finish
+            if (backwards && mLooped && mSearchPos.y() <= mSearchEndPos.y())
+                continueFind = false;
+            if (!backwards && mLooped && mSearchPos.y() >= mSearchEndPos.y())
+                continueFind = false;
         }
     }
     mCache.reset();
@@ -744,6 +760,9 @@ const QString FastFileMapper::LinesCache::loadCache(int lineNr, int count) const
             DEB() << "Error reading data: requested size exceeds 2^30 characters";
         }
         if (readSize == 0) {
+            mLineChar.clear();
+            mLineChar.append(0);
+            mLineChar.append(mData.length() + mMapper->delimiter().size());
             mData.clear();
             return mData;
         }

@@ -190,7 +190,7 @@ bool FindWidget::find(FindOptions options, bool keepSearchTerm)
     QString match;
     size_t pos = 0;
     bool isCurrentWord = false;
-    if (!mFinder->hasFindTerm() && mFinder->supportsRegEx())
+    if (!mFinder->hasFindTerm() && mFinder->supportsRegEx() && !ui->edFind->hasFocus())
         keepSearchTerm = false;
     if (!mFinder->hasSelectedFind() && !keepSearchTerm) {
         QString term = mFinder->currentFindSelection(isCurrentWord);
