@@ -1,12 +1,12 @@
-Version 1.24.1 *
+Version 1.24.1
 ==================
-- Added the search and replace configuration to the settings and restore the configuration when Studio is started.
 - Fixed search and replace in `Folder`. Before, all files unknown to Studio have been ignored by the replace.
-- Upgraded to Qt 6.10.2
+- Fixed several minor bugs of the new quick-find feature.
+- Added quick-find to Process Log, GAMS Release Notes, and Studio Changelog.
+- Added the search and replace configuration to the settings and restore the configuration when Studio is started.
 - Improved settings field for GAMS System Directory.
 - Renamed 'Remove Project' to 'Close Project' in the Project Explorer context menu.
-- Added quick-find to Process Log, GAMS Release Notes, and Studio Changelog.
-- Fixed several minor bugs of the new quick-find feature.
+- Upgraded to Qt 6.10.2
 
 Version 1.24.0
 ==================
