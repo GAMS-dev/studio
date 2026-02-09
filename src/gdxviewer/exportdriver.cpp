@@ -81,6 +81,7 @@ void ExportDriver::cancelProcess(int waitMSec)
 
 QString ExportDriver::generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters, bool hiddenAttributes, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
+    mTruncSheetNames.clear();
     QString inst;
     mNoAttributes.clear();
     inst += generateGdxReader(gdxFile);
@@ -178,7 +179,7 @@ QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFi
         if (generateDomains(sym) != generateDomainsNew(sym))
             name = sym->name() + PROJ_SUFFIX;
         inst += "      - name: " + name + "\n";
-        inst += "        range: " + sym->name() + "!A1\n";
+        inst += "        range: " + generateSheetName(sym) + "!A1\n";
         inst += "        columnDimension: " + QString::number(columnDimension) + "\n";
     }
     return inst;
@@ -413,6 +414,24 @@ QString ExportDriver::generateFilters()
         }
     }
     return inst;
+}
+
+QString ExportDriver::generateSheetName(GdxSymbol *sym)
+{
+    QString newName = sym->name();
+    if (sym->name().length() > 31) {
+        int trunc_nr = 0;
+        while (true) {
+            trunc_nr++;
+            QString suffix = "~" + QString::number(trunc_nr);
+            newName = sym->name().first(31-suffix.length()) + suffix;
+            if (!mTruncSheetNames.contains(newName)) {
+                mTruncSheetNames.append(newName);
+                break;
+            }
+        }
+    }
+    return newName;
 }
 
 

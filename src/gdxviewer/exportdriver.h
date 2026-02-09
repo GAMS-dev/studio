@@ -58,11 +58,13 @@ private:
     QString generateExcelWriter(const QString &excelFile, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na);
     QString generateProjections(bool applyFilters, bool hiddenAttributes);
     QString generateFilters();
+    QString generateSheetName(GdxSymbol *sym);
 
     QString generateDomains(GdxSymbol *sym);
     QString generateDomainsNew(GdxSymbol *sym);
 
     QStringList mNoAttributes;
+    QStringList mTruncSheetNames;
 
     bool hasActiveLabelFilter(GdxSymbol *sym);
     bool hasActiveLabelFilterState(GdxSymbol *sym);
