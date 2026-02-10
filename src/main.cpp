@@ -24,6 +24,13 @@
 
 using gams::studio::Application;
 
+enum STUDIO_EXITCODES {
+    EXIT_SINGLE  = EXIT_SUCCESS,    // another instance of Studio exists
+    EXIT_NORMAL  = -1,              // normal exit
+    EXIT_NO_GAMS = -2,              // no valid GAMS found
+    EXIT_FATAL   = -3,              // a fatal exeption was thrown
+};
+
 bool prepareScaling()
 {
     bool res = false;
@@ -56,9 +63,12 @@ int main(int argc, char *argv[])
     sem.acquire();
     if (app.checkForOtherInstance()) {
         sem.release();
-        return EXIT_SUCCESS; // terminate since another instance of studio is already running
+        return EXIT_SINGLE; // terminate since another instance of studio is already running
     }
-    app.init();
+    if (!app.init()) {
+        sem.release();
+        return EXIT_NO_GAMS;
+    }
     sem.release();
 
     try {
@@ -66,7 +76,7 @@ int main(int argc, char *argv[])
         return app.exec();
     } catch (gams::studio::FatalException &e) {
         Application::showExceptionMessage(QObject::tr("fatal exception"), e.what());
-        return -1;
+        return EXIT_FATAL;
     } catch (gams::studio::Exception &e) {
         Application::showExceptionMessage(QObject::tr("error"), e.what());
     } catch (QException &e) {
@@ -81,5 +91,5 @@ int main(int argc, char *argv[])
         Application::showExceptionMessage(QObject::tr("unknown exception"), msg);
         FATAL() << msg;
     }
-    return -2;
+    return EXIT_NORMAL;
 }

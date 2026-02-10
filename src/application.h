@@ -21,7 +21,6 @@
 #define APPLICATION_H
 
 #include "commandlineparser.h"
-#include "support/distributionvalidator.h"
 #include "mainwindow.h"
 
 #include <QApplication>
@@ -29,6 +28,10 @@
 
 namespace gams {
 namespace studio {
+
+namespace support {
+class DistributionValidator;
+}
 
 class Application : public QApplication
 {
@@ -65,7 +68,7 @@ public:
     ///
     /// \brief Initialize the application
     ///
-    void init();
+    bool init();
 
     ///
     /// \brief Initialize the PATH environment variable
@@ -118,11 +121,12 @@ private:
     void listen();
 
     SysDirSelector setSystemDirectory();
+    bool check4Libs();
 
 private:
     QSharedPointer<MainWindow> mMainWindow;
     CommandLineParser mCmdParser;
-    support::DistributionValidator mDistribValidator;
+    support::DistributionValidator *mDistribValidator;
     QString mOpenPathOnInit;
     QString mServerName;
     QLocalServer mServer;

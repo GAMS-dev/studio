@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "application.h"
+#include "support/distributionvalidator.h"
 #include "exception.h"
 #include "qstylefactory.h"
 #include "version.h"
@@ -96,10 +97,6 @@ Application::Application(int& argc, char** argv)
     pal.setColor(QPalette::Disabled, QPalette::Window, QColor(255,255,255));
 
     connect(&mServer, &QLocalServer::newConnection, this, &Application::newConnection);
-    connect(&mDistribValidator, &support::DistributionValidator::newError,
-            this, &Application::error);
-    connect(&mDistribValidator, &support::DistributionValidator::newWarning,
-            this, &Application::warning);
 }
 
 Application::~Application()
@@ -109,10 +106,15 @@ Application::~Application()
 #ifndef __APPLE__
     PaletteManager::deleteInstance();
 #endif
+    delete mDistribValidator;
 }
 
-void Application::init()
+bool Application::init()
 {
+    if (Settings::settings()) {
+        DEB() << "Application::init() must not be called twice";
+        return true;
+    }
     setOrganizationName(GAMS_ORGANIZATION_STR);
     setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
     setApplicationName(GAMS_PRODUCTNAME_STR);
@@ -138,9 +140,16 @@ void Application::init()
         } else
             DEB() << "Error: Couldn't register log file in missing path " << log.absolutePath();
     }
+    if (!check4Libs())
+        return false;
+
     DEB() << sdsToString(sds); // delayed to get it into the log
     Settings::settings()->setBool(skSupressWebEngine, !mCmdParser.activeHelpView());
     initEnvironment();
+
+    mDistribValidator = new support::DistributionValidator();
+    connect(mDistribValidator, &support::DistributionValidator::newError, this, &Application::error);
+    connect(mDistribValidator, &support::DistributionValidator::newWarning, this, &Application::warning);
 
     mMainWindow = QSharedPointer<MainWindow>(new MainWindow());
     if (Settings::settings()->toBool(skCleanUpWorkspace)) {
@@ -159,10 +168,11 @@ void Application::init()
         triggerOpenFile(mOpenPathOnInit);
         mOpenPathOnInit = QString();
     }
-    mDistribValidator.start();
+    mDistribValidator->start();
     listen();
     DEB() << GAMS_PRODUCTNAME_STR << " " << applicationVersion() << " on " << QSysInfo::prettyProductName() << " "
           << QSysInfo::currentCpuArchitecture() << " build " << QSysInfo::kernelVersion();
+    return true;
 }
 
 void Application::initEnvironment()
@@ -274,6 +284,38 @@ SysDirSelector Application::setSystemDirectory()
         sds = CommonPaths::setSystemDir();
     }
     return sds;
+}
+
+bool Application::check4Libs()
+{
+    QStringList miss;
+    const QStringList libs = {"joatdclib64", "gdxcclib64", "guccclib64", "optdclib64"};
+    QString path = CommonPaths::systemDir() + "/";
+#ifdef _WIN64
+    for (const QString &lib : libs) {
+        QString full = path + lib + ".dll";
+        if (!QFile::exists(full))
+            miss << full;
+    }
+#elif defined(__unix__)
+    for (const QString &lib : libs) {
+        QString full = path + "lib" + lib + ".so";
+        if (!QFileInfo::exists(full))
+            miss << full;
+    }
+#else
+    // TODO(JM) Check libs for macOS
+#endif
+    if (!miss.isEmpty()) {
+        bool isGams = QFile::exists(path+"/gamsstmp.txt");
+        QString title(isGams ? "Incomplete GAMS installation" : "GAMS not found");
+        DEB() << title;
+        if (isGams) DEB() << "Missing GAMS libraries:\n - " << miss.join("\n - ");
+        QMessageBox::warning(nullptr, title, "Please select a valid GAMS installation using the "
+                                             "command line parameter \n --gams-dir <path>\n or reinstall GAMS");
+        return false;
+    }
+    return true;
 }
 
 void Application::newConnection()
