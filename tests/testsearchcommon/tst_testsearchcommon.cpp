@@ -316,36 +316,46 @@ void TestSearchCommon::test_excludeFiltersUnix_data()
     QTest::addColumn<QStringList>("paths");
     QTest::addColumn<QStringList>("matched");
 
-    QSKIP("skipping failed tests, see #2971");
-
     QTest::newRow("none1")   << ""                 << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx"
     };
     QTest::newRow("none2")  << "ran*"             << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx"
     };
     QTest::newRow("none3")  << "*ran"             << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx"
     };
     QTest::newRow("none4")  << "*use*"            << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx"
     };
     QTest::newRow("miss1")  << "b*.gms"           << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx"
     };
     QTest::newRow("miss2")  << "d*.gms"           << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx"
     };
     QTest::newRow("star")   << "*"                << mUnixPaths << QStringList {
@@ -386,32 +396,41 @@ void TestSearchCommon::test_excludeFiltersUnix_data()
     };
     QTest::newRow("middle") << "tr*.lxi"          << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx",
-                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.lxi"
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.lxi",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref"
     };
     QTest::newRow("end")    << "copper.ref*"      << mUnixPaths << QStringList {
-                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx",
-                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref"
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref"
     };
     QTest::newRow("single") << "copper?gms"       << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gms"
     };
     QTest::newRow("squ1")   << "[ct]*.gms"       << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gms",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gms"
     };
     QTest::newRow("squ2")   << "[c-t]*.gms"       << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gms",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gms"
@@ -419,23 +438,30 @@ void TestSearchCommon::test_excludeFiltersUnix_data()
     QTest::newRow("gms")    << "*.gms"            << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gms",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gms"
     };
     QTest::newRow("gdx")    << "*.gdx"            << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
-                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx"
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref"
     };
     QTest::newRow("zip")    << "*.zip"            << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
-                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx"
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.ref"
     };
     QTest::newRow("*rn*")  << "*rn*"            << mUnixPaths << QStringList {
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.zip",
                                "/home/someuser/Documents/GAMS/Studio/workspace/copper.gdx",
+                               "/home/someuser/Documents/GAMS/Studio/workspace/copper.ref",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.log",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.lst",
                                "/home/someuser/Documents/GAMS/Studio/workspace/trnsport.lxi",
@@ -466,36 +492,46 @@ void TestSearchCommon::test_excludeFiltersWindows_data()
     QTest::addColumn<QStringList>("paths");
     QTest::addColumn<QStringList>("matched");
 
-    QSKIP("skipping failed tests, see #2971");
-
     QTest::newRow("none1")   << ""                 << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx"
     };
     QTest::newRow("none2")  << "ran*"             << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
-                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx"
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref"
     };
     QTest::newRow("none3")  << "*ran"             << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx"
     };
     QTest::newRow("none4")  << "*use*"            << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx"
     };
     QTest::newRow("miss1")  << "b*.gms"           << mWindowsPaths << QStringList {
-                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx"
     };
     QTest::newRow("miss2")  << "d*.gms"           << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx"
     };
     QTest::newRow("star")   << "*"                << mWindowsPaths << QStringList {
@@ -537,55 +573,71 @@ void TestSearchCommon::test_excludeFiltersWindows_data()
     QTest::newRow("middle") << "tr*.lxi"          << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.lxi"
     };
     QTest::newRow("end")    << "copper.ref*"      << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx",
-                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref"
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref"
     };
     QTest::newRow("single") << "copper?gms"       << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gms"
     };
     QTest::newRow("squ1")   << "[ct]*.gms"            << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gms",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gms"
     };
     QTest::newRow("squ2")   << "[c-t]*.gms"            << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gms",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gms"
     };
     QTest::newRow("gms")    << "*.gms"            << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gms",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gms"
     };
     QTest::newRow("gdx")    << "*.gdx"            << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
-                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx"
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref"
     };
     QTest::newRow("zip")    << "*.zip"            << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
-                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx"
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.gdx",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.ref"
     };
     QTest::newRow("*rn*")   << "*rn*"                << mWindowsPaths << QStringList {
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.gdx",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.zip",
+                               "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\copper.ref",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.log",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.lst",
                                "C:\\Users\\someuser\\Documents\\GAMS\\Studio\\workspace\\trnsport.lxi",
