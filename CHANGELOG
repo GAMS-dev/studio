@@ -1,3 +1,7 @@
+Version 1.24.2  *
+==================
+- The GDX Viewer export facility now truncates automatically determined sheet names exceeding 31 characters.
+
 Version 1.24.1
 ==================
 - Fixed search and replace in `Folder`. Before, all files unknown to Studio have been ignored by the replace.
