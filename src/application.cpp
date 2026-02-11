@@ -303,8 +303,12 @@ bool Application::check4Libs()
         if (!QFileInfo::exists(full))
             miss << full;
     }
-#else
-    // TODO(JM) Check libs for macOS
+#else // macOS
+    for (const QString &lib : libs) {
+        QString full = path + "lib" + lib + ".dylib";
+        if (!QFileInfo::exists(full))
+            miss << full;
+    }
 #endif
     if (!miss.isEmpty()) {
         bool isGams = QFile::exists(path+"/gamsstmp.txt");

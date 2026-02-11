@@ -126,7 +126,7 @@ private:
 private:
     QSharedPointer<MainWindow> mMainWindow;
     CommandLineParser mCmdParser;
-    support::DistributionValidator *mDistribValidator;
+    support::DistributionValidator *mDistribValidator = nullptr;
     QString mOpenPathOnInit;
     QString mServerName;
     QLocalServer mServer;
