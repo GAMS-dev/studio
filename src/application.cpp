@@ -296,7 +296,7 @@ bool Application::check4Libs()
     for (const QString &lib : libs) {
         QString full = path + lib + ".dll";
         if (!QFile::exists(full))
-            miss << full;
+            miss << QDir::toNativeSeparators(full);
     }
 #elif defined(__unix__)
     for (const QString &lib : libs) {
@@ -318,7 +318,8 @@ bool Application::check4Libs()
         QString missMessage = isGams ? ("Missing GAMS libraries:\n - " + miss.join("\n - ")) : "";
         if (isGams) DEB() << missMessage;
         QMessageBox::warning(nullptr, title, "Please select a valid GAMS installation using the "
-                                             "command line parameter \n --gams-dir <path>\n or reinstall GAMS"
+                                             "command line parameter \n --gams-dir <path>\n or reinstall GAMS.\n\n"
+                                             "Current GAMS directory:\n" + QDir::toNativeSeparators(path)
                                                  + (isGams ? ("\n\n" + missMessage) : ""));
         return false;
     }
