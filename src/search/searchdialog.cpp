@@ -288,8 +288,10 @@ QList<SearchFile> SearchDialog::getFilesByScope(const Parameters &parameters)
     switch (ui->scopeComboBox->currentIndex()) {
         case Scope::ThisFile: {
             if (mCurrentEditor) {
-                if (FileMeta* fm = mFileHandler->fileMeta(mCurrentEditor))
-                    matched << SearchFile(fm);
+                if (FileMeta* fm = mFileHandler->fileMeta(mCurrentEditor)) {
+                    if (!parameters.ignoreReadOnly() || !fm->isReadOnly())
+                        matched << SearchFile(fm);
+                }
             }
             break;
         }
@@ -304,8 +306,10 @@ QList<SearchFile> SearchDialog::getFilesByScope(const Parameters &parameters)
         }
         case Scope::Selection: {
             if (mCurrentEditor) {
-                if (FileMeta* fm = mFileHandler->fileMeta(mCurrentEditor))
-                    matched << SearchFile(fm);
+                if (FileMeta* fm = mFileHandler->fileMeta(mCurrentEditor)) {
+                    if (!parameters.ignoreReadOnly() || !fm->isReadOnly())
+                        matched << SearchFile(fm);
+                }
             }
             break;
         }

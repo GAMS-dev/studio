@@ -388,9 +388,9 @@ QFlags<QTextDocument::FindFlag> Search::createFindFlags(const Parameters &parame
 bool Search::skipFileType(FileKind type)
 {
     return type == FileKind::Gdx || type == FileKind::Ref ||
-            type == FileKind::Opt || type == FileKind::Pf ||
-            type == FileKind::Guc || type == FileKind::Efi ||
-            type == FileKind::GCon;
+           type == FileKind::Opt || type == FileKind::Pf  ||
+           type == FileKind::Guc || type == FileKind::Efi ||
+           type == FileKind::GCon;
 }
 
 int Search::NavigateOutsideCache(Direction direction, bool firstLevel)

@@ -39,43 +39,28 @@ public:
     };
 
     ResultItem(ResultItem *parent = nullptr);
-
     ResultItem(int index, const QString &filePath, ResultItem *parent = nullptr);
-
     ResultItem(const Result &result, ResultItem *parent = nullptr);
-
     ~ResultItem();
 
     void append(ResultItem *item);
-
     ResultItem* child(int index);
-
     const QList<ResultItem*>& childs() const;
-
     bool hasChilds() const;
 
     int firstLogicalIndex() const;
-
     int lastLogicalIndex() const;
-
     int realIndex() const;
-
     void setRealIndex(int index);
 
     int columnCount() const;
-
     int rowCount() const;
-
     int row() const;
 
     const Result& data() const;
-
     QString filePathCount() const;
-
     ResultItem* parent() const;
-
     void setParent(ResultItem* item);
-
     Type type() const;
 
 private:

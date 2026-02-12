@@ -119,28 +119,28 @@ FileType &FileType::from(const QString &fileName)
              }
 
          } else if (ft->mKind == FileKind::Opt) {
-                   if (mSolverNames.isEmpty()) {
-                       try {
-                          support::SolverConfigInfo solverInfo;
-                          mSolverNames.append( solverInfo.solverNames().values() );
-                       } catch (...) {
-                           // just make sure that there is no issue if GAMS is not found.
-                       }
-                   }
-                   if (mSolverNames.contains(fi.completeBaseName(), Qt::CaseInsensitive) || mSolverNames.isEmpty()) {
-                      if (ft->mSuffix.contains(fi.suffix(), Qt::CaseInsensitive)) {
-                          return *ft;
-                      } else {
-                            QString pattern("[oO][pP][2-9]|[oO][1-9]\\d|[1-9]\\d\\d+");
-                            QRegularExpression rx("\\A(?:" + pattern + ")\\z" );
-                            QRegularExpressionMatch match = rx.match(fi.suffix(), 0, QRegularExpression::NormalMatch);
-                            if (match.hasMatch()) {
-                               return *ft;
-                            }
-                      }
-                   }
-         } else  if (ft->mSuffix.contains(fi.suffix(), Qt::CaseInsensitive)) {
-                    return *ft;
+             if (mSolverNames.isEmpty()) {
+                 try {
+                     support::SolverConfigInfo solverInfo;
+                     mSolverNames.append( solverInfo.solverNames().values() );
+                 } catch (...) {
+                     // just make sure that there is no issue if GAMS is not found.
+                 }
+             }
+             if (mSolverNames.contains(fi.completeBaseName(), Qt::CaseInsensitive) || mSolverNames.isEmpty()) {
+                 if (ft->mSuffix.contains(fi.suffix(), Qt::CaseInsensitive)) {
+                     return *ft;
+                 } else {
+                     QString pattern("[oO][pP][2-9]|[oO][1-9]\\d|[1-9]\\d\\d+");
+                     QRegularExpression rx("\\A(?:" + pattern + ")\\z" );
+                     QRegularExpressionMatch match = rx.match(fi.suffix(), 0, QRegularExpression::NormalMatch);
+                     if (match.hasMatch()) {
+                         return *ft;
+                     }
+                 }
+             }
+         } else if (ft->mSuffix.contains(fi.suffix(), Qt::CaseInsensitive)) {
+             return *ft;
          }
      }
 

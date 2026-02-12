@@ -44,11 +44,9 @@ class ResultsView : public QWidget
 
 public:
     explicit ResultsView(SearchResultModel* searchResultList, MainWindow *parent = nullptr);
-
     ~ResultsView();
 
     bool eventFilter(QObject *watched, QEvent *event) override;
-
     void resizeColumnsToContent();
 
     void selectItem(int row);
@@ -58,11 +56,8 @@ public:
     bool isOutdated();
 
     void expandAll();
-
     void zoomIn();
-
     void zoomOut();
-
     void resetZoom();
 
 signals:
@@ -78,7 +73,6 @@ private:
     void selectResult(const QModelIndex &index);
     int prevSibling(ResultItem *parent);
     int nextSibling();
-
     void jumpToResult(bool focus = true);
 
 private:
