@@ -74,6 +74,7 @@ QString sdsToString(SysDirSelector sds)
     case sdsMac:
         return "Using GAMS system directory from macOS installation";
     }
+    return "<Wrong code for SysDirSelector>";
 }
 
 
@@ -314,9 +315,11 @@ bool Application::check4Libs()
         bool isGams = QFile::exists(path+"/gamsstmp.txt");
         QString title(isGams ? "Incomplete GAMS installation" : "GAMS not found");
         DEB() << title;
-        if (isGams) DEB() << "Missing GAMS libraries:\n - " << miss.join("\n - ");
+        QString missMessage = isGams ? ("Missing GAMS libraries:\n - " + miss.join("\n - ")) : "";
+        if (isGams) DEB() << missMessage;
         QMessageBox::warning(nullptr, title, "Please select a valid GAMS installation using the "
-                                             "command line parameter \n --gams-dir <path>\n or reinstall GAMS");
+                                             "command line parameter \n --gams-dir <path>\n or reinstall GAMS"
+                                                 + (isGams ? ("\n\n" + missMessage) : ""));
         return false;
     }
     return true;
