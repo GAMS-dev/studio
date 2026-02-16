@@ -290,9 +290,10 @@ SysDirSelector Application::setSystemDirectory(QString &sysDirMessage)
         sds = CommonPaths::setSystemDir(path);
         Settings::settings()->setString(skSystemDirectory, path);
     } else {
-        sysDirMessage = "Missing user selected GAMS system directory: " + QDir::toNativeSeparators(path);
         Settings::settings()->setString(skSystemDirectory, "");
         sds = CommonPaths::setSystemDir();
+        if (CommonPaths::systemDir() != path)
+            sysDirMessage = "Missing user selected GAMS system directory: " + QDir::toNativeSeparators(path);
     }
     return sds;
 }
