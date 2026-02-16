@@ -122,7 +122,8 @@ bool Application::init()
     Settings::createSettings(mCmdParser.ignoreSettings(),
                              mCmdParser.resetSettings(),
                              mCmdParser.resetView());
-    SysDirSelector sds = setSystemDirectory();
+
+    // Init Studio log file
     if (Settings::settings()->toBool(skEnableLog) && mCmdParser.logFile().isEmpty())
         vCustomLogFile = CommonPaths::studioDocumentsDir() + "/studio.log";
     else if (!mCmdParser.logFile().isEmpty() && mCmdParser.logFile() != "-")
@@ -141,10 +142,14 @@ bool Application::init()
         } else
             DEB() << "Error: Couldn't register log file in missing path " << log.absolutePath();
     }
+
+    // Set and check GAMS system directory
+    QString sysDirMessage;
+    SysDirSelector sds = setSystemDirectory(sysDirMessage);
     if (!check4Libs())
         return false;
+    DEB() << sdsToString(sds);
 
-    DEB() << sdsToString(sds); // delayed to get it into the log
     Settings::settings()->setBool(skSupressWebEngine, !mCmdParser.activeHelpView());
     initEnvironment();
 
@@ -164,6 +169,9 @@ bool Application::init()
         }
     }
     mMainWindow->appendSystemLogInfo("Started: " + QCoreApplication::arguments().join(" "));
+    if (!sysDirMessage.isEmpty())
+        mMainWindow->appendSystemLogWarning(sysDirMessage);
+    mMainWindow->appendSystemLogInfo("GAMS System Directory: " + QDir::toNativeSeparators(CommonPaths::systemDir()));
     mMainWindow->openFiles(mCmdParser.files());
     if (!mOpenPathOnInit.isEmpty()) {
         triggerOpenFile(mOpenPathOnInit);
@@ -263,7 +271,7 @@ void Application::listen()
     mServer.listen(mServerName);
 }
 
-SysDirSelector Application::setSystemDirectory()
+SysDirSelector Application::setSystemDirectory(QString &sysDirMessage)
 {
     QString path;
     SysDirSelector sds = sdsManual;
@@ -282,6 +290,8 @@ SysDirSelector Application::setSystemDirectory()
         sds = CommonPaths::setSystemDir(path);
         Settings::settings()->setString(skSystemDirectory, path);
     } else {
+        sysDirMessage = "Missing user selected GAMS system directory: " + QDir::toNativeSeparators(path);
+        Settings::settings()->setString(skSystemDirectory, "");
         sds = CommonPaths::setSystemDir();
     }
     return sds;

@@ -119,8 +119,8 @@ private:
     /// \brief Start listening
     ///
     void listen();
-
-    SysDirSelector setSystemDirectory();
+    
+    SysDirSelector setSystemDirectory(QString &sysDirMessage);
     bool check4Libs();
 
 private:
