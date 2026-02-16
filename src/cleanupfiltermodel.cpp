@@ -22,6 +22,9 @@
 namespace gams {
 namespace studio {
 
+
+// ---------- CleanupFilterItem
+
 CleanupFilterItem::CleanupFilterItem(Qt::CheckState checked,
                                      const QString &filter,
                                      const QString &description,
@@ -30,9 +33,7 @@ CleanupFilterItem::CleanupFilterItem(Qt::CheckState checked,
     , mFilter(filter)
     , mDescription(description)
     , mChecked(checked)
-{
-
-}
+{}
 
 CleanupFilterItem::~CleanupFilterItem()
 {
@@ -100,7 +101,7 @@ QList<CleanupFilterItem *> CleanupFilterItem::items() const
     return mItems;
 }
 
-void CleanupFilterItem::setItems(const QList<CleanupFilterItem *> &items)
+void CleanupFilterItem::addItems(const QList<CleanupFilterItem *> &items)
 {
     for (auto item : items) {
         item->setParent(this);
@@ -134,6 +135,9 @@ void CleanupFilterItem::setParent(CleanupFilterItem *parent)
 {
     mParent = parent;
 }
+
+
+// ---------- CleanupFilterModel
 
 CleanupFilterModel::CleanupFilterModel(QObject *parent)
     : QAbstractItemModel(parent)
@@ -191,7 +195,7 @@ void CleanupFilterModel::setData(const QList<CleanupFilterItem *> &entries)
 {
     beginResetModel();
     mRootItem->removeAllItems();
-    mRootItem->setItems(entries);
+    mRootItem->addItems(entries);
     endResetModel();
 }
 
@@ -322,11 +326,12 @@ QStringList CleanupFilterModel::activeFilters() const
     return filters;
 }
 
+
+// ---------- CleanupWorkspaceModel
+
 CleanupWorkspaceModel::CleanupWorkspaceModel(QObject *parent)
     : QAbstractTableModel(parent)
-{
-
-}
+{}
 
 Qt::ItemFlags CleanupWorkspaceModel::flags(const QModelIndex &index) const
 {

@@ -105,6 +105,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     QItemSelectionModel *tableModel = ui->cleanTableView->selectionModel();
     mWorkspaceModel = new CleanupWorkspaceModel(ui->cleanTableView);
     ui->cleanTableView->setModel(mWorkspaceModel);
+    ui->cleanTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     delete tableModel;
     connect(ui->cleanWsSelectAllButton, &QPushButton::clicked, this, [this]{ mWorkspaceModel->setSelection(Qt::Checked); });
     connect(ui->cleanWsDeselectAllButton, &QPushButton::clicked, this, [this]{ mWorkspaceModel->setSelection(Qt::Unchecked); });
