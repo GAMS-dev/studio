@@ -1300,7 +1300,8 @@ void MainWindow::receiveAction(const QString &action)
 void MainWindow::openModelFromLib(const QString &glbFile, modeldialog::LibraryItem* model)
 {
     QFileInfo file(model->files().constFirst());
-    QString inputFile = file.completeBaseName() + ".gms";
+    QFileInfo fi(file.completeBaseName());
+    QString inputFile = fi.suffix().isEmpty() ? file.completeBaseName() + ".gms" : file.completeBaseName();
 
     openModelFromLibPrepare(glbFile, model->nameWithSuffix(), inputFile);
 }
