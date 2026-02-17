@@ -1,5 +1,6 @@
 Version 1.24.2 *
 ==================
+- Added check for a valid GAMS installation when Studio starts and show a message box on failure.
 - Fixed missing matched markers in code editor after scrolling.
 
 Version 1.24.1
