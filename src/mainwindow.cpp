@@ -5597,6 +5597,15 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         reference::ReferenceViewer *refView = ViewHelper::toReferenceViewer(edit);
         connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
         connect(refView, &reference::ReferenceViewer::referenceTo, this, &MainWindow::on_referenceTo);
+    } else if (fileMeta->kind() == FileKind::Gdx) {
+        connect(fileMeta, &FileMeta::openFile, this, [this](const QString &filePath, NodeId projectId) {
+            if (QFile::exists(filePath)) {
+                PExProjectNode *project = mRecent.project();
+                if (project) {
+                    emit openFilePath(filePath, project, ogFindGroup, true);
+                }
+            }
+        });
     }
 }
 

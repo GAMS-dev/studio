@@ -1347,6 +1347,9 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
             QVariantMap map = states.value(location()).toMap();
             gdx->readState(map);
         }
+        connect(gdx, &gdxviewer::GdxViewer::openFile, this, [this](const QString &filePath) {
+            emit openFile(filePath, mProjectId);
+        });
     } else if (kind() == FileKind::Ref && !forcedAsTextEdit) {
         reference::ReferenceViewer *rv = new reference::ReferenceViewer(location(), mEncoding, parent);
         res = ViewHelper::initEditorType( rv );

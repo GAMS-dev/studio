@@ -75,6 +75,9 @@ public:
     void applyDefaults();
     QVector<bool> showAttributes();
 
+signals:
+    void openFile(const QString &filename);
+
 public slots:
     void enableControls();
     void toggleSqueezeDefaults(bool checked);

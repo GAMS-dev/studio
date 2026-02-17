@@ -69,6 +69,9 @@ public:
     GdxSymbolTableModel *gdxSymbolTable() const;
     void saveDelete();
 
+signals:
+    void openFile(const QString &filePath);
+
 public slots:
     void invalidate();
     int reload(const QString &encoding, bool quiet=false, bool triggerReload=true);

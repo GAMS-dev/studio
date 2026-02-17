@@ -153,6 +153,7 @@ void GdxViewer::createSymbolView(GdxSymbol *sym, int symbolIndex)
     }
 
     mSymbolViews.replace(symbolIndex, symView);
+    connect(symView, &GdxSymbolView::openFile, this, &GdxViewer::openFile);
 
     if (mState && mState->symbolViewStates().contains(sym->name()))
         symView->setSym(sym, mGdxSymbolTable, mState->symbolViewState(sym->name()));

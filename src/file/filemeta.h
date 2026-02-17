@@ -131,6 +131,7 @@ signals:
     void getProfilerMaxCompoundValues(qreal &timeSec, size_t &memory, size_t &rows, size_t &steps);
     void getProfilerMaxData(QList<QPair<int, qreal>> &maxTimeContLine, QList<QPair<int,int>> &maxStepsContLine);
     void jumpToContinuousLine(int contLine);
+    void openFile(const QString &filePath, NodeId projectId);
 
 protected:
     bool eventFilter(QObject*sender, QEvent* event) override;

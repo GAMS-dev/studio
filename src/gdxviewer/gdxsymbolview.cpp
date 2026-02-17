@@ -38,6 +38,7 @@
 #include <QWidgetAction>
 #include <QLabel>
 #include <QTimer>
+#include <QDir>
 #include <numerics/doubleformatter.h>
 
 namespace gams {
@@ -189,6 +190,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableViewFilter->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 
     ui->tvTableViewFilter->horizontalHeader()->installEventFilter(this);
+    ui->tvListView->viewport()->installEventFilter(this);
     connect(ui->tvTableViewFilter->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::adjustDomainScrollbar);
 
     connect(ui->tvTableViewFilter->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showFilter);
@@ -809,6 +811,12 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 {
     if (event->type() == QEvent::Resize) {
         this->adjustDomainScrollbar();
+    }
+    if (event->type() == QEvent::MouseButtonDblClick) {
+        if (watched == ui->tvListView->viewport()) {
+            if (ui->tvListView->currentIndex().data().toString().endsWith(".gdx", Qt::CaseInsensitive))
+                emit openFile(QDir::fromNativeSeparators(ui->tvListView->currentIndex().data().toString()));
+        }
     }
     return QWidget::eventFilter(watched, event);
 }
