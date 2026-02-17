@@ -1770,7 +1770,10 @@ void CodeEdit::removeLine()
     QTextCursor cursor = textCursor();
     cursor.beginEditBlock();
     cursor.movePosition(QTextCursor::StartOfBlock);
-    cursor.movePosition(QTextCursor::NextBlock, QTextCursor::KeepAnchor);
+    if (cursor.block() == document()->lastBlock())
+        cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+    else
+        cursor.movePosition(QTextCursor::NextBlock, QTextCursor::KeepAnchor);
     cursor.removeSelectedText();
     cursor.endEditBlock();
 }
