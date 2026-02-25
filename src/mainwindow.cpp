@@ -2802,8 +2802,13 @@ void MainWindow::on_actionGamsHelp_triggered()
                                    mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, "title");
                                } else if (iKind == static_cast<int>(syntax::SyntaxKind::Dco)) {
                                    mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, word);
-                               } else {
+                               } else if (iKind == static_cast<int>(syntax::SyntaxKind::Reserved)    ||
+                                          iKind == static_cast<int>(syntax::SyntaxKind::Declaration) ||
+                                          iKind == static_cast<int>(syntax::SyntaxKind::Solve)       ||
+                                          iKind == static_cast<int>(syntax::SyntaxKind::SolveKey)        ) {
                                    mHelpWidget->on_helpContentRequested(help::DocumentType::Index, word);
+                               } else {
+                                   mHelpWidget->on_helpContentRequested(help::DocumentType::Search, word);
                                }
                             }
                         } else {

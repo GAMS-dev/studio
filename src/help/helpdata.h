@@ -47,7 +47,8 @@ enum struct DocumentType {
     Index,
     StudioMain,
     Connect,
-    ModLibs
+    ModLibs,
+    Search
 };
 enum struct StudioSection {
     WelcomePage,
@@ -89,7 +90,8 @@ public:
             {DocumentType::ToolsMain, docs + "/T_MAIN.html"},
             {DocumentType::Index, docs + "/keyword.html"},
             {DocumentType::StudioMain, docs + "/T_STUDIO.html"},
-            {DocumentType::Connect, docs + "/UG_GAMSCONNECT.html"}
+            {DocumentType::Connect, docs + "/UG_GAMSCONNECT.html"},
+            {DocumentType::Search, docs + "/search.html"},
         };
         return list;
     }
@@ -213,6 +215,11 @@ public:
 
         return (attribute.isEmpty() ? QString("%1").arg(agent.toUpper())
                                     : QString("%1_%2").arg(agent.toUpper(), attribute.toUpper()) );
+    }
+
+    inline static QString getSearchQuery(const QString &keyword) {
+        if (keyword.isEmpty()) return keyword;
+        return QString("q=%1").arg( QUrl::toPercentEncoding(keyword.simplified()) );
     }
 
     inline static int getURLIndexFrom(const QString &urlStr)  {
