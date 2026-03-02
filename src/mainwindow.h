@@ -256,7 +256,7 @@ private slots:
     void remoteProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void closeNodeConditionally(gams::studio::PExFileNode *node);
     void closeAndDeleteFiles(QList<PExFileNode *> fileNodes);
-    void addToGroup(gams::studio::PExGroupNode *group, const QString &filepath);
+    void addToGroup(gams::studio::PExGroupNode *group, const QString &filepath, bool open);
     void changeToLog(gams::studio::PExAbstractNode* node, bool openOutput, bool createMissing);
     void storeTree();
     void cloneBookmarkMenu(QMenu *menu);

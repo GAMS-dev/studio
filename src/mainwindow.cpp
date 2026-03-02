@@ -1123,10 +1123,12 @@ void MainWindow::getParameterValue(QString param, QString &value)
     }
 }
 
-void MainWindow::addToGroup(PExGroupNode* group, const QString& filepath)
+void MainWindow::addToGroup(PExGroupNode* group, const QString& filepath, bool open)
 {
     PExProjectNode *project = group->assignedProject();
-    openFileNode(mProjectRepo.findOrCreateFileNode(filepath, project), true);
+    PExFileNode *node = mProjectRepo.findOrCreateFileNode(filepath, project);
+    if (open)
+        openFileNode(node, true);
 }
 
 void MainWindow::updateMenuToEncoding(const QString &currentEncoding)
@@ -4374,6 +4376,8 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
     if (gmsFiles.size() > 0) {
         if (project && !project->mainFile() && !gmsFiles.isEmpty())
             project->setMainFile(gmsFiles.first()->file());
+        if (project && project->mainFile())
+            openFile(project->mainFile(), true, project);
     }
 
     if (!filesNotFound.empty()) {

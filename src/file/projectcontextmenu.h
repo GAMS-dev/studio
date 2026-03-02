@@ -47,7 +47,7 @@ signals:
     void setMainFile(gams::studio::PExFileNode *fc);
     void closeFile(gams::studio::PExFileNode* fc);
     void closeDelFiles(QList<gams::studio::PExFileNode*> fileNodes);
-    void addExistingFile(gams::studio::PExGroupNode* group, const QString& file);
+    void addExistingFile(gams::studio::PExGroupNode* group, const QString& file, bool open);
     void openLogFor(gams::studio::PExAbstractNode* node, bool openOutput, bool createMissing);
     void openFilePath(QString fileName, gams::studio::PExProjectNode* knownProject, gams::studio::OpenGroupOption opt, bool focus);
     void openFile(gams::studio::PExFileNode* node, bool focus = true, const QString &encoding = QString(), bool forcedAstextEditor = false,

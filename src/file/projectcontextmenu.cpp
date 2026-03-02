@@ -403,12 +403,13 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePaths.isEmpty()) return;
 
+    bool doOpen = filePaths.size() == 1;
     for (PExProjectNode *project: std::as_const(projects)) {
         for (const QString &filePath: std::as_const(filePaths)) {
             if (filePath.endsWith(".gsp", Qt::CaseInsensitive))
                 SysLogLocator::systemLog()->append("Can't open project in project: " + filePath + " ignored.");
             else
-                emit addExistingFile(project, filePath);
+                emit addExistingFile(project, filePath, doOpen);
         }
     }
 }
