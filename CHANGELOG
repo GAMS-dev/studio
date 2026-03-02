@@ -4,6 +4,8 @@ Version 1.24.2 *
 - Fixed missing matched markers in code editor after scrolling.
 - Fixed file selection mismatch on 'Replace All' for multiple files which included read-only files.
 - Changed behavior when pressing F1 on non-reserved words and non-dollar command options from code editor, jumping to document search page instead of index page.
+- Fixed table height of second table in `Settings > Workspace`.
+- Fixed last line has not been removed with `Edit > Advanced > Remove Line`.
 
 Version 1.24.1
 ==================
