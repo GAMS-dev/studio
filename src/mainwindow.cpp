@@ -6060,7 +6060,7 @@ void MainWindow::on_actionSettings_triggered()
 {
     mSettingsDialog->setMiroSettingsEnabled(!mMiroRunning);
     mSettingsDialog->updateCleanupFilterList(Settings::settings()->toMap(skCleanUpWorkspaceFilter));
-    mSettingsDialog->updateWorkspaceList(Settings::settings()->toMap(skCleanUpWorkspaceDirectories));
+    mSettingsDialog->updateWorkspaceList({});
     mSettingsDialog->open();
 }
 

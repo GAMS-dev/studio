@@ -1933,7 +1933,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <item>
         <widget class="QGroupBox" name="cleanWsGroupBox">
          <property name="title">
-          <string>Clean-up Working Directory</string>
+          <string>Clean-up files from selected Workspaces</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_12">
           <item>

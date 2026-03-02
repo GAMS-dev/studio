@@ -351,8 +351,7 @@ void SettingsDialog::loadSettings()
     ui->cbSwitchDefaultWorkDir->setChecked(mSettings->toBool(skSwitchDefaultWorkDir));
     QVariantMap filters = mSettings->toMap(skCleanUpWorkspaceFilter);
     updateCleanupFilterList(filters);
-    QVariantMap workspaces = mSettings->toMap(skCleanUpWorkspaceDirectories);
-    updateWorkspaceList(workspaces);
+    updateWorkspaceList({});
 
     // solver option editor
     ui->overrideExistingOptionCheckBox->setChecked(mSettings->toBool(skSoOverrideExisting));
@@ -528,11 +527,6 @@ void SettingsDialog::saveSettings()
         filters[filter->filter()] = values;
     }
     mSettings->setMap(skCleanUpWorkspaceFilter, filters);
-    QVariantMap workspaces;
-    for (const auto& workspace : mWorkspaceModel->workspaces()) {
-        workspaces[workspace.Workspace] = QVariant::fromValue(workspace.CheckState ? true : false );
-    }
-    mSettings->setMap(skCleanUpWorkspaceDirectories, workspaces);
 
     // user model library
     prependUserLib();

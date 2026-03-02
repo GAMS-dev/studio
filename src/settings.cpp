@@ -427,7 +427,6 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skSwitchDefaultWorkDir, scUser, {"misc","switchDefaultWorkDir"}, false);
     safelyAdd(res, skCleanUpWorkspace, scUser, {"misc","cleanUpWorkspace"}, false);
     safelyAdd(res, skCleanUpWorkspaceFilter, scUser, {"misc","cleanUpWorkspaceFilter"}, QVariantMap());
-    safelyAdd(res, skCleanUpWorkspaceDirectories, scUser, {"misc","cleanUpWorkspaceDirectories"}, QVariantMap());
 
     // solver option editor settings
     safelyAdd(res, skSoOverrideExisting, scUser, {"solverOption","overrideExisting"}, true);
