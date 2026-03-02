@@ -88,6 +88,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 
     QItemSelectionModel *treeModel = ui->cleanTreeView->selectionModel();
     mCleanupFilterModel = new CleanupFilterModel(ui->cleanTreeView);
+    mCleanupFilterModel->setRowHeight(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->cleanTreeView->setModel(mCleanupFilterModel);
     delete treeModel;
     connect(ui->cleanAddButton, &QPushButton::clicked, this, [this]{

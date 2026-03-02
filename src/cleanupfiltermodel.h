@@ -69,8 +69,7 @@ struct CleanupWorkspaceItem
     Qt::CheckState CheckState = Qt::Unchecked;
 };
 
-class CleanupFilterModel
-    : public QAbstractItemModel
+class CleanupFilterModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
@@ -80,6 +79,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    void setRowHeight(int height);
     CleanupFilterItem* data() const;
     void setData(const QList<CleanupFilterItem*> &entries);
     QVariant data(const QModelIndex &index, int role) const override;
@@ -96,10 +96,10 @@ public:
 
 private:
     CleanupFilterItem* mRootItem;
+    int mRowHeight = 20;
 };
 
-class CleanupWorkspaceModel
-    : public QAbstractTableModel
+class CleanupWorkspaceModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:

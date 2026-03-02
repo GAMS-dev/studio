@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "cleanupfiltermodel.h"
+#include <QSize>
 
 namespace gams {
 namespace studio {
@@ -186,6 +187,11 @@ int CleanupFilterModel::rowCount(const QModelIndex &parent) const
     return item->entries();
 }
 
+void CleanupFilterModel::setRowHeight(int height)
+{
+    mRowHeight = height;
+}
+
 CleanupFilterItem *CleanupFilterModel::data() const
 {
     return mRootItem;
@@ -203,6 +209,9 @@ QVariant CleanupFilterModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
+    if (role == Qt::SizeHintRole) {
+        return QSize(mRowHeight, mRowHeight);
+    }
     auto item = static_cast<CleanupFilterItem*>(index.internalPointer());
     if (!item)
         return QVariant();
