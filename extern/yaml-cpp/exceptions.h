@@ -48,6 +48,8 @@ const char* const UNKNOWN_TOKEN = "unknown token";
 const char* const DOC_IN_SCALAR = "illegal document indicator in scalar";
 const char* const EOF_IN_SCALAR = "illegal EOF in scalar";
 const char* const CHAR_IN_SCALAR = "illegal character in scalar";
+const char* const UNEXPECTED_SCALAR = "unexpected scalar";
+const char* const UNEXPECTED_FLOW = "plain value cannot start with flow indicator character";
 const char* const TAB_IN_INDENTATION =
     "illegal tab when looking for indentation";
 const char* const FLOW_END = "illegal flow end";
@@ -65,7 +67,7 @@ const char* const ZERO_INDENT_IN_BLOCK =
 const char* const CHAR_IN_BLOCK = "unexpected character in block scalar";
 const char* const AMBIGUOUS_ANCHOR =
     "cannot assign the same alias to multiple nodes";
-const char* const UNKNOWN_ANCHOR = "the referenced anchor is not defined";
+const char* const UNKNOWN_ANCHOR = "the referenced anchor is not defined: ";
 
 const char* const INVALID_NODE =
     "invalid node; this may result from using a map iterator as a sequence "

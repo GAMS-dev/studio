@@ -1,14 +1,16 @@
 
 HEADERS += \
     $${PWD}/anchor.h \
+    $${PWD}/anchor.h \
     $${PWD}/binary.h \
     $${PWD}/collectionstack.h \
     $${PWD}/depthguard.h \
     $${PWD}/directives.h \
     $${PWD}/dll.h \
     $${PWD}/emitfromevents.h \
-    $${PWD}/emitterdef.h \
+    $${PWD}/directives.h \
     $${PWD}/emitter.h \
+    $${PWD}/emitterdef.h \
     $${PWD}/emittermanip.h \
     $${PWD}/emitterstate.h \
     $${PWD}/emitterstyle.h \
@@ -16,6 +18,7 @@ HEADERS += \
     $${PWD}/eventhandler.h \
     $${PWD}/exceptions.h \
     $${PWD}/exp.h \
+    $${PWD}/fptostring.h \
     $${PWD}/indentation.h \
     $${PWD}/mark.h \
     $${PWD}/nodebuilder.h \
@@ -25,24 +28,25 @@ HEADERS += \
     $${PWD}/ostream_wrapper.h \
     $${PWD}/parser.h \
     $${PWD}/ptr_vector.h \
-    $${PWD}/regeximpl.h \
     $${PWD}/regex_yaml.h \
+    $${PWD}/regeximpl.h \
     $${PWD}/scanner.h \
     $${PWD}/scanscalar.h \
     $${PWD}/scantag.h \
     $${PWD}/setting.h \
     $${PWD}/singledocparser.h \
     $${PWD}/stlemitter.h \
-    $${PWD}/streamcharsource.h \
     $${PWD}/stream.h \
+    $${PWD}/streamcharsource.h \
     $${PWD}/stringsource.h \
     $${PWD}/tag.h \
     $${PWD}/token.h \
     $${PWD}/traits.h \
     $${PWD}/yaml.h \
     $${PWD}/contrib/anchordict.h \
-    $${PWD}/contrib/graphbuilderadapter.h \
+    $${PWD}/contrib/dragonbox.h \
     $${PWD}/contrib/graphbuilder.h \
+    $${PWD}/contrib/graphbuilderadapter.h \
     $${PWD}/node/convert.h \
     $${PWD}/node/emit.h \
     $${PWD}/node/impl.h \
@@ -52,11 +56,11 @@ HEADERS += \
     $${PWD}/node/ptr.h \
     $${PWD}/node/type.h \
     $${PWD}/node/detail/impl.h \
-    $${PWD}/node/detail/iterator_fwd.h \
     $${PWD}/node/detail/iterator.h \
+    $${PWD}/node/detail/iterator_fwd.h \
     $${PWD}/node/detail/memory.h \
-    $${PWD}/node/detail/node_data.h \
     $${PWD}/node/detail/node.h \
+    $${PWD}/node/detail/node_data.h \
     $${PWD}/node/detail/node_iterator.h \
     $${PWD}/node/detail/node_ref.h
 
@@ -72,6 +76,7 @@ SOURCES += \
     $${PWD}/emitterutils.cpp \
     $${PWD}/exceptions.cpp \
     $${PWD}/exp.cpp \
+    $${PWD}/fptostring.cpp \
     $${PWD}/memory.cpp \
     $${PWD}/nodebuilder.cpp \
     $${PWD}/node.cpp \
