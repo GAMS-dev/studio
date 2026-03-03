@@ -36,7 +36,7 @@
       <enum>QTabWidget::TabShape::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>7</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -1933,7 +1933,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <item>
         <widget class="QGroupBox" name="cleanWsGroupBox">
          <property name="title">
-          <string>Clean-up files from selected Workspaces</string>
+          <string>Clean-up Working Directory</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_12">
           <item>

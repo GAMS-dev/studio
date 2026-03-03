@@ -174,6 +174,7 @@ enum SettingsKey {
     skSwitchDefaultWorkDir,
     skCleanUpWorkspace,
     skCleanUpWorkspaceFilter,
+    skCleanUpWorkspaceDirectories,
 
     // solver option editor settings
     skSoOverrideExisting,
