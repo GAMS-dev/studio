@@ -1,3 +1,4 @@
+DEFINES += YAML_CPP_STATIC_DEFINE
 
 HEADERS += \
     $${PWD}/anchor.h \
