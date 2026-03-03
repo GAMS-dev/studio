@@ -65,8 +65,8 @@ private:
 
 struct CleanupWorkspaceItem
 {
-    QString Workspace;
-    Qt::CheckState CheckState = Qt::Unchecked;
+    QString workspace;
+    Qt::CheckState checkState = Qt::Unchecked;
 };
 
 class CleanupFilterModel : public QAbstractItemModel

@@ -366,10 +366,10 @@ QVariant CleanupWorkspaceModel::data(const QModelIndex &index, int role) const
     if (!index.isValid() || index.row() >= mWorkspaces.count())
         return QVariant();
     if (role == Qt::DisplayRole) {
-        return mWorkspaces.at(index.row()).Workspace;
+        return mWorkspaces.at(index.row()).workspace;
     }
     if (role == Qt::CheckStateRole) {
-        return mWorkspaces.at(index.row()).CheckState;
+        return mWorkspaces.at(index.row()).checkState;
     }
     return QVariant();
 }
@@ -387,7 +387,7 @@ bool CleanupWorkspaceModel::setData(const QModelIndex &index, const QVariant &va
     if (!index.isValid() || index.row() >= mWorkspaces.count())
         return false;
     if (role == Qt::CheckStateRole && index.column() == 0) {
-        mWorkspaces[index.row()].CheckState = (value.toBool() ? Qt::Checked : Qt::Unchecked);
+        mWorkspaces[index.row()].checkState = (value.toBool() ? Qt::Checked : Qt::Unchecked);
         emit dataChanged(index, index);
         return true;
     }
@@ -410,7 +410,7 @@ void CleanupWorkspaceModel::setSelection(Qt::CheckState checkState)
 {
     beginResetModel();
     for (int i=0; i<mWorkspaces.count(); ++i) {
-        mWorkspaces[i].CheckState = checkState;
+        mWorkspaces[i].checkState = checkState;
     }
     endResetModel();
     emit dataChanged(QModelIndex(), QModelIndex());
@@ -420,8 +420,8 @@ QStringList CleanupWorkspaceModel::activeWorkspaces() const
 {
     QStringList workspaces;
     for (const auto &ws : mWorkspaces) {
-        if (ws.CheckState == Qt::Checked)
-            workspaces << ws.Workspace;
+        if (ws.checkState == Qt::Checked)
+            workspaces << ws.workspace;
     }
     return workspaces;
 }

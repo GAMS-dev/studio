@@ -530,7 +530,8 @@ void SettingsDialog::saveSettings()
     mSettings->setMap(skCleanUpWorkspaceFilter, filters);
     QVariantMap workspaces;
     for (const auto& workspace : mWorkspaceModel->workspaces()) {
-        workspaces[workspace.Workspace] = QVariant::fromValue(workspace.CheckState ? true : false );
+        if (workspace.checkState)
+            workspaces[workspace.workspace] = QVariant::fromValue(true);
     }
     mSettings->setMap(skCleanUpWorkspaceDirectories, workspaces);
 
@@ -1099,9 +1100,8 @@ void SettingsDialog::updateCleanupFilterList(const QVariantMap &prevFilters)
 void SettingsDialog::updateWorkspaceList(const QVariantMap &prevWorkspaces)
 {
     QSet<QString> workspaces;
-    for (const auto& dir : mMain->projectWorkspaces()) {
+    for (const auto& dir : mMain->projectWorkspaces())
         workspaces.insert(dir);
-    }
     auto prevWs = prevWorkspaces;
     QList<CleanupWorkspaceItem> data;
     for (const auto& workspace : workspaces) {
@@ -1112,9 +1112,11 @@ void SettingsDialog::updateWorkspaceList(const QVariantMap &prevWorkspaces)
             data.append({workspace, Qt::Unchecked});
         }
     }
-    for (auto iter=prevWs.cbegin(); iter!=prevWs.cend(); ++iter) {
+    for (auto iter=prevWs.cbegin(); iter!=prevWs.cend(); ++iter)
         data.append({iter.key(), iter.value().toBool() ? Qt::Checked : Qt::Unchecked});
-    }
+    std::sort(data.begin(), data.end(), [](const CleanupWorkspaceItem &a, const CleanupWorkspaceItem &b) {
+        return a.workspace < b.workspace;
+    });
     mWorkspaceModel->setWorkspaces(data);
 }
 
