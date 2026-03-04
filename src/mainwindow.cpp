@@ -625,8 +625,16 @@ void MainWindow::initWelcomePage()
     //    When the labels have been recalculated, the string that belongs to the label becomes invalid.
     connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
         PExProjectNode *project = mProjectRepo.findProject(projectPath);
-        if (!project && QFile::exists(projectPath))
+        if (!project && QFile::exists(projectPath)) {
             openProject(projectPath);
+            if (PExProjectNode *pro = mProjectRepo.findProject(projectPath)) {
+                if (pro->mainFile())
+                    openFile(pro->mainFile(), true, pro);
+                else
+                    openFileNode(pro);
+            }
+
+        }
     });
 
     connect(mWp, &WelcomePage::openFilePath, this, [this](const QString &filePath) {
@@ -4343,8 +4351,12 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
                     skipFocus = true;
                     if (files.size() == 1)
                         QTimer::singleShot(0, this, [this, item](){
-                            PExProjectNode *pro = mProjectRepo.findProject(item);
-                            openFileNode(pro); // open project
+                            if (PExProjectNode *pro = mProjectRepo.findProject(item)) {
+                                if (pro->mainFile())
+                                    openFile(pro->mainFile());  // open project main file
+                                else
+                                    openFileNode(pro); // open project options
+                            }
                         });
                 } else if (files.size() == 1) {
                     openFileNode(pro); // open project
@@ -4376,8 +4388,12 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
     if (gmsFiles.size() > 0) {
         if (project && !project->mainFile() && !gmsFiles.isEmpty())
             project->setMainFile(gmsFiles.first()->file());
-        if (project && project->mainFile())
-            openFile(project->mainFile(), true, project);
+        if (project) {
+            if (project->mainFile())
+                openFile(project->mainFile(), true, project);
+            else
+                openFileNode(project);
+        }
     }
 
     if (!filesNotFound.empty()) {
