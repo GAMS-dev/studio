@@ -6,6 +6,7 @@ Version 1.24.2 *
 - Changed behavior when pressing F1 on non-reserved words and non-dollar command options from code editor, jumping to document search page instead of index page.
 - Fixed table height of second table in `Settings > Workspace`.
 - Fixed last line not being removed with `Edit > Advanced > Remove Line`.
+- Fixed first file from Model Library always got a `.gms` suffix resulting in an empty file when having a different suffix.
 
 Version 1.24.1
 ==================
