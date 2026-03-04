@@ -378,9 +378,29 @@ void GamsLicensingDialog::updateAboutLabel(int exitCode)
         lines.removeLast();
         lines.removeLast();
     }
-    for (const auto &line : std::as_const(lines)) {
+    int licLineCount = -1;
+    for(const auto &line : std::as_const(lines)) {
+        if (licLineCount >= 0) {
+            ++licLineCount;
+            if (licLineCount == 5 && line.startsWith("DC")) {
+                int from = -1;
+                for (int i = line.indexOf('_') ; i > 0 && i < line.length() ; ++i) {
+                    if (from < 0) {
+                        if (line.at(i) != '_')
+                            from = i;
+                    } else {
+                        if (line.at(i) == '_') {
+                            ui->idEdit->setText(line.mid(from, i-from));
+                            break;
+                        }
+                    }
+                }
+
+            }
+        }
         if (licenseLines) {
             if (line.startsWith("#L")) {
+                licLineCount = (licLineCount < 0) ? 0 : -1;
                 continue;
             } else if (line.startsWith("Licensed platform:")) {
                 licenseLines = false;
