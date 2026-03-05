@@ -382,7 +382,8 @@ void GamsLicensingDialog::updateAboutLabel(int exitCode)
     for(const auto &line : std::as_const(lines)) {
         if (licLineCount >= 0) {
             ++licLineCount;
-            if (licLineCount == 5 && line.startsWith("DC")) {
+            // extract access code from line 5
+            if (licLineCount == 5 && line.startsWith("DC") && ui->idEdit->text().isEmpty()) {
                 int from = -1;
                 for (int i = line.indexOf('_') ; i > 0 && i < line.length() ; ++i) {
                     if (from < 0) {
@@ -395,11 +396,11 @@ void GamsLicensingDialog::updateAboutLabel(int exitCode)
                         }
                     }
                 }
-
             }
         }
         if (licenseLines) {
             if (line.startsWith("#L")) {
+                // license text start/end marker
                 licLineCount = (licLineCount < 0) ? 0 : -1;
                 continue;
             } else if (line.startsWith("Licensed platform:")) {
