@@ -18,9 +18,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "statuswidgets.h"
+#include "theme.h"
+
 #include <QMainWindow>
 #include <QStatusBar>
-#include <QLabel>
 #include <logger.h>
 #include <QPainter>
 #include <QPaintEvent>
@@ -52,6 +53,14 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
     mEditEncode = new QLabel("");
     mStatusBar->addPermanentWidget(mEditEncode);
     mEditEncode->setMinimumWidth(mEditEncode->height()*3);
+
+    mLicense = new QPushButton(Theme::icon(":/solid/book"), "", mStatusBar);
+    mLicense->setFlat(true);
+    mStatusBar->addPermanentWidget(mLicense);
+    mLicense->setAutoFillBackground(true);
+    mLicense->setIconSize(QSize(12,12));
+    connect(mLicense, &QPushButton::clicked, this, &StatusWidgets::showLicense);
+    setLicenseStatus(lsNone);
 
     mFileName = new AmountLabel("Filename");
     mFileName->setLoadingText("(counting)");
@@ -115,6 +124,56 @@ void StatusWidgets::setPosAndAnchor(QPoint pos, QPoint anchor)
 void StatusWidgets::setLoadingText(const QString &loadingText)
 {
     mFileName->setLoadingText(loadingText);
+}
+
+void StatusWidgets::setLicenseStatus(LicenseState lState)
+{
+    QColor background = Qt::white;
+    QIcon icon = Theme::icon(":/solid/out", QIcon::Normal, 10);
+    QPalette pal = mStatusBar->palette();
+
+    switch (lState) {
+    case lsChecking:
+        background = pal.color(QPalette::Window);
+        icon = Theme::icon(":/solid/book", QIcon::Normal, 10);
+        break;
+    case lsLocal:
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .2);
+
+        break;
+    case lsLocalEnd:
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Yellow, .2);
+
+        break;
+    case lsNet:
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .2);
+
+        break;
+    case lsNetEnd:
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Yellow, .2);
+
+        break;
+    case lsNetNoConnection:
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Red, .6);
+
+        break;
+    case lsNetCheckout:
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .2);
+
+        break;
+    case lsNetCheckoutEnd:
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Yellow, .2);
+
+        break;
+    default:
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Red, .6);
+        icon = Theme::icon(":/solid/out", QIcon::Normal, 10);
+        break;
+    }
+
+    pal.setColor(QPalette::Button, background);
+    mLicense->setPalette(pal);
+    mLicense->setIcon(icon);
 }
 
 void AmountLabel::setAmount(qreal value)

@@ -460,13 +460,6 @@ QString Theme::getNameWithMode(const QString &name, QIcon::Mode mode)
     return name + ext.at(int(mode));
 }
 
-QColor merge(QColor c1, QColor c2, qreal weight = 0.5)
-{
-    return QColor::fromRgbF((c1.redF()*weight + c2.redF()*(1-weight)),
-                            (c1.greenF()*weight + c2.redF()*(1-weight)),
-                            (c1.blueF()*weight + c2.blueF()*(1-weight)));
-}
-
 void Theme::invalidate()
 {
     mIconCodes = iconCodes();
@@ -589,6 +582,19 @@ void Theme::setFlags(Theme::ColorSlot slot, Theme::FontFlag flag)
 QColor Theme::mixColor(ColorSlot baseSlot, ColorSlot mixSlot, qreal alpha)
 {
     QColor res = color(baseSlot);
+    return mixColor(res, mixSlot, alpha);
+}
+
+///
+/// \brief Theme::mixColor Mixes the color from mixSlot into the one from baseSlot by the ammount of alpha
+/// \param baseColor
+/// \param mixSlot
+/// \param alpha A value in the interval of [0..1]
+/// \return
+///
+QColor Theme::mixColor(QColor baseColor, ColorSlot mixSlot, qreal alpha)
+{
+    QColor res = baseColor;
     QColor mix = color(mixSlot);
     res.setRed  (qRound(alpha * (mix.red()   - res.red()  ) + res.red()));
     res.setGreen(qRound(alpha * (mix.green() - res.green()) + res.green()));

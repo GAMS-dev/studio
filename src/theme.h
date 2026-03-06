@@ -160,6 +160,7 @@ public:
     static bool hasFlag(ColorSlot slot, FontFlag flag);
     static void setFlags(ColorSlot slot, FontFlag flag);
     static QColor mixColor(ColorSlot baseSlot, ColorSlot mixSlot, qreal alpha);
+    static QColor mixColor(QColor baseColor, ColorSlot mixSlot, qreal alpha);
     static QColor profileColor(ColorSlot baseSlot, qreal alpha);
 
     static const QColor CAutoBackground;

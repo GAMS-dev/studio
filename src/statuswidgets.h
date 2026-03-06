@@ -23,6 +23,7 @@
 #include <QObject>
 #include <QPoint>
 #include <QLabel>
+#include <QPushButton>
 
 class QStatusBar;
 class QMainWindow;
@@ -31,6 +32,17 @@ class QLabel;
 namespace gams {
 namespace studio {
 
+enum LicenseState {
+    lsNone,
+    lsChecking,
+    lsLocal,
+    lsLocalEnd,
+    lsNet,
+    lsNetEnd,
+    lsNetNoConnection,
+    lsNetCheckout,
+    lsNetCheckoutEnd,
+};
 
 class AmountLabel: public QLabel
 {
@@ -69,6 +81,10 @@ public:
     void setEditMode(EditMode mode);
     void setPosAndAnchor(QPoint pos = QPoint(), QPoint anchor = QPoint());
     void setLoadingText(const QString &loadingText);
+    void setLicenseStatus(LicenseState lState);
+
+signals:
+    void showLicense();
 
 private:
     QStatusBar* mStatusBar;
@@ -76,6 +92,7 @@ private:
     QLabel* mEditEncode = nullptr;
     QLabel* mEditPosAnsSel = nullptr;
     QLabel* mEditLines = nullptr;
+    QPushButton* mLicense = nullptr;
     AmountLabel* mFileName = nullptr;
     QLabel* mProcessInfo = nullptr;
     qreal mLoadAmount = 1.0;
