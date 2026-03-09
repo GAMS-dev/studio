@@ -326,7 +326,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skRunOptions, scSys, {"runOptions"}, 3);
     safelyAdd(res, skSupressWebEngine, scSys, {"supressWebEngine"}, false);
     safelyAdd(res, skReleaseOverviewVersion, scSys, {"releaseOverviewVersion"}, 0);
-    safelyAdd(res, skLatestKnownGAMS, scSys, {"skLatestKnownGAMS"}, 0);
+    safelyAdd(res, skHighestGamsUsed, scSys, {"gams", "highestGamsUsed"}, 0);
     safelyAdd(res, skSystemDirectory, scSys, {"gams", "systemDirectory"}, QString());
 
     // user model library directory

@@ -156,6 +156,7 @@ bool Application::init()
     mDistribValidator = new support::DistributionValidator();
     connect(mDistribValidator, &support::DistributionValidator::newError, this, &Application::error);
     connect(mDistribValidator, &support::DistributionValidator::newWarning, this, &Application::warning);
+    connect(mDistribValidator, &support::DistributionValidator::foundGamsVersion, this, &Application::updateHighestGamsVersion);
 
     mMainWindow = QSharedPointer<MainWindow>(new MainWindow());
     if (Settings::settings()->toBool(skCleanUpWorkspace)) {
@@ -349,6 +350,36 @@ void Application::receiveFileArguments()
     mMainWindow->openFiles(QString(socket->readAll()).split("\n", Qt::SkipEmptyParts));
     socket->deleteLater();
     mMainWindow->setForegroundOSCheck();
+}
+
+int Application::stringToVersion(const QString &version)
+{
+    int res = 0;
+    const QStringList parts = version.split('.');
+    if (parts.size() != 3)
+        return -1;
+    for (const QString &part : parts) {
+        bool ok;
+        int nr = part.toInt(&ok);
+        if (!ok)
+            return -2;
+        if (res && nr >= 100)   // report error if subversion or buildnr is > 100
+            return -3;
+        res = res * 100 + nr;
+    }
+    return res;
+}
+
+void Application::updateHighestGamsVersion(const QString &version)
+{
+    int currVer = stringToVersion(version);
+    int highVer = stringToVersion(Settings::settings()->toString(skHighestGamsUsed));
+    if (currVer < 0) {
+        DEB() << "GAMS version invalid: '" << version << "'";
+        return;
+    }
+    if (currVer > highVer)
+        Settings::settings()->setString(skHighestGamsUsed, version);
 }
 
 void Application::error(const QString &message)

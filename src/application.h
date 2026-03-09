@@ -111,17 +111,19 @@ private slots:
     ///
     void receiveFileArguments();
 
+    ///
+    /// \brief Updates the highest GAMS version used with this Studio settings
+    /// \param version The current GAMS version
+    ///
+    void updateHighestGamsVersion(const QString &version);
+
 private:
     void parseCmdArgs();
     void triggerOpenFile(const QString &path);
-
-    ///
-    /// \brief Start listening
-    ///
     void listen();
-    
     SysDirSelector setSystemDirectory(QString &sysDirMessage);
     bool check4Libs();
+    int stringToVersion(const QString &version);
 
 private:
     QSharedPointer<MainWindow> mMainWindow;

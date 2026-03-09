@@ -78,7 +78,7 @@ enum SettingsKey {
     skRunOptions,
     skSupressWebEngine,
     skReleaseOverviewVersion,
-    skLatestKnownGAMS,
+    skHighestGamsUsed,
     skSystemDirectory,
 
     // settings of help page

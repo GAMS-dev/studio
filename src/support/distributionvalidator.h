@@ -35,15 +35,14 @@ class DistributionValidator
     : public QThread
 {
     Q_OBJECT
-
 public:
     DistributionValidator(QObject *parent = nullptr);
-
     void run() override;
 
 signals:
     void newError(const QString&);
     void newWarning(const QString&);
+    void foundGamsVersion(const QString version);
 
 private:
     ///
