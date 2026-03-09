@@ -29,6 +29,7 @@
 #include <QLayout>
 #include <QStyleOption>
 #include <QStringConverter>
+#include <QTimer>
 
 namespace gams {
 namespace studio {
@@ -58,9 +59,17 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
     mLicense->setFlat(true);
     mStatusBar->addPermanentWidget(mLicense);
     mLicense->setAutoFillBackground(true);
-    mLicense->setIconSize(QSize(12,12));
-    connect(mLicense, &QPushButton::clicked, this, &StatusWidgets::showLicense);
+    mLicense->setIconSize(QSize(14,14));
+    connect(mLicense, &QPushButton::clicked, this, [this]() {
+        if (qApp->keyboardModifiers().testFlag(Qt::ControlModifier)
+            && qApp->keyboardModifiers().testFlag(Qt::ShiftModifier)) {
+            setLicenseStatus(mLicState < lsNetCheckoutEnd ? LicenseState(mLicState+1) : lsNone);
+        } else showLicense();
+    });
     setLicenseStatus(lsNone);
+    connect(Theme::instance(), &Theme::changed, this, [this]() {
+        QTimer::singleShot(0, this, [this](){ setLicenseStatus(mLicState); });
+    });
 
     mFileName = new AmountLabel("Filename");
     mFileName->setLoadingText("(counting)");
@@ -129,51 +138,72 @@ void StatusWidgets::setLoadingText(const QString &loadingText)
 void StatusWidgets::setLicenseStatus(LicenseState lState)
 {
     QColor background = Qt::white;
-    QIcon icon = Theme::icon(":/solid/out", QIcon::Normal, 10);
+    QIcon icon = Theme::icon(":/solid/new-w");
     QPalette pal = mStatusBar->palette();
+    DEB() << "Called setLicenseStatus";
 
     switch (lState) {
     case lsChecking:
         background = pal.color(QPalette::Window);
-        icon = Theme::icon(":/solid/book", QIcon::Normal, 10);
+        icon = Theme::icon(":/solid/search");
+        mLicense->setToolTip("Validating GAMS license");
         break;
     case lsLocal:
-        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .2);
-
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .6);
+        icon = Theme::icon(":/solid/computer");
+        mLicense->setToolTip("Local GAMS license");
         break;
     case lsLocalEnd:
-        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Yellow, .2);
-
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Yellow, .8);
+        icon = Theme::icon(":/solid/computer");
+        mLicense->setToolTip("Local GAMS license (expires soon)");
+        break;
+    case lsLocalInvalid:
+        background = Theme::mixColor(QColor(255,255,255), Theme::Normal_Red, .9);
+        icon = Theme::icon(":/solid/computer");
+        mLicense->setToolTip("Local GAMS license (expired)");
         break;
     case lsNet:
-        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .2);
-
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .6);
+        icon = Theme::icon(":/solid/internet");
+        mLicense->setToolTip("GAMS network license (validated)");
         break;
     case lsNetEnd:
-        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Yellow, .2);
-
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Yellow, .8);
+        icon = Theme::icon(":/solid/internet");
+        mLicense->setToolTip("GAMS network license (expires soon)");
         break;
     case lsNetNoConnection:
-        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Red, .6);
-
+        background = Theme::mixColor(QColor(255,255,255), Theme::Normal_Red, .9);
+        icon = Theme::icon(":/solid/internet-off");
+        mLicense->setToolTip("GAMS network license (not validated, please check your internet connection)");
+        break;
+    case lsNetInvalid:
+        background = Theme::mixColor(QColor(255,255,255), Theme::Normal_Red, .9);
+        icon = Theme::icon(":/solid/internet");
+        mLicense->setToolTip("GAMS network license (expired)");
         break;
     case lsNetCheckout:
-        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .2);
-
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .6);
+        icon = Theme::icon(":/solid/plane");
+        mLicense->setToolTip("GAMS network license (checked out)");
         break;
     case lsNetCheckoutEnd:
-        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Yellow, .2);
-
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Yellow, .8);
+        icon = Theme::icon(":/solid/plane");
+        mLicense->setToolTip("GAMS network license (check out expires soon)");
         break;
     default:
-        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Red, .6);
-        icon = Theme::icon(":/solid/out", QIcon::Normal, 10);
+        background = Theme::mixColor(QColor(255,255,255), Theme::Normal_Red, .9);
+        icon = Theme::icon(":/solid/new-w");
+        mLicense->setToolTip("GAMS license not found");
         break;
     }
 
     pal.setColor(QPalette::Button, background);
     mLicense->setPalette(pal);
     mLicense->setIcon(icon);
+    mLicState = lState;
 }
 
 void AmountLabel::setAmount(qreal value)

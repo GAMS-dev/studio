@@ -37,9 +37,11 @@ enum LicenseState {
     lsChecking,
     lsLocal,
     lsLocalEnd,
+    lsLocalInvalid,
     lsNet,
     lsNetEnd,
     lsNetNoConnection,
+    lsNetInvalid,
     lsNetCheckout,
     lsNetCheckoutEnd,
 };
@@ -96,6 +98,7 @@ private:
     AmountLabel* mFileName = nullptr;
     QLabel* mProcessInfo = nullptr;
     qreal mLoadAmount = 1.0;
+    LicenseState mLicState = lsNone;
 
 };
 
