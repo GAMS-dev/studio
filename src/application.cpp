@@ -384,10 +384,11 @@ void Application::updateHighestGamsVersion(const QString &version)
     }
 #ifdef __APPLE__
     QString vPath = CommonPaths::latestGamsDir();
+    QFile vFile(vPath + "/Resources/gamsstmp.txt");
 #else
     QString vPath = QDir(qApp->applicationDirPath()+"/..").canonicalPath();
-#endif
     QFile vFile(vPath + "/gamsstmp.txt");
+#endif
     if (vFile.open(QIODeviceBase::ReadOnly | QIODeviceBase::ExistingOnly)) {
         // Peek for gamsstmp.txt in "local" or "mac:highest" gams path to get installed version
         QStringList parts = QString(vFile.readLine()).split(' ');

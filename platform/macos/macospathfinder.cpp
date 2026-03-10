@@ -44,13 +44,14 @@ QString MacOSPathFinder::systemDir(bool current)
 
 QString MacOSPathFinder::latestGamsDir()
 {
-    QStringList filters("??", "???");
     QDir dir("/Library/Frameworks/GAMS.framework/Versions/");
-    QStringList entries = dir.exists() ? dir.entryList(filters, QDir::Dirs, QDir::Name) : QStringList();
-    if (!entries.isEmpty()) {
-        qDebug() << "--- Installed GAMS versions ---\n> ";
-        qDebug() << entries.join("\n> ");
-        return entries.last();
+    const QStringList entries = dir.exists() ? dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)
+                                             : QStringList() << "-empty-";
+    if (entries.size() > 1) {
+//        qDebug() << "--- Installed GAMS versions ---";
+//        for (const auto &entry : entries)
+//            qDebug() << "> " << entry;
+        return dir.absoluteFilePath(entries.at(entries.size()-2));
     }
     return QString();
 }
