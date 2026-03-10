@@ -137,6 +137,15 @@ bool CommonPaths::isStudioInSystemDir()
 #endif
 }
 
+QString CommonPaths::latestGamsDir()
+{
+#ifdef __APPLE__
+    return MacOSPathFinder::latestGamsDir();
+#else
+    return QString();
+#endif
+}
+
 QString CommonPaths::gamsDocumentsDir()
 {
     QString docDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);

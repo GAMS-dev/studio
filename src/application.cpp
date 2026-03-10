@@ -383,7 +383,7 @@ void Application::updateHighestGamsVersion(const QString &version)
         highVer = currVer;
     }
 #ifdef __APPLE__
-    QString vPath = QDir(MacOSPathFinder::latestGamsDir();
+    QString vPath = CommonPaths::latestGamsDir();
 #else
     QString vPath = QDir(qApp->applicationDirPath()+"/..").canonicalPath();
 #endif

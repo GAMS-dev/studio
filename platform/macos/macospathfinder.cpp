@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "macospathfinder.h"
-#include "logger.h"
 
 #include <QDir>
 #include <QStandardPaths>
@@ -49,8 +48,8 @@ QString MacOSPathFinder::latestGamsDir()
     QDir dir("/Library/Frameworks/GAMS.framework/Versions/");
     QStringList entries = dir.exists() ? dir.entryList(filters, QDir::Dirs, QDir::Name) : QStringList();
     if (!entries.isEmpty()) {
-        DEB() << "--- Installed GAMS versions ---\n> ";
-        DEB() << entries.join("\n> ");
+        qDebug() << "--- Installed GAMS versions ---\n> ";
+        qDebug() << entries.join("\n> ");
         return entries.last();
     }
     return QString();
