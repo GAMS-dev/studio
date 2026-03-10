@@ -29,6 +29,7 @@ private:
 
 public:
     static QString systemDir();
+    static QString latestGamsDir();
 
 private:
     static QString systemDir(bool current);

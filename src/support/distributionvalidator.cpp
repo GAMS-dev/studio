@@ -29,7 +29,8 @@ namespace support {
 DistributionValidator::DistributionValidator(QObject *parent)
     : QThread(parent)
 {
-    CommonPaths::setSystemDir();
+    if (CommonPaths::systemDir().isEmpty())
+        CommonPaths::setSystemDir();
 }
 
 void DistributionValidator::run()

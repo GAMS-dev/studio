@@ -127,6 +127,16 @@ bool CommonPaths::isSystemDirValid()
     return !QStandardPaths::findExecutable("gams", {SystemDir}).isEmpty();
 }
 
+bool CommonPaths::isStudioInSystemDir()
+{
+    if (!isSystemDirValid()) return false;
+#ifdef __APPLE__
+    return false;
+#else
+    return qApp->applicationDirPath() == systemDir() + "/studio";
+#endif
+}
+
 QString CommonPaths::gamsDocumentsDir()
 {
     QString docDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);

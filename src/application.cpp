@@ -378,8 +378,28 @@ void Application::updateHighestGamsVersion(const QString &version)
         DEB() << "GAMS version invalid: '" << version << "'";
         return;
     }
-    if (currVer > highVer)
+    if (currVer > highVer) {
         Settings::settings()->setString(skHighestGamsUsed, version);
+        highVer = currVer;
+    }
+#ifdef __APPLE__
+    QString vPath = QDir(MacOSPathFinder::latestGamsDir();
+#else
+    QString vPath = QDir(qApp->applicationDirPath()+"/..").canonicalPath();
+#endif
+    QFile vFile(vPath + "/gamsstmp.txt");
+    if (vFile.open(QIODeviceBase::ReadOnly | QIODeviceBase::ExistingOnly)) {
+        // Peek for gamsstmp.txt in "local" or "mac:highest" gams path to get installed version
+        QStringList parts = QString(vFile.readLine()).split(' ');
+        vFile.close();
+        int peekVer = parts.size() > 1 ? stringToVersion(parts.at(1)) : -4;
+        if (peekVer > highVer) {
+            if (!Settings::settings()->toString(skSystemDirectory).isEmpty())
+                mMainWindow->appendSystemLogWarning("A fixed GAMS version is selected in the settings, "
+                                                    "but a later GAMS is found here:\n" + vPath);
+            // Settings::settings()->setString(skHighestGamsUsed, parts.at(1));
+        }
+    }
 }
 
 void Application::error(const QString &message)

@@ -72,6 +72,8 @@ public:
     ///
     static bool isSystemDirValid();
 
+    static bool isStudioInSystemDir();
+
     static void setDefaultWorkingDir(const QString &dir);
     static QString defaultWorkingDir(bool createMissing = false);
 
