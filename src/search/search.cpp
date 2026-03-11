@@ -610,7 +610,7 @@ QList<Result> Search::results() const
 
 QList<Result> Search::filteredResultList(const QString &fileLocation)
 {
-    return mResultHash[fileLocation];
+    return mResultHash.value(fileLocation);
 }
 
 void Search::replaceNext(const QString& replacementText)
