@@ -7,6 +7,8 @@ Version 1.24.2 *
 - Fixed table height of second table in `Settings > Workspace`.
 - Fixed last line not being removed with `Edit > Advanced > Remove Line`.
 - Fixed first file from Model Library always got a `.gms` suffix resulting in an empty file when having a different suffix.
+- Fixed search behavior for `This File` scope, that jumped back to the previous file when pressing `F4`.
+- Fixed `F4` and `Shift+F4` in search, that opened the current dropdown box instead of continuing the search.
 
 Version 1.24.1
 ==================
