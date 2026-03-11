@@ -3,6 +3,7 @@ Version 1.25.0  *
 - The GDX Viewer export facility now truncates automatically determined sheet names exceeding 31 characters.
 - On adding multiple files, Studio doesn't open all files anymore.
 - On opening a project, Studio opens the main file if assigned. Otherwise the project options are opened.
+- Added double-click action to open a gdx file reference from within a symbol table in GDXViewer.
 
 Version 1.24.1
 ==================
