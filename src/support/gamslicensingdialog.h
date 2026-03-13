@@ -30,6 +30,8 @@ class GamsGetKeyProcess;
 
 namespace support {
 
+class LicenseFetcher;
+
 namespace Ui {
 class GamsLicensingDialog;
 }
@@ -58,10 +60,10 @@ private slots:
     void installFile();
     void requestAlpLicense();
     void installAlp(int exitCode);
-    void updateAboutLabel(int exitCode);
+    void updateAboutLabel();
 
 private:
-    void fetchGamsLicense();
+    void getGamsLicenseText(bool forceFetch = false);
 
     void setSolverLines(GamsLicenseInfo &liceInfo, QStringList &about) const;
     void setNonSolverLines(GamsLicenseInfo &liceInfo, QStringList &about) const;
@@ -74,6 +76,7 @@ private:
 
 private:
     Ui::GamsLicensingDialog *ui;
+    QScopedPointer<LicenseFetcher> mLicenseFetcher;
     QScopedPointer<GamsAboutProcess> mGamsAboutProc;
     QScopedPointer<GamsGetKeyProcess> mGamsGetKeyProc;
 };

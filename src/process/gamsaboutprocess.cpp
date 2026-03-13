@@ -60,6 +60,12 @@ void GamsAboutProcess::execute()
 #endif
 }
 
+void GamsAboutProcess::kill()
+{
+    if (mProcess.state() != QProcess::NotRunning)
+        mProcess.kill();
+}
+
 QString GamsAboutProcess::content() const
 {
     return mContent.join("\n");

@@ -33,19 +33,15 @@ class GamsAboutProcess final
 
 public:
     GamsAboutProcess(QObject *parent = nullptr);
-
     ~GamsAboutProcess();
 
     void execute();
+    void kill();
 
     QString content() const;
-
     QString logMessages() const;
-
     void clearState();
-
     QString curDir() const;
-
     void setCurDir(const QString &path);
 
 signals:

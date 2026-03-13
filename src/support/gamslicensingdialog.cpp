@@ -20,6 +20,7 @@
 #include "gamslicensingdialog.h"
 #include "ui_gamslicensingdialog.h"
 #include "gamslicenseinfo.h"
+#include "licensefetcher.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
 #include "file/uncpath.h"
@@ -47,15 +48,14 @@ namespace support {
 GamsLicensingDialog::GamsLicensingDialog(const QString &title, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::GamsLicensingDialog)
-    , mGamsAboutProc(new GamsAboutProcess(this))
+    , mLicenseFetcher(new LicenseFetcher(this))
     , mGamsGetKeyProc(new GamsGetKeyProcess(this))
 {
     ui->setupUi(this);
-    mGamsAboutProc->setCurDir(getCurdirForAboutProcess());
     createLicenseFileFromClipboard(parent);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle(title);
-    fetchGamsLicense();
+    getGamsLicenseText();
     ui->gamslogo->setPixmap(Theme::icon(":/img/gams-w24").pixmap(ui->gamslogo->size()));
     QRegularExpression regex("^\\d+$");
     ui->cdEdit->setValidator(new QRegularExpressionValidator(regex, this));
@@ -65,7 +65,7 @@ GamsLicensingDialog::GamsLicensingDialog(const QString &title, QWidget *parent)
     connect(ui->idEdit, &QLineEdit::returnPressed, this, &GamsLicensingDialog::requestAlpLicense);
     connect(ui->cdEdit, &QLineEdit::returnPressed, this, &GamsLicensingDialog::requestAlpLicense);
     connect(ui->opEdit, &QLineEdit::returnPressed, this, &GamsLicensingDialog::requestAlpLicense);
-    connect(mGamsAboutProc.get(), &GamsAboutProcess::finished, this, &GamsLicensingDialog::updateAboutLabel);
+    connect(mLicenseFetcher.get(), &LicenseFetcher::changed, this, &GamsLicensingDialog::updateAboutLabel);
     connect(mGamsGetKeyProc.get(), &GamsGetKeyProcess::finished, this, &GamsLicensingDialog::installAlp);
 }
 
@@ -82,8 +82,14 @@ QString GamsLicensingDialog::studioInfo()
     return ret;
 }
 
-void GamsLicensingDialog::fetchGamsLicense()
+void GamsLicensingDialog::getGamsLicenseText(bool forceFetch)
 {
+    if (mLicenseFetcher->state() == fsFetching) {
+        if (forceFetch)
+            mLicenseFetcher->stopFetching(); // skip fetching
+        else
+            return; // Wait until the slot is activated
+    }
     ui->label->setText("Fetching GAMS system information. Please wait...");
     mGamsAboutProc->clearState();
     mGamsAboutProc->execute();
@@ -283,7 +289,7 @@ void GamsLicensingDialog::installFile()
     }
     if (licenseInfo.isGamsLicense(license)) {
         writeLicenseFile(license, this, false);
-        fetchGamsLicense();
+        getGamsLicenseText(true);
     } else {
         showInvalidGamsPyMessageBox(this);
     }
@@ -324,7 +330,7 @@ void GamsLicensingDialog::installAlp(int exitCode)
             mGamsGetKeyProc->writeLogToFile(errmsg.arg(QString::number(exitCode)));
             SysLogLocator::systemLog()->append(log, LogMsgType::Error);
             mGamsGetKeyProc->writeLogToFile(log);
-            fetchGamsLicense();
+            getGamsLicenseText(true);
             return;
         } else {
             SysLogLocator::systemLog()->append(log, LogMsgType::Info);
@@ -348,22 +354,23 @@ void GamsLicensingDialog::installAlp(int exitCode)
         }
         ui->errorLabel->setText("The license is invalid and has not been installed. " \
                                 "Please check the system log or use the Studio command line option --network-log.");
-        fetchGamsLicense();
+        getGamsLicenseText(true);
         return;
     }
     if (licenseInfo.isGamsLicense(license)) {
         writeLicenseFile(license, this, false);
-        fetchGamsLicense();
+        getGamsLicenseText(true);
     } else {
         showInvalidGamsPyMessageBox(this);
     }
 }
 
-void GamsLicensingDialog::updateAboutLabel(int exitCode)
+void GamsLicensingDialog::updateAboutLabel()
 {
+    int exitCode = mLicenseFetcher->lastExitCode();
     if (exitCode) {
         ui->label->setText("Error: Fetching GAMS system information. Please check the system log.");
-        SysLogLocator::systemLog()->append(mGamsAboutProc->logMessages(), LogMsgType::Error);
+        SysLogLocator::systemLog()->append(mLicenseFetcher->lastErrorMessage(), LogMsgType::Error);
     }
     QStringList about;
     about << "<b><big>GAMS Distribution ";
@@ -371,37 +378,43 @@ void GamsLicensingDialog::updateAboutLabel(int exitCode)
     about << licenseInfo.localDistribVersionString();
     about << "</big></b><br/><br/>";
 
+    /*
     bool licenseLines = false;
-    auto lines = mGamsAboutProc->content().split('\n', Qt::SkipEmptyParts, Qt::CaseInsensitive);
+    mContent = mGamsAboutProc->content();
+    auto lines = mContent.split('\n', Qt::SkipEmptyParts, Qt::CaseInsensitive);
     if (!exitCode && lines.size() >= 3) {
         lines.removeFirst();
         lines.removeLast();
         lines.removeLast();
     }
+
+    QStringList licenseText;
     int licLineCount = -1;
     for(const auto &line : std::as_const(lines)) {
-        if (licLineCount >= 0) {
-            ++licLineCount;
-            // extract access code from line 5
-            if (licLineCount == 5 && line.startsWith("DC") && ui->idEdit->text().isEmpty()) {
-                int from = -1;
-                for (int i = line.indexOf('_') ; i > 0 && i < line.length() ; ++i) {
-                    if (from < 0) {
-                        if (line.at(i) != '_')
-                            from = i;
-                    } else {
-                        if (line.at(i) == '_') {
-                            ui->idEdit->setText(line.mid(from, i-from));
-                            break;
+        if (licenseLines) {
+            if (licLineCount >= 0) {
+                ++licLineCount;
+                // extract access code from line 5
+                if (licLineCount == 5 && line.startsWith("DC")) {
+                    int from = -1;
+                    for (int i = line.indexOf('_') ; i > 0 && i < line.length() ; ++i) {
+                        if (from < 0) {
+                            if (line.at(i) != '_')
+                                from = i;
+                        } else {
+                            if (line.at(i) == '_') {
+                                mAccessCode = line.mid(from, i-from);
+                                break;
+                            }
                         }
                     }
                 }
             }
-        }
-        if (licenseLines) {
             if (line.startsWith("#L")) {
                 // license text start/end marker
                 licLineCount = (licLineCount < 0) ? 0 : -1;
+                if (licLineCount < 0)
+                    mLicense = licenseText;
                 continue;
             } else if (line.startsWith("Licensed platform:")) {
                 licenseLines = false;
@@ -420,10 +433,16 @@ void GamsLicensingDialog::updateAboutLabel(int exitCode)
         } else {
             about << line << "<br/>";
         }
+        if (licLineCount >= 0)
+            licenseText << line;
     }
+
+*/
+    about << mLicenseFetcher->formattedContent();
     setSolverLines(licenseInfo, about);
     setNonSolverLines(licenseInfo, about);
     about << "<br/>";
+
     ui->label->setText(about.join(""));
 }
 

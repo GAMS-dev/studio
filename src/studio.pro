@@ -271,6 +271,7 @@ SOURCES += \
     support/distributionvalidator.cpp \
     support/gamslicenseinfo.cpp         \
     support/gamslicensingdialog.cpp \
+    support/licensefetcher.cpp \
     support/solverconfiginfo.cpp        \
     support/updatewidget.cpp \
     support/versioninfoloader.cpp \
@@ -515,6 +516,7 @@ HEADERS += \
     support/distributionvalidator.h \
     support/gamslicenseinfo.h       \
     support/gamslicensingdialog.h \
+    support/licensefetcher.h \
     support/solverconfiginfo.h      \
     support/updatewidget.h \
     support/versioninfoloader.h \

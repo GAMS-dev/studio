@@ -140,7 +140,6 @@ void StatusWidgets::setLicenseStatus(LicenseState lState)
     QColor background = Qt::white;
     QIcon icon = Theme::icon(":/solid/new-w");
     QPalette pal = mStatusBar->palette();
-    DEB() << "Called setLicenseStatus";
 
     switch (lState) {
     case lsChecking:
