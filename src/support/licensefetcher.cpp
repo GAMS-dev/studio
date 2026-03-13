@@ -33,7 +33,12 @@ LicenseFetcher::LicenseFetcher(QObject *parent)
     , mGamsAboutProc(new GamsAboutProcess(this))
 {
     mGamsAboutProc->setCurDir(getCurdirForAboutProcess());
-    connect(mGamsAboutProc.get(), &GamsAboutProcess::finished, this, &LicenseFetcher::analyzeContent);
+    connect(mGamsAboutProc, &GamsAboutProcess::finished, this, &LicenseFetcher::analyzeContent);
+}
+
+LicenseFetcher::~LicenseFetcher()
+{
+    delete mGamsAboutProc;
 }
 
 FetcherState LicenseFetcher::state()

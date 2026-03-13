@@ -41,6 +41,7 @@ class LicenseFetcher : public QObject
     Q_OBJECT
 public:
     explicit LicenseFetcher(QObject *parent = nullptr);
+    ~LicenseFetcher() override;
     FetcherState state();
     void fetchGamsLicense();
     void stopFetching();
@@ -60,7 +61,7 @@ private:
 
 private:
     FetcherState mFetcherState = fsInitial;
-    QScopedPointer<GamsAboutProcess> mGamsAboutProc;
+    GamsAboutProcess* mGamsAboutProc;
     QString mCurDir;
     int mLastExitCode = -1;
     QString mLastErrorMessage;
