@@ -9,6 +9,8 @@ Version 1.24.2 *
 - Fixed first file from Model Library always got a `.gms` suffix resulting in an empty file when having a different suffix.
 - Fixed search behavior for `This File` scope, that jumped back to the previous file when pressing `F4`.
 - Fixed `F4` and `Shift+F4` in search, that opened the current dropdown box instead of continuing the search.
+- Fixed an issue where user-selected GAMS directory was ignored when starting studio from within a GAMS installation.
+- Added a warning if a higher GAMS version is available when starting Studio with the selected GAMS directory.
 
 Version 1.24.1
 ==================
