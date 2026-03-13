@@ -757,8 +757,8 @@ void MainWindow::updateProfilerAction()
         bool enabled = project->doProfile();
         if (!enabled) {
             option::OptionTokenizer *opt = mGamsParameterEditor->getOptionTokenizer();
-            QList<option::OptionItem*> optList = opt->tokenize(mGamsParameterEditor->getCurrentCommandLineData());
-            for (option::OptionItem* item : optList) {
+            const QList<option::OptionItem*> optList = opt->tokenize(mGamsParameterEditor->getCurrentCommandLineData());
+            for (const option::OptionItem* item : optList) {
                 if (item->key.compare("profile", Qt::CaseInsensitive) == 0) {
                     enabled = true;
                     break;
@@ -1310,8 +1310,9 @@ void MainWindow::receiveAction(const QString &action)
 void MainWindow::openModelFromLib(const QString &glbFile, modeldialog::LibraryItem* model)
 {
     QFileInfo file(model->files().constFirst());
-    QString inputFile = file.completeBaseName() + ".gms";
-
+    bool isNumber = false;
+    file.suffix().toInt(&isNumber);
+    QString inputFile = isNumber ? file.completeBaseName() + ".gms" : file.fileName();
     openModelFromLibPrepare(glbFile, model->nameWithSuffix(), inputFile);
 }
 
@@ -2756,7 +2757,7 @@ void MainWindow::postGamsLibRun()
             node->file()->load(node->file()->encoding());
     }
     openFileNode(node);
-    if (mProjectRepo.focussedProject()) {
+    if (node && mProjectRepo.focussedProject()) {
         focusProject(node->assignedProject());
     }
     if (mLibProcess) {
@@ -2812,8 +2813,13 @@ void MainWindow::on_actionGamsHelp_triggered()
                                    mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, "title");
                                } else if (iKind == static_cast<int>(syntax::SyntaxKind::Dco)) {
                                    mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, word);
-                               } else {
+                               } else if (iKind == static_cast<int>(syntax::SyntaxKind::Reserved)    ||
+                                          iKind == static_cast<int>(syntax::SyntaxKind::Declaration) ||
+                                          iKind == static_cast<int>(syntax::SyntaxKind::Solve)       ||
+                                          iKind == static_cast<int>(syntax::SyntaxKind::SolveKey)        ) {
                                    mHelpWidget->on_helpContentRequested(help::DocumentType::Index, word);
+                               } else {
+                                   mHelpWidget->on_helpContentRequested(help::DocumentType::Search, word);
                                }
                             }
                         } else {
@@ -5998,11 +6004,11 @@ void MainWindow::on_referenceJumpTo(const reference::ReferenceItem &item)
         }
 
         PExFileNode* fn = mProjectRepo.findOrCreateFileNode(item.location, currentProject());
-        if (fn) {
-            PExProjectNode* project =  fn->assignedProject();
-            mProjectRepo.findOrCreateFileNode(fi.absoluteFilePath(), project);
-        }
+        if (!fn)
+            return;
 
+        PExProjectNode* project =  fn->assignedProject();
+        mProjectRepo.findOrCreateFileNode(fi.absoluteFilePath(), project);
         switchToMainTab(fn->file());
         if (!fn->file()->isOpen()) {
             openFilePath(fi.absoluteFilePath(), nullptr, ogCurrentGroup, true);

@@ -29,7 +29,8 @@ namespace support {
 DistributionValidator::DistributionValidator(QObject *parent)
     : QThread(parent)
 {
-    CommonPaths::setSystemDir();
+    if (CommonPaths::systemDir().isEmpty())
+        CommonPaths::setSystemDir();
 }
 
 void DistributionValidator::run()
@@ -48,6 +49,7 @@ void DistributionValidator::checkCompatibility()
         emit newError(error);
         return;
     }
+    emit foundGamsVersion(localVersion);
     auto locVersion = localVersion.split('.');
     auto minVersion = QString(GAMS_DISTRIB_VERSION_SHORT).split('.');
     if (locVersion.at(0).toInt() > minVersion.at(0).toInt())

@@ -261,6 +261,13 @@ void HelpWidget::on_helpContentRequested(const DocumentType &type, const QString
         ui->webEngineView->load(url);
         break;
     }
+    case DocumentType::Search :  {
+        QString indexStr = HelpData::getSearchQuery(keyword);
+        if (!indexStr.isEmpty())
+            url.setQuery(indexStr);
+        ui->webEngineView->load(url);
+        break;
+    }
     default: break;
     }
 }

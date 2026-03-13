@@ -1499,10 +1499,11 @@
   </action>
   <action name="actionCleanAllWs">
    <property name="text">
-    <string>Clean all Workspaces</string>
+    <string>Clean selected Workspaces</string>
    </property>
    <property name="toolTip">
-    <string>Clean-up workspaces according to the configuration. The behaviour can be specified via the Workspace settings tab.</string>
+    <string>Clean-up files in selected workspaces according to the configuration. 
+The behaviour can be specified via the Workspace tab in the Settings.</string>
    </property>
   </action>
   <action name="actionFull_Screen">

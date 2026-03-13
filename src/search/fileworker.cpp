@@ -106,7 +106,7 @@ void FileWorker::filterFiles(const QList<SearchFile> &files,
                     break;
             }
         }
-        if (sf.path().endsWith(".gdx")) // TODO Mind read only files!
+        if (!isValidFile(sf.path(), params.ignoreReadOnly()))
             continue;
         // if we can get an fm check if that file is read only
         FileMeta* fm = mFileHandler->findFile(sf.path());
@@ -115,6 +115,18 @@ void FileWorker::filterFiles(const QList<SearchFile> &files,
         }
     }
 }
+
+bool FileWorker::isValidFile(const QString &file, bool skipReadOnly)
+{
+    static QList<FileKind> roKinds = {FileKind::None, FileKind::Gms, FileKind::Log,
+                                      FileKind::Lst, FileKind::Txt, FileKind::TxtRO};
+    static QList<FileKind> rwKinds = {FileKind::None, FileKind::Gms, FileKind::Txt};
+    FileKind kind = FileType::from(file).kind();
+    if (skipReadOnly)
+        return rwKinds.contains(kind);
+    return roKinds.contains(kind);
+}
+
 
 }
 }

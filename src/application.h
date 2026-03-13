@@ -21,7 +21,6 @@
 #define APPLICATION_H
 
 #include "commandlineparser.h"
-#include "support/distributionvalidator.h"
 #include "mainwindow.h"
 
 #include <QApplication>
@@ -29,6 +28,10 @@
 
 namespace gams {
 namespace studio {
+
+namespace support {
+class DistributionValidator;
+}
 
 class Application : public QApplication
 {
@@ -65,7 +68,7 @@ public:
     ///
     /// \brief Initialize the application
     ///
-    void init();
+    bool init();
 
     ///
     /// \brief Initialize the PATH environment variable
@@ -108,21 +111,24 @@ private slots:
     ///
     void receiveFileArguments();
 
+    ///
+    /// \brief Updates the highest GAMS version used with this Studio settings
+    /// \param version The current GAMS version
+    ///
+    void updateHighestGamsVersion(const QString &version);
+
 private:
     void parseCmdArgs();
     void triggerOpenFile(const QString &path);
-
-    ///
-    /// \brief Start listening
-    ///
     void listen();
-
-    SysDirSelector setSystemDirectory();
+    SysDirSelector setSystemDirectory(QString &sysDirMessage);
+    bool check4Libs();
+    int stringToVersion(const QString &version);
 
 private:
     QSharedPointer<MainWindow> mMainWindow;
     CommandLineParser mCmdParser;
-    support::DistributionValidator mDistribValidator;
+    support::DistributionValidator *mDistribValidator = nullptr;
     QString mOpenPathOnInit;
     QString mServerName;
     QLocalServer mServer;

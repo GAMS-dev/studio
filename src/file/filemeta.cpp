@@ -44,6 +44,9 @@
 #include <QPlainTextDocumentLayout>
 #include <QScrollBar>
 #include <QApplication>
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 namespace gams {
 namespace studio {
@@ -87,7 +90,7 @@ void FileMeta::setLocation(QString location)
 
 void FileMeta::updateExtraSelections()
 {
-    for (QWidget *wid : mEditors) {
+    for (QWidget *wid : std::as_const(mEditors)) {
         if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(wid))
             aEdit->updateExtraSelections();
     }
@@ -420,7 +423,7 @@ void FileMeta::updateMarks()
 
 void FileMeta::zoomRequest(qreal delta)
 {
-    if (!mEditors.size()) return;
+    if (mEditors.isEmpty()) return;
     QFont f = mEditors.first()->font();
     if (delta == 0.) return;
     const qreal newSize = f.pointSizeF() + delta;
@@ -628,7 +631,7 @@ void FileMeta::updateBreakpoints()
         SortedIntMap bpLines;
         SortedIntMap abpLines;
         project->breakpoints(mLocation, bpLines, abpLines);
-        for (QWidget *wid : mEditors) {
+        for (QWidget *wid : std::as_const(mEditors)) {
             if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
                 ce->breakpointsChanged(bpLines, abpLines);
             }
@@ -672,7 +675,7 @@ bool FileMeta::initFoldedBlocks(QList<int> startLines)
 void FileMeta::setFoldedBlocks(const QList<int> &foldedBlocks)
 {
     mFoldedBlocks = foldedBlocks;
-    if (mEditors.size())
+    if (!mEditors.isEmpty())
         initFoldedBlocks(foldedBlocks);
 }
 
@@ -1043,7 +1046,7 @@ bool FileMeta::refreshMetaData()
 void FileMeta::jumpTo(const NodeId &groupId, bool focus, int line, int column, int length)
 {
     mFileRepo->openFile(this, groupId, focus, encoding());
-    if (!mEditors.size()) return;
+    if (mEditors.isEmpty()) return;
 
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditors.first());
     if (edit && line < edit->document()->blockCount()) {
@@ -1139,7 +1142,7 @@ void FileMeta::marksChanged(const QSet<int> &lines)
     QMutexLocker mx(&mDirtyLinesMutex);
     mDirtyLines.unite(lines);
     if (lines.isEmpty()) mDirtyLinesUpdater.start(0);
-    else if (!mDirtyLinesUpdater.isActive()) mDirtyLinesUpdater.start(500);
+    else if (!mDirtyLinesUpdater.isActive()) mDirtyLinesUpdater.start(500ms);
 }
 
 void FileMeta::reloadDelayed()
@@ -1149,7 +1152,7 @@ void FileMeta::reloadDelayed()
             tv->reset();
         }
     }
-    mReloadTimer.start(100);
+    mReloadTimer.start(100ms);
 }
 
 bool FileMeta::isModified() const
@@ -1240,7 +1243,7 @@ void FileMeta::setAutoReload()
 
 void FileMeta::resetTempReloadState()
 {
-    mTempAutoReloadTimer.start(1500);
+    mTempAutoReloadTimer.start(1500ms);
 }
 
 void FileMeta::setModified(bool modified)

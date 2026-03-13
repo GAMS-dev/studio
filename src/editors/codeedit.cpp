@@ -37,6 +37,9 @@
 #include "editors/navigationhistory.h"
 #include "editors/navigationhistorylocator.h"
 #include "syntax/htmlconverter.h"
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 namespace gams {
 namespace studio {
@@ -66,7 +69,7 @@ CodeEdit::CodeEdit(QWidget *parent)
 {
     mLineNumberArea = new LineNumberArea(this);
     mLineNumberArea->setMouseTracking(true);
-    mBlinkBlockEdit.setInterval(500);
+    mBlinkBlockEdit.setInterval(500ms);
     mWordDelay.setSingleShot(true);
     mParenthesesDelay.setSingleShot(true);
     mSettings = Settings::settings();
@@ -83,7 +86,6 @@ CodeEdit::CodeEdit(QWidget *parent)
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::startCompleterTimer);
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::updateCompleter);
-    connect(this->verticalScrollBar(), &QScrollBar::actionTriggered, this, &CodeEdit::updateExtraSelections);
     connect(document(), &QTextDocument::undoCommandAdded, this, &CodeEdit::undoCommandAdded);
 
     setMouseTracking(true);
@@ -109,7 +111,7 @@ CodeEdit::~CodeEdit()
         mBlockEditSelection = nullptr;
         delete ed;
     }
-    while (mBlockEditPos.size())
+    while (!mBlockEditPos.isEmpty())
         delete mBlockEditPos.takeLast();
 }
 
@@ -910,6 +912,7 @@ void CodeEdit::scrollContentsBy(int dx, int dy)
     AbstractEdit::scrollContentsBy(dx, dy);
     if (reDx)
         horizontalScrollBar()->setValue(horizontalScrollBar()->value() + reDx);
+    updateExtraSelections();
 }
 
 void CodeEdit::setHasProfiler(bool hasProfiler)
@@ -1767,7 +1770,10 @@ void CodeEdit::removeLine()
     QTextCursor cursor = textCursor();
     cursor.beginEditBlock();
     cursor.movePosition(QTextCursor::StartOfBlock);
-    cursor.movePosition(QTextCursor::NextBlock, QTextCursor::KeepAnchor);
+    if (cursor.block() == document()->lastBlock())
+        cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+    else
+        cursor.movePosition(QTextCursor::NextBlock, QTextCursor::KeepAnchor);
     cursor.removeSelectedText();
     cursor.endEditBlock();
 }

@@ -18,9 +18,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "cleanupfiltermodel.h"
+#include <QSize>
 
 namespace gams {
 namespace studio {
+
+
+// ---------- CleanupFilterItem
 
 CleanupFilterItem::CleanupFilterItem(Qt::CheckState checked,
                                      const QString &filter,
@@ -30,9 +34,7 @@ CleanupFilterItem::CleanupFilterItem(Qt::CheckState checked,
     , mFilter(filter)
     , mDescription(description)
     , mChecked(checked)
-{
-
-}
+{}
 
 CleanupFilterItem::~CleanupFilterItem()
 {
@@ -100,7 +102,7 @@ QList<CleanupFilterItem *> CleanupFilterItem::items() const
     return mItems;
 }
 
-void CleanupFilterItem::setItems(const QList<CleanupFilterItem *> &items)
+void CleanupFilterItem::addItems(const QList<CleanupFilterItem *> &items)
 {
     for (auto item : items) {
         item->setParent(this);
@@ -134,6 +136,9 @@ void CleanupFilterItem::setParent(CleanupFilterItem *parent)
 {
     mParent = parent;
 }
+
+
+// ---------- CleanupFilterModel
 
 CleanupFilterModel::CleanupFilterModel(QObject *parent)
     : QAbstractItemModel(parent)
@@ -182,6 +187,11 @@ int CleanupFilterModel::rowCount(const QModelIndex &parent) const
     return item->entries();
 }
 
+void CleanupFilterModel::setRowHeight(int height)
+{
+    mRowHeight = height;
+}
+
 CleanupFilterItem *CleanupFilterModel::data() const
 {
     return mRootItem;
@@ -191,7 +201,7 @@ void CleanupFilterModel::setData(const QList<CleanupFilterItem *> &entries)
 {
     beginResetModel();
     mRootItem->removeAllItems();
-    mRootItem->setItems(entries);
+    mRootItem->addItems(entries);
     endResetModel();
 }
 
@@ -199,6 +209,9 @@ QVariant CleanupFilterModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
+    if (role == Qt::SizeHintRole) {
+        return QSize(mRowHeight, mRowHeight);
+    }
     auto item = static_cast<CleanupFilterItem*>(index.internalPointer());
     if (!item)
         return QVariant();
@@ -322,11 +335,12 @@ QStringList CleanupFilterModel::activeFilters() const
     return filters;
 }
 
+
+// ---------- CleanupWorkspaceModel
+
 CleanupWorkspaceModel::CleanupWorkspaceModel(QObject *parent)
     : QAbstractTableModel(parent)
-{
-
-}
+{}
 
 Qt::ItemFlags CleanupWorkspaceModel::flags(const QModelIndex &index) const
 {
@@ -352,10 +366,10 @@ QVariant CleanupWorkspaceModel::data(const QModelIndex &index, int role) const
     if (!index.isValid() || index.row() >= mWorkspaces.count())
         return QVariant();
     if (role == Qt::DisplayRole) {
-        return mWorkspaces.at(index.row()).Workspace;
+        return mWorkspaces.at(index.row()).workspace;
     }
     if (role == Qt::CheckStateRole) {
-        return mWorkspaces.at(index.row()).CheckState;
+        return mWorkspaces.at(index.row()).checkState;
     }
     return QVariant();
 }
@@ -373,7 +387,7 @@ bool CleanupWorkspaceModel::setData(const QModelIndex &index, const QVariant &va
     if (!index.isValid() || index.row() >= mWorkspaces.count())
         return false;
     if (role == Qt::CheckStateRole && index.column() == 0) {
-        mWorkspaces[index.row()].CheckState = (value.toBool() ? Qt::Checked : Qt::Unchecked);
+        mWorkspaces[index.row()].checkState = (value.toBool() ? Qt::Checked : Qt::Unchecked);
         emit dataChanged(index, index);
         return true;
     }
@@ -396,7 +410,7 @@ void CleanupWorkspaceModel::setSelection(Qt::CheckState checkState)
 {
     beginResetModel();
     for (int i=0; i<mWorkspaces.count(); ++i) {
-        mWorkspaces[i].CheckState = checkState;
+        mWorkspaces[i].checkState = checkState;
     }
     endResetModel();
     emit dataChanged(QModelIndex(), QModelIndex());
@@ -406,8 +420,8 @@ QStringList CleanupWorkspaceModel::activeWorkspaces() const
 {
     QStringList workspaces;
     for (const auto &ws : mWorkspaces) {
-        if (ws.CheckState == Qt::Checked)
-            workspaces << ws.Workspace;
+        if (ws.checkState == Qt::Checked)
+            workspaces << ws.workspace;
     }
     return workspaces;
 }

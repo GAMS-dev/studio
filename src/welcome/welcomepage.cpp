@@ -222,7 +222,7 @@ FileState WelcomePage::checkReleaseNotes()
         if (!mMissRnWarned)
             QTimer::singleShot(0, this, [this]() {
                 mMain->appendSystemLogWarning("Release notes not found in the GAMS installation at '" +
-                                              CommonPaths::systemDir() + "/docs/'");
+                                              QDir::toNativeSeparators(CommonPaths::systemDir() + "/docs/") + "'");
             });
         mMissRnWarned = true;
         return fsMiss;
@@ -231,7 +231,8 @@ FileState WelcomePage::checkReleaseNotes()
         if (!mMissRnWarned)
             QTimer::singleShot(0, this, [this]() {
                 mMain->appendSystemLogWarning(QString("Release notes for GAMS %1 not found.").arg(GAMS_DISTRIB_MAJOR) +
-                                              " Showing main release note from '" + CommonPaths::systemDir() + "/docs/'");
+                                              " Showing main release note from '" +
+                                              QDir::toNativeSeparators(CommonPaths::systemDir() + "/docs/") + "'");
             });
         mMissRnWarned = true;
         return fsOther;

@@ -40,6 +40,7 @@ ResultsView::ResultsView(SearchResultModel* results, MainWindow *parent)
     ui->setupUi(this);
     ui->resultView->setModel(mResultModel);
     QPalette palette = qApp->palette();
+    palette.setColor(QPalette::Inactive, QPalette::AlternateBase, palette.color(QPalette::Active, QPalette::AlternateBase));
     palette.setColor(QPalette::Highlight, ui->resultView->palette().highlight().color());
     palette.setColor(QPalette::HighlightedText, ui->resultView->palette().highlightedText().color());
     ui->resultView->setPalette(palette);

@@ -33,48 +33,31 @@ public:
                                const QString &filter = QString(),
                                const QString &description = QString(),
                                CleanupFilterItem *parent = nullptr);
-
     ~CleanupFilterItem();
 
     QString filter() const;
-
     void setFilter(const QString &filter);
-
     QString description() const;
-
     void setDescription(const QString &description);
-
     Qt::CheckState checked();
-
     void setChecked(Qt::CheckState state);
-
     void append(CleanupFilterItem *child);
 
     void remove(int index);
-
     void removeAllItems();
-
     CleanupFilterItem* item(int index);
-
     QList<CleanupFilterItem*> items() const;
-
-    void setItems(const QList<CleanupFilterItem*>& items);
-
+    void addItems(const QList<CleanupFilterItem*>& items);
     bool hasItems() const;
-
     int entries() const;
-
     int row() const;
 
     CleanupFilterItem* parent() const;
-
     void setParent(CleanupFilterItem *parent);
 
 private:
     CleanupFilterItem *mParent = nullptr;
-
     QList<CleanupFilterItem*> mItems;
-
     QString mFilter;
     QString mDescription;
     Qt::CheckState mChecked;
@@ -82,81 +65,56 @@ private:
 
 struct CleanupWorkspaceItem
 {
-    QString Workspace;
-    Qt::CheckState CheckState = Qt::Unchecked;
+    QString workspace;
+    Qt::CheckState checkState = Qt::Unchecked;
 };
 
-class CleanupFilterModel
-    : public QAbstractItemModel
+class CleanupFilterModel : public QAbstractItemModel
 {
     Q_OBJECT
-
 public:
     CleanupFilterModel(QObject *parent = nullptr);
-
     ~CleanupFilterModel();
 
     Qt::ItemFlags flags(const QModelIndex &index) const override;
-
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-
+    void setRowHeight(int height);
     CleanupFilterItem* data() const;
-
     void setData(const QList<CleanupFilterItem*> &entries);
-
     QVariant data(const QModelIndex &index, int role) const override;
-
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
-
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
-
     QModelIndex index(int row, int column,
                       const QModelIndex &parent = QModelIndex()) const override;
-
     QModelIndex parent(const QModelIndex &index) const override;
-
     void setSelection(Qt::CheckState checkState);
-
     bool insertRows(int position, int rows, const QModelIndex &index = QModelIndex()) override;
-
     bool removeRows(int position, int rows, const QModelIndex &index = QModelIndex()) override;
-
     QStringList activeFilters() const;
 
 private:
     CleanupFilterItem* mRootItem;
+    int mRowHeight = 20;
 };
 
-class CleanupWorkspaceModel
-    : public QAbstractTableModel
+class CleanupWorkspaceModel : public QAbstractTableModel
 {
     Q_OBJECT
-
 public:
     CleanupWorkspaceModel(QObject *parent = nullptr);
-
     Qt::ItemFlags flags(const QModelIndex &index) const override;
-
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-
     QVariant data(const QModelIndex &index, int role) const override;
-
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
-
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
     const QList<CleanupWorkspaceItem>& workspaces() const;
-
     void setWorkspaces(const QList<CleanupWorkspaceItem> &workspaces);
-
     void setSelection(Qt::CheckState checkState);
-
     QStringList activeWorkspaces() const;
 
 private:

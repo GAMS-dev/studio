@@ -72,6 +72,14 @@ public:
     ///
     static bool isSystemDirValid();
 
+    static bool isStudioInSystemDir();
+
+    ///
+    /// \brief Tries to find the latest GAMS on the system
+    /// \return the path to a GAMS installation
+    ///
+    static QString latestGamsDir();
+
     static void setDefaultWorkingDir(const QString &dir);
     static QString defaultWorkingDir(bool createMissing = false);
 

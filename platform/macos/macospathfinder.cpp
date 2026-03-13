@@ -41,3 +41,17 @@ QString MacOSPathFinder::systemDir(bool current)
     QString path = "/Library/Frameworks/GAMS.framework/Versions/%1/Resources";
     return path.arg(current ? "Current" : QString::number(GAMS_DISTRIB_MAJOR));
 }
+
+QString MacOSPathFinder::latestGamsDir()
+{
+    QDir dir("/Library/Frameworks/GAMS.framework/Versions/");
+    const QStringList entries = dir.exists() ? dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)
+                                             : QStringList() << "-empty-";
+    if (entries.size() > 1) {
+//        qDebug() << "--- Installed GAMS versions ---";
+//        for (const auto &entry : entries)
+//            qDebug() << "> " << entry;
+        return dir.absoluteFilePath(entries.at(entries.size()-2));
+    }
+    return QString();
+}

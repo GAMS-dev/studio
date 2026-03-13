@@ -5,6 +5,20 @@ Version 1.25.0  *
 - On opening a project, Studio opens the main file if assigned. Otherwise the project options are opened.
 - Added double-click action to open a gdx file reference from within a symbol table in GDXViewer.
 
+Version 1.24.2
+==================
+- Fixed missing matched markers in code editor after scrolling.
+- Fixed file selection mismatch on 'Replace All' for multiple files which included read-only files.
+- Fixed table height of second table in `Settings > Workspace`.
+- Fixed last line not being removed with `Edit > Advanced > Remove Line`.
+- Fixed first file from Model Library always got a `.gms` suffix resulting in an empty file when having a different suffix.
+- Fixed search behavior for `This File` scope, that jumped back to the previous file when pressing `F4`.
+- Fixed `F4` and `Shift+F4` in search, that opened the current dropdown box instead of continuing the search.
+- Fixed an issue where user-selected GAMS directory was ignored when starting studio from within a GAMS installation.
+- Changed behavior when pressing `F1` on non-reserved words and non-dollar command options from code editor, jumping to document search page instead of index page.
+- Added check for a valid GAMS installation when Studio starts and show a message box on failure.
+- Added a warning if a higher GAMS version is available when starting Studio with the selected GAMS directory.
+
 Version 1.24.1
 ==================
 - Fixed search and replace in `Folder`. Before, all files unknown to Studio have been ignored by the replace.
@@ -12,6 +26,7 @@ Version 1.24.1
 - Added quick-find to Process Log, GAMS Release Notes, and Studio Changelog.
 - Added the search and replace configuration to the settings and restore the configuration when Studio is started.
 - Improved settings field for GAMS System Directory.
+- Improved workspace clean-up by keeping the list of workspaces that are only selected or in use.
 - Renamed 'Remove Project' to 'Close Project' in the Project Explorer context menu.
 - Upgraded to Qt 6.10.2
 

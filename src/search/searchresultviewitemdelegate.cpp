@@ -59,7 +59,10 @@ void SearchResultViewItemDelegate::paint(QPainter *painter,
     opt.rect = opt.rect.adjusted(padding, padding, -padding, -padding);
 
     QTextDocument doc;
-    doc.setHtml(elideRichText(opt.text, opt.rect.width(), mFontMetrics));
+    QString html = elideRichText(opt.text, opt.rect.width(), mFontMetrics);
+    if (opt.state.testFlag(QStyle::State_Selected))
+        html = QString("<html style=color:%1>").arg(opt.palette.highlightedText().color().name()) + html + "</html>";
+    doc.setHtml(html);
 
     opt.text = "";
     opt.widget->style()->drawControl(QStyle::CE_ItemViewItem, &option, painter, opt.widget);

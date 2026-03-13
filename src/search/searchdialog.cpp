@@ -72,6 +72,7 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, MainWindow* p
     ui->combo_excludePattern->installEventFilter(this);
     ui->combo_includePattern->installEventFilter(this);
     ui->directoryComboBox->installEventFilter(this);
+    ui->scopeComboBox->installEventFilter(this);
 }
 
 SearchDialog::~SearchDialog()
@@ -288,8 +289,10 @@ QList<SearchFile> SearchDialog::getFilesByScope(const Parameters &parameters)
     switch (ui->scopeComboBox->currentIndex()) {
         case Scope::ThisFile: {
             if (mCurrentEditor) {
-                if (FileMeta* fm = mFileHandler->fileMeta(mCurrentEditor))
-                    matched << SearchFile(fm);
+                if (FileMeta* fm = mFileHandler->fileMeta(mCurrentEditor)) {
+                    if (!parameters.ignoreReadOnly() || !fm->isReadOnly())
+                        matched << SearchFile(fm);
+                }
             }
             break;
         }
@@ -304,8 +307,10 @@ QList<SearchFile> SearchDialog::getFilesByScope(const Parameters &parameters)
         }
         case Scope::Selection: {
             if (mCurrentEditor) {
-                if (FileMeta* fm = mFileHandler->fileMeta(mCurrentEditor))
-                    matched << SearchFile(fm);
+                if (FileMeta* fm = mFileHandler->fileMeta(mCurrentEditor)) {
+                    if (!parameters.ignoreReadOnly() || !fm->isReadOnly())
+                        matched << SearchFile(fm);
+                }
             }
             break;
         }
@@ -874,7 +879,7 @@ void SearchDialog::updateSettings()
 
 bool SearchDialog::eventFilter(QObject *watched, QEvent *event)
 {
-    if (event->type() == QEvent::ContextMenu) {
+    if (event->type() == QEvent::ContextMenu && watched != ui->scopeComboBox) {
         if (QComboBox *box = qobject_cast<QComboBox*>(watched)) {
             QContextMenuEvent *menuEvent = static_cast<QContextMenuEvent*>(event);
             QMenu *menu = box->lineEdit()->createStandardContextMenu();
@@ -898,6 +903,13 @@ bool SearchDialog::eventFilter(QObject *watched, QEvent *event)
             });
             menu->exec(menuEvent->globalPos());
             delete menu;
+            return true;
+        }
+    }
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if (keyEvent->key() == Qt::Key_F4) {
+            findNextPrev(keyEvent->modifiers().testFlag(Qt::ShiftModifier));
             return true;
         }
     }

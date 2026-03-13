@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "application.h"
+#include "support/distributionvalidator.h"
 #include "exception.h"
 #include "qstylefactory.h"
 #include "version.h"
@@ -73,6 +74,7 @@ QString sdsToString(SysDirSelector sds)
     case sdsMac:
         return "Using GAMS system directory from macOS installation";
     }
+    return "<Wrong code for SysDirSelector>";
 }
 
 
@@ -96,10 +98,6 @@ Application::Application(int& argc, char** argv)
     pal.setColor(QPalette::Disabled, QPalette::Window, QColor(255,255,255));
 
     connect(&mServer, &QLocalServer::newConnection, this, &Application::newConnection);
-    connect(&mDistribValidator, &support::DistributionValidator::newError,
-            this, &Application::error);
-    connect(&mDistribValidator, &support::DistributionValidator::newWarning,
-            this, &Application::warning);
 }
 
 Application::~Application()
@@ -109,17 +107,23 @@ Application::~Application()
 #ifndef __APPLE__
     PaletteManager::deleteInstance();
 #endif
+    delete mDistribValidator;
 }
 
-void Application::init()
+bool Application::init()
 {
+    if (Settings::settings()) {
+        DEB() << "Application::init() must not be called twice";
+        return true;
+    }
     setOrganizationName(GAMS_ORGANIZATION_STR);
     setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
     setApplicationName(GAMS_PRODUCTNAME_STR);
     Settings::createSettings(mCmdParser.ignoreSettings(),
                              mCmdParser.resetSettings(),
                              mCmdParser.resetView());
-    SysDirSelector sds = setSystemDirectory();
+
+    // Init Studio log file
     if (Settings::settings()->toBool(skEnableLog) && mCmdParser.logFile().isEmpty())
         vCustomLogFile = CommonPaths::studioDocumentsDir() + "/studio.log";
     else if (!mCmdParser.logFile().isEmpty() && mCmdParser.logFile() != "-")
@@ -138,9 +142,21 @@ void Application::init()
         } else
             DEB() << "Error: Couldn't register log file in missing path " << log.absolutePath();
     }
-    DEB() << sdsToString(sds); // delayed to get it into the log
+
+    // Set and check GAMS system directory
+    QString sysDirMessage;
+    SysDirSelector sds = setSystemDirectory(sysDirMessage);
+    if (!check4Libs())
+        return false;
+    DEB() << sdsToString(sds);
+
     Settings::settings()->setBool(skSupressWebEngine, !mCmdParser.activeHelpView());
     initEnvironment();
+
+    mDistribValidator = new support::DistributionValidator();
+    connect(mDistribValidator, &support::DistributionValidator::newError, this, &Application::error);
+    connect(mDistribValidator, &support::DistributionValidator::newWarning, this, &Application::warning);
+    connect(mDistribValidator, &support::DistributionValidator::foundGamsVersion, this, &Application::updateHighestGamsVersion);
 
     mMainWindow = QSharedPointer<MainWindow>(new MainWindow());
     if (Settings::settings()->toBool(skCleanUpWorkspace)) {
@@ -154,15 +170,19 @@ void Application::init()
         }
     }
     mMainWindow->appendSystemLogInfo("Started: " + QCoreApplication::arguments().join(" "));
+    if (!sysDirMessage.isEmpty())
+        mMainWindow->appendSystemLogWarning(sysDirMessage);
+    mMainWindow->appendSystemLogInfo("GAMS System Directory: " + QDir::toNativeSeparators(CommonPaths::systemDir()));
     mMainWindow->openFiles(mCmdParser.files());
     if (!mOpenPathOnInit.isEmpty()) {
         triggerOpenFile(mOpenPathOnInit);
         mOpenPathOnInit = QString();
     }
-    mDistribValidator.start();
+    mDistribValidator->start();
     listen();
     DEB() << GAMS_PRODUCTNAME_STR << " " << applicationVersion() << " on " << QSysInfo::prettyProductName() << " "
           << QSysInfo::currentCpuArchitecture() << " build " << QSysInfo::kernelVersion();
+    return true;
 }
 
 void Application::initEnvironment()
@@ -252,7 +272,7 @@ void Application::listen()
     mServer.listen(mServerName);
 }
 
-SysDirSelector Application::setSystemDirectory()
+SysDirSelector Application::setSystemDirectory(QString &sysDirMessage)
 {
     QString path;
     SysDirSelector sds = sdsManual;
@@ -271,9 +291,51 @@ SysDirSelector Application::setSystemDirectory()
         sds = CommonPaths::setSystemDir(path);
         Settings::settings()->setString(skSystemDirectory, path);
     } else {
+        Settings::settings()->setString(skSystemDirectory, "");
         sds = CommonPaths::setSystemDir();
+        if (CommonPaths::systemDir() != path)
+            sysDirMessage = "Missing user selected GAMS system directory: " + QDir::toNativeSeparators(path);
     }
     return sds;
+}
+
+bool Application::check4Libs()
+{
+    QStringList miss;
+    const QStringList libs = {"joatdclib64", "gdxcclib64", "guccclib64", "optdclib64"};
+    QString path = CommonPaths::systemDir() + "/";
+#ifdef _WIN64
+    for (const QString &lib : libs) {
+        QString full = path + lib + ".dll";
+        if (!QFile::exists(full))
+            miss << QDir::toNativeSeparators(full);
+    }
+#elif defined(__unix__)
+    for (const QString &lib : libs) {
+        QString full = path + "lib" + lib + ".so";
+        if (!QFileInfo::exists(full))
+            miss << full;
+    }
+#else // macOS
+    for (const QString &lib : libs) {
+        QString full = path + "lib" + lib + ".dylib";
+        if (!QFileInfo::exists(full))
+            miss << full;
+    }
+#endif
+    if (!miss.isEmpty()) {
+        bool isGams = QFile::exists(path+"/gamsstmp.txt");
+        QString title(isGams ? "Incomplete GAMS installation" : "GAMS not found");
+        DEB() << title;
+        QString missMessage = isGams ? ("Missing GAMS libraries:\n - " + miss.join("\n - ")) : "";
+        if (isGams) DEB() << missMessage;
+        QMessageBox::warning(nullptr, title, "Please select a valid GAMS installation using the "
+                                             "command line parameter \n --gams-dir <path>\n or reinstall GAMS.\n\n"
+                                             "Current GAMS directory:\n" + QDir::toNativeSeparators(path)
+                                                 + (isGams ? ("\n\n" + missMessage) : ""));
+        return false;
+    }
+    return true;
 }
 
 void Application::newConnection()
@@ -288,6 +350,57 @@ void Application::receiveFileArguments()
     mMainWindow->openFiles(QString(socket->readAll()).split("\n", Qt::SkipEmptyParts));
     socket->deleteLater();
     mMainWindow->setForegroundOSCheck();
+}
+
+int Application::stringToVersion(const QString &version)
+{
+    int res = 0;
+    const QStringList parts = version.split('.');
+    if (parts.size() != 3)
+        return -1;
+    for (const QString &part : parts) {
+        bool ok;
+        int nr = part.toInt(&ok);
+        if (!ok)
+            return -2;
+        if (res && nr >= 100)   // report error if subversion or buildnr is > 100
+            return -3;
+        res = res * 100 + nr;
+    }
+    return res;
+}
+
+void Application::updateHighestGamsVersion(const QString &version)
+{
+    int currVer = stringToVersion(version);
+    int highVer = stringToVersion(Settings::settings()->toString(skHighestGamsUsed));
+    if (currVer < 0) {
+        DEB() << "GAMS version invalid: '" << version << "'";
+        return;
+    }
+    if (currVer > highVer) {
+        Settings::settings()->setString(skHighestGamsUsed, version);
+        highVer = currVer;
+    }
+#ifdef __APPLE__
+    QString vPath = CommonPaths::latestGamsDir();
+    QFile vFile(vPath + "/Resources/gamsstmp.txt");
+#else
+    QString vPath = QDir(qApp->applicationDirPath()+"/..").canonicalPath();
+    QFile vFile(vPath + "/gamsstmp.txt");
+#endif
+    if (vFile.open(QIODeviceBase::ReadOnly | QIODeviceBase::ExistingOnly)) {
+        // Peek for gamsstmp.txt in "local" or "mac:highest" gams path to get installed version
+        QStringList parts = QString(vFile.readLine()).split(' ');
+        vFile.close();
+        int peekVer = parts.size() > 1 ? stringToVersion(parts.at(1)) : -4;
+        if (peekVer > highVer) {
+            if (!Settings::settings()->toString(skSystemDirectory).isEmpty())
+                mMainWindow->appendSystemLogWarning("A fixed GAMS version is selected in the settings, "
+                                                    "but a later GAMS is found here:\n" + vPath);
+            // Settings::settings()->setString(skHighestGamsUsed, parts.at(1));
+        }
+    }
 }
 
 void Application::error(const QString &message)

@@ -59,6 +59,9 @@ signals:
     void filesCollected(QList<gams::studio::search::SearchFile> files);
 
 private:
+    bool isValidFile(const QString &file, bool skipReadOnly);
+
+private:
     Parameters mParameters;
     AbstractSearchFileHandler* mFileHandler;
 };
