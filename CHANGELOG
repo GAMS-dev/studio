@@ -1,15 +1,15 @@
-Version 1.24.2 *
+Version 1.24.2
 ==================
-- Added check for a valid GAMS installation when Studio starts and show a message box on failure.
 - Fixed missing matched markers in code editor after scrolling.
 - Fixed file selection mismatch on 'Replace All' for multiple files which included read-only files.
-- Changed behavior when pressing F1 on non-reserved words and non-dollar command options from code editor, jumping to document search page instead of index page.
 - Fixed table height of second table in `Settings > Workspace`.
 - Fixed last line not being removed with `Edit > Advanced > Remove Line`.
 - Fixed first file from Model Library always got a `.gms` suffix resulting in an empty file when having a different suffix.
 - Fixed search behavior for `This File` scope, that jumped back to the previous file when pressing `F4`.
 - Fixed `F4` and `Shift+F4` in search, that opened the current dropdown box instead of continuing the search.
 - Fixed an issue where user-selected GAMS directory was ignored when starting studio from within a GAMS installation.
+- Changed behavior when pressing `F1` on non-reserved words and non-dollar command options from code editor, jumping to document search page instead of index page.
+- Added check for a valid GAMS installation when Studio starts and show a message box on failure.
 - Added a warning if a higher GAMS version is available when starting Studio with the selected GAMS directory.
 
 Version 1.24.1
