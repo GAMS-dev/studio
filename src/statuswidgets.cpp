@@ -31,7 +31,7 @@
 #include <QStringConverter>
 #include <QTimer>
 
-using enum gams::studio::support::LicenseState;
+using namespace gams::studio::support::LicenseStateEnum;
 
 namespace gams {
 namespace studio {

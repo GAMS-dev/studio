@@ -30,6 +30,7 @@ class GamsAboutProcess;
 
 namespace support {
 
+inline namespace LicenseStateEnum {
 enum LicenseState {
     lsNone,
     lsChecking,
@@ -43,6 +44,8 @@ enum LicenseState {
     lsNetCheckout,
     lsNetCheckoutEnd,
 };
+};
+
 
 enum FetcherState {
     fsInitial,
@@ -78,6 +81,7 @@ private:
     void fetchBaseDate(const QString &line);
     void fetchLicenseValues(const QString &lineLic, const QString &lineVal);
     void fetchAccessCode(const QString &line);
+    void updateState();
 
 private:
     GamsAboutProcess* mGamsAboutProc;
