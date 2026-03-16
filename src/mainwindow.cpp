@@ -58,6 +58,7 @@
 #include "autosavehandler.h"
 #include "tabdialog.h"
 #include "help/helpdata.h"
+#include "support/licensefetcher.h"
 #include "support/gamslicensingdialog.h"
 #include "viewhelper.h"
 #include "miro/miroprocess.h"
@@ -112,6 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
       mMainTabContextMenu(this),
       mLogTabContextMenu(this),
       mFileEventHandler(new FileEventHandler(this)),
+      mLicenseFetcher(new support::LicenseFetcher(this)),
       mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this)),
       mMiroDeployDialog(new miro::MiroDeployDialog(this))
 {
@@ -2911,7 +2913,7 @@ void MainWindow::on_actionAbout_Studio_triggered()
 
 void MainWindow::on_gamsLicensing_triggered()
 {
-    support::GamsLicensingDialog dialog(ui->gamsLicensing->text(), this);
+    support::GamsLicensingDialog dialog(ui->gamsLicensing->text(), mLicenseFetcher.get(), this);
     dialog.exec();
 }
 

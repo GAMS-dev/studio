@@ -20,6 +20,8 @@
 #ifndef STATUSWIDGETS_H
 #define STATUSWIDGETS_H
 
+#include "support/licensefetcher.h"
+
 #include <QObject>
 #include <QPoint>
 #include <QLabel>
@@ -31,20 +33,6 @@ class QLabel;
 
 namespace gams {
 namespace studio {
-
-enum LicenseState {
-    lsNone,
-    lsChecking,
-    lsLocal,
-    lsLocalEnd,
-    lsLocalInvalid,
-    lsNet,
-    lsNetEnd,
-    lsNetNoConnection,
-    lsNetInvalid,
-    lsNetCheckout,
-    lsNetCheckoutEnd,
-};
 
 class AmountLabel: public QLabel
 {
@@ -83,7 +71,7 @@ public:
     void setEditMode(EditMode mode);
     void setPosAndAnchor(QPoint pos = QPoint(), QPoint anchor = QPoint());
     void setLoadingText(const QString &loadingText);
-    void setLicenseStatus(LicenseState lState);
+    void setLicenseStatus(support::LicenseState lState);
 
 signals:
     void showLicense();
@@ -98,7 +86,7 @@ private:
     AmountLabel* mFileName = nullptr;
     QLabel* mProcessInfo = nullptr;
     qreal mLoadAmount = 1.0;
-    LicenseState mLicState = lsNone;
+    support::LicenseState mLicState = support::lsNone;
 
 };
 

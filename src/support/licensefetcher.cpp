@@ -23,10 +23,13 @@
 #include "file/uncpath.h"
 
 #include <QStandardPaths>
+#include <QRegularExpression>
 
 namespace gams {
 namespace studio {
 namespace support {
+
+const QRegularExpression CRexBaseDate(R"(G(\d{6})-)");    // using raw string avoids double "\\"
 
 LicenseFetcher::LicenseFetcher(QObject *parent)
     : QObject{parent}
@@ -51,9 +54,13 @@ void LicenseFetcher::fetchGamsLicense()
     stopFetching();
 
     mFetcherState = fsFetching;
+    mLicenseState = lsChecking;
     mFormattedContent = "Fetching GAMS system information. Please wait...";
     mContent.clear();
     mLicense.clear();
+    mLicenseValids.clear();
+    mDurationChar = QChar('~');
+    mDurationMonths = 0;
     mAccessCode.clear();
     emit changed();
 
@@ -73,6 +80,7 @@ void LicenseFetcher::analyzeContent(int exitCode)
     if (exitCode) {
         mFormattedContent = "Error: Fetching GAMS system information. Please check the system log.";
         mLastErrorMessage = mGamsAboutProc->logMessages();
+        mLicenseState = lsNone;
     }
     QStringList about;
     bool licenseLines = false;
@@ -84,26 +92,26 @@ void LicenseFetcher::analyzeContent(int exitCode)
         lines.removeLast();
     }
 
+    QString licensesLine;
     QStringList licenseText;
     int licLineCount = -1;
     for(const auto &line : std::as_const(lines)) {
         if (licenseLines) {
             if (licLineCount >= 0) {
                 ++licLineCount;
+                // extract base date from line 1
+                if (licLineCount == 1) {
+                    fetchBaseDate(line);
+
+                // extract licenses and validation from lines 3 and 4
+                } else if (licLineCount == 3) {
+                    licensesLine = line;
+                } else if (licLineCount == 4) {
+                    fetchLicenseValues(licensesLine, line);
+
                 // extract access code from line 5
-                if (licLineCount == 5 && line.startsWith("DC")) {
-                    int from = -1;
-                    for (int i = line.indexOf('_') ; i > 0 && i < line.length() ; ++i) {
-                        if (from < 0) {
-                            if (line.at(i) != '_')
-                                from = i;
-                        } else {
-                            if (line.at(i) == '_') {
-                                mAccessCode = line.mid(from, i-from);
-                                break;
-                            }
-                        }
-                    }
+                } else if (licLineCount == 5 && line.startsWith("DC")) {
+                    fetchAccessCode(line);
                 }
             }
             if (line.startsWith("#L")) {
@@ -135,7 +143,7 @@ void LicenseFetcher::analyzeContent(int exitCode)
 
     mFormattedContent = about.join("");
     mLastErrorMessage.clear();
-    emit changed();
+    updateState();
 }
 
 QString LicenseFetcher::getCurdirForAboutProcess()
@@ -160,6 +168,100 @@ QString LicenseFetcher::getCurdirForAboutProcess()
     mCurDir = curdir;
     // SysLogLocator::systemLog()->append("CURDIR: "+curdir, LogMsgType::Info);
     return curdir;
+}
+
+void LicenseFetcher::fetchBaseDate(const QString &line)
+{
+    QRegularExpressionMatch match = CRexBaseDate.match(line);
+    if (match.hasMatch()) {
+        QString sDate = match.captured(1);
+        if (sDate.length() != 6) {
+            emit error("Invalid license date");
+            return;
+        }
+        QList<int> vals;
+        for (int i = 0; i < 3; ++i)
+            vals << sDate.mid(2*i, 2).toInt();
+
+        // Avoid century switch bug
+        int currentYear = QDate::currentDate().year();
+        int century = (currentYear / 100) * 100;
+        int baseYear = century +  vals.at(0);
+        if (baseYear > currentYear + 10)
+            baseYear -= 100;
+
+        mBaseDate.setDate(QDate(baseYear, vals.at(1), vals.at(2)));
+    }
+}
+
+int convertDuration(const QChar &c)
+{
+    if (c < '1') return 0;
+    if (c <= '9')
+        return QString(c).toInt();
+    if (c < 'A') return 0;
+    if (c <= 'Z')
+        return c.unicode() - QChar('A').unicode() + 10;
+    if (c < 'a') return 0;
+    if (c <= 'z')
+        return c.unicode() - QChar('a').unicode() + 36;
+    return 0;
+}
+
+void LicenseFetcher::fetchLicenseValues(const QString &lineLic, const QString &lineVal)
+{
+    if (lineVal.length() < lineLic.length()) {
+        emit error("Invalid license values");
+        return;
+    }
+    mLicenseValids.clear();
+    mDurationChar = QChar('~');
+    mDurationMonths = 0;
+    for (int i = 0; i < lineLic.length(); ++i) {
+        if (lineLic.at(i) == '_') break;
+        if (lineVal.at(i) == '_') {
+            emit error("Inconsistent license values");
+            mDurationChar = QChar('0');
+            mLicenseValids.clear();
+            break;
+        }
+        if (i%2) continue;
+        if (lineVal.at(i) == 0) continue;   // license hasn't a duration
+        mLicenseValids.insert(lineLic.mid(i-1, 2), lineVal.at(i));
+        if (lineVal.at(i) < mDurationChar)
+            mDurationChar = lineVal.at(i);
+    }
+    mDurationMonths = convertDuration(mDurationChar);
+}
+
+void LicenseFetcher::fetchAccessCode(const QString &line)
+{
+    mAccessCode = QString();
+    int from = -1;
+    for (int i = line.indexOf('_') ; i > 0 && i < line.length() ; ++i) {
+        if (from < 0) {
+            if (line.at(i) != '_')
+                from = i;
+        } else {
+            if (line.at(i) == '_') {
+                mAccessCode = line.mid(from, i-from);
+                break;
+            }
+        }
+    }
+}
+
+void LicenseFetcher::updateState()
+{
+    // TODO(JM) Update the license state
+
+
+    emit changed();
+}
+
+QString LicenseFetcher::accessCode() const
+{
+    return mAccessCode;
 }
 
 QString LicenseFetcher::lastErrorMessage() const

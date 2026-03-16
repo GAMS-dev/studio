@@ -45,10 +45,10 @@ namespace gams {
 namespace studio {
 namespace support {
 
-GamsLicensingDialog::GamsLicensingDialog(const QString &title, QWidget *parent)
+GamsLicensingDialog::GamsLicensingDialog(const QString &title, LicenseFetcher *licenseFetcher, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::GamsLicensingDialog)
-    , mLicenseFetcher(new LicenseFetcher(this))
+    , mLicenseFetcher(licenseFetcher)
     , mGamsGetKeyProc(new GamsGetKeyProcess(this))
 {
     ui->setupUi(this);
@@ -91,8 +91,7 @@ void GamsLicensingDialog::getGamsLicenseText(bool forceFetch)
             return; // Wait until the slot is activated
     }
     ui->label->setText("Fetching GAMS system information. Please wait...");
-    mGamsAboutProc->clearState();
-    mGamsAboutProc->execute();
+    mLicenseFetcher->fetchGamsLicense();
 }
 
 void GamsLicensingDialog::setSolverLines(GamsLicenseInfo &liceInfo, QStringList& about) const
@@ -443,6 +442,7 @@ void GamsLicensingDialog::updateAboutLabel()
     setNonSolverLines(licenseInfo, about);
     about << "<br/>";
 
+    ui->idEdit->setText(mLicenseFetcher->accessCode());
     ui->label->setText(about.join(""));
 }
 

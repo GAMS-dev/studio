@@ -47,7 +47,7 @@ class GamsLicensingDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit GamsLicensingDialog(const QString &title, QWidget *parent = nullptr);
+    explicit GamsLicensingDialog(const QString &title, LicenseFetcher *licenseFetcher, QWidget *parent = nullptr);
     ~GamsLicensingDialog();
 
     static QString studioInfo();

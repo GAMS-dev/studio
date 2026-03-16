@@ -89,6 +89,7 @@ namespace pin {
 class PinViewWidget;
 }
 namespace support {
+class LicenseFetcher;
 class CheckForUpdate;
 }
 
@@ -594,6 +595,7 @@ private:
     QSharedPointer<FileEventHandler> mFileEventHandler;
     TabBarStyle *mTabStyle = nullptr;
     QVariantMap mAsyncCallOptions;
+    QScopedPointer<support::LicenseFetcher> mLicenseFetcher;
 
     bool mDebugMode = false;
     bool mStartedUp = false;

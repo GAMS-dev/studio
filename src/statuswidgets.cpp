@@ -31,6 +31,8 @@
 #include <QStringConverter>
 #include <QTimer>
 
+using enum gams::studio::support::LicenseState;
+
 namespace gams {
 namespace studio {
 
@@ -63,7 +65,7 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
     connect(mLicense, &QPushButton::clicked, this, [this]() {
         if (qApp->keyboardModifiers().testFlag(Qt::ControlModifier)
             && qApp->keyboardModifiers().testFlag(Qt::ShiftModifier)) {
-            setLicenseStatus(mLicState < lsNetCheckoutEnd ? LicenseState(mLicState+1) : lsNone);
+            setLicenseStatus(mLicState < lsNetCheckoutEnd ? support::LicenseState(mLicState+1) : lsNone);
         } else showLicense();
     });
     setLicenseStatus(lsNone);
@@ -135,7 +137,7 @@ void StatusWidgets::setLoadingText(const QString &loadingText)
     mFileName->setLoadingText(loadingText);
 }
 
-void StatusWidgets::setLicenseStatus(LicenseState lState)
+void StatusWidgets::setLicenseStatus(support::LicenseState lState)
 {
     QColor background = Qt::white;
     QIcon icon = Theme::icon(":/solid/new-w");

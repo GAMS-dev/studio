@@ -21,6 +21,7 @@
 #define LICENSEFETCHER_H
 
 #include <QObject>
+#include <QDateTime>
 
 namespace gams {
 namespace studio {
@@ -28,6 +29,20 @@ namespace studio {
 class GamsAboutProcess;
 
 namespace support {
+
+enum LicenseState {
+    lsNone,
+    lsChecking,
+    lsLocal,
+    lsLocalEnd,
+    lsLocalInvalid,
+    lsNet,
+    lsNetEnd,
+    lsNetNoConnection,
+    lsNetInvalid,
+    lsNetCheckout,
+    lsNetCheckoutEnd,
+};
 
 enum FetcherState {
     fsInitial,
@@ -49,25 +64,35 @@ public:
     QString lastErrorMessage() const;
     QString formattedContent() const;
 
+    QString accessCode() const;
+
 signals:
     void changed();
+    void error(const QString &message);
 
 private slots:
     void analyzeContent(int exitCode);
 
 private:
     QString getCurdirForAboutProcess();
-
+    void fetchBaseDate(const QString &line);
+    void fetchLicenseValues(const QString &lineLic, const QString &lineVal);
+    void fetchAccessCode(const QString &line);
 
 private:
-    FetcherState mFetcherState = fsInitial;
     GamsAboutProcess* mGamsAboutProc;
+    FetcherState mFetcherState = fsInitial;
+    LicenseState mLicenseState = lsNone;
     QString mCurDir;
     int mLastExitCode = -1;
     QString mLastErrorMessage;
     QString mContent;
     QString mFormattedContent;
     QStringList mLicense;
+    QDateTime mBaseDate;
+    QHash<QString, QString> mLicenseValids;
+    QChar mDurationChar = QChar('~');
+    int mDurationMonths = 0;
     QString mAccessCode;
 
 };
