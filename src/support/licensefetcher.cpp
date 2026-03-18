@@ -27,6 +27,7 @@
 #include <QRegularExpression>
 #include <QTimeZone>
 #include <QFile>
+#include <QTcpSocket>
 
 using namespace gams::studio::support::LicenseStateEnum;
 
@@ -34,8 +35,10 @@ namespace gams {
 namespace studio {
 namespace support {
 
-const QRegularExpression CRexBaseDate(R"(G(\d{6})[+\-|])");    // using raw string avoids double "\\"
-const QRegularExpression CRexCheckout(R"(^node:\d+@(\d+)_)");    // using raw string avoids double "\\"
+// using raw string avoids double "\\"
+const QRegularExpression CRexBaseDate(R"(G(\d{6})[+\-|])");
+const QRegularExpression CRexCheckout(R"(^node:\d+@(\d+)_)");
+const QRegularExpression CRexServer(R"(^server:([a-zA-Z0-9.-]+)_port:(\d+))");
 const QString CLicenseInvalid1("*** Error: The installed license ");
 const QString CLicenseInvalid2(" is invalid.");
 
@@ -43,6 +46,7 @@ LicenseFetcher::LicenseFetcher(QObject *parent)
     : QObject{parent}
     , mGamsAboutProc(new GamsAboutProcess(this))
 {
+    mFetchTimer.setSingleShot(true);
     mBaseDate.setTimeZone(QTimeZone::utc());
     mGamsAboutProc->setCurDir(getCurdirForAboutProcess());
     connect(mGamsAboutProc, &GamsAboutProcess::finished, this, &LicenseFetcher::analyzeContent);
@@ -62,7 +66,11 @@ void LicenseFetcher::fetchGamsLicense()
 {
     stopFetching();
 
-    mLicenseState = lsChecking;
+    // Only show "checking" on previous invalid state
+    QList<LicenseState> invalidLicenses = {lsNone, lsLocalInvalid, lsNetInvalid, lsNetCheckoutInvalid};
+    if (invalidLicenses.contains(mLicenseState))
+        mLicenseState = lsChecking;
+
     mFormattedContent = "Fetching GAMS system information. Please wait...";
     mContent.clear();
     mLicense.clear();
@@ -70,7 +78,6 @@ void LicenseFetcher::fetchGamsLicense()
     mDurationChar = QChar('~');
     mDurationMonths = 0;
     mAccessCode.clear();
-    emit changed();
     emit stateChanged(mLicenseState);
 
     mGamsAboutProc->clearState();
@@ -256,7 +263,7 @@ void LicenseFetcher::fetchLicenseValues(const QString &lineLic, const QString &l
             mLicenseValids.clear();
             break;
         }
-        if (i%2) continue;
+        if (!(i%2)) continue;
         if (lineVal.at(i) == 0) continue;   // license hasn't a duration
         mLicenseValids.insert(lineLic.mid(i-1, 2), lineVal.at(i));
         if (lineVal.at(i) < mDurationChar)
@@ -286,8 +293,16 @@ void LicenseFetcher::fetchLicenseType(const QString &line)
 {
     mLicenseType = lsLocal;
     mCheckoutHours = 0;
-    if (line.startsWith("server"))
+    mLicenseServer = QString();
+    mLicensePort = 8080;
+    if (line.startsWith("server:")) {
         mLicenseType = lsNet;
+        QRegularExpressionMatch match = CRexServer.match(line);
+        if (match.hasMatch()) {
+            mLicenseServer = match.captured(1);
+            mLicensePort = match.captured(2).toInt();
+        }
+    }
     else if (line.startsWith("node")) {
         mLicenseType = lsNetCheckout;
         QRegularExpressionMatch match = CRexCheckout.match(line);
@@ -298,29 +313,72 @@ void LicenseFetcher::fetchLicenseType(const QString &line)
 
 void LicenseFetcher::updateState()
 {
+    mFetchTimer.stop();
     mLicenseState = mLicenseType;
     QDateTime now = QDateTime::currentDateTime();
-    QDateTime expire = now;
+    mExpire = QDateTime();
     if (mLicenseType == lsNetCheckout) {
-        expire = mBaseDate.addSecs(mCheckoutHours * 3600).toLocalTime();
-        if (qint64 sec = now.secsTo(expire))
-            mLicenseState = sec < 0 ? lsNetInvalid : lsNetCheckoutEnd;
+        mExpire = mBaseDate.addSecs(mCheckoutHours * 3600).toLocalTime();
+        qint64 sec = now.secsTo(mExpire);
+        if (sec > 3600) {
+            mFetchTimer.singleShot((sec -3600 +2) * 1000, this, &LicenseFetcher::fetchGamsLicense);
+        } else {
+            if (sec > 0) {
+                mLicenseState = lsNetCheckoutEnd;
+                mFetchTimer.singleShot((sec +2) * 1000, this, &LicenseFetcher::fetchGamsLicense);
+            } else {
+                mLicenseState = lsNetCheckoutInvalid;
+            }
+        }
 
     } else {
         if (mDurationChar != '~') {
-            expire = mBaseDate.addMonths(mDurationMonths).toLocalTime();
-            if (expire > now) {
+            bool ensureServer = mLicenseType == lsNet;
+            mExpire = mBaseDate.addDays(mDurationMonths * 30).toLocalTime();
+            if (mExpire < now) {
+                qint64 sec = now.secsTo(mExpire);
+                if (sec < 86400 * 7) { // when change is in less than a week, start a timer
+                    mFetchTimer.singleShot((sec +2) * 1000, this, &LicenseFetcher::fetchGamsLicense);
+                }
                 mLicenseState = LicenseState(mLicenseState + 1);
-                expire = expire.addDays(30);
-                if (expire > now)
+                mExpire = mExpire.addDays(30);
+                if (mExpire < now) {
                     mLicenseState = LicenseState(mLicenseState + 1);
+                    ensureServer = false;
+                } else if (sec < 86400 * 7) { // when change is in less than a week, start a timer
+                    mFetchTimer.singleShot((sec +2) * 1000, this, &LicenseFetcher::fetchGamsLicense);
+                }
+            } else {
+                mExpire = mExpire.addDays(30);
             }
+            if (ensureServer) pingServer();
         }
     }
 
+    emit stateChanged(mLicenseState, mExpire);
+}
 
-    emit changed();
-    emit stateChanged(mLicenseState);
+void LicenseFetcher::pingServer()
+{
+    if (mLicenseServer.isEmpty())
+        return;
+    QTcpSocket *socket = new QTcpSocket(this);
+
+    connect(socket, &QTcpSocket::connected, [socket]() {
+        socket->disconnectFromHost();
+    });
+    connect(socket, &QTcpSocket::errorOccurred, [this, socket](QAbstractSocket::SocketError error) {
+        qDebug() << "LicenseServer: Error: " << error;
+        qDebug() << "   server " << mLicenseServer << "  port "<< mLicensePort;
+        mLicenseState = lsNetNoConnection;
+        emit stateChanged(mLicenseState, mExpire);
+        socket->deleteLater();
+    });
+    connect(socket, &QTcpSocket::disconnected, [socket]() {
+        socket->deleteLater();
+    });
+
+    socket->connectToHost(mLicenseServer, mLicensePort);
 }
 
 QString LicenseFetcher::accessCode() const

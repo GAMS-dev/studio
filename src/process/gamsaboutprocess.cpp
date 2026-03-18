@@ -21,6 +21,7 @@
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
 #include "commonpaths.h"
+#include "logger.h"
 
 #include <QDir>
 
@@ -49,7 +50,8 @@ void GamsAboutProcess::execute()
     QString app = nativeAppPath();
 
     QString msg = QString("GAMS licensing running: %1 %2").arg(app, args.join(" "));
-    SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
+    // SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
+    DEB() << msg;
 
 #if defined(__unix__) || defined(__APPLE__)
     mProcess.start(app, args);

@@ -10,6 +10,7 @@ HEADERS +=                                      \
     $$SRCPATH/process/gamsaboutprocess.h        \
     $$SRCPATH/commonpaths.h                     \
     $$SRCPATH/common.h                          \
+    $$SRCPATH/logger.h                          \
     $$SRCPATH/exception.h
 
 SOURCES +=                                      \
@@ -20,4 +21,5 @@ SOURCES +=                                      \
     $$SRCPATH/commandlineparser.cpp             \
     $$SRCPATH/commonpaths.cpp                   \
     $$SRCPATH/common.cpp                        \
+    $$SRCPATH/logger.cpp                        \
     $$SRCPATH/exception.cpp

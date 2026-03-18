@@ -76,7 +76,7 @@ signals:
     void showLicense();
 
 public slots:
-    void setLicenseState(support::LicenseState licenseState);
+    void setLicenseState(support::LicenseState licenseState, const QDateTime &expire);
 
 private:
     QStatusBar* mStatusBar;
@@ -85,10 +85,13 @@ private:
     QLabel* mEditPosAnsSel = nullptr;
     QLabel* mEditLines = nullptr;
     QPushButton* mLicense = nullptr;
+    QLabel *mLicenseIconLabel = nullptr;
+    QLabel *mLicenseTextLabel = nullptr;
     AmountLabel* mFileName = nullptr;
     QLabel* mProcessInfo = nullptr;
     qreal mLoadAmount = 1.0;
-    support::LicenseState mLicState = support::lsNone;
+    support::LicenseState mLicenseState = support::lsNone;
+    QDateTime mLicenseExpire;
 
 };
 

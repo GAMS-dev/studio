@@ -22,6 +22,7 @@
 
 #include <QObject>
 #include <QDateTime>
+#include <QTimer>
 
 namespace gams {
 namespace studio {
@@ -43,6 +44,7 @@ enum LicenseState {
     lsNetNoConnection,
     lsNetCheckout,
     lsNetCheckoutEnd,
+    lsNetCheckoutInvalid,
 };
 };
 
@@ -53,7 +55,6 @@ public:
     explicit LicenseFetcher(QObject *parent = nullptr);
     ~LicenseFetcher() override;
     LicenseState state();
-    void fetchGamsLicense();
     void stopFetching();
     int lastExitCode() const;
     QString lastErrorMessage() const;
@@ -61,9 +62,11 @@ public:
     QString accessCode() const;
 
 signals:
-    void changed();
-    void stateChanged(LicenseState state);
+    void stateChanged(LicenseState state, const QDateTime &timeout = QDateTime());
     void error(const QString &message);
+
+public slots:
+    void fetchGamsLicense();
 
 private slots:
     void analyzeContent(int exitCode);
@@ -76,18 +79,23 @@ private:
     void fetchAccessCode(const QString &line);
     void fetchLicenseType(const QString &line);
     void updateState();
+    void pingServer();
 
 private:
     GamsAboutProcess* mGamsAboutProc;
     LicenseState mLicenseState = lsNone;
     LicenseState mLicenseType = lsNone;
+    QString mLicenseServer;
+    int mLicensePort = 8080;
     QString mCurDir;
     int mLastExitCode = -1;
+    QTimer mFetchTimer;
     QString mLastErrorMessage;
     QString mContent;
     QString mFormattedContent;
     QStringList mLicense;
     QDateTime mBaseDate;
+    QDateTime mExpire;
     QHash<QString, QString> mLicenseValids;
     QChar mDurationChar = QChar('~');
     int mDurationMonths = 0;

@@ -67,7 +67,7 @@ GamsLicensingDialog::GamsLicensingDialog(const QString &title, LicenseFetcher *l
     connect(ui->idEdit, &QLineEdit::returnPressed, this, &GamsLicensingDialog::requestAlpLicense);
     connect(ui->cdEdit, &QLineEdit::returnPressed, this, &GamsLicensingDialog::requestAlpLicense);
     connect(ui->opEdit, &QLineEdit::returnPressed, this, &GamsLicensingDialog::requestAlpLicense);
-    connect(mLicenseFetcher, &LicenseFetcher::changed, this, &GamsLicensingDialog::updateAboutLabel);
+    connect(mLicenseFetcher, &LicenseFetcher::stateChanged, this, &GamsLicensingDialog::updateAboutLabel);
     connect(mGamsGetKeyProc.get(), &GamsGetKeyProcess::finished, this, &GamsLicensingDialog::installAlp);
 }
 

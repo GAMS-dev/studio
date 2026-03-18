@@ -4743,6 +4743,7 @@ void MainWindow::initDelayedElements()
                 meta->setFoldedBlocks(lines);
         }
     }
+    mLicenseFetcher->fetchGamsLicense();
 
     if (settings->toBool(skRestoreTabs)) {
         QVariantMap joTabs = settings->toMap(skTabs);
