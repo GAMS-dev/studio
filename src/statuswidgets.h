@@ -71,10 +71,12 @@ public:
     void setEditMode(EditMode mode);
     void setPosAndAnchor(QPoint pos = QPoint(), QPoint anchor = QPoint());
     void setLoadingText(const QString &loadingText);
-    void setLicenseStatus(support::LicenseState lState);
 
 signals:
     void showLicense();
+
+public slots:
+    void setLicenseState(support::LicenseState licenseState);
 
 private:
     QStatusBar* mStatusBar;

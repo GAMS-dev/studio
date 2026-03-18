@@ -198,6 +198,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
     connect(mStatusWidgets, &StatusWidgets::showLicense, this, &MainWindow::on_gamsLicensing_triggered);
+    connect(mLicenseFetcher.get(), &support::LicenseFetcher::stateChanged, mStatusWidgets, &StatusWidgets::setLicenseState);
 
     // Project View Setup
     int iconSize = fontMetrics().lineSpacing() + 1;

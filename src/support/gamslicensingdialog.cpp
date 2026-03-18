@@ -41,6 +41,8 @@
 #include <QFileDialog>
 #include <QTextDocument>
 
+using namespace gams::studio::support::LicenseStateEnum;
+
 namespace gams {
 namespace studio {
 namespace support {
@@ -65,7 +67,7 @@ GamsLicensingDialog::GamsLicensingDialog(const QString &title, LicenseFetcher *l
     connect(ui->idEdit, &QLineEdit::returnPressed, this, &GamsLicensingDialog::requestAlpLicense);
     connect(ui->cdEdit, &QLineEdit::returnPressed, this, &GamsLicensingDialog::requestAlpLicense);
     connect(ui->opEdit, &QLineEdit::returnPressed, this, &GamsLicensingDialog::requestAlpLicense);
-    connect(mLicenseFetcher.get(), &LicenseFetcher::changed, this, &GamsLicensingDialog::updateAboutLabel);
+    connect(mLicenseFetcher, &LicenseFetcher::changed, this, &GamsLicensingDialog::updateAboutLabel);
     connect(mGamsGetKeyProc.get(), &GamsGetKeyProcess::finished, this, &GamsLicensingDialog::installAlp);
 }
 
@@ -84,7 +86,7 @@ QString GamsLicensingDialog::studioInfo()
 
 void GamsLicensingDialog::getGamsLicenseText(bool forceFetch)
 {
-    if (mLicenseFetcher->state() == fsFetching) {
+    if (mLicenseFetcher->state() == lsChecking) {
         if (forceFetch)
             mLicenseFetcher->stopFetching(); // skip fetching
         else

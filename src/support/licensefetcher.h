@@ -39,19 +39,11 @@ enum LicenseState {
     lsLocalInvalid,
     lsNet,
     lsNetEnd,
-    lsNetNoConnection,
     lsNetInvalid,
+    lsNetNoConnection,
     lsNetCheckout,
     lsNetCheckoutEnd,
 };
-};
-
-
-enum FetcherState {
-    fsInitial,
-    fsFetching,
-    fsInvalid,
-    fsValid,
 };
 
 class LicenseFetcher : public QObject
@@ -60,17 +52,17 @@ class LicenseFetcher : public QObject
 public:
     explicit LicenseFetcher(QObject *parent = nullptr);
     ~LicenseFetcher() override;
-    FetcherState state();
+    LicenseState state();
     void fetchGamsLicense();
     void stopFetching();
     int lastExitCode() const;
     QString lastErrorMessage() const;
     QString formattedContent() const;
-
     QString accessCode() const;
 
 signals:
     void changed();
+    void stateChanged(LicenseState state);
     void error(const QString &message);
 
 private slots:
@@ -78,15 +70,17 @@ private slots:
 
 private:
     QString getCurdirForAboutProcess();
+    void checkLicense(const QStringList &lines);
     void fetchBaseDate(const QString &line);
     void fetchLicenseValues(const QString &lineLic, const QString &lineVal);
     void fetchAccessCode(const QString &line);
+    void fetchLicenseType(const QString &line);
     void updateState();
 
 private:
     GamsAboutProcess* mGamsAboutProc;
-    FetcherState mFetcherState = fsInitial;
     LicenseState mLicenseState = lsNone;
+    LicenseState mLicenseType = lsNone;
     QString mCurDir;
     int mLastExitCode = -1;
     QString mLastErrorMessage;
@@ -97,6 +91,7 @@ private:
     QHash<QString, QString> mLicenseValids;
     QChar mDurationChar = QChar('~');
     int mDurationMonths = 0;
+    int mCheckoutHours = 0;
     QString mAccessCode;
 
 };

@@ -65,12 +65,12 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
     connect(mLicense, &QPushButton::clicked, this, [this]() {
         if (qApp->keyboardModifiers().testFlag(Qt::ControlModifier)
             && qApp->keyboardModifiers().testFlag(Qt::ShiftModifier)) {
-            setLicenseStatus(mLicState < lsNetCheckoutEnd ? support::LicenseState(mLicState+1) : lsNone);
+            setLicenseState(mLicState < lsNetCheckoutEnd ? support::LicenseState(mLicState+1) : lsNone);
         } else showLicense();
     });
-    setLicenseStatus(lsNone);
+    setLicenseState(lsNone);
     connect(Theme::instance(), &Theme::changed, this, [this]() {
-        QTimer::singleShot(0, this, [this](){ setLicenseStatus(mLicState); });
+        QTimer::singleShot(0, this, [this](){ setLicenseState(mLicState); });
     });
 
     mFileName = new AmountLabel("Filename");
@@ -137,13 +137,13 @@ void StatusWidgets::setLoadingText(const QString &loadingText)
     mFileName->setLoadingText(loadingText);
 }
 
-void StatusWidgets::setLicenseStatus(support::LicenseState lState)
+void StatusWidgets::setLicenseState(support::LicenseState licenseState)
 {
     QColor background = Qt::white;
     QIcon icon = Theme::icon(":/solid/new-w");
     QPalette pal = mStatusBar->palette();
 
-    switch (lState) {
+    switch (licenseState) {
     case lsChecking:
         background = pal.color(QPalette::Window);
         icon = Theme::icon(":/solid/search");
@@ -204,7 +204,7 @@ void StatusWidgets::setLicenseStatus(support::LicenseState lState)
     pal.setColor(QPalette::Button, background);
     mLicense->setPalette(pal);
     mLicense->setIcon(icon);
-    mLicState = lState;
+    mLicState = licenseState;
 }
 
 void AmountLabel::setAmount(qreal value)

@@ -76,7 +76,7 @@ private:
 
 private:
     Ui::GamsLicensingDialog *ui;
-    QScopedPointer<LicenseFetcher> mLicenseFetcher;
+    LicenseFetcher* mLicenseFetcher = nullptr;
     QScopedPointer<GamsAboutProcess> mGamsAboutProc;
     QScopedPointer<GamsGetKeyProcess> mGamsGetKeyProc;
 };

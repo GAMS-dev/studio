@@ -21,20 +21,29 @@
 #include "process/gamsaboutprocess.h"
 #include "gamslicenseinfo.h"
 #include "file/uncpath.h"
+#include "logger.h"
 
 #include <QStandardPaths>
 #include <QRegularExpression>
+#include <QTimeZone>
+#include <QFile>
+
+using namespace gams::studio::support::LicenseStateEnum;
 
 namespace gams {
 namespace studio {
 namespace support {
 
-const QRegularExpression CRexBaseDate(R"(G(\d{6})-)");    // using raw string avoids double "\\"
+const QRegularExpression CRexBaseDate(R"(G(\d{6})[+\-|])");    // using raw string avoids double "\\"
+const QRegularExpression CRexCheckout(R"(^node:\d+@(\d+)_)");    // using raw string avoids double "\\"
+const QString CLicenseInvalid1("*** Error: The installed license ");
+const QString CLicenseInvalid2(" is invalid.");
 
 LicenseFetcher::LicenseFetcher(QObject *parent)
     : QObject{parent}
     , mGamsAboutProc(new GamsAboutProcess(this))
 {
+    mBaseDate.setTimeZone(QTimeZone::utc());
     mGamsAboutProc->setCurDir(getCurdirForAboutProcess());
     connect(mGamsAboutProc, &GamsAboutProcess::finished, this, &LicenseFetcher::analyzeContent);
 }
@@ -44,16 +53,15 @@ LicenseFetcher::~LicenseFetcher()
     delete mGamsAboutProc;
 }
 
-FetcherState LicenseFetcher::state()
+LicenseState LicenseFetcher::state()
 {
-    return mFetcherState;
+    return mLicenseState;
 }
 
 void LicenseFetcher::fetchGamsLicense()
 {
     stopFetching();
 
-    mFetcherState = fsFetching;
     mLicenseState = lsChecking;
     mFormattedContent = "Fetching GAMS system information. Please wait...";
     mContent.clear();
@@ -63,6 +71,7 @@ void LicenseFetcher::fetchGamsLicense()
     mDurationMonths = 0;
     mAccessCode.clear();
     emit changed();
+    emit stateChanged(mLicenseState);
 
     mGamsAboutProc->clearState();
     mGamsAboutProc->execute();
@@ -76,7 +85,6 @@ void LicenseFetcher::stopFetching()
 void LicenseFetcher::analyzeContent(int exitCode)
 {
     mLastExitCode = exitCode;
-    mFetcherState = exitCode ? fsInvalid : fsValid;
     if (exitCode) {
         mFormattedContent = "Error: Fetching GAMS system information. Please check the system log.";
         mLastErrorMessage = mGamsAboutProc->logMessages();
@@ -92,33 +100,31 @@ void LicenseFetcher::analyzeContent(int exitCode)
         lines.removeLast();
     }
 
-    QString licensesLine;
+    QString modulesLine;
     QStringList licenseText;
     int licLineCount = -1;
     for(const auto &line : std::as_const(lines)) {
-        if (licenseLines) {
-            if (licLineCount >= 0) {
-                ++licLineCount;
-                // extract base date from line 1
-                if (licLineCount == 1) {
-                    fetchBaseDate(line);
-
-                // extract licenses and validation from lines 3 and 4
-                } else if (licLineCount == 3) {
-                    licensesLine = line;
-                } else if (licLineCount == 4) {
-                    fetchLicenseValues(licensesLine, line);
-
-                // extract access code from line 5
-                } else if (licLineCount == 5 && line.startsWith("DC")) {
-                    fetchAccessCode(line);
-                }
+        if (line.startsWith(CLicenseInvalid1)) {
+            QString licFile = line.mid(CLicenseInvalid1.length(), line.indexOf(CLicenseInvalid2) - CLicenseInvalid1.length());
+            QFile file(licFile);
+            if (file.exists() && file.open(QFile::ReadOnly)) {
+                QString content = file.readAll();
+                licenseText = content.split('\n');
+                file.close();
+                mLicense = licenseText;
+                checkLicense(mLicense);
             }
+        }
+        if (licenseLines) {
+            if (licLineCount >= 0)
+                ++licLineCount;
             if (line.startsWith("#L")) {
                 // license text start/end marker
                 licLineCount = (licLineCount < 0) ? 0 : -1;
-                if (licLineCount < 0)
+                if (licLineCount < 0) {
                     mLicense = licenseText;
+                    checkLicense(mLicense);
+                }
                 continue;
             } else if (line.startsWith("Licensed platform:")) {
                 licenseLines = false;
@@ -166,8 +172,34 @@ QString LicenseFetcher::getCurdirForAboutProcess()
     curdir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
 #endif
     mCurDir = curdir;
-    // SysLogLocator::systemLog()->append("CURDIR: "+curdir, LogMsgType::Info);
     return curdir;
+}
+
+void LicenseFetcher::checkLicense(const QStringList &lines)
+{
+    QString modulesLine;
+    int lineNr = 0;
+    for(const auto &line : std::as_const(lines)) {
+        ++lineNr;
+        // extract base date from line 1
+        if (lineNr == 1) {
+            fetchBaseDate(line);
+
+            // extract licenses and validation from lines 3 and 4
+        } else if (lineNr == 3) {
+            modulesLine = line;
+        } else if (lineNr == 4) {
+            fetchLicenseValues(modulesLine, line);
+
+            // extract access code from line 5
+        } else if (lineNr == 5 && line.startsWith("DC")) {
+            fetchAccessCode(line);
+
+            // extract access code from line 6
+        } else if (lineNr == 6) {
+            fetchLicenseType(line);
+        }
+    }
 }
 
 void LicenseFetcher::fetchBaseDate(const QString &line)
@@ -189,7 +221,6 @@ void LicenseFetcher::fetchBaseDate(const QString &line)
         int baseYear = century +  vals.at(0);
         if (baseYear > currentYear + 10)
             baseYear -= 100;
-
         mBaseDate.setDate(QDate(baseYear, vals.at(1), vals.at(2)));
     }
 }
@@ -251,12 +282,45 @@ void LicenseFetcher::fetchAccessCode(const QString &line)
     }
 }
 
+void LicenseFetcher::fetchLicenseType(const QString &line)
+{
+    mLicenseType = lsLocal;
+    mCheckoutHours = 0;
+    if (line.startsWith("server"))
+        mLicenseType = lsNet;
+    else if (line.startsWith("node")) {
+        mLicenseType = lsNetCheckout;
+        QRegularExpressionMatch match = CRexCheckout.match(line);
+        if (match.hasMatch())
+            mCheckoutHours = match.captured(1).toInt();
+    }
+}
+
 void LicenseFetcher::updateState()
 {
-    // TODO(JM) Update the license state
+    mLicenseState = mLicenseType;
+    QDateTime now = QDateTime::currentDateTime();
+    QDateTime expire = now;
+    if (mLicenseType == lsNetCheckout) {
+        expire = mBaseDate.addSecs(mCheckoutHours * 3600).toLocalTime();
+        if (qint64 sec = now.secsTo(expire))
+            mLicenseState = sec < 0 ? lsNetInvalid : lsNetCheckoutEnd;
+
+    } else {
+        if (mDurationChar != '~') {
+            expire = mBaseDate.addMonths(mDurationMonths).toLocalTime();
+            if (expire > now) {
+                mLicenseState = LicenseState(mLicenseState + 1);
+                expire = expire.addDays(30);
+                if (expire > now)
+                    mLicenseState = LicenseState(mLicenseState + 1);
+            }
+        }
+    }
 
 
     emit changed();
+    emit stateChanged(mLicenseState);
 }
 
 QString LicenseFetcher::accessCode() const
