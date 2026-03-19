@@ -167,40 +167,48 @@ QString GamsLicensingDialog::getCurdirForAboutProcess()
     return curdir;
 }
 
-void GamsLicensingDialog::writeLicenseFile(QStringList &license, QWidget *parent, bool clipboard)
+void GamsLicensingDialog::writeLicenseFile(QStringList &license, QWidget *parent, bool clipboard, bool quiet = false)
 {
     auto liceFile = GamsLicenseInfo::licenseLocation();
     QFile licenseFile(liceFile);
     if (licenseFile.exists()) {
         QString text;
-        if (clipboard) {
-            text.append("It looks like there is a GAMS license in the clipboard. ");
-            text.append("Do you want to overwrite your current license file from this clipboard text? ");
-            text.append("Your current license location is: ");
-            text.append(QDir::toNativeSeparators(licenseFile.fileName()));
-        } else {
-            text.append("Do you want to overwrite your current license file with the selected license? ");
-            text.append("Your current license location is: ");
-            text.append(QDir::toNativeSeparators(licenseFile.fileName()));
+        if (!quiet) {
+            if (clipboard) {
+                text.append("It looks like there is a GAMS license in the clipboard. ");
+                text.append("Do you want to overwrite your current license file from this clipboard text? ");
+                text.append("Your current license location is: ");
+                text.append(QDir::toNativeSeparators(licenseFile.fileName()));
+            } else {
+                text.append("Do you want to overwrite your current license file with the selected license? ");
+                text.append("Your current license location is: ");
+                text.append(QDir::toNativeSeparators(licenseFile.fileName()));
+            }
         }
-        auto result = QMessageBox::question(parent, "Overwrite current GAMS license file?", text);
-        if (result == QMessageBox::No)
-            return;
+        if (!text.isEmpty()) {
+            auto result = QMessageBox::question(parent, "Overwrite current GAMS license file?", text);
+            if (result == QMessageBox::No)
+                return;
+        }
     } else {
         QString text;
-        if (clipboard) {
-            text.append("It looks like there is a GAMS license in the clipboard. ");
-            text.append("Do you want to create a license file from this clipboard text? ");
-            text.append("Your GAMS license location will be: ");
-            text.append(QDir::toNativeSeparators(licenseFile.fileName()));
-        } else {
-            text.append("Do you want to create a license file based on the selected license? ");
-            text.append("Your GAMS license location will be: ");
-            text.append(QDir::toNativeSeparators(licenseFile.fileName()));
+        if (!quiet) {
+            if (clipboard) {
+                text.append("It looks like there is a GAMS license in the clipboard. ");
+                text.append("Do you want to create a license file from this clipboard text? ");
+                text.append("Your GAMS license location will be: ");
+                text.append(QDir::toNativeSeparators(licenseFile.fileName()));
+            } else {
+                text.append("Do you want to create a license file based on the selected license? ");
+                text.append("Your GAMS license location will be: ");
+                text.append(QDir::toNativeSeparators(licenseFile.fileName()));
+            }
         }
-        auto result = QMessageBox::question(parent, "Create GAMS license file?", text);
-        if (result == QMessageBox::No)
-            return;
+        if (!text.isEmpty()) {
+            auto result = QMessageBox::question(parent, "Create GAMS license file?", text);
+            if (result == QMessageBox::No)
+                return;
+        }
         auto licensePath = QFileInfo(licenseFile).absolutePath();
         bool success = QDir(licensePath).mkpath(".");
         if (!success) {
@@ -359,7 +367,8 @@ void GamsLicensingDialog::installAlp(int exitCode)
         return;
     }
     if (licenseInfo.isGamsLicense(license)) {
-        writeLicenseFile(license, this, false);
+        bool quiet = !ui->cdEdit->text().isEmpty();
+        writeLicenseFile(license, this, false, quiet);
         getGamsLicenseText(true);
     } else {
         showInvalidGamsPyMessageBox(this);

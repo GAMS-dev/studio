@@ -72,7 +72,7 @@ private:
 
     QString getCurdirForAboutProcess();
 
-    static void writeLicenseFile(QStringList &license, QWidget *parent, bool clipboard);
+    static void writeLicenseFile(QStringList &license, QWidget *parent, bool clipboard, bool quiet);
 
     static void showInvalidGamsPyMessageBox(QWidget *parent);
 
