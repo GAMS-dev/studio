@@ -71,8 +71,11 @@ public slots:
 private slots:
     void analyzeContent(int exitCode);
 
-private:
+protected:
     QString getCurdirForAboutProcess();
+    QStringList readLicenseFile(const QString &filename);
+    void ensureLicenseCopy();
+    void restoreLicenseCopy();
     void checkLicense(const QStringList &lines);
     void fetchBaseDate(const QString &line);
     void fetchLicenseValues(const QString &lineLic, const QString &lineVal);
@@ -101,6 +104,8 @@ private:
     int mDurationMonths = 0;
     int mCheckoutHours = 0;
     QString mAccessCode;
+    bool mCheckLicenseCopy = false;
+    QString mLicenseFile;
 
 };
 

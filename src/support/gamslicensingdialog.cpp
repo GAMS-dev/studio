@@ -92,8 +92,8 @@ void GamsLicensingDialog::getGamsLicenseText(bool forceFetch)
         else
             return; // Wait until the slot is activated
     }
-    ui->label->setText("Fetching GAMS system information. Please wait...");
     mLicenseFetcher->fetchGamsLicense();
+    ui->label->setText(mLicenseFetcher->formattedContent());
 }
 
 void GamsLicensingDialog::setSolverLines(GamsLicenseInfo &liceInfo, QStringList& about) const
@@ -445,6 +445,13 @@ void GamsLicensingDialog::updateAboutLabel()
     about << "<br/>";
 
     ui->idEdit->setText(mLicenseFetcher->accessCode());
+    ui->cdEdit->setEnabled((mLicenseFetcher->state() >= lsNet && mLicenseFetcher->state() < lsNetCheckout)
+                           || mLicenseFetcher->state() == LicenseStateEnum::lsNetCheckoutInvalid);
+    ui->cdEdit->setPlaceholderText(ui->cdEdit->isEnabled() ? "Checkout duration in hours (optional)"
+                                                           : "Network license already checked out");
+    if (!ui->cdEdit->isEnabled())
+        ui->cdEdit->setText("");
+    on_cdEdit_textChanged(ui->cdEdit->text());
     ui->label->setText(about.join(""));
 }
 
@@ -473,6 +480,14 @@ QString GamsLicensingDialog::aboutStudio()
     about += "<a href=\"https://github.com/GAMS-dev/studio\">https://github.com/GAMS-dev/studio/</a></p>.";
     return about;
 }
+
+void GamsLicensingDialog::on_cdEdit_textChanged(const QString &text)
+{
+    QList<LicenseState> checkoutStates = {lsNet, lsNetEnd, lsNetCheckoutInvalid};
+    ui->alpButton->setText((checkoutStates.contains(mLicenseFetcher->state()) && !text.isEmpty()) ? "Checkout"
+                                                                                                  : "Install License");
+}
+
 
 }
 }

@@ -55,6 +55,8 @@ public:
 
     QStringList licenseFromClipboard();
     QStringList licenseFromFile(const QString &fileName);
+    QString licenseFilePath() const;
+
     bool isLicenseValid() const;
     bool isLicenseValid(const QStringList &license);
     bool isGamsLicense(const QStringList &license);
@@ -66,7 +68,6 @@ public:
     int localDistribVersion();
     QString localDistribVersionString();
     QString localDistribVersionStringShort();
-    QString licenseFilePath() const;
 
     bool isAlpha() const;
     bool isBeta() const;
@@ -82,17 +83,13 @@ public:
     int today();
 
     static QString gamsConfigYamlLicenseLocation();
-
     static QString licenseDirectory();
     static QString licenseLocation();
 
 private:
     QString solverCodes(int solverId) const;
-
     void addPalMessagesToSysLog();
-
     static int errorCallback(int count, const char *message);
-
     QStringList processLicenseData(const QString &data);
 
 private:

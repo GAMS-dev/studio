@@ -236,7 +236,7 @@ QString GamsLicenseInfo::localDistribVersionString()
     char goldbuf[GMS_SSSIZE];
     palGetGold(mPAL, goldbuf);
     QString postfix;
-    if (palIsAlfa(mPAL))
+    if (palIsAlpha(mPAL))
         postfix = " Alpha";
     else if (palIsBeta(mPAL))
         postfix = " Beta";

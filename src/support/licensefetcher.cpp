@@ -113,11 +113,9 @@ void LicenseFetcher::analyzeContent(int exitCode)
     for(const auto &line : std::as_const(lines)) {
         if (line.startsWith(CLicenseInvalid1)) {
             QString licFile = line.mid(CLicenseInvalid1.length(), line.indexOf(CLicenseInvalid2) - CLicenseInvalid1.length());
-            QFile file(licFile);
-            if (file.exists() && file.open(QFile::ReadOnly)) {
-                QString content = file.readAll();
-                licenseText = content.split('\n');
-                file.close();
+            licenseText = readLicenseFile(licFile);
+            if(!licenseText.isEmpty()) {
+                mLicenseFile = licFile;
                 mLicense = licenseText;
                 checkLicense(mLicense);
             }
@@ -140,6 +138,7 @@ void LicenseFetcher::analyzeContent(int exitCode)
                 about << line + "\n";
             }
         } else if (line.startsWith("License ")) {
+            mLicenseFile = line.mid(QString("License ").length()).trimmed();
             about << line << "<br/>";
             licenseLines = true;
             about << "<pre style=\"font-family:'Courier New',monospace\">";
@@ -180,6 +179,54 @@ QString LicenseFetcher::getCurdirForAboutProcess()
 #endif
     mCurDir = curdir;
     return curdir;
+}
+
+QStringList LicenseFetcher::readLicenseFile(const QString &filename)
+{
+    QStringList res;
+    QFile file(filename);
+    if (file.exists() && file.open(QFile::ReadOnly)) {
+        QString content = file.readAll();
+        res = content.split('\n');
+        file.close();
+    }
+    return res;
+}
+
+void LicenseFetcher::ensureLicenseCopy()
+{
+    if (QFile::exists(mLicenseFile) && mLicenseType == lsNet) {
+        QString bkFile = mLicenseFile + ".~bk";
+        if (QFile::exists(bkFile)) {
+            LicenseFetcher fetcher(this);
+            fetcher.mLicense = fetcher.readLicenseFile(bkFile);
+            if (fetcher.mLicense.isEmpty())
+                return;
+            fetcher.checkLicense(fetcher.mLicense);
+            if (fetcher.mLicenseType == lsNet && fetcher.mAccessCode == mAccessCode)
+                return; // backup from same access code already exists
+            QFile::remove(bkFile);
+        }
+        QFile::copy(mLicenseFile, bkFile);
+    }
+}
+
+void LicenseFetcher::restoreLicenseCopy()
+{
+    if (QFile::exists(mLicenseFile) && mLicenseType == LicenseStateEnum::lsNetCheckout) {
+        QString bkFile = mLicenseFile + ".~bk";
+        if (QFile::exists(bkFile)) {
+            LicenseFetcher fetcher(this);
+            fetcher.mLicense = fetcher.readLicenseFile(bkFile);
+            if (fetcher.mLicense.isEmpty())
+                return;
+            fetcher.checkLicense(fetcher.mLicense);
+            if (fetcher.mLicenseType != lsNet || fetcher.mAccessCode != mAccessCode)
+                return; // backup is invalid
+            QFile::remove(mLicenseFile);
+        }
+        QFile::copy(bkFile, mLicenseFile);
+    }
 }
 
 void LicenseFetcher::checkLicense(const QStringList &lines)
@@ -302,8 +349,7 @@ void LicenseFetcher::fetchLicenseType(const QString &line)
             mLicenseServer = match.captured(1);
             mLicensePort = match.captured(2).toInt();
         }
-    }
-    else if (line.startsWith("node")) {
+    } else if (line.startsWith("node")) {
         mLicenseType = lsNetCheckout;
         QRegularExpressionMatch match = CRexCheckout.match(line);
         if (match.hasMatch())
@@ -330,7 +376,6 @@ void LicenseFetcher::updateState()
                 mLicenseState = lsNetCheckoutInvalid;
             }
         }
-
     } else {
         if (mDurationChar != '~') {
             bool ensureServer = mLicenseType == lsNet;
@@ -354,6 +399,12 @@ void LicenseFetcher::updateState()
             if (ensureServer) pingServer();
         }
     }
+    if (mLicenseState == lsNetCheckoutInvalid) {
+        restoreLicenseCopy();
+        fetchGamsLicense();
+        return;
+    } else
+        ensureLicenseCopy();
 
     emit stateChanged(mLicenseState, mExpire);
 }

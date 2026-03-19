@@ -62,6 +62,8 @@ private slots:
     void installAlp(int exitCode);
     void updateAboutLabel();
 
+    void on_cdEdit_textChanged(const QString &text);
+
 private:
     void getGamsLicenseText(bool forceFetch = false);
 
