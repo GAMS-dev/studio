@@ -28,6 +28,7 @@
 #include <QTimeZone>
 #include <QFile>
 #include <QTcpSocket>
+#include <QNetworkInformation>
 
 using namespace gams::studio::support::LicenseStateEnum;
 
@@ -49,6 +50,7 @@ LicenseFetcher::LicenseFetcher(QObject *parent)
     mBaseDate.setTimeZone(QTimeZone::utc());
     mGamsAboutProc->setCurDir(getCurdirForAboutProcess());
     connect(mGamsAboutProc, &GamsAboutProcess::finished, this, &LicenseFetcher::analyzeContent);
+    addNetworkWatcher();
 }
 
 LicenseFetcher::~LicenseFetcher()
@@ -201,6 +203,20 @@ QStringList LicenseFetcher::readLicenseFile(const QString &filename)
         file.close();
     }
     return res;
+}
+
+void LicenseFetcher::addNetworkWatcher()
+{
+    if (QNetworkInformation::loadBackendByFeatures(QNetworkInformation::Feature::Reachability)) {
+        QNetworkInformation *info = QNetworkInformation::instance();
+        QObject::connect(info, &QNetworkInformation::reachabilityChanged, this, [this](QNetworkInformation::Reachability reachability) {
+            if (reachability == QNetworkInformation::Reachability::Online && mLicenseType == LicenseStateEnum::lsNet) {
+                QTimer::singleShot(100, this, &LicenseFetcher::fetchGamsLicense);
+            } else {
+                QTimer::singleShot(100, this, &LicenseFetcher::pingServer);
+            }
+        });
+    }
 }
 
 void LicenseFetcher::ensureLicenseCopy()

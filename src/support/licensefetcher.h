@@ -75,6 +75,7 @@ private slots:
 protected:
     QString getCurdirForAboutProcess();
     QStringList readLicenseFile(const QString &filename);
+    void addNetworkWatcher();
     void ensureLicenseCopy();
     bool restoreLicenseCopy();
     void checkLicense(const QStringList &lines);
