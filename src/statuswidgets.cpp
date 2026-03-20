@@ -76,8 +76,8 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
 
     mLicense->setLayout(layout);
     mLicense->setFlat(true);
-    mLicense->setMaximumWidth(mLicense->height() * 1.5);
-    mLicense->setMinimumWidth(mLicense->height() * 1.5);
+    mLicense->setMaximumWidth(mLicense->height() * 1.6);
+    mLicense->setMinimumWidth(mLicense->height() * 1.6);
     mStatusBar->addPermanentWidget(mLicense);
     mLicense->setAutoFillBackground(true);
     connect(mLicense, &QPushButton::clicked, this, [this]() {
