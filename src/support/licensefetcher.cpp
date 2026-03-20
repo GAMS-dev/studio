@@ -142,8 +142,9 @@ void LicenseFetcher::analyzeContent(int exitCode)
             } else {
                 about << line + "\n";
             }
-        } else if (!isError && line.startsWith("License ")) {
-            mLicenseFile = line.mid(QString("License ").length()).trimmed();
+        } else if (line.startsWith("License ")) {
+            if (!isError)
+                mLicenseFile = line.mid(QString("License ").length()).trimmed();
             about << line << "<br/>";
             licenseLines = true;
             about << "<pre style=\"font-family:'Courier New',monospace\">";
