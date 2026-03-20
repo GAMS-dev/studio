@@ -36,7 +36,7 @@
       <enum>QTabWidget::TabShape::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>7</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -1228,8 +1228,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>30</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <attribute name="label">
@@ -2087,6 +2087,105 @@ li.checked::marker { content: &quot;\2612&quot;; }
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>gamsEdit</tabstop>
+  <tabstop>gamsBrowseButton</tabstop>
+  <tabstop>cb_skipwelcome</tabstop>
+  <tabstop>cb_restoretabs</tabstop>
+  <tabstop>cb_autosave</tabstop>
+  <tabstop>cb_openlst</tabstop>
+  <tabstop>cb_jumptoerror</tabstop>
+  <tabstop>cb_foregroundOnDemand</tabstop>
+  <tabstop>rb_openInCurrentProject</tabstop>
+  <tabstop>rb_openInAnyProject</tabstop>
+  <tabstop>cb_optionsStore</tabstop>
+  <tabstop>cb_dynamicMainFile</tabstop>
+  <tabstop>btn_export</tabstop>
+  <tabstop>btn_import</tabstop>
+  <tabstop>cb_EnableLog</tabstop>
+  <tabstop>cbGspNeedsMainFile</tabstop>
+  <tabstop>sbGspByFileCount</tabstop>
+  <tabstop>fontComboBox</tabstop>
+  <tabstop>sb_fontsize</tabstop>
+  <tabstop>cb_autoindent</tabstop>
+  <tabstop>cb_autoclose</tabstop>
+  <tabstop>cb_linewrap_editor</tabstop>
+  <tabstop>cb_highlightcurrent</tabstop>
+  <tabstop>cb_showlinenr</tabstop>
+  <tabstop>cb_highlightUnderCursor</tabstop>
+  <tabstop>cb_completerCasing</tabstop>
+  <tabstop>cb_smartTooltip</tabstop>
+  <tabstop>sb_tabsize</tabstop>
+  <tabstop>cb_completerAutoOpen</tabstop>
+  <tabstop>sb_highlightBound</tabstop>
+  <tabstop>cb_autoFoldDco</tabstop>
+  <tabstop>sb_highlightMaxLines</tabstop>
+  <tabstop>cb_clearlog</tabstop>
+  <tabstop>cb_linewrap_process</tabstop>
+  <tabstop>cb_writeLog</tabstop>
+  <tabstop>sb_nrLogBackups</tabstop>
+  <tabstop>cb_gdxDefaultSymbolView</tabstop>
+  <tabstop>cbLevel</tabstop>
+  <tabstop>cbMarginal</tabstop>
+  <tabstop>cbLower</tabstop>
+  <tabstop>cbUpper</tabstop>
+  <tabstop>cbScale</tabstop>
+  <tabstop>cbSqueezeDefaults</tabstop>
+  <tabstop>cbSqueezeTrailingZeroes</tabstop>
+  <tabstop>cbFormat</tabstop>
+  <tabstop>sbPrecision</tabstop>
+  <tabstop>rb_decSepStudio</tabstop>
+  <tabstop>le_decSepStudio</tabstop>
+  <tabstop>rb_decSepLocale</tabstop>
+  <tabstop>le_decSepSystem</tabstop>
+  <tabstop>rb_decSepCustom</tabstop>
+  <tabstop>le_decSepCustom</tabstop>
+  <tabstop>cbThemes</tabstop>
+  <tabstop>btRenameTheme</tabstop>
+  <tabstop>btCopyTheme</tabstop>
+  <tabstop>btRemoveTheme</tabstop>
+  <tabstop>btImportTheme</tabstop>
+  <tabstop>btExportTheme</tabstop>
+  <tabstop>miroEdit</tabstop>
+  <tabstop>miroBrowseButton</tabstop>
+  <tabstop>confirmNeosCheckBox</tabstop>
+  <tabstop>cbEngineStoreToken</tabstop>
+  <tabstop>sbEngineExpireValue</tabstop>
+  <tabstop>cbEngineExpireType</tabstop>
+  <tabstop>btEngineDialog</tabstop>
+  <tabstop>edUserGamsTypes</tabstop>
+  <tabstop>edAutoReloadTypes</tabstop>
+  <tabstop>cb_userLib</tabstop>
+  <tabstop>tb_userLibSelect</tabstop>
+  <tabstop>tb_userLibRemove</tabstop>
+  <tabstop>tb_userLibOpen</tabstop>
+  <tabstop>btn_resetHistory</tabstop>
+  <tabstop>btn_resetView</tabstop>
+  <tabstop>overrideExistingOptionCheckBox</tabstop>
+  <tabstop>addCommentAboveCheckBox</tabstop>
+  <tabstop>addEOLCommentCheckBox</tabstop>
+  <tabstop>deleteCommentAboveCheckbox</tabstop>
+  <tabstop>enableHelpCheckBox</tabstop>
+  <tabstop>autoUpdateBox</tabstop>
+  <tabstop>updateIntervalBox</tabstop>
+  <tabstop>checkUpdateButton</tabstop>
+  <tabstop>updateBrowser</tabstop>
+  <tabstop>txt_workspace</tabstop>
+  <tabstop>btn_browse</tabstop>
+  <tabstop>cbSwitchDefaultWorkDir</tabstop>
+  <tabstop>cleanTreeView</tabstop>
+  <tabstop>cleanAddButton</tabstop>
+  <tabstop>cleanDelButton</tabstop>
+  <tabstop>cleanFilterSelectAllButton</tabstop>
+  <tabstop>cleanFilterDeselectAllButton</tabstop>
+  <tabstop>cleanTableView</tabstop>
+  <tabstop>cleanWsSelectAllButton</tabstop>
+  <tabstop>cleanWsDeselectAllButton</tabstop>
+  <tabstop>cleanDryButton</tabstop>
+  <tabstop>cleanNowButton</tabstop>
+  <tabstop>cleanWsBox</tabstop>
+ </tabstops>
  <resources>
   <include location="../icons/icons.qrc"/>
  </resources>

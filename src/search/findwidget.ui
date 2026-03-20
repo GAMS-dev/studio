@@ -157,6 +157,12 @@
  <tabstops>
   <tabstop>edFind</tabstop>
   <tabstop>edReplace</tabstop>
+  <tabstop>bNext</tabstop>
+  <tabstop>bPrev</tabstop>
+  <tabstop>bClose</tabstop>
+  <tabstop>bReplace</tabstop>
+  <tabstop>bReplaceAll</tabstop>
+  <tabstop>bToggleReplace</tabstop>
  </tabstops>
  <resources>
   <include location="../../icons/icons.qrc"/>

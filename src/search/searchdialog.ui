@@ -778,20 +778,21 @@
  <tabstops>
   <tabstop>termComboBox</tabstop>
   <tabstop>replaceEdit</tabstop>
+  <tabstop>btn_forward</tabstop>
+  <tabstop>btn_backward</tabstop>
+  <tabstop>btn_FindAll</tabstop>
+  <tabstop>btn_ReplaceAll</tabstop>
+  <tabstop>btn_Replace</tabstop>
+  <tabstop>btn_clear</tabstop>
+  <tabstop>cb_caseSens</tabstop>
+  <tabstop>cb_regex</tabstop>
+  <tabstop>cb_wholeWords</tabstop>
+  <tabstop>scopeComboBox</tabstop>
   <tabstop>combo_includePattern</tabstop>
   <tabstop>combo_excludePattern</tabstop>
   <tabstop>directoryComboBox</tabstop>
   <tabstop>btn_browse</tabstop>
   <tabstop>cb_subdirs</tabstop>
-  <tabstop>cb_caseSens</tabstop>
-  <tabstop>cb_regex</tabstop>
-  <tabstop>cb_wholeWords</tabstop>
-  <tabstop>scopeComboBox</tabstop>
-  <tabstop>btn_backward</tabstop>
-  <tabstop>btn_forward</tabstop>
-  <tabstop>btn_clear</tabstop>
-  <tabstop>btn_Replace</tabstop>
-  <tabstop>btn_ReplaceAll</tabstop>
  </tabstops>
  <resources/>
  <connections/>
