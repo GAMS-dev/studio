@@ -456,8 +456,12 @@ void GamsLicensingDialog::updateAboutLabel()
     ui->idEdit->setText(mLicenseFetcher->accessCode());
     ui->cdEdit->setEnabled((mLicenseFetcher->state() >= lsNet && mLicenseFetcher->state() < lsNetCheckout)
                            || mLicenseFetcher->state() == LicenseStateEnum::lsNetCheckoutInvalid);
-    ui->cdEdit->setPlaceholderText(ui->cdEdit->isEnabled() ? "Checkout duration in hours (optional)"
-                                                           : "Network license already checked out");
+    if (ui->cdEdit->isEnabled())
+        ui->cdEdit->setPlaceholderText("Checkout duration in hours (optional)");
+    else if (mLicenseFetcher->state() >= lsNetCheckout)
+        ui->cdEdit->setPlaceholderText("Network license already checked out");
+    else
+        ui->cdEdit->setPlaceholderText("");
     if (!ui->cdEdit->isEnabled())
         ui->cdEdit->setText("");
     on_cdEdit_textChanged(ui->cdEdit->text());
