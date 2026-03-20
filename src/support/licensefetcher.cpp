@@ -39,8 +39,7 @@ namespace support {
 const QRegularExpression CRexBaseDate(R"(G(\d{6})[+\-|])");
 const QRegularExpression CRexCheckout(R"(^node:\d+@(\d+)_)");
 const QRegularExpression CRexServer(R"(^server:([a-zA-Z0-9.-]+)_port:(\d+))");
-const QString CLicenseInvalid1("*** Error: The installed license ");
-const QString CLicenseInvalid2(" is invalid.");
+const QString CLicenseInvalid("*** Error:");
 
 LicenseFetcher::LicenseFetcher(QObject *parent)
     : QObject{parent}
@@ -92,6 +91,7 @@ void LicenseFetcher::stopFetching()
 void LicenseFetcher::analyzeContent(int exitCode)
 {
     mLastExitCode = exitCode;
+    mLicenseFile = QString();
     if (exitCode) {
         mFormattedContent = "Error: Fetching GAMS system information. Please check the system log.";
         mLastErrorMessage = mGamsAboutProc->logMessages();
@@ -110,15 +110,16 @@ void LicenseFetcher::analyzeContent(int exitCode)
     QString modulesLine;
     QStringList licenseText;
     int licLineCount = -1;
+    bool isError = lines.length() < 1 || lines.at(0).startsWith(CLicenseInvalid);
+    int lineNr = 0;
     for(const auto &line : std::as_const(lines)) {
-        if (line.startsWith(CLicenseInvalid1)) {
-            QString licFile = line.mid(CLicenseInvalid1.length(), line.indexOf(CLicenseInvalid2) - CLicenseInvalid1.length());
-            licenseText = readLicenseFile(licFile);
-            if(!licenseText.isEmpty()) {
-                mLicenseFile = licFile;
-                mLicense = licenseText;
-                checkLicense(mLicense);
-            }
+        ++lineNr;
+        if (isError && lineNr == 1 && line.startsWith(CLicenseInvalid + " The installed license")) {
+            int start = CLicenseInvalid.length() + QString(" The installed license").length();
+            mLicenseFile = line.mid(start, line.indexOf(" is invalid.") - CLicenseInvalid.length());
+        }
+        if (isError && line.startsWith("License file: ")) {
+            mLicenseFile = line.mid(QString("License file: ").length()).trimmed();
         }
         if (licenseLines) {
             if (licLineCount >= 0)
@@ -137,7 +138,7 @@ void LicenseFetcher::analyzeContent(int exitCode)
             } else {
                 about << line + "\n";
             }
-        } else if (line.startsWith("License ")) {
+        } else if (!isError && line.startsWith("License ")) {
             mLicenseFile = line.mid(QString("License ").length()).trimmed();
             about << line << "<br/>";
             licenseLines = true;
@@ -153,9 +154,18 @@ void LicenseFetcher::analyzeContent(int exitCode)
             licenseText << line;
     }
 
+    if (isError && QFile::exists(mLicenseFile)) {
+        licenseText = readLicenseFile(mLicenseFile);
+        if(licenseText.isEmpty()) {
+            mLicenseFile = QString();
+        } else {
+            mLicense = licenseText;
+            checkLicense(mLicense);
+        }
+    }
     mFormattedContent = about.join("");
     mLastErrorMessage.clear();
-    updateState();
+    updateState(isError);
 }
 
 QString LicenseFetcher::getCurdirForAboutProcess()
@@ -361,7 +371,7 @@ void LicenseFetcher::fetchLicenseType(const QString &line)
     }
 }
 
-void LicenseFetcher::updateState()
+void LicenseFetcher::updateState(bool isError)
 {
     mFetchTimer.stop();
     mLicenseState = mLicenseType;

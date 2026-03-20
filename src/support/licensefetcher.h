@@ -82,7 +82,7 @@ protected:
     void fetchLicenseValues(const QString &lineLic, const QString &lineVal);
     void fetchAccessCode(const QString &line);
     void fetchLicenseType(const QString &line);
-    void updateState();
+    void updateState(bool isError);
     void pingServer();
 
 private:
