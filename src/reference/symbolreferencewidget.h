@@ -69,6 +69,7 @@ public slots:
 
 protected:
     void keyPressEvent(QKeyEvent *e) override;
+    bool event(QEvent *event) override;
 
 private:
     Ui::SymbolReferenceWidget *ui;
