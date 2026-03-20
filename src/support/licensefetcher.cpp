@@ -29,8 +29,10 @@
 #include <QFile>
 #include <QTcpSocket>
 #include <QNetworkInformation>
+#include <chrono>
 
 using namespace gams::studio::support::LicenseStateEnum;
+using namespace std::chrono_literals;
 
 namespace gams {
 namespace studio {
@@ -211,9 +213,9 @@ void LicenseFetcher::addNetworkWatcher()
         QNetworkInformation *info = QNetworkInformation::instance();
         QObject::connect(info, &QNetworkInformation::reachabilityChanged, this, [this](QNetworkInformation::Reachability reachability) {
             if (reachability == QNetworkInformation::Reachability::Online && mLicenseType == LicenseStateEnum::lsNet) {
-                QTimer::singleShot(100, this, &LicenseFetcher::fetchGamsLicense);
+                QTimer::singleShot(100ms, this, &LicenseFetcher::fetchGamsLicense);
             } else {
-                QTimer::singleShot(100, this, &LicenseFetcher::pingServer);
+                QTimer::singleShot(100ms, this, &LicenseFetcher::pingServer);
             }
         });
     }
