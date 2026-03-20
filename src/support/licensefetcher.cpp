@@ -211,7 +211,7 @@ void LicenseFetcher::ensureLicenseCopy()
     }
 }
 
-void LicenseFetcher::restoreLicenseCopy()
+bool LicenseFetcher::restoreLicenseCopy()
 {
     if (QFile::exists(mLicenseFile) && mLicenseType == LicenseStateEnum::lsNetCheckout) {
         QString bkFile = mLicenseFile + ".~bk";
@@ -219,14 +219,17 @@ void LicenseFetcher::restoreLicenseCopy()
             LicenseFetcher fetcher(this);
             fetcher.mLicense = fetcher.readLicenseFile(bkFile);
             if (fetcher.mLicense.isEmpty())
-                return;
+                return false;
             fetcher.checkLicense(fetcher.mLicense);
             if (fetcher.mLicenseType != lsNet || fetcher.mAccessCode != mAccessCode)
-                return; // backup is invalid
+                return false; // backup is invalid
             QFile::remove(mLicenseFile);
         }
         QFile::copy(bkFile, mLicenseFile);
+        emit info("Checkout expired, switched back to network license.");
+        return true;
     }
+    return false;
 }
 
 void LicenseFetcher::checkLicense(const QStringList &lines)
@@ -349,11 +352,12 @@ void LicenseFetcher::fetchLicenseType(const QString &line)
             mLicenseServer = match.captured(1);
             mLicensePort = match.captured(2).toInt();
         }
-    } else if (line.startsWith("node")) {
-        mLicenseType = lsNetCheckout;
+    } else if (line.startsWith("node:")) {
         QRegularExpressionMatch match = CRexCheckout.match(line);
-        if (match.hasMatch())
+        if (match.hasMatch()) {
+            mLicenseType = lsNetCheckout;
             mCheckoutHours = match.captured(1).toInt();
+        }
     }
 }
 
@@ -400,8 +404,8 @@ void LicenseFetcher::updateState()
         }
     }
     if (mLicenseState == lsNetCheckoutInvalid) {
-        restoreLicenseCopy();
-        fetchGamsLicense();
+        if (restoreLicenseCopy())
+            fetchGamsLicense();
         return;
     } else
         ensureLicenseCopy();

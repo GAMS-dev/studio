@@ -64,6 +64,7 @@ public:
 signals:
     void stateChanged(LicenseState state, const QDateTime &timeout = QDateTime());
     void error(const QString &message);
+    void info(const QString &message);
 
 public slots:
     void fetchGamsLicense();
@@ -75,7 +76,7 @@ protected:
     QString getCurdirForAboutProcess();
     QStringList readLicenseFile(const QString &filename);
     void ensureLicenseCopy();
-    void restoreLicenseCopy();
+    bool restoreLicenseCopy();
     void checkLicense(const QStringList &lines);
     void fetchBaseDate(const QString &line);
     void fetchLicenseValues(const QString &lineLic, const QString &lineVal);
