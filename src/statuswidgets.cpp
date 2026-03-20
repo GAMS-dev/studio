@@ -19,6 +19,7 @@
  */
 #include "statuswidgets.h"
 #include "theme.h"
+#include "support/licensebutton.h"
 
 #include <QMainWindow>
 #include <QStatusBar>
@@ -57,14 +58,14 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
     mStatusBar->addPermanentWidget(mEditEncode);
     mEditEncode->setMinimumWidth(mEditEncode->height()*3);
 
-    mLicense = new QPushButton("", mStatusBar);
+    mLicense = new support::LicenseButton(mStatusBar);
     QHBoxLayout *layout = new QHBoxLayout(mLicense);
     mLicenseIconLabel = new QLabel();
     mLicenseIconLabel->setPixmap(QPixmap(":/solid/new-w"));
     layout->addWidget(mLicenseIconLabel);
     layout->addStretch();
 
-    layout->setContentsMargins(3, 2, 6, 2);
+    layout->setContentsMargins(5, 2, 6, 2);
     mLicenseTextLabel = new QLabel("");
     QFont font = mLicenseTextLabel->font();
     font.setPointSize(font.pointSize() + 1);
@@ -75,8 +76,8 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
 
     mLicense->setLayout(layout);
     mLicense->setFlat(true);
-    mLicense->setMaximumWidth(mLicense->height() * 1.4);
-    mLicense->setMinimumWidth(mLicense->height() * 1.4);
+    mLicense->setMaximumWidth(mLicense->height() * 1.5);
+    mLicense->setMinimumWidth(mLicense->height() * 1.5);
     mStatusBar->addPermanentWidget(mLicense);
     mLicense->setAutoFillBackground(true);
     connect(mLicense, &QPushButton::clicked, this, [this]() {
@@ -244,7 +245,7 @@ void StatusWidgets::setLicenseState(support::LicenseState licenseState, const QD
     }
 
     pal.setColor(QPalette::ButtonText, Qt::white);
-    pal.setColor(QPalette::Button, background);
+    pal.setColor(QPalette::AlternateBase, background);
     mLicense->setPalette(pal);
     mLicenseTextLabel->setText(text);
     mLicenseIconLabel->setPixmap(icon.pixmap(14,14));
