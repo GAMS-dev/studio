@@ -623,15 +623,21 @@ void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
     if (engineStatus > EngineManager::Queued && mProcState == Proc3Queued) {
         setProcState(Proc4Monitor);
     }
-    if (engineStatus == EngineManager::Finished && mProcState == Proc4Monitor) {
+    if ((engineStatus == EngineManager::Finished || engineStatus == EngineManager::Cancelled)
+        && (mProcState == Proc4Monitor || mProcState == Proc3Queued)) {
         mManager->getLog();
         if (gamsExitCode) {
             QByteArray code = QString::number(gamsExitCode).toLatin1();
             mLastError = "GAMS terminated with exit code " + code;
             emit newStdChannelData("\n" + mLastError + "\n");
         }
-        setProcState(Proc5GetResult);
-        mManager->getOutputFile();
+        if (engineStatus == EngineManager::Finished) {
+            setProcState(Proc5GetResult);
+            mManager->getOutputFile();
+        } else {
+            emit newStdChannelData("\nThe job has been canceled.\n");
+            setProcState(ProcIdle);
+        }
     } else if (mProcState >= Proc3Queued) {
         jobIsQueued();
     }
@@ -799,10 +805,12 @@ void EngineProcess::reAuthorize(const QString &token)
 void EngineProcess::pollStatus()
 {
     if (!mPollSlow || mPollCounter == 0) {
-        if (mProcState == Proc3Queued || mProcState > Proc4Monitor)
+        if (mProcState == Proc3Queued || mProcState > Proc4Monitor) {
             mManager->getJobStatus();
-        else if (mProcState > Proc3Queued)
+        } else if (mProcState > Proc3Queued) {
+            mManager->getJobStatus();
             mManager->getLog();
+        }
     }
     mPollTimer.start();
     mPollCounter = (mPollCounter+1) % 10;
