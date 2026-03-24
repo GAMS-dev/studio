@@ -368,11 +368,11 @@ void TextView::clearSelectedFind()
 void TextView::findInSelection(const QRegularExpression &searchRegex, FileMeta* file,
                                QList<search::Result> *results, bool showResults)
 {
-    if (!mEdit->hasSearchSelection()) {
+    if (!mMapper->hasSearchSelection()) {
         mEdit->updateSearchSelection();
         mMapper->updateSearchSelection();
     }
-    if (!mEdit->hasSearchSelection()) return;
+    if (!mMapper->hasSearchSelection()) return;
     SearchWorker sw(SearchFile(file), searchRegex, mMapper->searchSelectionStart(), mMapper->searchSelectionEnd(),
                     results, showResults);
     sw.findInFiles();
@@ -682,6 +682,31 @@ void TextView::init()
     recalcVisibleLines();
 }
 
+void TextView::adjustSearchSelection()
+{
+    if (!mMapper->hasSearchSelection()) return;
+
+    QPoint from = QPoint(mMapper->searchSelectionStart());
+    QPoint to = QPoint(mMapper->searchSelectionEnd());
+
+    from.ry() -= mMapper->visibleTopLine();
+    if (from.y() < 0)
+        from = QPoint(0,0);
+    else if (from.y() > mMapper->visibleLineCount())
+        return;
+
+    to.ry() -= mMapper->visibleTopLine();
+    if (to.y() < 0)
+        return;
+    else if (to.y() > mMapper->visibleLineCount())
+        to = QPoint(mEdit->document()->lastBlock().text().length(), mMapper->visibleLineCount());
+
+    QTextCursor cur(mEdit->document());
+    cur.setPosition(mEdit->document()->findBlockByLineNumber(from.y()).position() + from.x());
+    cur.setPosition(mEdit->document()->findBlockByLineNumber(to.y()).position() + to.x(), QTextCursor::KeepAnchor);
+    mEdit->adjustSearchSelection(cur);
+}
+
 void TextView::updateVScrollZone()
 {
     verticalScrollBar()->setPageStep(mMapper->visibleLineCount());
@@ -711,6 +736,7 @@ void TextView::topLineMoved()
             mCurrentVisibleTopLine = mMapper->visibleTopLine();
             mCurrentDataLength = dat.size();
             mEdit->setPlainText(dat);
+            adjustSearchSelection();
         }
         if (mCurrentFormats != formats) {
             mCurrentFormats = formats;

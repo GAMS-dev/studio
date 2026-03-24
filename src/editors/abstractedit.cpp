@@ -345,6 +345,11 @@ QTextCursor AbstractEdit::cursorForPositionCut(const QPoint &pos) const
     return cur;
 }
 
+void AbstractEdit::adjustSearchSelection(const QTextCursor &cursor)
+{
+    mSearchSelection = cursor;
+}
+
 bool AbstractEdit::hasSearchSelection()
 {
     return mIsSearchSelectionActive;
