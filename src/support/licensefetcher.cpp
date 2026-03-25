@@ -42,6 +42,7 @@ namespace support {
 const QRegularExpression CRexBaseDate(R"(G(\d{6})[+\-|])");
 const QRegularExpression CRexCheckout(R"(^node:\d+@(\d+)_)");
 const QRegularExpression CRexServer(R"(^server:([a-zA-Z0-9.-]+)_port:(\d+))");
+const QRegularExpression CRexInvalid(R"(^\*\*\* Error: The installed license (.+) is invalid.)");
 const QString CLicenseInvalid("*** Error:");
 
 LicenseFetcher::LicenseFetcher(QObject *parent)
@@ -118,9 +119,10 @@ void LicenseFetcher::analyzeContent(int exitCode)
     int lineNr = 0;
     for(const auto &line : std::as_const(lines)) {
         ++lineNr;
-        if (isError && lineNr == 1 && line.startsWith(CLicenseInvalid + " The installed license")) {
-            int start = CLicenseInvalid.length() + QString(" The installed license").length();
-            mLicenseFile = line.mid(start, line.indexOf(" is invalid.") - CLicenseInvalid.length());
+        if (isError && lineNr == 1) {
+            QRegularExpressionMatch match = CRexInvalid.match(line);
+            if (match.hasMatch())
+                mLicenseFile = match.captured(1);
         }
         if (isError && line.startsWith("License file: ")) {
             mLicenseFile = line.mid(QString("License file: ").length()).trimmed();
@@ -229,11 +231,14 @@ void LicenseFetcher::ensureLicenseCopy()
         if (QFile::exists(bkFile)) {
             LicenseFetcher fetcher(this);
             fetcher.mLicense = fetcher.readLicenseFile(bkFile);
-            if (fetcher.mLicense.isEmpty())
+            if (fetcher.mLicense.isEmpty()) {
+                DEB() << "License backup is invalid";
                 return;
+            }
             fetcher.checkLicense(fetcher.mLicense);
-            if (fetcher.mLicenseType == lsNet && fetcher.mAccessCode == mAccessCode)
+            if (fetcher.mLicenseType == lsNet && fetcher.mAccessCode == mAccessCode) {
                 return; // backup from same access code already exists
+            }
             QFile::remove(bkFile);
         }
         QFile::copy(mLicenseFile, bkFile);
