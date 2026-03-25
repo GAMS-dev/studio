@@ -2,6 +2,7 @@ Version 1.24.3  *
 ==================
 - Fixed search-in-selection disappeared after scrolling in LST viewer.
 - Improved position and timeout of the tooltip in the Reference viewer.
+- Fixed interrupt of a GAMS process couldn't terminate gracefully on Linux and macOS.
 
 Version 1.24.2
 ==================
