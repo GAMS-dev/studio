@@ -31,6 +31,7 @@
 #include <signal.h>
 #elif __APPLE__
 #include <csignal>
+#include <unistd.h>
 #else
 #include <signal.h>
 #include <sys/types.h>
@@ -48,6 +49,9 @@ AbstractProcess::AbstractProcess(const QString &appName, QObject *parent)
         qRegisterMetaType<QProcess::ProcessState>();
     if (!QMetaType::isRegistered(qMetaTypeId<NodeId>()))
         qRegisterMetaType<NodeId>();
+#ifdef __APPLE__
+    mProcess.setChildProcessModifier([](){::setpgid(0,0);});
+#endif
 }
 
 void AbstractProcess::setInputFile(const QString &file)
@@ -109,7 +113,9 @@ void AbstractProcess::interruptIntern(bool hardKill)
         mProcess.kill();
     else {
         auto pid = mProcess.processId();
-        kill(pid, SIGINT);
+        signal(SIGINT, SIG_IGN);
+        kill(qAbs(pid), SIGINT);
+        signal(SIGINT, SIG_DFL);
     }
 //    mProcess.waitForFinished(-1); // JM: this causes crashes and other threads by disturbing the process order (#2665, #2668, and probably other)
     emit interruptGenerated();
