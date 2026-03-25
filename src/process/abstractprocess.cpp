@@ -30,6 +30,7 @@
 #include <Windows.h>
 #include <signal.h>
 #elif __APPLE__
+#include <csignal>
 #else
 #include <signal.h>
 #include <sys/types.h>
@@ -106,8 +107,10 @@ void AbstractProcess::interruptIntern(bool hardKill)
 #elif __APPLE__
     if (hardKill)
         mProcess.kill();
-    else
-        mProcess.terminate();
+    else {
+        auto pid = mProcess.processId();
+        kill(pid, SIGINT);
+    }
 //    mProcess.waitForFinished(-1); // JM: this causes crashes and other threads by disturbing the process order (#2665, #2668, and probably other)
     emit interruptGenerated();
 #else // Linux
@@ -117,7 +120,7 @@ void AbstractProcess::interruptIntern(bool hardKill)
     if (hardKill)
         kill(pid, SIGKILL);
     else
-        kill(pid, SIGTERM);
+        kill(pid, SIGINT);
     emit interruptGenerated();
 #endif
 }
