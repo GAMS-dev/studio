@@ -92,7 +92,6 @@ HEADERS += \
     $$SRCPATH/numerics/doubleFormat.h \
     $$SRCPATH/numerics/doubleformatter.h \
     $$SRCPATH/../extern/dtoaloc/dtoaLoc.h \
-    $$SRCPATH/process.h \
     $$SRCPATH/process/abstractprocess.h \
     $$SRCPATH/process/connectprocess.h \
     $$SRCPATH/settings.h \
