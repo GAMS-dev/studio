@@ -612,7 +612,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                         fullPath.append(queryPrefix);
                     else
                         fullPath.append("?");
-                    fullPath.append("arguments=").append(::OpenAPI::toStringValue(t));
+                    fullPath.append("arguments=").append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(t)));
                 }
             } else if (QString("multi").indexOf("ssv") == 0) {
                 if (fullPath.indexOf("?") > 0)
@@ -624,7 +624,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                     if (count > 0) {
                         fullPath.append((true)? queryDelimiter : QUrl::toPercentEncoding(queryDelimiter));
                     }
-                    fullPath.append(::OpenAPI::toStringValue(t));
+                    fullPath.append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(t)));
                     count++;
                 }
             } else if (QString("multi").indexOf("tsv") == 0) {
@@ -637,7 +637,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                     if (count > 0) {
                         fullPath.append("\t");
                     }
-                    fullPath.append(::OpenAPI::toStringValue(t));
+                    fullPath.append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(t)));
                     count++;
                 }
             } else if (QString("multi").indexOf("csv") == 0) {
@@ -650,7 +650,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
-                    fullPath.append(::OpenAPI::toStringValue(t));
+                    fullPath.append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(t)));
                     count++;
                 }
             } else if (QString("multi").indexOf("pipes") == 0) {
@@ -663,7 +663,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
-                    fullPath.append(::OpenAPI::toStringValue(t));
+                    fullPath.append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(t)));
                     count++;
                 }
             } else if (QString("multi").indexOf("deepObject") == 0) {
@@ -676,7 +676,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
-                    fullPath.append(::OpenAPI::toStringValue(t));
+                    fullPath.append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(t)));
                     count++;
                 }
             }
