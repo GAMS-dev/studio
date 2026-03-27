@@ -4,6 +4,7 @@ Version 1.24.3  *
 - Improved position and timeout of the tooltip in the Reference viewer.
 - Fixed interrupt of a GAMS process couldn't terminate gracefully on Linux and macOS.
 - Added detection for externally canceled GAMS Engine jobs.
+- Fixed GAMS Engine processing of models containing `#` in the model name.
 
 Version 1.24.2
 ==================
