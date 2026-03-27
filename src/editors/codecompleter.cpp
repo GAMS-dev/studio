@@ -503,7 +503,8 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
 {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     int type = sourceModel()->data(index, Qt::UserRole).toInt();
-    if (type & ccSufName) return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
+    if (type & ccSufName)
+        return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     if (!test(type, mTypeFilter)) return false;
     QString text = sourceModel()->data(index, Qt::DisplayRole).toString();
     if (type & cc_SubDco || type & ccExec || type & ccExecT || type & ccAbort) {
@@ -1245,6 +1246,19 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
             dCount = 0;
         if (dCount == 2)
             break;
+    }
+
+    if (pos > 0 && pos <= line.length() && line.at(pos-1) == '%') {
+        for (int i = pos-2; i >= 0; --i) {
+            QChar c = line.at(i);
+            if (c == '%') {
+                filter &= ~0x000000E0;
+                break;
+            }
+            if (c == '_' || c == '.' || (c>='A' && c<='Z') || (c>='a' && c<='z'))
+                continue;
+            break;
+        }
     }
 
     int subType = 0;
