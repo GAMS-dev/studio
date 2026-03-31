@@ -5,6 +5,7 @@ Version 1.24.3  *
 - Fixed interrupt of a GAMS process couldn't terminate gracefully on Linux and macOS.
 - Added detection for externally canceled GAMS Engine jobs.
 - Fixed GAMS Engine processing of models containing `#` in the model name.
+- Fixed an issue causing the syntax completer to open unexpectedly on closing `%` characters.
 
 Version 1.24.2
 ==================
