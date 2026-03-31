@@ -57,7 +57,6 @@ ConfigParamEditor::ConfigParamEditor(FileKind kind,
     initToolBar();
     initOptionTableView();
     initDefinitionTreeView();
-    initTabNavigation( false );
     initMessageControl( false );
 
     connect(ui->optionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &ConfigParamEditor::on_selectRow, Qt::UniqueConnection);
@@ -395,4 +394,3 @@ void ConfigParamEditor::addOptionModelFromDefinition(int row, const QModelIndex 
 } // namepsace option
 } // namespace studio
 } // namespace gams
-

@@ -65,7 +65,6 @@ protected:
    void initOptionTableView();
    void initOptionTableControl();
    void initDefinitionTreeView();
-   void initTabNavigation(bool visible=false);
    void initMessageControl(bool visible=false);
 
    bool isThereARow() const;

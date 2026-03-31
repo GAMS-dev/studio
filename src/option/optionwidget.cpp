@@ -244,19 +244,6 @@ void OptionWidget::initDefinitionTreeView()
     connect(ui->definitionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition, Qt::UniqueConnection);
 }
 
-void OptionWidget::initTabNavigation(bool isFileEditor)
-{
-    ui->optionTableView->setTabKeyNavigation(true);
-
-    setTabOrder(ui->definitionGroup, ui->definitionSearch);
-    setTabOrder(ui->definitionSearch, ui->definitionTreeView);
-    if (isFileEditor) {
-       setTabOrder(ui->definitionTreeView, ui->compactViewCheckBox);
-       setTabOrder(ui->compactViewCheckBox, ui->openAsTextButton);
-       setTabOrder(ui->openAsTextButton, ui->messageCtrlWidget);
-    }
-}
-
 void OptionWidget::initMessageControl(bool visible)
 {
     mLogEdit = new SystemLogEdit(this);
@@ -268,7 +255,6 @@ void OptionWidget::initMessageControl(bool visible)
     ui->messageTabWidget->setVisible( visible );
     ui->optionFileCtrlwidget->setVisible( visible );
 }
-
 
 bool OptionWidget::isThereARow() const
 {
