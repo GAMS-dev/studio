@@ -2302,12 +2302,17 @@ void MainWindow::activeMainTabChanged(int index)
     for (int i = 1; i < mainTabs()->count(); ++i)
         updateTabIcon(nullptr, i);
     if (!mWp) return;
-    if (mCurrentMainTab >= 0) updateTabIcon(nullptr, mCurrentMainTab);
-    if  (index >= 0) updateTabIcon(nullptr, index);
-    mCurrentMainTab = index;
+    if (mCurrentMainTab >= 0)
+        updateTabIcon(nullptr, mCurrentMainTab);
+    if  (index >= 0)
+        updateTabIcon(nullptr, index);
+
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
+    if (mCurrentMainTab == 0 && index >= 0)
+        loadCommandLines(nullptr, mRecent.project());
     mProjectRepo.proxyModel()->invalidate();
 
+    mCurrentMainTab = index;
     if (editWidget != mRecent.editor())
         updateRecentEdit(mRecent.editor(), editWidget);
     ui->findWidget->setEditWidget(editWidget);
