@@ -6,6 +6,7 @@ Version 1.24.3  *
 - Added detection for externally canceled GAMS Engine jobs.
 - Fixed GAMS Engine processing of models containing `#` in the model name.
 - Fixed an issue causing the syntax completer to open unexpectedly on closing `%` characters.
+- Fixed the `tab` navigation sequence for input elements.
 
 Version 1.24.2
 ==================
