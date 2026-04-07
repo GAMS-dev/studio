@@ -9,6 +9,7 @@ Version 1.24.3  *
 - Fixed the `tab` navigation sequence for input elements.
 - Fixed missing link after a MIRO deployment.
 - Fixed update checker to be independent of the build order of GAMS updates.
+- Fixed lost command line parameters after switching from the Welcome Page to another tab.
 
 Version 1.24.2
 ==================
