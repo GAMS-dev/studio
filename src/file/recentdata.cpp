@@ -43,7 +43,7 @@ void RecentData::setEditor(FileMeta *fileMeta, QWidget *edit)
 
     if (QWidget *lastEdit = editor()) {
         if (option::SolverOptionEditor* soEdit = ViewHelper::toSolverOptionEdit(lastEdit)) {
-            MainWindow::disconnect(soEdit, &option::SolverOptionEditor::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
+            MainWindow::disconnect(soEdit, &option::SolverOptionEditor::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount);
         } else {
             if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(lastEdit)) {
                 MainWindow::disconnect(aEdit, &AbstractEdit::cursorPositionChanged, mMainWindow, &MainWindow::updateStatusPos);
@@ -80,15 +80,13 @@ void RecentData::setEditor(FileMeta *fileMeta, QWidget *edit)
     }
 
     if (option::SolverOptionEditor* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
-            MainWindow::connect(soEdit, &option::SolverOptionEditor::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
+        MainWindow::connect(soEdit, &option::SolverOptionEditor::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount);
     } else {
         if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit)) {
             MainWindow::connect(aEdit, &AbstractEdit::cursorPositionChanged, mMainWindow, &MainWindow::updateStatusPos);
             MainWindow::connect(aEdit, &AbstractEdit::selectionChanged, mMainWindow, &MainWindow::updateStatusPos);
             MainWindow::connect(aEdit, &AbstractEdit::blockCountChanged, mMainWindow, &MainWindow::updateStatusLineCount);
             MainWindow::connect(aEdit->document(), &QTextDocument::contentsChange, mMainWindow, &MainWindow::currentDocumentChanged);
-        } else if (option::SolverOptionEditor* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
-            MainWindow::connect(soEdit, &option::SolverOptionEditor::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
         }
         if (TextView* tv = ViewHelper::toTextView(edit)) {
             MainWindow::connect(tv, &TextView::selectionChanged, mMainWindow, &MainWindow::updateStatusPos, Qt::UniqueConnection);

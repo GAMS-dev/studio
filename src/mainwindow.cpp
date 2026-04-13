@@ -2308,8 +2308,6 @@ void MainWindow::activeMainTabChanged(int index)
         updateTabIcon(nullptr, index);
 
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
-    if (mCurrentMainTab == 0 && index >= 0)
-        loadCommandLines(nullptr, mRecent.project());
     mProjectRepo.proxyModel()->invalidate();
 
     mCurrentMainTab = index;
@@ -4787,10 +4785,10 @@ void MainWindow::openDelayedFiles()
 
 void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
 {
-    FileMeta *oldFile = mFileMetaRepo.fileMeta(old);
-    if (!oldFile) old = nullptr;
+    FileMeta *oldFm = mFileMetaRepo.fileMeta(old);
+    if (!oldFm) old = nullptr;
     QWidget *wid = now;
-    PExProjectNode *projOld = (!old || old == now) ? mRecent.lastProject() : mRecent.project();
+    PExProjectNode *projOld = !old  ? nullptr : mRecent.project();
     while (wid && wid->parentWidget()) {
         if (wid->parentWidget() == ui->splitter) {
             PinKind pinKind = wid == ui->mainTabs->parentWidget() ? pkNone : PinKind(mPinView->orientation());
