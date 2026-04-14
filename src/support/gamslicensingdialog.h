@@ -63,7 +63,8 @@ private slots:
 private:
     void fetchGamsLicense();
 
-    void setSolverLines(QStringList &about);
+    void setSolverLines(GamsLicenseInfo &liceInfo, QStringList &about) const;
+    void setNonSolverLines(GamsLicenseInfo &liceInfo, QStringList &about) const;
 
     QString getCurdirForAboutProcess();
 

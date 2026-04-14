@@ -88,10 +88,9 @@ void GamsLicensingDialog::fetchGamsLicense()
     mGamsAboutProc->execute();
 }
 
-void GamsLicensingDialog::setSolverLines(QStringList& about)
+void GamsLicensingDialog::setSolverLines(GamsLicenseInfo &liceInfo, QStringList& about) const
 {
     about << "<br/>Licensed GAMS solvers:";
-    GamsLicenseInfo liceInfo;
     QHash<QString, QStringList> groups;
     auto solverNames = liceInfo.solverNames().values();
     for (const auto& name : std::as_const(solverNames)) {
@@ -120,7 +119,21 @@ void GamsLicensingDialog::setSolverLines(QStringList& about)
     if (groups.contains("Expired")) {
         about << QString("<li>Expired: %2</li>").arg(groups["Expired"].join(", "));
     }
-    about << "</ul><br/>";
+    about << "</ul>";
+}
+
+void GamsLicensingDialog::setNonSolverLines(GamsLicenseInfo &liceInfo, QStringList &about) const
+{
+    QStringList lines;
+    if (liceInfo.hasMiroConnector())
+        lines << "<li>MIRO Connector</li>";
+    if (false)
+        lines << "<li>Secure Module</li>";        // TODO(JM) implement detection for Secure Module
+    if (!lines.isEmpty()) {
+        about << "Licensed non-solver components:<ul>";
+        about << lines;
+        about << "</ul>";
+    }
 }
 
 QString GamsLicensingDialog::getCurdirForAboutProcess()
@@ -364,7 +377,7 @@ void GamsLicensingDialog::updateAboutLabel(int exitCode)
         lines.removeLast();
         lines.removeLast();
     }
-    for(const auto &line : std::as_const(lines)) {
+    for (const auto &line : std::as_const(lines)) {
         if (licenseLines) {
             if (line.startsWith("#L")) {
                 continue;
@@ -386,8 +399,9 @@ void GamsLicensingDialog::updateAboutLabel(int exitCode)
             about << line << "<br/>";
         }
     }
-    setSolverLines(about);
-
+    setSolverLines(licenseInfo, about);
+    setNonSolverLines(licenseInfo, about);
+    about << "<br/>";
     ui->label->setText(about.join(""));
 }
 

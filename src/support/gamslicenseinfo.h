@@ -45,66 +45,44 @@ public:
     ~GamsLicenseInfo();
 
     int solvers() const;
-
     int solverId(const QString &name) const;
-
     QString solverName(int id) const;
     QMap<int, QString> solverNames();
-
     QMap<int, int> solverIndices();
-
     QMap<int, QString> modelTypeNames();
-
     bool solverCapability(int solver, int modelType) const;
-
     QString solverLicense(const QString &name, int id) const;
 
     QStringList licenseFromClipboard();
-
     QStringList licenseFromFile(const QString &fileName);
-
     bool isLicenseValid() const;
-
     bool isLicenseValid(const QStringList &license);
-
     bool isGamsLicense(const QStringList &license);
+    bool hasMiroConnector() const;
 
     QStringList gamsDataLocations();
-
     QStringList gamsConfigLocations();
-
     int localDistribVersion();
-
     QString localDistribVersionString();
-
     QString localDistribVersionStringShort();
-
     QString licenseFilePath() const;
 
     bool isAlpha() const;
-
     bool isBeta() const;
 
     bool isCurrentEvaluation(int evalDate);
-
     bool isCurrentMaintenance(int mainDate);
-
     bool isLicenseValidationSuccessful() const;
-
     bool isGenericLicense() const;
-
     int evaluationLicenseData();
-
     int licenseData();
 
     int julian();
-
     int today();
 
     static QString gamsConfigYamlLicenseLocation();
 
     static QString licenseDirectory();
-
     static QString licenseLocation();
 
 private:

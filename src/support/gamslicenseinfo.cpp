@@ -293,6 +293,11 @@ bool GamsLicenseInfo::isGamsLicense(const QStringList &license)
     return !result;
 }
 
+bool GamsLicenseInfo::hasMiroConnector() const
+{
+    return !palLicenseCheckSubSys(mPAL, "0M") && !palLicenseIsAcademic(mPAL);
+}
+
 bool GamsLicenseInfo::isGenericLicense() const
 {
     char platform[GMS_SSSIZE];
