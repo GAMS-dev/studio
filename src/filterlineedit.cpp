@@ -115,18 +115,18 @@ void FilterLineEdit::init()
     mClearButton->setVisible(false);
 
     mCaseSenseButton = createButton(QStringList() << ":/img/t-ca-insens" << ":/img/t-ca-sens",
-                                    QStringList() << "Turn ON case sensitivity" << "Turn OFF case sensitivity");
+                                    QStringList() << "Case insensitive" << "Case sensitive");
     connect(mCaseSenseButton, &QAbstractButton::clicked, this, [this](){ nextButtonState(mCaseSenseButton); });
     lay->addWidget(mCaseSenseButton);
     mCaseSenseButton->setVisible(false);
 
     mExactButton = createButton(QStringList() << ":/img/tpart" << ":/img/twhole",
-                                QStringList() << "Allow substring matches" << "Only allow exact matches");
+                                QStringList() << "Allow substring matches" << "Allow exact matches only");
     connect(mExactButton, &QAbstractButton::clicked, this, [this](){ nextButtonState(mExactButton); });
     lay->addWidget(mExactButton);
 
     mRegExButton = createButton(QStringList() << ":/img/trex-off" << ":/img/trex-on",
-                                QStringList() << "Wildcard matching" << "Regular expression matching");
+                                QStringList() << "Wildcard matching" << "Regular Expression matching");
     connect(mRegExButton, &QAbstractButton::clicked, this, [this](){ nextButtonState(mRegExButton); });
     lay->addWidget(mRegExButton);
 
@@ -264,6 +264,11 @@ bool FilterLineEdit::noWildcards() const
 void FilterLineEdit::setNoWildcards(bool newNoWildcards)
 {
     mNoWildcards = newNoWildcards;
+    QStringList tips = mRegExButton->property("tips").toStringList();
+    tips[0] = mNoWildcards ? "Plain Text matching" : "Wildcard matching";
+    mRegExButton->setProperty("tips", tips);
+    if (!mRegExButton->isChecked())
+        mRegExButton->setToolTip(tips.at(0));
 }
 
 FilterLineEdit::BoundaryMode FilterLineEdit::docMode() const
