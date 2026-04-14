@@ -7,6 +7,7 @@ Version 1.24.3  *
 - Fixed GAMS Engine processing of models containing `#` in the model name.
 - Fixed an issue causing the syntax completer to open unexpectedly on closing `%` characters.
 - Fixed the `tab` navigation sequence for input elements.
+- Fixed missing link after a MIRO deployment.
 
 Version 1.24.2
 ==================
