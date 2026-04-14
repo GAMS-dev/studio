@@ -23,6 +23,7 @@
 #include "filterlineedit.h"
 
 #include <QKeyEvent>
+#include <QToolTip>
 
 namespace gams {
 namespace studio {
@@ -437,6 +438,18 @@ void SymbolReferenceWidget::keyPressEvent(QKeyEvent *e)
     }
 
     QWidget::keyPressEvent(e);
+}
+
+bool SymbolReferenceWidget::event(QEvent *event)
+{
+    if (event->type() == QEvent::ToolTip) {
+        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        QPoint customPos = helpEvent->globalPos();
+        customPos.setY(customPos.y() + 30);
+        QToolTip::showText(customPos, toolTip(), this, QRect(), 8000);
+        return true;
+    }
+    return QWidget::event(event);
 }
 
 } // namespace reference

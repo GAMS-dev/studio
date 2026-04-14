@@ -64,14 +64,13 @@ void MiroDeployProcess::completed(int exitCode)
 {
     QString msg;
     if (exitCode)
-        msg = QString("Error deploying %1 (MIRO exit code %2) to location \n--- %3[DIR:\"%3\"]")
+        msg = QString("Error deploying %1 (MIRO exit code %2) to location \n--- %3[DIR:\"%3\"]\n")
                 .arg(MiroCommon::deployFileName(modelName()))
                 .arg(exitCode).arg(workingDirectory());
     else if (!mTestDeployment)
-        msg = QString("\n%1 successfully deployed to location \n--- %2[DIR:\"%2\"]")
+        msg = QString("\n%1 successfully deployed to location \n--- %2[DIR:\"%2\"]\n")
                 .arg(MiroCommon::deployFileName(modelName()), workingDirectory());
     emit newStdChannelData(msg.toLatin1());
-
     AbstractProcess::completed(exitCode);
 }
 

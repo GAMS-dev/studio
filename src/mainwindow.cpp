@@ -3763,6 +3763,7 @@ void MainWindow::actionGDX_Diff_triggered(const QString &workingDirectory, const
         mGdxDiffDialog->activateWindow();
     } else {
         mGdxDiffDialog->show();
+        mGdxDiffDialog->activateWindow();
     }
 }
 

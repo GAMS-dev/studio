@@ -5,6 +5,17 @@ Version 1.25.0  *
 - On opening a project, Studio opens the main file if assigned. Otherwise the project options are opened.
 - Added double-click action to open a gdx file reference from within a symbol table in GDXViewer.
 
+Version 1.24.3  *
+==================
+- Fixed search-in-selection disappeared after scrolling in LST viewer.
+- Improved position and timeout of the tooltip in the Reference viewer.
+- Fixed interrupt of a GAMS process couldn't terminate gracefully on Linux and macOS.
+- Added detection for externally canceled GAMS Engine jobs.
+- Fixed GAMS Engine processing of models containing `#` in the model name.
+- Fixed an issue causing the syntax completer to open unexpectedly on closing `%` characters.
+- Fixed the `tab` navigation sequence for input elements.
+- Fixed missing link after a MIRO deployment.
+
 Version 1.24.2
 ==================
 - Fixed missing matched markers in code editor after scrolling.

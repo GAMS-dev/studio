@@ -43,7 +43,6 @@ GamsParamEditor::GamsParamEditor(FileKind kind,
     initToolBar();
     initOptionTableView();
     initDefinitionTreeView();
-    initTabNavigation( false );
     initMessageControl( false );
 
     connect(ui->optionTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GamsParamEditor::selectionChanged);

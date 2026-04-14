@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>603</width>
-    <height>292</height>
+    <height>316</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -27,7 +27,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <property name="sizeConstraint">
-    <enum>QLayout::SetFixedSize</enum>
+    <enum>QLayout::SizeConstraint::SetFixedSize</enum>
    </property>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -237,7 +237,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Absolute difference&lt;/span&gt; for comparisons. If the difference between two values exceeds Eps, a difference will be reported.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="inputMethodHints">
-        <set>Qt::ImhNone</set>
+        <set>Qt::InputMethodHint::ImhNone</set>
        </property>
        <property name="text">
         <string>0.0</string>
@@ -257,7 +257,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Relative difference&lt;/span&gt; for comparisons. If the value of RelEps is exceeded, a difference will be reported.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="inputMethodHints">
-        <set>Qt::ImhNone</set>
+        <set>Qt::InputMethodHint::ImhNone</set>
        </property>
        <property name="text">
         <string>0.0</string>
@@ -311,7 +311,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -352,6 +352,26 @@
    <header>gdxdiffdialog/filepathlineedit.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>leInput1</tabstop>
+  <tabstop>pbInput1</tabstop>
+  <tabstop>leInput2</tabstop>
+  <tabstop>pbInput2</tabstop>
+  <tabstop>leDiff</tabstop>
+  <tabstop>pbDiff</tabstop>
+  <tabstop>lineEdit_4</tabstop>
+  <tabstop>lineEdit_5</tabstop>
+  <tabstop>cbFieldToCompare</tabstop>
+  <tabstop>cbIgnoreSetText</tabstop>
+  <tabstop>cbDiffOnly</tabstop>
+  <tabstop>cbFieldOnly</tabstop>
+  <tabstop>cbCmpDefaults</tabstop>
+  <tabstop>cbCmpDomains</tabstop>
+  <tabstop>cbIgnoreOrder</tabstop>
+  <tabstop>pbClear</tabstop>
+  <tabstop>pbOK</tabstop>
+  <tabstop>pbCancel</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

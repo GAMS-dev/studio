@@ -26,7 +26,7 @@
    <item row="2" column="0">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="pageLogin">
       <layout class="QGridLayout" name="gridLayout" columnstretch="1,7">
@@ -918,12 +918,27 @@
  </widget>
  <tabstops>
   <tabstop>edUrl</tabstop>
+  <tabstop>cbLoginMethod</tabstop>
+  <tabstop>edUser</tabstop>
+  <tabstop>edPassword</tabstop>
+  <tabstop>edToken</tabstop>
+  <tabstop>edSsoName</tabstop>
+  <tabstop>bCopyCode</tabstop>
   <tabstop>cbAcceptCert</tabstop>
-  <tabstop>cbForceGdx</tabstop>
+  <tabstop>bAlways</tabstop>
   <tabstop>bOk</tabstop>
   <tabstop>bCancel</tabstop>
-  <tabstop>bAlways</tabstop>
   <tabstop>bLogout</tabstop>
+  <tabstop>cbNamespace</tabstop>
+  <tabstop>cbInstance</tabstop>
+  <tabstop>tbRefreshInstances</tabstop>
+  <tabstop>cbInstActivate</tabstop>
+  <tabstop>sbInstSize</tabstop>
+  <tabstop>pbInstSend</tabstop>
+  <tabstop>edJobTag</tabstop>
+  <tabstop>cbPriority</tabstop>
+  <tabstop>cbForceGdx</tabstop>
+  <tabstop>bShowLogin</tabstop>
  </tabstops>
  <resources>
   <include location="../../icons/icons.qrc"/>

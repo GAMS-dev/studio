@@ -427,6 +427,16 @@
    <header>filterlineedit.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>optionTableView</tabstop>
+  <tabstop>definitionGroup</tabstop>
+  <tabstop>definitionSearch</tabstop>
+  <tabstop>definitionTreeView</tabstop>
+  <tabstop>compactViewCheckBox</tabstop>
+  <tabstop>messageViewCheckBox</tabstop>
+  <tabstop>openAsTextButton</tabstop>
+  <tabstop>messageTabWidget</tabstop>
+ </tabstops>
  <resources>
   <include location="../../icons/icons.qrc"/>
  </resources>

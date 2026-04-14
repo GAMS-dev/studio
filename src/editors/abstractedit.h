@@ -133,6 +133,7 @@ protected:
     QPoint linkClickPos() const;
     void setLinkClickPos(const QPoint &linkClickPos);
     QTextCursor cursorForPositionCut(const QPoint &pos) const;
+    void adjustSearchSelection(const QTextCursor &cursor);
 
     QTextCursor mSearchSelection;
     bool mIsSearchSelectionActive = false;

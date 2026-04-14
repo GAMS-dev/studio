@@ -131,6 +131,7 @@ protected:
 
 private:
     void init();
+    void adjustSearchSelection();
 
 private:
     TextKind mTextKind;

@@ -71,11 +71,10 @@ SolverOptionEditor::SolverOptionEditor(const QString &solverName,
     initToolBar();
     initOptionTableView();
     initDefinitionTreeView();
-    initTabNavigation( mIsFileEditor );
     initMessageControl( mIsFileEditor );
 
-    if (isCommentToggleable())
-        updateTableColumnSpan();
+    if (SolverOptionEditor::isCommentToggleable())
+        SolverOptionEditor::updateTableColumnSpan();
 
     connect(ui->optionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionEditor::on_selectAndToggleRow, Qt::UniqueConnection);
 

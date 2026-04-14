@@ -21,7 +21,7 @@
 #define TEXTVIEWEDIT_H
 
 #include "codeedit.h"
-#include "chunktextmapper.h"
+#include "abstracttextmapper.h"
 #include <QWidget>
 
 namespace gams {
