@@ -37,28 +37,22 @@ class SearchResultModel : public QAbstractItemModel
 
 public:
     SearchResultModel(const QRegularExpression &regex, const QList<Result> &results, QObject *parent = nullptr);
-
     ~SearchResultModel();
 
     QRegularExpression searchRegex();
-
+    QString simpleTermName();
     int resultCount();
-
     QString resultCountString();
 
     ResultItem* item(int logicalIndex);
-
-    QModelIndex index(int row, int column,
-                      const QModelIndex &parent = QModelIndex()) const override;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
     QModelIndex parent(const QModelIndex &index) const override;
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
 private:

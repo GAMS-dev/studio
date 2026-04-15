@@ -6193,7 +6193,7 @@ void MainWindow::updateResults(search::SearchResultModel* model)
     connect(mSearchDialog, &search::SearchDialog::selectResult,
             mResultsView, &search::ResultsView::selectItem);
 
-    QString pattern = model->searchRegex().pattern().replace("\n", "");
+    QString pattern = model->simpleTermName();
     QString title("Results: " + pattern + " (" + model->resultCountString() + ")");
 
     ui->dockProcessLog->show();
@@ -6231,10 +6231,7 @@ void MainWindow::closeResultsView()
 {
     int index = ui->logTabs->indexOf(mResultsView);
     if (index == -1) return;
-
     ui->logTabs->removeTab(index);
-    searchDialog()->search()->resetResults();
-
     delete mResultsView;
     mResultsView = nullptr;
 }

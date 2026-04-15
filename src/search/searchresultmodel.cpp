@@ -69,6 +69,17 @@ QRegularExpression SearchResultModel::searchRegex()
     return mSearchRegex;
 }
 
+QString SearchResultModel::simpleTermName()
+{
+    QString res = searchRegex().pattern().replace("\n", "");
+    if (res.startsWith("(?<!\\w)") && res.endsWith("(?!\\w)")) {
+        int a = QString("(?<!\\w)").length();
+        int b = res.lastIndexOf("(?!\\w)");
+        res = res.mid(a, b - a);
+    }
+    return res;
+}
+
 int SearchResultModel::resultCount()
 {
     return mResults.size();
