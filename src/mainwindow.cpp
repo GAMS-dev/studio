@@ -4073,7 +4073,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
         // search widget
         if (mSearchDialog->isHidden()) {
-            mSearchDialog->on_btn_clear_clicked();
+            mSearchDialog->clearSearch();
         } else {
             mSearchDialog->search()->requestStop();
             mSearchDialog->hide();

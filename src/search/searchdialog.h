@@ -47,12 +47,10 @@ public:
     ~SearchDialog();
 
     void editorChanged(QWidget *editor);
-
     void clearResultsView();
-
     void autofillSearchDialog();
-
     Search* search();
+    void clearSearch();
 
     ///
     /// \brief jumpToResult jumps to a search result identified by an index.
@@ -113,7 +111,6 @@ private:
     void setupConnections();
     void restoreSettings();
     QRegularExpression createRegex();
-    void clearSearch();
     Scope selectedScope() const;
     void setSearchStatus(Search::Status status, int hits = 0);
     QList<SearchFile> getFilesByScope(const Parameters &parameters);

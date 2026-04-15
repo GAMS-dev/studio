@@ -90,7 +90,6 @@ signals:
     void selectResult(int matchNr);
 
 private:
-
     void findInDoc(FileMeta* fm);
     void findInSelection(bool showResults);
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
