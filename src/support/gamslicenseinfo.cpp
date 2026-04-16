@@ -295,12 +295,12 @@ bool GamsLicenseInfo::isGamsLicense(const QStringList &license)
 
 bool GamsLicenseInfo::hasMiroConnector() const
 {
-    return !palLicenseCheckSubSys(mPAL, "0M") && !palLicenseIsAcademic(mPAL);
+    return !palLicenseCheckSubSys(mPAL, "0M") || palLicenseIsAcademic(mPAL);
 }
 
 bool GamsLicenseInfo::hasSecureModule() const
 {
-    return !palLicenseCheckSubSys(mPAL, "0S") && !palLicenseIsAcademic(mPAL);
+    return !palLicenseCheckSubSys(mPAL, "0S");
 }
 
 bool GamsLicenseInfo::isGenericLicense() const
