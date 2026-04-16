@@ -498,7 +498,6 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         }
     } else if (e->key() == Qt::Key_Escape) {
         clearFindings();
-        e->accept();
     }
 
     if (mCompleter && mCompleter->isVisible()) {
@@ -2239,12 +2238,15 @@ void CodeEdit::setCompleter(CodeCompleter *completer)
 
 void CodeEdit::clearFindings()
 {
+    search::Search* search = search::SearchLocator::search();
+    if (!search->parameters().regex().pattern().isEmpty() || !search->filteredResultList(ViewHelper::location(this)).isEmpty())
+        search->resetResults();
     if (mFindREx) {
         delete mFindREx;
         mFindREx = nullptr;
         clearSelectedFind();
-        updateExtraSelections();
     }
+    updateExtraSelections();
     emit endFind();
 }
 

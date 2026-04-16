@@ -4067,15 +4067,12 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         }
 
         // search widget
-        if (mSearchDialog->isHidden()) {
-            mSearchDialog->clearSearch();
-        } else {
-            mSearchDialog->search()->requestStop();
-            mSearchDialog->hide();
-        }
+        mSearchDialog->search()->requestStop();
+        mSearchDialog->hide();
+        mSearchDialog->clearSearch();
 
         e->accept(); return;
-    } // end escape block
+    } // end escape key handling
 
     // focus shortcuts
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_1)) {

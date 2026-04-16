@@ -366,10 +366,13 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
         //     hide();
         }
         if (mFileHandler->fileNode(mCurrentEditor)) {
-            if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mCurrentEditor))
+            parentWidget()->activateWindow();
+            parentWidget()->raise();
+            if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mCurrentEditor)) {
                 lv->textView()->setFocus();
-            else
+            } else {
                 mCurrentEditor->setFocus();
+            }
         }
     } else if (e == Hotkey::SearchFindPrev) {
         emit ui->btn_backward->clicked();
@@ -386,7 +389,8 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
                                       help::HelpData::getStudioSectionName(
                                           help::StudioSection::SearchAndReplace)));
     }
-    QDialog::keyPressEvent(e);
+    if (!e->isAccepted())
+        QDialog::keyPressEvent(e);
 }
 
 void SearchDialog::changeScope(int scope)
