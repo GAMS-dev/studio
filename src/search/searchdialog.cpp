@@ -361,9 +361,9 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
         e->accept();
         if (mSearch.isSearching()) {
             mSearch.requestStop();
-        } else {
-            clearSearch();
-            hide();
+        // } else {
+        //     clearSearch();
+        //     hide();
         }
         if (mFileHandler->fileNode(mCurrentEditor)) {
             if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mCurrentEditor))

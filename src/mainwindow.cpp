@@ -1459,11 +1459,6 @@ void MainWindow::openHelp(const QUrl &url)
     on_actionHelp_View_triggered(true);
 }
 
-search::SearchDialog* MainWindow::searchDialog() const
-{
-    return mSearchDialog;
-}
-
 void MainWindow::setEncodings(const QStringList &encodingsList, const QString &active)
 {
     while (!mCodecGroupSwitch->actions().isEmpty()) {
@@ -1799,8 +1794,8 @@ void MainWindow::openRecentFile()
 
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
-    if (!searchDialog()->search()->parameters().regex().pattern().isEmpty())
-        searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
+    if (!mSearchDialog->search()->parameters().regex().pattern().isEmpty())
+        mSearchDialog->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
 
 void MainWindow::getAdvancedActions(QList<QAction*>* actions)
@@ -2349,7 +2344,7 @@ void MainWindow::activeMainTabChanged(int index)
     } else {
         ui->menuEncoding->setEnabled(false);
     }
-    searchDialog()->updateDialogState();
+    mSearchDialog->updateDialogState();
     updateCanSave(mainTabs()->currentWidget());
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
@@ -3019,7 +3014,7 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
     if (!mShutDown) {
         PExProjectNode *project = mRecent.project();
         int newIndex = 0;
-        searchDialog()->updateDialogState();
+        mSearchDialog->updateDialogState();
         int visTabs = 0;
         for (int i = 1; i < ui->mainTabs->count(); ++i) {
             if (i == index) continue;
@@ -3288,7 +3283,7 @@ void MainWindow::updateAndSaveSettings()
     settings->setBool(skViewOption, optionEditorVisibility());
     settings->setString(skEncodings, encodings().join(','));
 
-    searchDialog()->updateSettings();
+    mSearchDialog->updateSettings();
 
     int runOptions = (ui->action1_Create_GDX->isChecked() ? 1 : 0) +
                      (ui->action2_Create_RF->isChecked() ? 2 : 0) +
@@ -6158,7 +6153,7 @@ void MainWindow::toggleSearchDialog()
         }
         // toggle visibility
         if (mSearchDialog->isVisible()) {
-            // e.g. needed for macOS to rasise search dialog when minimized
+            // e.g. needed for macOS to raise search dialog when minimized
             mSearchDialog->raise();
             mSearchDialog->activateWindow();
             mSearchDialog->autofillSearchDialog();
@@ -6187,8 +6182,8 @@ void MainWindow::updateResults(search::SearchResultModel* model)
     int index = ui->logTabs->indexOf(resultsView()); // did widget exist before?
 
     delete mResultsView;
-    mResultsView = new search::ResultsView(model, this);
-    connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(),
+    mResultsView = new search::ResultsView(model, mSearchDialog, this);
+    connect(mResultsView, &search::ResultsView::updateMatchLabel, mSearchDialog,
             &search::SearchDialog::updateMatchLabel, Qt::UniqueConnection);
     connect(mSearchDialog, &search::SearchDialog::selectResult,
             mResultsView, &search::ResultsView::selectItem);
@@ -6232,6 +6227,7 @@ void MainWindow::closeResultsView()
     int index = ui->logTabs->indexOf(mResultsView);
     if (index == -1) return;
     ui->logTabs->removeTab(index);
+    // mSearchDialog->search()->resetResults();
     delete mResultsView;
     mResultsView = nullptr;
 }
@@ -6288,7 +6284,8 @@ void MainWindow::switchToMainTab(FileMeta *fileMeta)
 
 void MainWindow::invalidateResultsView()
 {
-    if (resultsView()) resultsView()->setOutdated();
+    if (resultsView())
+        resultsView()->setOutdated();
 }
 
 SettingsDialog *MainWindow::settingsDialog() const

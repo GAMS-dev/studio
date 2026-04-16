@@ -147,7 +147,6 @@ public:
     QList<QWidget *> openedLogs();
     const QStringList openedFiles();
     QSet<FileMeta*> openedFileMetas();
-    search::SearchDialog* searchDialog() const;
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);
     bool readTabs(const QVariantMap &tabData);

@@ -24,10 +24,9 @@
 
 namespace gams {
 namespace studio {
-
-class MainWindow;
-
 namespace search {
+
+class SearchDialog;
 
 namespace Ui {
 class ResultsView;
@@ -43,7 +42,7 @@ class ResultsView : public QWidget
     Q_OBJECT
 
 public:
-    explicit ResultsView(SearchResultModel* searchResultList, MainWindow *parent = nullptr);
+    explicit ResultsView(SearchResultModel* searchResultList, SearchDialog *dialog, QWidget *parent = nullptr);
     ~ResultsView();
 
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -77,7 +76,7 @@ private:
 
 private:
     Ui::ResultsView *ui;
-    MainWindow *mMain;
+    SearchDialog *mDialog;
     SearchResultModel* mResultModel;
     SearchResultViewItemDelegate *mDelegate = nullptr;
     bool mOutdated = false;
