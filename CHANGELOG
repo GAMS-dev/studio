@@ -10,6 +10,11 @@ Version 1.24.3  *
 - Fixed missing link after a MIRO deployment.
 - Fixed update checker to be independent of the build order of GAMS updates.
 - Fixed lost command line parameters after switching from the Welcome Page to another tab.
+- Fixed issues in Quick Find:
+  - Added confirmation dialog for `Replace All`.
+  - Added missing initial value when starting Replace with `Ctrl+R`.
+  - Fixed broken continue in Replace.
+  - Fixed several tooltips.
 
 Version 1.24.2
 ==================
