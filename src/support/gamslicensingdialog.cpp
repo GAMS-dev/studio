@@ -27,6 +27,7 @@
 #include "process/gamsgetkeyprocess.h"
 #include "process/gamsprobeprocess.h"
 #include "theme.h"
+#include "logger.h"
 
 #include <QClipboard>
 #include <QDir>
@@ -127,8 +128,8 @@ void GamsLicensingDialog::setNonSolverLines(GamsLicenseInfo &liceInfo, QStringLi
     QStringList lines;
     if (liceInfo.hasMiroConnector())
         lines << "<li>MIRO Connector</li>";
-    if (false)
-        lines << "<li>Secure Module</li>";        // TODO(JM) implement detection for Secure Module
+    if (liceInfo.hasSecureModule())
+        lines << "<li>Secure Module</li>";
     if (!lines.isEmpty()) {
         about << "Licensed non-solver components:<ul>";
         about << lines;

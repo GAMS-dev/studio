@@ -59,6 +59,7 @@ public:
     bool isLicenseValid(const QStringList &license);
     bool isGamsLicense(const QStringList &license);
     bool hasMiroConnector() const;
+    bool hasSecureModule() const;
 
     QStringList gamsDataLocations();
     QStringList gamsConfigLocations();

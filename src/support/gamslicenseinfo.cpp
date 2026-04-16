@@ -298,6 +298,11 @@ bool GamsLicenseInfo::hasMiroConnector() const
     return !palLicenseCheckSubSys(mPAL, "0M") && !palLicenseIsAcademic(mPAL);
 }
 
+bool GamsLicenseInfo::hasSecureModule() const
+{
+    return !palLicenseCheckSubSys(mPAL, "0S") && !palLicenseIsAcademic(mPAL);
+}
+
 bool GamsLicenseInfo::isGenericLicense() const
 {
     char platform[GMS_SSSIZE];
