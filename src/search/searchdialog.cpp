@@ -49,7 +49,7 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, MainWindow* p
     , mFileHandler(fileHandler)
     , mSearch(this, fileHandler)
 {
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    setWindowFlags((windowFlags() & ~Qt::WindowContextHelpButtonHint) | Qt::WindowStaysOnTopHint);
     ui->setupUi(this);
     ui->frame_findinfiles->setVisible(false);
     ui->frame_filters->setVisible(false);
@@ -366,8 +366,8 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
         //     hide();
         }
         if (mFileHandler->fileNode(mCurrentEditor)) {
-            parentWidget()->activateWindow();
-            parentWidget()->raise();
+            mMain->activateWindow();
+            mMain->raise();
             if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mCurrentEditor)) {
                 lv->textView()->setFocus();
             } else {
