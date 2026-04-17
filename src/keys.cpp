@@ -201,7 +201,7 @@ void Keys::reset()
          << QKeySequence("PgUp") << QKeySequence("PgDown");
     setHotkey(Hotkey::BlockEditEnd, seq);
 
-    seq = new KeySeqList("Ctrl+F", "Open Search Dialog");
+    seq = new KeySeqList("Shift+Ctrl+F", "Open Search Dialog");
     setHotkey(Hotkey::SearchOpen, seq);
 
     seq = new KeySeqList("F3", "Find Next");

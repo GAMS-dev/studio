@@ -361,10 +361,9 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
         e->accept();
         if (mSearch.isSearching()) {
             mSearch.requestStop();
-        // } else {
-        //     clearSearch();
-        //     hide();
         }
+        if (e->key() == Qt::Key_Escape)
+            hide();
         if (mFileHandler->fileNode(mCurrentEditor)) {
             mMain->activateWindow();
             mMain->raise();
@@ -374,15 +373,15 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
                 mCurrentEditor->setFocus();
             }
         }
-    } else if (e == Hotkey::SearchFindPrev) {
-        emit ui->btn_backward->clicked();
-        e->accept();
-    } else if (e == Hotkey::SearchFindNext) {
-        emit ui->btn_forward->clicked();
-        e->accept();
     } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
         e->accept();
         findAll();
+    } else if (e == Hotkey::SearchFindPrev) {
+        emit ui->btn_backward->clicked();
+        e->accept();
+    } else if (e == Hotkey::SearchFindNext || e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
+        emit ui->btn_forward->clicked();
+        e->accept();
     } else if (e == Hotkey::OpenHelp) {
         emit openHelpDocument(help::HelpData::getChapterLocation(help::DocumentType::StudioMain),
                                   help::HelpData::getStudioSectionAnchor(
