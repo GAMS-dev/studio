@@ -77,6 +77,13 @@ public:
     virtual void scrollSynchronize(int dx, int dy);
     virtual QStringList getEnabledContextActions();
 
+    void lockSelectedFind();
+    bool hasSelectedFind() const;
+    QRegularExpression *findTerm() const;
+    void setFindTerm(const QRegularExpression &rex, QTextDocument::FindFlags options);
+    void clearFindings();
+    virtual bool findReplace(const QString &replacement);
+
 signals:
     void requestLstTexts(gams::studio::NodeId groupId, const QVector<int> &lstLines, QStringList &result);
     void toggleBookmark(gams::studio::FileId fileId, int lineNr, int posInLine);
@@ -86,12 +93,14 @@ signals:
     void zoomRequest(int delta);
     void getProjectId(gams::studio::NodeId &projectId) const;
     void getFileId(gams::studio::FileId &fileId) const;
+    void allowReplaceChanged();
+    void endFind();
 
 public slots:
     virtual void updateExtraSelections();
     virtual void unfold(const QTextBlock &block);
     void updateTabSize(int size = 0);
-
+    void clearSelectedFind();
 
 protected slots:
     virtual void marksChanged(const QSet<int> &dirtyLines = QSet<int>());
@@ -145,6 +154,8 @@ private:
     QPoint mScrollPos; // to workaround buggy QPlainTextEdit::scrollContentsBy()
     QTimer mSelUpdater;
     QTimer mToolTipUpdater;
+    QRegularExpression *mFindREx = nullptr;
+    bool mSelectedFind = false;
 
 private slots:
     void internalExtraSelUpdate();

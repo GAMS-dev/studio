@@ -106,6 +106,7 @@ public:
     void reloadDelayed();
     void setLocation(QString location);
     void updateExtraSelections();
+    void clearFindings();
 
     static bool hasExistingFile(const QList<QUrl> &urls);
     static bool hasExistingFolder(const QList<QUrl> &urls);

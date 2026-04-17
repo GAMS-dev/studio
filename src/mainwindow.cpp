@@ -4066,10 +4066,24 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
             }
         }
 
+
         // search widget
-        mSearchDialog->search()->requestStop();
-        mSearchDialog->hide();
-        mSearchDialog->clearSearch();
+        if (mSearchDialog->isHidden()) {
+            if (mSearchDialog->search()->isSearching())
+                mSearchDialog->search()->requestStop();
+            mSearchDialog->clearSearch();
+            // find widget
+            if (find::FindWidget *find = getCurrentFindWidget()) {
+                if (getViewOrEdit(find) == focusWidget()) {
+                    if (FileMeta *meta = mFileMetaRepo.fileMeta(focusWidget())) {
+                        meta->clearFindings();
+                        find->hide();
+                    }
+                }
+            }
+        } else {
+            mSearchDialog->hide();
+        }
 
         e->accept(); return;
     } // end escape key handling

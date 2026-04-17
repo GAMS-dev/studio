@@ -165,7 +165,7 @@ void EditFindAdapter::setFindTerm(const QRegularExpression &rex, FindOptions opt
 
 bool EditFindAdapter::hasFindTerm()
 {
-    return mEdit->hasFindTerm();
+    return mEdit->findTerm();
 }
 
 bool EditFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
@@ -234,7 +234,7 @@ void ViewFindAdapter::setFindTerm(const QRegularExpression &rex, FindOptions opt
 
 bool ViewFindAdapter::hasFindTerm()
 {
-    return static_cast<CodeEdit*>(mView->edit())->hasFindTerm();
+    return static_cast<CodeEdit*>(mView->edit())->findTerm();
 }
 
 bool ViewFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
