@@ -96,6 +96,15 @@ void FileMeta::updateExtraSelections()
     }
 }
 
+void FileMeta::clearFindings()
+{
+    for (QWidget *wid : std::as_const(mEditors)) {
+        AbstractEdit* edit = ViewHelper::toAbstractEdit(wid);
+        if (edit)
+            edit->clearFindings();
+    }
+}
+
 bool FileMeta::hasExistingFile(const QList<QUrl> &urls)
 {
     for (const QUrl &url : urls) {

@@ -144,14 +144,15 @@ void VersionInfoLoader::distribDownloadFinished(QNetworkReply *reply)
             YAML::Node root;
             try {
                 root = YAML::Load(data.toStdString());
-                YAML::Node last = root[root.size()-1];
-                mRemoteDistribVersion = last["distrotxt-id"].as<int>();
-                mRemoteDistribVersionString = QString::fromStdString(last["version"].as<std::string>());
-                for (size_t i=0; i<root.size(); ++i) {
+                for (size_t i = 0; i < root.size(); ++i) {
                     int id;
                     qint64 date;
                     if (root[i]["distrotxt-id"].IsDefined()) {
                         id = root[i]["distrotxt-id"].as<int>();
+                        if (id > mRemoteDistribVersion) {
+                            mRemoteDistribVersion = id;
+                            mRemoteDistribVersionString = QString::fromStdString(root[i]["version"].as<std::string>());
+                        }
                     } else {
                         continue;
                     }

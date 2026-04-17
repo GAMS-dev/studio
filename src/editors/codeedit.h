@@ -129,7 +129,6 @@ public:
     QTextBlock findFoldStart(QTextBlock block) const;
     void jumpTo(int line, int column = 0) override;
     void setCompleter(CodeCompleter *completer);
-    void clearFindings();
     void clearSearchSelection() override;
     void setSearchSelectionActive(bool active) override;
     void updateSearchSelection() override;
@@ -141,11 +140,7 @@ public:
                    QFlags<QTextDocument::FindFlag> options, bool selectionScope) override;
     QStringList getEnabledContextActions() override;
     void setHasProfiler(bool hasProfiler);
-    void lockSelectedFind();
-    bool hasSelectedFind() const;
-    bool hasFindTerm() const;
-    void setFindTerm(const QRegularExpression &rex, QTextDocument::FindFlags options);
-    bool findReplace(const QString &replacement);
+    bool findReplace(const QString &replacement) override;
 
     static int findAlphaNum(const QString &text, int start, bool back);
 
@@ -196,7 +191,6 @@ signals:
     void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax, int pos = -1);
     void syntaxDocAt(QTextBlock block, int pos, QStringList &syntaxDoc);
     void syntaxFlagData(QTextBlock block, syntax::SyntaxFlag flag, QString &value);
-    void endFind();
     void continueFindPressed(bool backwards);
     void continueSearchPressed(bool backwards);
     void requestAdvancedActions(QList<QAction*>* actions);
@@ -219,7 +213,6 @@ signals:
     void getProfilerMaxData(QList<QPair<int, qreal>> &maxTimeContLine, QList<QPair<int,int>> &maxStepsContLine);
     void jumpToContinuousLine(int contLine);
     void takeCheckedPaths(QStringList &filePaths);
-    void allowReplaceChanged();
 
 public slots:
     void clearSelection();
@@ -232,7 +225,6 @@ public slots:
     void unfold(const QTextBlock &block) override;
     void breakpointsChanged(const gams::studio::SortedIntMap &bpLines, const gams::studio::SortedIntMap &abpLines);
     void setPausedPos(int line);
-    void clearSelectedFind();
 
 protected slots:
     void marksChanged(const QSet<int> &dirtyLines = QSet<int>()) override;
@@ -373,7 +365,7 @@ private:
     QString mBlockEditInsText;
     QVector<BlockEditPos*> mBlockEditPos;
     bool mSmartType = false;
-    QRegularExpression *mFindREx = nullptr;
+    // QRegularExpression *mFindREx = nullptr;
     int mIconCols = 0;
     const QString mOpening = "([{'\""; // characters that will be auto closed if mSmartType is true
     const QString mClosing = ")]}'\""; // and their corresponding partner
@@ -391,7 +383,6 @@ private:
     ProfilerColumn mProfilerHeaderContext = pcNone;
     int mProfilerStepsDigits = 0;
     QTextCursor mPreDebugCursor;
-    bool mSelectedFind = false;
 
     static QHash<ProfilerColumn, QString> mProfilerHeaderToolTip;
     static QRegularExpression mRex0LeadingSpaces;

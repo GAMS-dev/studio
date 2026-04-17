@@ -20,6 +20,7 @@
 #include "editors/abstractedit.h"
 #include "search/search.h"
 #include "search/searchlocator.h"
+#include "viewhelper.h"
 #include "keys.h"
 #include "theme.h"
 
@@ -534,6 +535,65 @@ QStringList AbstractEdit::getEnabledContextActions()
         }
     }
     return res;
+}
+
+void AbstractEdit::lockSelectedFind()
+{
+    connect(this, &CodeEdit::cursorPositionChanged, this, &AbstractEdit::clearSelectedFind, Qt::UniqueConnection);
+    mSelectedFind = true;
+    emit allowReplaceChanged();
+}
+
+bool AbstractEdit::hasSelectedFind() const
+{
+    return mSelectedFind;
+}
+
+QRegularExpression *AbstractEdit::findTerm() const
+{
+    return mFindREx;
+}
+
+void AbstractEdit::setFindTerm(const QRegularExpression &rex, QTextDocument::FindFlags options)
+{
+    if (mFindREx) {
+        delete mFindREx;
+        mFindREx = nullptr;
+    }
+    if (rex.isValid() && !rex.pattern().isEmpty()) {
+        mFindREx = new QRegularExpression(rex);
+        QRegularExpression::PatternOptions rexOpt = mFindREx->patternOptions();
+        rexOpt.setFlag(QRegularExpression::CaseInsensitiveOption, !options.testFlag(QTextDocument::FindCaseSensitively));
+        mFindREx->setPatternOptions(rexOpt);
+    }
+    updateExtraSelections();
+}
+
+void AbstractEdit::clearFindings()
+{
+    if (mFindREx) {
+        delete mFindREx;
+        mFindREx = nullptr;
+        clearSelectedFind();
+    }
+    updateExtraSelections();
+}
+
+bool AbstractEdit::findReplace(const QString &replacement)
+{
+    bool res = mSelectedFind;
+    if (mSelectedFind) {
+        textCursor().insertText(replacement);
+        updateExtraSelections();
+    }
+    return res;
+}
+
+void AbstractEdit::clearSelectedFind()
+{
+    disconnect(this, &AbstractEdit::cursorPositionChanged, this, &AbstractEdit::clearSelectedFind);
+    mSelectedFind = false;
+    emit allowReplaceChanged();
 }
 
 void AbstractEdit::internalExtraSelUpdate()

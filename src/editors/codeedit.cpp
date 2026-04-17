@@ -496,9 +496,6 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             mBlockEdit->keyPressEvent(e);
             return;
         }
-    } else if (e->key() == Qt::Key_Escape) {
-        clearFindings();
-        e->accept();
     }
 
     if (mCompleter && mCompleter->isVisible()) {
@@ -936,55 +933,12 @@ void CodeEdit::setHasProfiler(bool hasProfiler)
     }
 }
 
-void CodeEdit::lockSelectedFind()
-{
-    connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::clearSelectedFind, Qt::UniqueConnection);
-    mSelectedFind = true;
-    emit allowReplaceChanged();
-}
-
-bool CodeEdit::hasSelectedFind() const
-{
-    return mSelectedFind;
-}
-
-bool CodeEdit::hasFindTerm() const
-{
-    return mFindREx;
-}
-
-void CodeEdit::setFindTerm(const QRegularExpression &rex, QTextDocument::FindFlags options)
-{
-    if (mFindREx) {
-        delete mFindREx;
-        mFindREx = nullptr;
-    }
-    if (rex.isValid() && !rex.pattern().isEmpty()) {
-        mFindREx = new QRegularExpression(rex);
-        QRegularExpression::PatternOptions rexOpt = mFindREx->patternOptions();
-        rexOpt.setFlag(QRegularExpression::CaseInsensitiveOption, !options.testFlag(QTextDocument::FindCaseSensitively));
-        mFindREx->setPatternOptions(rexOpt);
-    }
-    updateExtraSelections();
-}
-
 bool CodeEdit::findReplace(const QString &replacement)
 {
-    bool res = mSelectedFind;
     if (mCompleter) mCompleter->suppressOpenBegin();
-    if (mSelectedFind) {
-        textCursor().insertText(replacement);
-        updateExtraSelections();
-    }
+    bool res = AbstractEdit::findReplace(replacement);
     if (mCompleter) mCompleter->suppressOpenStop();
     return res;
-}
-
-void CodeEdit::clearSelectedFind()
-{
-    disconnect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::clearSelectedFind);
-    mSelectedFind = false;
-    emit allowReplaceChanged();
 }
 
 bool CodeEdit::ensureUnfolded(int line)
@@ -2237,17 +2191,6 @@ void CodeEdit::setCompleter(CodeCompleter *completer)
     mCompleter = completer;
 }
 
-void CodeEdit::clearFindings()
-{
-    if (mFindREx) {
-        delete mFindREx;
-        mFindREx = nullptr;
-        clearSelectedFind();
-        updateExtraSelections();
-    }
-    emit endFind();
-}
-
 void CodeEdit::clearSearchSelection()
 {
     if (mBlockEditSelection) {
@@ -2686,7 +2629,7 @@ void CodeEdit::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)
 void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
 {
     if (mWordUnderCursor.isEmpty() ||
-        (mFindREx && mFindREx->isValid() &&  mFindREx->match(mWordUnderCursor).hasMatch()))
+        (findTerm() && findTerm()->isValid() &&  findTerm()->match(mWordUnderCursor).hasMatch()))
         return;
 
     QTextBlock block = firstVisibleBlock();
@@ -2745,13 +2688,13 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
 
 void CodeEdit::extraSelFindMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
-    if (!mFindREx) return;
+    if (!findTerm()) return;
 
     QTextBlock block = firstVisibleBlock();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
     while (block.isValid() && top < viewport()->height()) {
         top += qRound(blockBoundingRect(block).height());
-        QRegularExpressionMatchIterator i = mFindREx->globalMatch(block.text());
+        QRegularExpressionMatchIterator i = findTerm()->globalMatch(block.text());
 
         while (i.isValid() && i.hasNext()) {
             QRegularExpressionMatch m = i.next();

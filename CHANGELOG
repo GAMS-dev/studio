@@ -5,16 +5,27 @@ Version 1.25.0  *
 - On opening a project, Studio opens the main file if assigned. Otherwise the project options are opened.
 - Added double-click action to open a gdx file reference from within a symbol table in GDXViewer.
 
-Version 1.24.3  *
+Version 1.24.3
 ==================
-- Fixed search-in-selection disappeared after scrolling in LST viewer.
-- Improved position and timeout of the tooltip in the Reference viewer.
+- Fixed an issue where search-in-selection disappeared after scrolling in the LST viewer.
+- Improved position and timeout of tooltip in the Reference viewer.
 - Fixed interrupt of a GAMS process couldn't terminate gracefully on Linux and macOS.
 - Added detection for externally canceled GAMS Engine jobs.
 - Fixed GAMS Engine processing of models containing `#` in the model name.
-- Fixed an issue causing the syntax completer to open unexpectedly on closing `%` characters.
+- Fixed an issue where the syntax completer opened unexpectedly when typing closing `%` characters.
 - Fixed the `tab` navigation sequence for input elements.
-- Fixed missing link after a MIRO deployment.
+- Fixed a missing link after a MIRO deployment.
+- Fixed the update checker to be independent of the GAMS update build order.
+- Fixed lost command line parameters after switching from the Welcome Page to another tab.
+- Fixed issues in Quick Find:
+  - Added confirmation dialog for `Replace All`.
+  - Fixed a missing initial value when starting replace with `Ctrl+R`.
+  - Fixed a bug that broke the "continue" function in Replace.
+  - Corrected  several tooltips.
+- Fixed an issue where the Search matches would incorrectly reappear when pressing `F4` after it had been closed with `Esc`.
+- Fixed a bug where the Search dialog failed to respond to navigation keys (`<` or `>`) after the Search Result View was closed.
+- Updated the Search Result View title to be more descriptive and user-friendly.
+- Fixed ESC handling in Search. First ESC hides the Search dialog, the second closes and resets the search data.
 
 Version 1.24.2
 ==================

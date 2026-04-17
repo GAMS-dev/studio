@@ -49,7 +49,7 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, MainWindow* p
     , mFileHandler(fileHandler)
     , mSearch(this, fileHandler)
 {
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    setWindowFlags((windowFlags() & ~Qt::WindowContextHelpButtonHint) | Qt::WindowStaysOnTopHint);
     ui->setupUi(this);
     ui->frame_findinfiles->setVisible(false);
     ui->frame_filters->setVisible(false);
@@ -59,8 +59,7 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, MainWindow* p
     connect(&mSearch, &Search::updateUI, this, &SearchDialog::updateDialogState);
     connect(this, &QDialog::rejected, this, [this]{
         if (selectedScope() == Scope::Selection || selectedScope() == Scope::ThisFile) {
-            ResultsView *view = mMain ? mMain->resultsView() : nullptr;
-            if (view && view->isVisible())
+            if (mMain->resultsView() && mMain->resultsView()->isVisible())
                 return;
             mSearch.reset();
             clearSelection();
@@ -94,7 +93,7 @@ void SearchDialog::closeEvent(QCloseEvent *event)
 {
     mSearch.requestStop();
     event->ignore();
-    QDialog::closeEvent(event);
+    hide();
 }
 
 void SearchDialog::moveEvent(QMoveEvent *event)
@@ -360,30 +359,37 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
 {
     if ( isVisible() && ((e->key() == Qt::Key_Escape) || (e == Hotkey::SearchOpen)) ) {
         e->accept();
-        mSearch.requestStop();
-        hide();
-        if (mFileHandler->fileNode(mCurrentEditor)) {
-            if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mCurrentEditor))
-                lv->textView()->setFocus();
-            else
-                mCurrentEditor->setFocus();
+        if (mSearch.isSearching()) {
+            mSearch.requestStop();
         }
-    } else if (e == Hotkey::SearchFindPrev) {
-        emit ui->btn_backward->clicked();
-        e->accept();
-    } else if (e == Hotkey::SearchFindNext) {
-        emit ui->btn_forward->clicked();
-        e->accept();
+        if (e->key() == Qt::Key_Escape)
+            hide();
+        if (mFileHandler->fileNode(mCurrentEditor)) {
+            mMain->activateWindow();
+            mMain->raise();
+            if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mCurrentEditor)) {
+                lv->textView()->setFocus();
+            } else {
+                mCurrentEditor->setFocus();
+            }
+        }
     } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
         e->accept();
         findAll();
+    } else if (e == Hotkey::SearchFindPrev) {
+        emit ui->btn_backward->clicked();
+        e->accept();
+    } else if (e == Hotkey::SearchFindNext || e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
+        emit ui->btn_forward->clicked();
+        e->accept();
     } else if (e == Hotkey::OpenHelp) {
         emit openHelpDocument(help::HelpData::getChapterLocation(help::DocumentType::StudioMain),
                                   help::HelpData::getStudioSectionAnchor(
                                       help::HelpData::getStudioSectionName(
                                           help::StudioSection::SearchAndReplace)));
     }
-    QDialog::keyPressEvent(e);
+    if (!e->isAccepted())
+        QDialog::keyPressEvent(e);
 }
 
 void SearchDialog::changeScope(int scope)

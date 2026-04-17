@@ -1469,11 +1469,6 @@ void MainWindow::openHelp(const QUrl &url)
     on_actionHelp_View_triggered(true);
 }
 
-search::SearchDialog* MainWindow::searchDialog() const
-{
-    return mSearchDialog;
-}
-
 void MainWindow::setEncodings(const QStringList &encodingsList, const QString &active)
 {
     while (!mCodecGroupSwitch->actions().isEmpty()) {
@@ -1809,8 +1804,8 @@ void MainWindow::openRecentFile()
 
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
-    if (!searchDialog()->search()->parameters().regex().pattern().isEmpty())
-        searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
+    if (!mSearchDialog->search()->parameters().regex().pattern().isEmpty())
+        mSearchDialog->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
 
 void MainWindow::getAdvancedActions(QList<QAction*>* actions)
@@ -2312,12 +2307,15 @@ void MainWindow::activeMainTabChanged(int index)
     for (int i = 1; i < mainTabs()->count(); ++i)
         updateTabIcon(nullptr, i);
     if (!mWp) return;
-    if (mCurrentMainTab >= 0) updateTabIcon(nullptr, mCurrentMainTab);
-    if  (index >= 0) updateTabIcon(nullptr, index);
-    mCurrentMainTab = index;
+    if (mCurrentMainTab >= 0)
+        updateTabIcon(nullptr, mCurrentMainTab);
+    if  (index >= 0)
+        updateTabIcon(nullptr, index);
+
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
     mProjectRepo.proxyModel()->invalidate();
 
+    mCurrentMainTab = index;
     if (editWidget != mRecent.editor())
         updateRecentEdit(mRecent.editor(), editWidget);
     ui->findWidget->setEditWidget(editWidget);
@@ -2356,7 +2354,7 @@ void MainWindow::activeMainTabChanged(int index)
     } else {
         ui->menuEncoding->setEnabled(false);
     }
-    searchDialog()->updateDialogState();
+    mSearchDialog->updateDialogState();
     updateCanSave(mainTabs()->currentWidget());
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
@@ -3026,7 +3024,7 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
     if (!mShutDown) {
         PExProjectNode *project = mRecent.project();
         int newIndex = 0;
-        searchDialog()->updateDialogState();
+        mSearchDialog->updateDialogState();
         int visTabs = 0;
         for (int i = 1; i < ui->mainTabs->count(); ++i) {
             if (i == index) continue;
@@ -3295,7 +3293,7 @@ void MainWindow::updateAndSaveSettings()
     settings->setBool(skViewOption, optionEditorVisibility());
     settings->setString(skEncodings, encodings().join(','));
 
-    searchDialog()->updateSettings();
+    mSearchDialog->updateSettings();
 
     int runOptions = (ui->action1_Create_GDX->isChecked() ? 1 : 0) +
                      (ui->action2_Create_RF->isChecked() ? 2 : 0) +
@@ -4078,16 +4076,27 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
             }
         }
 
+
         // search widget
         if (mSearchDialog->isHidden()) {
-            mSearchDialog->on_btn_clear_clicked();
+            if (mSearchDialog->search()->isSearching())
+                mSearchDialog->search()->requestStop();
+            mSearchDialog->clearSearch();
+            // find widget
+            if (find::FindWidget *find = getCurrentFindWidget()) {
+                if (getViewOrEdit(find) == focusWidget()) {
+                    if (FileMeta *meta = mFileMetaRepo.fileMeta(focusWidget())) {
+                        meta->clearFindings();
+                        find->hide();
+                    }
+                }
+            }
         } else {
-            mSearchDialog->search()->requestStop();
             mSearchDialog->hide();
         }
 
         e->accept(); return;
-    } // end escape block
+    } // end escape key handling
 
     // focus shortcuts
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_1)) {
@@ -4802,10 +4811,10 @@ void MainWindow::openDelayedFiles()
 
 void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
 {
-    FileMeta *oldFile = mFileMetaRepo.fileMeta(old);
-    if (!oldFile) old = nullptr;
+    FileMeta *oldFm = mFileMetaRepo.fileMeta(old);
+    if (!oldFm) old = nullptr;
     QWidget *wid = now;
-    PExProjectNode *projOld = (!old || old == now) ? mRecent.lastProject() : mRecent.project();
+    PExProjectNode *projOld = !old  ? nullptr : mRecent.project();
     while (wid && wid->parentWidget()) {
         if (wid->parentWidget() == ui->splitter) {
             PinKind pinKind = wid == ui->mainTabs->parentWidget() ? pkNone : PinKind(mPinView->orientation());
@@ -6184,7 +6193,7 @@ void MainWindow::toggleSearchDialog()
         }
         // toggle visibility
         if (mSearchDialog->isVisible()) {
-            // e.g. needed for macOS to rasise search dialog when minimized
+            // e.g. needed for macOS to raise search dialog when minimized
             mSearchDialog->raise();
             mSearchDialog->activateWindow();
             mSearchDialog->autofillSearchDialog();
@@ -6213,13 +6222,13 @@ void MainWindow::updateResults(search::SearchResultModel* model)
     int index = ui->logTabs->indexOf(resultsView()); // did widget exist before?
 
     delete mResultsView;
-    mResultsView = new search::ResultsView(model, this);
-    connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(),
+    mResultsView = new search::ResultsView(model, mSearchDialog, this);
+    connect(mResultsView, &search::ResultsView::updateMatchLabel, mSearchDialog,
             &search::SearchDialog::updateMatchLabel, Qt::UniqueConnection);
     connect(mSearchDialog, &search::SearchDialog::selectResult,
             mResultsView, &search::ResultsView::selectItem);
 
-    QString pattern = model->searchRegex().pattern().replace("\n", "");
+    QString pattern = model->simpleTermName();
     QString title("Results: " + pattern + " (" + model->resultCountString() + ")");
 
     ui->dockProcessLog->show();
@@ -6257,10 +6266,8 @@ void MainWindow::closeResultsView()
 {
     int index = ui->logTabs->indexOf(mResultsView);
     if (index == -1) return;
-
     ui->logTabs->removeTab(index);
-    searchDialog()->search()->resetResults();
-
+    // mSearchDialog->search()->resetResults();
     delete mResultsView;
     mResultsView = nullptr;
 }
@@ -6317,7 +6324,8 @@ void MainWindow::switchToMainTab(FileMeta *fileMeta)
 
 void MainWindow::invalidateResultsView()
 {
-    if (resultsView()) resultsView()->setOutdated();
+    if (resultsView())
+        resultsView()->setOutdated();
 }
 
 SettingsDialog *MainWindow::settingsDialog() const

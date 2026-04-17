@@ -31,10 +31,10 @@ namespace gams {
 namespace studio {
 namespace search {
 
-ResultsView::ResultsView(SearchResultModel* results, MainWindow *parent)
+ResultsView::ResultsView(SearchResultModel* results, SearchDialog *dialog, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ResultsView)
-    , mMain(parent)
+    , mDialog(dialog)
     , mResultModel(results)
 {
     ui->setupUi(this);
@@ -81,7 +81,7 @@ void ResultsView::jumpToResult(bool focus)
     auto index = ui->resultView->currentIndex();
     auto item = static_cast<ResultItem*>(index.internalPointer());
     Result r = item->type() != ResultItem::Entry ? item->child(0)->data() : item->data();
-    mMain->searchDialog()->jumpToResult(r);
+    mDialog->jumpToResult(r);
     emit updateMatchLabel(item->data().logicalIndex()+1, mResultModel->resultCount());
     if (!focus)
         setFocus(); // focus stays in results view
@@ -140,10 +140,10 @@ void ResultsView::keyPressEvent(QKeyEvent* e)
         selectResult(index);
         e->accept();
     } else if (e == Hotkey::SearchFindPrev) {
-        mMain->searchDialog()->on_searchPrev();
+        mDialog->on_searchPrev();
         e->accept();
     } else if (e == Hotkey::SearchFindNext) {
-        mMain->searchDialog()->on_searchNext();
+        mDialog->on_searchNext();
         e->accept();
     } else if (e->key() == Qt::Key_Up) {
         auto index = ui->resultView->currentIndex();

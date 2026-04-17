@@ -19,10 +19,11 @@
  */
 #include "findwidget.h"
 #include "ui_findwidget.h"
-#include "viewhelper.h"
+#include "theme.h"
 #include "logger.h"
 
 #include <QKeyEvent>
+#include <QMessageBox>
 
 namespace gams {
 namespace studio {
@@ -200,6 +201,7 @@ bool FindWidget::find(FindOptions options, bool keepSearchTerm)
             ui->edFind->setText(term);
             updateButtonStates();
         }
+        ui->edReplace->clear();
     }
     if (ui->edFind->exactMatch()) options.setFlag(foExactMatch);
     if (ui->edFind->isCaseSensitive()) options.setFlag(foCaseSense);
@@ -234,8 +236,13 @@ void FindWidget::toggleReplace(bool ensureVisible)
         if (!ensureVisible || !ui->bToggleReplace->isChecked())
             ui->bToggleReplace->setChecked(!ui->bToggleReplace->isChecked());
         on_bToggleReplace_clicked();
-        if (ui->bToggleReplace->isChecked())
+        if (ui->bToggleReplace->isChecked()) {
+            if (ui->edReplace->text().isEmpty()) {
+                ui->edReplace->setText(ui->edFind->text());
+                ui->edReplace->selectAll();
+            }
             ui->edReplace->setFocus();
+        }
     }
 }
 
@@ -308,13 +315,16 @@ void FindWidget::on_bPrev_clicked()
 
 void FindWidget::on_bReplace_clicked()
 {
-    if (replace())
-        find(foContinued);
+    replace();
+    find(foContinued);
 }
 
 void FindWidget::on_bReplaceAll_clicked()
 {
-    if (!mFinder || !mFinder->canReplace()) return;
+    if (!mFinder || !mFinder->canReplace())
+        return;
+    if (QMessageBox::question(this, "Replace all", "Replace all occurrencies?") != QMessageBox::Yes)
+        return;
 
     FindOptions options;
     if (ui->edFind->exactMatch()) options.setFlag(foExactMatch);
