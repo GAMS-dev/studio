@@ -15,6 +15,10 @@ Version 1.24.3  *
   - Added missing initial value when starting Replace with `Ctrl+R`.
   - Fixed broken continue in Replace.
   - Fixed several tooltips.
+- Fixed an issue where the Search matches would incorrectly reappear when pressing `F4` after it had been closed with `Esc`.
+- Fixed a bug where the Search dialog failed to respond to navigation keys (`<` or `>`) after the Search Result View was closed.
+- Updated the Search Result View title to be more descriptive and user-friendly.
+- Fixed ESC handling in Search. First ESC hides the Search dialog, the second closes and resets the search data.
 
 Version 1.24.2
 ==================
