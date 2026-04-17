@@ -93,7 +93,7 @@ void SearchDialog::closeEvent(QCloseEvent *event)
 {
     mSearch.requestStop();
     event->ignore();
-    QDialog::closeEvent(event);
+    hide();
 }
 
 void SearchDialog::moveEvent(QMoveEvent *event)
