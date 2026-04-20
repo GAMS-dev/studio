@@ -143,8 +143,6 @@ SOURCES += \
     gdxdiffdialog/filepathlineedit.cpp \
     gdxdiffdialog/gdxdiffdialog.cpp \
     gdxdiffdialog/gdxdiffprocess.cpp \
-    gdxviewer/columnfilter.cpp \
-    gdxviewer/columnfilterframe.cpp \
     gdxviewer/exportdialog.cpp \
     gdxviewer/exportdriver.cpp \
     gdxviewer/exportmodel.cpp \
@@ -157,14 +155,14 @@ SOURCES += \
     gdxviewer/gdxsymbolviewstate.cpp \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/gdxviewerstate.cpp \
+    gdxviewer/labelfilter.cpp \
+    gdxviewer/labelfilterdialog.cpp \
     gdxviewer/nestedheaderview.cpp \
     gdxviewer/numericalformatcontroller.cpp \
     gdxviewer/quickselectlistview.cpp \
-    gdxviewer/tabenabledmenu.cpp \
     gdxviewer/tableviewdomainmodel.cpp \
     gdxviewer/tableviewmodel.cpp \
-    gdxviewer/valuefilter.cpp \
-    gdxviewer/valuefilterwidget.cpp \
+    gdxviewer/valuefilterdialog.cpp \
     headerviewproxy.cpp \
     keys.cpp \
     logger.cpp \
@@ -386,8 +384,6 @@ HEADERS += \
     gdxdiffdialog/filepathlineedit.h \
     gdxdiffdialog/gdxdiffdialog.h \
     gdxdiffdialog/gdxdiffprocess.h \
-    gdxviewer/columnfilter.h \
-    gdxviewer/columnfilterframe.h \
     gdxviewer/exportdialog.h \
     gdxviewer/exportdriver.h \
     gdxviewer/exportmodel.h \
@@ -400,14 +396,15 @@ HEADERS += \
     gdxviewer/gdxsymbolviewstate.h \
     gdxviewer/gdxviewer.h \
     gdxviewer/gdxviewerstate.h \
+    gdxviewer/labelfilter.h \
+    gdxviewer/labelfilterdialog.h \
     gdxviewer/nestedheaderview.h \
     gdxviewer/numericalformatcontroller.h \
     gdxviewer/quickselectlistview.h \
-    gdxviewer/tabenabledmenu.h \
     gdxviewer/tableviewdomainmodel.h \
     gdxviewer/tableviewmodel.h \
     gdxviewer/valuefilter.h \
-    gdxviewer/valuefilterwidget.h \
+    gdxviewer/valuefilterdialog.h \
     headerviewproxy.h \
     keys.h \
     logger.h \
@@ -557,11 +554,11 @@ FORMS += \
     filesystemwidget.ui \
     gamscom/debugwidget.ui \
     gdxdiffdialog/gdxdiffdialog.ui \
-    gdxviewer/columnfilterframe.ui \
     gdxviewer/exportdialog.ui \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
-    gdxviewer/valuefilterwidget.ui \
+    gdxviewer/labelfilterdialog.ui \
+    gdxviewer/valuefilterdialog.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     miro/mirodeploydialog.ui \

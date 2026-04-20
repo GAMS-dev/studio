@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>gams::studio::gdxviewer::ValueFilterWidget</class>
- <widget class="QWidget" name="gams::studio::gdxviewer::ValueFilterWidget">
+ <class>gams::studio::gdxviewer::ValueFilterDialog</class>
+ <widget class="QDialog" name="gams::studio::gdxviewer::ValueFilterDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="focusPolicy">
-   <enum>Qt::StrongFocus</enum>
+   <enum>Qt::FocusPolicy::StrongFocus</enum>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -77,7 +77,7 @@
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -193,7 +193,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -233,6 +233,19 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leMin</tabstop>
+  <tabstop>leMax</tabstop>
+  <tabstop>cbExclude</tabstop>
+  <tabstop>cbEps</tabstop>
+  <tabstop>cbPInf</tabstop>
+  <tabstop>cbMInf</tabstop>
+  <tabstop>cbNa</tabstop>
+  <tabstop>cbUndef</tabstop>
+  <tabstop>cbAcronym</tabstop>
+  <tabstop>pbReset</tabstop>
+  <tabstop>pbApply</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

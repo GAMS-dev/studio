@@ -20,6 +20,8 @@
 #ifndef GAMS_STUDIO_GDXVIEWER_GDXSYMBOLVIEWSTATE_H
 #define GAMS_STUDIO_GDXVIEWER_GDXSYMBOLVIEWSTATE_H
 
+#include "valuefilter.h"
+
 #include <QStringList>
 #include <QMap>
 #include <QObject>
@@ -28,18 +30,7 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-struct ValueFilterState {
-    bool active = false;
-    double min;
-    double max;
-    bool exclude;
-    bool showUndef;
-    bool showNA;
-    bool showPInf;
-    bool showMInf;
-    bool showEps;
-    bool showAcronym;
-};
+
 
 class GdxSymbolViewState
 {
@@ -89,8 +80,8 @@ public:
     QVector<int> tvDimOrder() const;
     void setTvDimOrder(const QVector<int> &tvDimOrder);
 
-    QVector<ValueFilterState> valueFilterState() const;
-    void setValueFilterState(const QVector<ValueFilterState> &valueFilterState);
+    ValueFilter &getValueFilter(int valueColumn);
+    void setValueFilter(const QVector<ValueFilter> &valueFilter);
 
     QVector<bool> getShowAttributes() const;
     void setShowAttributes(const QVector<bool> &value);
@@ -131,7 +122,7 @@ private:
     QVector<QStringList> mUncheckedLabels;
 
     // value filters
-    QVector<ValueFilterState> mValueFilterState;
+    QVector<ValueFilter> mValueFilter;
 
     QByteArray mListViewHeaderState;
     QByteArray mTableViewFilterHeaderState;

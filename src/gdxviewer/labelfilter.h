@@ -17,30 +17,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_GDXVIEWER_TABENABLEDMENU_H
-#define GAMS_STUDIO_GDXVIEWER_TABENABLEDMENU_H
+#ifndef LABELFILTER_H
+#define LABELFILTER_H
 
-#include <QKeyEvent>
-#include <QMenu>
 #include <QObject>
-#include <QWidget>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-class TabEnabledMenu : public QMenu
+class LabelFilter
 {
 public:
-    TabEnabledMenu(QWidget *parent = nullptr);
-    bool focusNextPrevChild(bool next) override;
+    LabelFilter(std::unique_ptr<bool []> showUelInColumn);
 
-protected:
-    void keyPressEvent(QKeyEvent *e) override;
+    bool isActive() const;
+    void setActive(bool newActive);
+
+    inline bool isUelShown(size_t uel) const
+    {
+        return mShowUel[uel];
+    }
+
+    inline void setUelShown(size_t uel, bool shown)
+    {
+        mShowUel[uel] = shown;
+    }
+
+private:
+    bool active = false;
+    std::unique_ptr<bool []> mShowUel;
 };
 
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams
 
-#endif // GAMS_STUDIO_GDXVIEWER_TABENABLEDMENU_H
+#endif // LABELFILTER_H

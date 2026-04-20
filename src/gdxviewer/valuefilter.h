@@ -17,79 +17,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_GDXVIEWER_VALUEFILTER_H
-#define GAMS_STUDIO_GDXVIEWER_VALUEFILTER_H
-
-#include <QWidgetAction>
-#include "gdxsymbol.h"
+#ifndef VALUEFILTER_H
+#define VALUEFILTER_H
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-class ValueFilter : public QWidgetAction
-{
-public:
-    ValueFilter(GdxSymbol* symbol, int valueColumn, QWidget *parent = nullptr);
-    QWidget* createWidget(QWidget * parent) override;
-    void updateFilter();
-    void reset();
-
-    double min() const;
-    double max() const;
-    double currentMin() const;
-    double currentMax() const;
-
-    bool showUndef() const;
-    void setShowUndef(bool showUndef);
-
-    bool showNA() const;
-    void setShowNA(bool showNA);
-
-    bool showPInf() const;
-    void setShowPInf(bool showPInf);
-
-    bool showMInf() const;
-    void setShowMInf(bool showMInf);
-
-    bool showEps() const;
-    void setShowEps(bool showEps);
-
-    bool showAcronym() const;
-    void setShowAcronym(bool showAcronym);
-
-    bool exclude() const;
-    void setExclude(bool exclude);
-
-    void setCurrentMin(double currentMin);
-    void setCurrentMax(double currentMax);
-
-    void setFocus();
-
-private:
-    GdxSymbol* mSymbol = nullptr;
-    int mValueColumn;
-
-    double mMin;
-    double mMax;
-
-    double mCurrentMin;
-    double mCurrentMax;
-
-    bool mExclude = false;
-
-    bool mShowUndef = true;
-    bool mShowNA = true;
-    bool mShowPInf = true;
-    bool mShowMInf = true;
-    bool mShowEps = true;
-    bool mShowAcronym = true;
-
-    QWidget *mWidget = nullptr;
+struct ValueFilter {
+    bool active = false;
+    double min;
+    double max;
+    bool exclude = false;
+    bool showUndef = true;
+    bool showNA = true;
+    bool showPInf = true;
+    bool showMInf = true;
+    bool showEps = true;
+    bool showAcronym = true;
 };
 
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams
 
-#endif // GAMS_STUDIO_GDXVIEWER_VALUEFILTER_H
+#endif // VALUEFILTER_H

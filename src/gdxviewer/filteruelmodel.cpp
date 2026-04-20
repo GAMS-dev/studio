@@ -32,9 +32,9 @@ FilterUelModel::FilterUelModel(GdxSymbol *symbol, int column, QObject *parent)
 {
     mUels = mSymbol->uelsInColumn().at(mColumn);
     mChecked = new bool[mUels->size()];
-    bool* showUelInColumn = mSymbol->showUelInColumn().at(column);
+    LabelFilter *lf = mSymbol->labelFilter(column);
     for(size_t idx=0; idx<mUels->size(); idx++)
-        mChecked[idx] = showUelInColumn[mUels->at(idx)];
+        mChecked[idx] = lf->isUelShown(mUels->at(idx));
 }
 
 FilterUelModel::~FilterUelModel()

@@ -171,14 +171,14 @@ void GdxSymbolViewState::setTvDimOrder(const QVector<int> &tvDimOrder)
     mTvDimOrder = tvDimOrder;
 }
 
-QVector<ValueFilterState> GdxSymbolViewState::valueFilterState() const
+ValueFilter &GdxSymbolViewState::getValueFilter(int valueColumn)
 {
-    return mValueFilterState;
+    return mValueFilter[valueColumn];
 }
 
-void GdxSymbolViewState::setValueFilterState(const QVector<ValueFilterState> &valueFilterState)
+void GdxSymbolViewState::setValueFilter(const QVector<ValueFilter> &valueFilterState)
 {
-    mValueFilterState = valueFilterState;
+    mValueFilter = valueFilterState;
 }
 
 QVector<bool> GdxSymbolViewState::getShowAttributes() const
@@ -267,7 +267,7 @@ void GdxSymbolViewState::write(QVariantMap &map) const
 
     semicolon = false;
     QString valFilterStates;
-    for (const ValueFilterState &state : std::as_const(mValueFilterState)) {
+    for (const ValueFilter &state : std::as_const(mValueFilter)) {
         QString valFilterState = QString::number(state.min, 'g', QLocale::FloatingPointShortest);
         valFilterState += ',' + QString::number(state.max, 'g', QLocale::FloatingPointShortest) + ',';
         valFilterState += QString(state.active ? "1" : "0") + (state.exclude ? "1" : "0") +
@@ -364,11 +364,11 @@ void GdxSymbolViewState::read(const QVariantMap &map)
     }
 
     if (map.contains("valueFilterStates")) {
-        mValueFilterState.clear();
+        mValueFilter.clear();
         const QStringList allFilterStates = map.value("valueFilterStates").toString().split(';');
         for (const QString &state : allFilterStates) {
             QStringList stateStrings = state.split(',');
-            ValueFilterState valFilterState;
+            ValueFilter valFilterState;
             bool ok = stateStrings.size() == 3;
             ok = ok && assignIfValidDouble(valFilterState.min, stateStrings.at(0));
             ok = ok && assignIfValidDouble(valFilterState.max, stateStrings.at(1));
@@ -382,7 +382,7 @@ void GdxSymbolViewState::read(const QVariantMap &map)
                 valFilterState.showMInf = stateStrings.at(2).at(5) != '0';
                 valFilterState.showEps = stateStrings.at(2).at(6) != '0';
                 valFilterState.showAcronym = stateStrings.at(2).at(7) != '0';
-                mValueFilterState << valFilterState;
+                mValueFilter << valFilterState;
             } else {
                 DEB() << "Error restoring GDX symbol view: invalid value filter state";
             }

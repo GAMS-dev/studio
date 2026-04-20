@@ -23,7 +23,6 @@
 #include "gdxsymbolview.h"
 #include "gdxviewer.h"
 #include "ui_exportdialog.h"
-#include "valuefilter.h"
 
 #include <headerviewproxy.h>
 #include <settings.h>

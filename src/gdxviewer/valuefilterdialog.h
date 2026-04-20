@@ -17,30 +17,50 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "columnfilter.h"
-#include "columnfilterframe.h"
+#ifndef GAMS_STUDIO_GDXVIEWER_VALUEFILTERDIALOG_H
+#define GAMS_STUDIO_GDXVIEWER_VALUEFILTERDIALOG_H
+
+#include "gdxsymbol.h"
+#include <QDialog>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-ColumnFilter::ColumnFilter(GdxSymbol *symbol, int column, QWidget *parent)
-    :QWidgetAction(parent), mSymbol(symbol), mColumn(column)
-{
-
+namespace Ui {
+class ValueFilterDialog;
 }
 
-QWidget *ColumnFilter::createWidget(QWidget *parent)
+class ValueFilterDialog : public QDialog
 {
-    mWidget = new ColumnFilterFrame(mSymbol, mColumn, parent);
-    return mWidget;
-}
+    Q_OBJECT
 
-void ColumnFilter::setFocus()
-{
-    static_cast<ColumnFilterFrame *>(mWidget)->setFocusOnOpen();
-}
+public:
+    explicit ValueFilterDialog(GdxSymbol *symbol, int valueColumn, ValueFilter& valueFilter, QWidget *parent = nullptr);
+    ~ValueFilterDialog();
+
+protected:
+    void keyPressEvent(QKeyEvent *e) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void focusInEvent(QFocusEvent *event) override;
+
+private slots:
+    void on_pbApply_clicked();
+    void on_pbReset_clicked();
+
+private:
+    Ui::ValueFilterDialog *ui;
+    double mMin;
+    double mMax;
+
+    GdxSymbol* mSymbol = nullptr;
+    int mValueColumn;
+    ValueFilter& mValueFilter;
+};
+
 
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams
+#endif // GAMS_STUDIO_GDXVIEWER_VALUEFILTERDIALOG_H

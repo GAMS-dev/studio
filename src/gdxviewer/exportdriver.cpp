@@ -21,7 +21,6 @@
 #include "gdxsymbol.h"
 #include "gdxsymbolview.h"
 #include "gdxviewer.h"
-#include "valuefilter.h"
 #include <settings.h>
 
 #include <QDir>
@@ -297,8 +296,8 @@ QString ExportDriver::generateFilters()
         else if (hasActiveLabelFilter(sym)) {
             inst += "    labelFilters:\n";
             for (int d=0; d<sym->dim(); d++) {
-                if (sym->filterActive(d)) {
-                    bool *showUels = sym->showUelInColumn().at(d);
+                LabelFilter *lf = sym->labelFilter(d);
+                if (lf->isActive()) {
                     std::vector<int> uels = *sym->uelsInColumn().at(d);
                     inst += "      - dimension: " + QString::number(d+1) + "\n";
 
@@ -306,7 +305,7 @@ QString ExportDriver::generateFilters()
                     size_t uelCount = uels.size();
                     size_t showUelCount = 0;
                     for (int uel: uels) {
-                        if (showUels[uel])
+                        if (lf->isUelShown(uel))
                             showUelCount++;
                     }
                     bool useReject = showUelCount > uelCount/2;
@@ -316,7 +315,7 @@ QString ExportDriver::generateFilters()
                         inst += "        keep: [";
                     bool needTrim = false;
                     for (int uel: uels) {
-                        if ( (!useReject && showUels[uel]) || (useReject && !showUels[uel]) ) {
+                        if ( (!useReject && lf->isUelShown(uel)) || (useReject && !lf->isUelShown(uel)) ) {
                             inst += "'" + mGdxViewer->gdxSymbolTable()->uel2Label(uel) + "', ";
                             needTrim = true;
                         }
@@ -337,32 +336,32 @@ QString ExportDriver::generateFilters()
                 inst += "    valueFilters:\n";
                 for (int d=sym->dim(); d<sym->filterColumnCount(); d++) {
                     int valColIndex = d-sym->dim();
-                    ValueFilterState vfs = symViewState->valueFilterState().at(valColIndex);
-                    if (vfs.active) {
+                    ValueFilter vf = symViewState->getValueFilter(valColIndex);
+                    if (vf.active) {
                         QStringList valColumns;
                         valColumns << "level" << "marginal" << "lower" << "upper" << "scale";
                         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
                             inst += "      - attribute: " + valColumns[valColIndex] + "\n";
                         else // parameters
                             inst += "      - attribute: value\n";
-                        QString min = numerics::DoubleFormatter::format(vfs.min, numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
-                        QString max = numerics::DoubleFormatter::format(vfs.max, numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
-                        if (vfs.exclude) {
+                        QString min = numerics::DoubleFormatter::format(vf.min, numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
+                        QString max = numerics::DoubleFormatter::format(vf.max, numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
+                        if (vf.exclude) {
                             inst += "        rule: (x<" + min + ") | (x>" + max + ")\n";
                         } else
                             inst += "        rule: (x>=" + min + ") & (x<=" + max + ")\n";
 
                         //special values
                         QString rejectSpecialValues = "";
-                        if (!vfs.showEps)
+                        if (!vf.showEps)
                             rejectSpecialValues += "EPS, ";
-                        if (!vfs.showPInf)
+                        if (!vf.showPInf)
                             rejectSpecialValues += "INF, ";
-                        if (!vfs.showMInf)
+                        if (!vf.showMInf)
                             rejectSpecialValues += "-INF, ";
-                        if (!vfs.showNA)
+                        if (!vf.showNA)
                             rejectSpecialValues += "NA, ";
-                        if (!vfs.showUndef)
+                        if (!vf.showUndef)
                             rejectSpecialValues += "UNDEF, ";
                         if (!rejectSpecialValues.isEmpty()) {
                             int pos = rejectSpecialValues.lastIndexOf(QChar(','));
@@ -380,29 +379,29 @@ QString ExportDriver::generateFilters()
                     int valColIndex = d-sym->dim();
                     QStringList valColumns;
                     valColumns << "level" << "marginal" << "lower" << "upper" << "scale";
-                    ValueFilter *vf = sym->valueFilter(valColIndex);
+                    ValueFilter vf = sym->valueFilter(valColIndex);
                     if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
                         inst += "      - attribute: " + valColumns[valColIndex] + "\n";
                     else // parameters
                         inst += "      - attribute: value\n";
-                    QString min = numerics::DoubleFormatter::format(vf->currentMin(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
-                    QString max = numerics::DoubleFormatter::format(vf->currentMax(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
-                    if (vf->exclude()) {
+                    QString min = numerics::DoubleFormatter::format(vf.min, numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
+                    QString max = numerics::DoubleFormatter::format(vf.max, numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
+                    if (vf.exclude) {
                         inst += "        rule: (x<" + min + ") | (x>" + max + ")\n";
                     } else
                         inst += "        rule: (x>=" + min + ") & (x<=" + max + ")\n";
 
                     //special values
                     QString rejectSpecialValues = "";
-                    if (!vf->showEps())
+                    if (!vf.showEps)
                         rejectSpecialValues += "EPS, ";
-                    if (!vf->showPInf())
+                    if (!vf.showPInf)
                         rejectSpecialValues += "INF, ";
-                    if (!vf->showMInf())
+                    if (!vf.showMInf)
                         rejectSpecialValues += "-INF, ";
-                    if (!vf->showNA())
+                    if (!vf.showNA)
                         rejectSpecialValues += "NA, ";
-                    if (!vf->showUndef())
+                    if (!vf.showUndef)
                         rejectSpecialValues += "UNDEF, ";
                     if (!rejectSpecialValues.isEmpty()) {
                             int pos = rejectSpecialValues.lastIndexOf(QChar(','));
@@ -525,8 +524,8 @@ bool ExportDriver::hasActiveValueFilterState(GdxSymbol *sym)
     if (!sym->isLoaded()) {
         GdxSymbolViewState *symViewState = getSymbolViewState(sym);
         if (symViewState) {
-            for (ValueFilterState &vfs : symViewState->valueFilterState()) {
-                if (vfs.active)
+            for(int i=0; i<sym->numericalColumnCount(); i++) {
+                if (symViewState->getValueFilter(i).active)
                     return true;
             }
         }

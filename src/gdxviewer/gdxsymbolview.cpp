@@ -21,18 +21,17 @@
 #include "ui_gdxsymbolview.h"
 #include "gdxsymbolheaderview.h"
 #include "gdxsymbol.h"
-#include "columnfilter.h"
 #include "headerviewproxy.h"
 #include "nestedheaderview.h"
 #include "tableviewmodel.h"
 #include "theme.h"
 #include "common.h"
-#include "valuefilter.h"
 #include "tableviewdomainmodel.h"
 #include "settings.h"
 #include "exportdialog.h"
 #include "numericalformatcontroller.h"
-#include "tabenabledmenu.h"
+#include "valuefilterdialog.h"
+#include "labelfilterdialog.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
@@ -230,29 +229,20 @@ void GdxSymbolView::showFilter(QPoint p)
     int column = tableView->horizontalHeader()->logicalIndexAt(p);
 
     if(mSym->isLoaded() && column>=0 && column<mSym->filterColumnCount()) {
-        mColumnFilterMenu = new TabEnabledMenu(this);
-        connect(mColumnFilterMenu, &QMenu::aboutToHide, this, &GdxSymbolView::freeFilterMenu);
-        QWidgetAction *filter = nullptr;
-        if (column<mSym->dim())
-            filter = mSym->columnFilter(column);
+        bool isLabelColumn = column < mSym->dim();
+        QDialog *d;
+        if (isLabelColumn)
+            d = new LabelFilterDialog(mSym, column, mSym->labelFilter(column), this);
         else
-            filter = mSym->valueFilter(column-mSym->dim());
-        mColumnFilterMenu->addAction(filter);
-        mColumnFilterMenu->setFont(font());
-        mColumnFilterMenu->popup(tableView->mapToGlobal(p));
-        if (column<mSym->dim())
-            mSym->columnFilter(column)->setFocus();
-        else
-            mSym->valueFilter(column-mSym->dim())->setFocus();
+            d = new ValueFilterDialog(mSym, column-mSym->dim(), mSym->valueFilter(column-mSym->dim()), this);
+        d->move(tableView->mapToGlobal(p));
+        d->show();
     }
 }
 
 void GdxSymbolView::freeFilterMenu()
 {
-    if (mColumnFilterMenu) {
-        mColumnFilterMenu->deleteLater();
-        mColumnFilterMenu = nullptr;
-    }
+
 }
 
 void GdxSymbolView::toggleSqueezeDefaults(bool checked)
@@ -864,37 +854,28 @@ void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
     mPendingUncheckedLabels.resize(mSym->dim());
     for (int i=0; i<mSym->dim(); i++) {
         bool filterActive = false;
+        LabelFilter *lf = mSym->labelFilter(i);
         if (!symViewState->uncheckedLabels().at(i).empty()) {
             for (const QString &l : symViewState->uncheckedLabels().at(i)) {
                 int uel = mGdxSymbolTable->label2Uel(l);
                 if (uel != -1) {
-                    bool labelExistsInColumn = mSym->showUelInColumn().at(i)[uel];
+                    bool labelExistsInColumn = lf->isUelShown(uel);
                     if (!labelExistsInColumn)
                         mPendingUncheckedLabels[i].append(l);
                     filterActive = filterActive || labelExistsInColumn;
-                    mSym->showUelInColumn().at(i)[uel] = false;
+                    lf->setUelShown(uel, false);
                 } else
                     mPendingUncheckedLabels[i].append(l);
             }
         }
-        mSym->setFilterActive(i, filterActive);
+        lf->setActive(filterActive);
     }
 
     // apply value filters
     for (int i=0; i<mSym->numericalColumnCount(); i++) {
-        ValueFilterState vfState = symViewState->valueFilterState().at(i);
-        if (vfState.active) {
-            mSym->setFilterActive(mSym->dim()+i);
-            mSym->valueFilter(i)->setCurrentMin(vfState.min);
-            mSym->valueFilter(i)->setCurrentMax(vfState.max);
-            mSym->valueFilter(i)->setExclude(vfState.exclude);
-            mSym->valueFilter(i)->setShowEps(vfState.showEps);
-            mSym->valueFilter(i)->setShowPInf(vfState.showPInf);
-            mSym->valueFilter(i)->setShowMInf(vfState.showMInf);
-            mSym->valueFilter(i)->setShowNA(vfState.showNA);
-            mSym->valueFilter(i)->setShowUndef(vfState.showUndef);
-            mSym->valueFilter(i)->setShowAcronym(vfState.showAcronym);
-        }
+        ValueFilter vf = symViewState->getValueFilter(i);
+        if (vf.active)
+            mSym->setValueFilter(i, vf);
     }
 
     mSym->filterRows();
@@ -938,10 +919,11 @@ void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)
     // save uel filters
     QVector<QStringList> uncheckedLabels;
     for (int i=0; i<mSym->dim(); i++) {
+        LabelFilter *lf = mSym->labelFilter(i);
         QStringList labels;
         if (mSym->filterActive(i)) {
             for (int u : *mSym->uelsInColumn().at(i)) {
-                if (!mSym->showUelInColumn().at(i)[u])
+                if (!lf->isUelShown(u))
                     labels.append(mGdxSymbolTable->uel2Label(u));
             }
         }
@@ -952,26 +934,15 @@ void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)
     // save value filters
     int colCount = mSym->numericalColumnCount();
 
-    QVector<ValueFilterState> valueFilterState;
-    ValueFilterState vfState;
+    QVector<ValueFilter> valueFilters;
+    ValueFilter vf;
     for (int i=0; i<colCount; i++) {
-        ValueFilter* vf = mSym->valueFilter(i);
-        if (mSym->filterActive(mSym->dim()+i)) {
-            vfState.active = true;
-            vfState.min = vf->currentMin();
-            vfState.max = vf->currentMax();
-            vfState.showEps = vf->showEps();
-            vfState.showPInf = vf->showPInf();
-            vfState.showMInf = vf->showMInf();
-            vfState.showNA = vf->showNA();
-            vfState.showUndef = vf->showUndef();
-            vfState.showAcronym = vf->showAcronym();
-            vfState.exclude = vf->exclude();
-        } else
-            vfState.active = false;
-        valueFilterState.append(vfState);
+        ValueFilter vf2 = mSym->valueFilter(i);
+        if (mSym->filterActive(mSym->dim()+i))
+            vf = vf2;
+        valueFilters.append(vf);
     }
-    symViewState->setValueFilterState(valueFilterState);
+    symViewState->setValueFilter(valueFilters);
 }
 
 QList<QHeaderView *> GdxSymbolView::headers()

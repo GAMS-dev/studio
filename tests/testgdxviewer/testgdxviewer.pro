@@ -17,8 +17,8 @@ SOURCES += \
     $$SRCPATH/editors/sysloglocator.cpp \
     $$SRCPATH/exception.cpp \
     $$SRCPATH/filterlineedit.cpp \
-    $$SRCPATH/gdxviewer/columnfilter.cpp \
-    $$SRCPATH/gdxviewer/columnfilterframe.cpp \
+    $$SRCPATH/gdxviewer/labelfilterdialog.cpp \
+    $$SRCPATH/gdxviewer/labelfilter.cpp \
     $$SRCPATH/gdxviewer/exportdialog.cpp \
     $$SRCPATH/gdxviewer/exportdriver.cpp \
     $$SRCPATH/gdxviewer/exportmodel.cpp \
@@ -34,11 +34,9 @@ SOURCES += \
     $$SRCPATH/gdxviewer/nestedheaderview.cpp \
     $$SRCPATH/gdxviewer/numericalformatcontroller.cpp \
     $$SRCPATH/gdxviewer/quickselectlistview.cpp \
-    $$SRCPATH/gdxviewer/tabenabledmenu.cpp \
     $$SRCPATH/gdxviewer/tableviewdomainmodel.cpp \
     $$SRCPATH/gdxviewer/tableviewmodel.cpp \
-    $$SRCPATH/gdxviewer/valuefilter.cpp \
-    $$SRCPATH/gdxviewer/valuefilterwidget.cpp \
+    $$SRCPATH/gdxviewer/valuefilterdialog.cpp \
     $$SRCPATH/headerviewproxy.cpp \
     $$SRCPATH/logger.cpp \
     $$SRCPATH/numerics/doubleFormat.c \
@@ -65,8 +63,8 @@ HEADERS += \
     $$SRCPATH/editors/sysloglocator.h \
     $$SRCPATH/exception.h \
     $$SRCPATH/filterlineedit.h \
-    $$SRCPATH/gdxviewer/columnfilter.h \
-    $$SRCPATH/gdxviewer/columnfilterframe.h \
+    $$SRCPATH/gdxviewer/labelfilterdialog.h \
+    $$SRCPATH/gdxviewer/labelfilter.h \
     $$SRCPATH/gdxviewer/exportdialog.h \
     $$SRCPATH/gdxviewer/exportdriver.h \
     $$SRCPATH/gdxviewer/exportmodel.h \
@@ -82,11 +80,9 @@ HEADERS += \
     $$SRCPATH/gdxviewer/numericalformatcontroller.cpp \
     $$SRCPATH/gdxviewer/nestedheaderview.h \
     $$SRCPATH/gdxviewer/quickselectlistview.h \
-    $$SRCPATH/gdxviewer/tabenabledmenu.h \
     $$SRCPATH/gdxviewer/tableviewdomainmodel.h \
     $$SRCPATH/gdxviewer/tableviewmodel.h \
-    $$SRCPATH/gdxviewer/valuefilter.h \
-    $$SRCPATH/gdxviewer/valuefilterwidget.h \
+    $$SRCPATH/gdxviewer/valuefilterdialog.h \
     $$SRCPATH/headerviewproxy.h \
     $$SRCPATH/logger.h \
     $$SRCPATH/numerics/doubleFormat.h \

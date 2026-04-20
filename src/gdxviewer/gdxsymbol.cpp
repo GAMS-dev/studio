@@ -20,10 +20,8 @@
 #include "gdxsymbol.h"
 #include "exception.h"
 #include "gdxsymboltablemodel.h"
-#include "nestedheaderview.h"
-#include "columnfilter.h"
-#include "valuefilter.h"
 #include "gdxviewer.h"
+#include "labelfilterdialog.h"
 
 #include <QMutex>
 #include <QSet>
@@ -76,16 +74,8 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTableMo
     for(int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
 
-    mFilterActive.resize(filterColumnCount());
-    for(int i=0; i<filterColumnCount(); i++)
-        mFilterActive[i] = false;
-
-    mColumnFilters.resize(mDim);
-    for (int i=0; i<mDim; i++)
-        mColumnFilters[i] = nullptr;
     mValueFilters.resize(mNumericalColumnCount);
-    for (int i=0; i<mNumericalColumnCount; i++)
-        mValueFilters[i] = nullptr;
+    mLabelFilters.resize(mDim);
 
     mSpecValSortVal.push_back(5.0E300); // GMS_SV_UNDEF
     mSpecValSortVal.push_back(4.0E300); // GMS_SV_NA
@@ -99,11 +89,6 @@ GdxSymbol::~GdxSymbol()
 {
     for(auto v : mUelsInColumn)
         delete v;
-    for(auto a: mShowUelInColumn) {
-        if(a)
-            delete[] a;
-    }
-    unregisterAllFilters();
 }
 
 QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
@@ -345,7 +330,8 @@ void GdxSymbol::calcUelsInColumn()
 {
     for(int dim=0; dim<mDim; dim++) {
         std::vector<int>* uels = new std::vector<int>();
-        bool* sawUel = new bool[qMax(mMaxUel[dim]+1,1)] {false};
+        int size = qMax(mMaxUel[dim]+1,1);
+        auto sawUel = std::make_unique<bool[]>(size);
         int lastUel = -1;
         int currentUel = - 1;
         for(size_t rec=0; rec<mRecordCount; rec++) {
@@ -361,7 +347,8 @@ void GdxSymbol::calcUelsInColumn()
             }
         }
         mUelsInColumn.push_back(uels);
-        mShowUelInColumn.push_back(sawUel);
+        auto lf = std::make_unique<LabelFilter>(std::move(sawUel));
+        mLabelFilters[dim] = std::move(lf);
     }
 }
 
@@ -548,76 +535,35 @@ double GdxSymbol::maxDouble(int valCol)
     return mMaxDouble[valCol];
 }
 
-void GdxSymbol::registerColumnFilter(int column, ColumnFilter *columnFilter)
-{
-    mColumnFilters.at(column) = columnFilter;
-    mFilterActive.at(column) = true;
-}
-
-void GdxSymbol::registerValueFilter(int valueColumn, ValueFilter *valueFilter)
-{
-    mValueFilters.at(valueColumn) = valueFilter;
-    mFilterActive.at(mDim+valueColumn) = true;
-}
-
-void GdxSymbol::unregisterColumnFilter(int column)
-{
-    if (mColumnFilters[column] != nullptr) {
-        mColumnFilters[column]->deleteLater();
-        mColumnFilters[column] = nullptr;
-    }
-    mFilterActive.at(column) = false;
-}
-
-void GdxSymbol::unregisterValueFilter(int valueColumn)
-{
-    if (mValueFilters[valueColumn] != nullptr) {
-        mValueFilters[valueColumn]->deleteLater();
-        mValueFilters[valueColumn] = nullptr;
-    }
-    mFilterActive.at(mDim+valueColumn) = false;
-}
-
-void GdxSymbol::unregisterAllFilters()
+void GdxSymbol::resetFilters()
 {
     for(int i=0; i<mDim; i++)
-        unregisterColumnFilter(i);
+        mLabelFilters[i]->setActive(false);
     for(int i=0; i<mNumericalColumnCount; i++)
-        unregisterValueFilter(i);
+        mValueFilters[i].active = false;
 }
 
-ColumnFilter *GdxSymbol::columnFilter(int column)
+ValueFilter& GdxSymbol::valueFilter(int valueColumn)
 {
-    if (mColumnFilters[column] == nullptr)
-        mColumnFilters[column] = new ColumnFilter(this, column);
-    return mColumnFilters[column];
-}
-
-ValueFilter *GdxSymbol::valueFilter(int valueColumn)
-{
-    if (mValueFilters[valueColumn] == nullptr)
-        mValueFilters[valueColumn] = new ValueFilter(this, valueColumn);
     return mValueFilters[valueColumn];
 }
 
-void GdxSymbol::setShowUelInColumn(const std::vector<bool *> &showUelInColumn)
+void GdxSymbol::setValueFilter(int valueColumn, ValueFilter& vf)
 {
-    mShowUelInColumn = showUelInColumn;
+    mValueFilters[valueColumn] = vf;
+}
+
+LabelFilter *GdxSymbol::labelFilter(int column)
+{
+    return mLabelFilters[column].get();
 }
 
 bool GdxSymbol::filterActive(int column) const
 {
-    return mFilterActive.at(column);
-}
-
-void GdxSymbol::setFilterActive(int column, bool active)
-{
-    mFilterActive[column] = active;
-}
-
-std::vector<bool *> GdxSymbol::showUelInColumn() const
-{
-    return mShowUelInColumn;
+    if (column<mDim)
+        return mLabelFilters[column] ? mLabelFilters[column]->isActive() : false;
+    else
+        return mValueFilters[column-mDim].active;
 }
 
 std::vector<std::vector<int> *> GdxSymbol::uelsInColumn() const
@@ -633,9 +579,9 @@ void GdxSymbol::resetSortFilter()
     }
     for(int dim=0; dim<mDim; dim++) {
         for(int uel : *mUelsInColumn.at(dim))
-            mShowUelInColumn.at(dim)[uel] = true;
+            mLabelFilters[dim]->setUelShown(uel, true);
     }
-    unregisterAllFilters();
+    resetFilters();
     mFilterRecCount = mLoadedRecCount;
     emit layoutChanged();
 }
@@ -759,7 +705,7 @@ void GdxSymbol::filterRows()
         mRecFilterIdx[row-removedCount] = row;
         for(int dim=0; dim<filterColumnCount(); dim++) {
             if (dim<mDim) { // filter by key column
-                if(!mShowUelInColumn.at(dim)[mKeys[recIdx*mDim + dim]]) { //filter record
+                if(!mLabelFilters[dim]->isUelShown(mKeys[recIdx*mDim + dim])) { //filter record
                     mFilterRecCount--;
                     removedCount++;
                     break;
@@ -767,23 +713,23 @@ void GdxSymbol::filterRows()
             } else { // filter by numerical column
                 bool alreadyRemoved=false;
                 for(int i=0; i<mNumericalColumnCount; i++) {
-                    if (mFilterActive[mDim+i]) {
+                    if (mValueFilters[i].active) {
                         double val = mValues[recIdx*mNumericalColumnCount+i];
-                        ValueFilter* vf = mValueFilters[i];
+                        ValueFilter& vf = mValueFilters[i];
                         if (val < GMS_SV_UNDEF) {
-                            if ( (!vf->exclude() && (val <  vf->currentMin() || val >  vf->currentMax())) ||
-                                 ( vf->exclude() && (val >= vf->currentMin() && val <= vf->currentMax())) ) {
+                            if ( (!vf.exclude && (val <  vf.min || val >  vf.max)) ||
+                                 ( vf.exclude && (val >= vf.min && val <= vf.max)) ) {
                                 mFilterRecCount--;
                                 removedCount++;
                                 alreadyRemoved=true;
                                 break;
                             }
-                        } else if (    (!vf->showUndef()   && val == GMS_SV_UNDEF)
-                                    || (!vf->showNA()      && val == GMS_SV_NA   )
-                                    || (!vf->showPInf()    && val == GMS_SV_PINF )
-                                    || (!vf->showMInf()    && val == GMS_SV_MINF )
-                                    || (!vf->showEps()     && val == GMS_SV_EPS  )
-                                    || (!vf->showAcronym() && val >= GMS_SV_ACR  ) ) {
+                        } else if (    (!vf.showUndef   && val == GMS_SV_UNDEF)
+                                    || (!vf.showNA      && val == GMS_SV_NA   )
+                                    || (!vf.showPInf    && val == GMS_SV_PINF )
+                                    || (!vf.showMInf    && val == GMS_SV_MINF )
+                                    || (!vf.showEps     && val == GMS_SV_EPS  )
+                                    || (!vf.showAcronym && val >= GMS_SV_ACR  ) ) {
                             mFilterRecCount--;
                             removedCount++;
                             alreadyRemoved=true;

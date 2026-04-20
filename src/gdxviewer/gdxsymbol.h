@@ -26,6 +26,8 @@
 #include <QStringConverter>
 
 #include "gdxcc.h"
+#include "labelfilter.h"
+#include "valuefilter.h"
 #include "numerics/doubleformatter.h"
 
 class QMutex;
@@ -36,8 +38,6 @@ namespace gdxviewer {
 
 class GdxSymbolTableModel;
 class TableViewModel;
-class ColumnFilter;
-class ValueFilter;
 
 class GdxSymbol : public QAbstractTableModel
 {
@@ -75,11 +75,8 @@ public:
     void resetSortFilter();
     GdxSymbolTableModel *gdxSymbolTable() const;
     std::vector<std::vector<int> *> uelsInColumn() const;
-    std::vector<bool *> showUelInColumn() const;
-    void setShowUelInColumn(const std::vector<bool *> &showUelInColumn);
 
     bool filterActive(int column) const;
-    void setFilterActive(int column, bool active=true);
 
     int tvColDim() const;
 
@@ -88,13 +85,11 @@ public:
     double minDouble(int valCol=0);
     double maxDouble(int valCol=0);
 
-    void registerColumnFilter(int column, ColumnFilter *columnFilter);
-    void registerValueFilter(int valueColumn, ValueFilter *valueFilter);
-    void unregisterColumnFilter(int column);
-    void unregisterValueFilter(int valueColumn);
-    void unregisterAllFilters();
-    ValueFilter* valueFilter(int valueColumn);
-    ColumnFilter* columnFilter(int column);
+    void resetFilters();
+    ValueFilter& valueFilter(int valueColumn);
+    void setValueFilter(int valueColumn, ValueFilter& vf);
+    LabelFilter *labelFilter(int column);
+    //void setLabelFilterState(int column, LabelFilterState *vfs);
 
     int filterColumnCount();
 
@@ -174,8 +169,6 @@ private:
     std::vector<double> mSpecValSortVal;
 
     std::vector<std::vector<int>*> mUelsInColumn;
-    std::vector<bool*> mShowUelInColumn;
-    std::vector<bool> mFilterActive;
 
     std::vector<int> mRecSortIdx;
     std::vector<int> mRecFilterIdx;
@@ -184,8 +177,9 @@ private:
     numerics::DoubleFormatter::Format mNumericalFormat = numerics::DoubleFormatter::g;
     bool mSqueezeTrailingZeroes = true;
 
-    std::vector<ColumnFilter*> mColumnFilters;
-    std::vector<ValueFilter*> mValueFilters;
+    // filters
+    std::vector<std::unique_ptr<LabelFilter>> mLabelFilters;
+    std::vector<ValueFilter> mValueFilters;
     int mNumericalColumnCount;
 
     QChar mDecSepCopy;

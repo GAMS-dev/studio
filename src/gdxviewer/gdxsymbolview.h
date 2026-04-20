@@ -112,7 +112,6 @@ private:
     QByteArray mInitialHeaderState;
     QMenu mContextMenuLV;
     QMenu mContextMenuTV;
-    QMenu *mColumnFilterMenu = nullptr;
 
     void showListView();
     void showTableView(int colDim = -1, const QVector<int> &tvDimOrder = QVector<int>());

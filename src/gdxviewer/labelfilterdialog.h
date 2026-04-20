@@ -17,31 +17,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_GDXVIEWER_COLUMNFILTERFRAME_H
-#define GAMS_STUDIO_GDXVIEWER_COLUMNFILTERFRAME_H
+#ifndef GAMS_STUDIO_GDXVIEWER_LABELFILTERDIALOG_H
+#define GAMS_STUDIO_GDXVIEWER_LABELFILTERDIALOG_H
 
-#include "ui_columnfilterframe.h"
+#include "ui_labelfilterdialog.h"
 #include "filteruelmodel.h"
+#include "labelfilter.h"
 #include <QVector>
+#include <QDialog>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-class ColumnFilterFrame : public QFrame
+
+class LabelFilterDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit ColumnFilterFrame(GdxSymbol* symbol, int column, QWidget *parent = nullptr);
-    ~ColumnFilterFrame() override;
-    void setFocusOnOpen();
+    explicit LabelFilterDialog(GdxSymbol* symbol, int column, LabelFilter *labelFilter, QWidget *parent = nullptr);
+    ~LabelFilterDialog() override;
 
 protected:
     //mouse events overwritten to prevent closing of the filter menu if user click on empty spaces regions within the frame
     void mousePressEvent(QMouseEvent * event) override;
     void mouseMoveEvent(QMouseEvent * event) override;
     void keyPressEvent(QKeyEvent *e) override;
+    void focusInEvent(QFocusEvent *event) override;
 
 private slots:
     void apply();
@@ -53,9 +56,10 @@ private slots:
     void listDataHasChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
 
 private:
-    Ui::ColumnFilterFrame ui;
+    Ui::LabelFilterDialog ui;
     GdxSymbol* mSymbol;
     int mColumn;
+    LabelFilter *mLabelFilter;
     FilterUelModel* mModel;
 };
 
@@ -63,4 +67,4 @@ private:
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams
-#endif // GAMS_STUDIO_GDXVIEWER_COLUMNFILTERFRAME_H
+#endif // GAMS_STUDIO_GDXVIEWER_LABELFILTERDIALOG_H

@@ -17,49 +17,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_GDXVIEWER_VALUEFILTERWIDGET_H
-#define GAMS_STUDIO_GDXVIEWER_VALUEFILTERWIDGET_H
-
-#include "gdxsymbol.h"
-#include "valuefilter.h"
-
-#include <QWidget>
+#include "labelfilter.h"
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-namespace Ui {
-class ValueFilterWidget;
+LabelFilter::LabelFilter(std::unique_ptr<bool []> showUelInColumn)
+    : mShowUel(std::move(showUelInColumn))
+{
 }
 
-class ValueFilterWidget : public QWidget
+bool LabelFilter::isActive() const
 {
-    Q_OBJECT
+    return active;
+}
 
-public:
-    explicit ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent = nullptr);
-    ~ValueFilterWidget();
-    void setFocusOnOpen();
-
-protected:
-    void keyPressEvent(QKeyEvent *e) override;
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
-
-private slots:
-    void on_pbApply_clicked();
-    void on_pbReset_clicked();
-
-private:
-    ValueFilter* mValueFilter;
-    Ui::ValueFilterWidget *ui;
-    double mMin;
-    double mMax;
-};
-
+void LabelFilter::setActive(bool newActive)
+{
+    active = newActive;
+}
 
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams
-#endif // GAMS_STUDIO_GDXVIEWER_VALUEFILTERWIDGET_H

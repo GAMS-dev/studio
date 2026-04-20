@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>gams::studio::gdxviewer::ColumnFilterFrame</class>
- <widget class="QWidget" name="gams::studio::gdxviewer::ColumnFilterFrame">
+ <class>gams::studio::gdxviewer::LabelFilterDialog</class>
+ <widget class="QDialog" name="gams::studio::gdxviewer::LabelFilterDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>246</width>
-    <height>404</height>
+    <width>257</width>
+    <height>332</height>
    </rect>
   </property>
   <property name="focusPolicy">
-   <enum>Qt::StrongFocus</enum>
+   <enum>Qt::FocusPolicy::StrongFocus</enum>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -39,10 +39,10 @@
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;List of labels occurring in this column. Check or uncheck labels to decide which are displayed as soon as the filter is applied.&lt;/p&gt;&lt;p&gt;Use middle-click to select a specific label and automatically deselect all others.&lt;/p&gt;&lt;p&gt;Shift+left-click allows to select/deselect a range of labels.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="selectionMode">
-      <enum>QAbstractItemView::SingleSelection</enum>
+      <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
      </property>
      <property name="layoutMode">
-      <enum>QListView::SinglePass</enum>
+      <enum>QListView::LayoutMode::SinglePass</enum>
      </property>
      <property name="uniformItemSizes">
       <bool>true</bool>
@@ -95,7 +95,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -137,6 +137,15 @@
    <header>gdxviewer/quickselectlistview.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>leSearch</tabstop>
+  <tabstop>lvLabels</tabstop>
+  <tabstop>pbSelectAll</tabstop>
+  <tabstop>pbInvert</tabstop>
+  <tabstop>pbDeselectAll</tabstop>
+  <tabstop>cbToggleHideUnselected</tabstop>
+  <tabstop>pbApply</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
