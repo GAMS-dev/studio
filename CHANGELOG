@@ -5,6 +5,7 @@ Version 1.25.0  *
 - On opening a project, Studio opens the main file if assigned. Otherwise the project options are opened.
 - Added double-click action to open a gdx file reference from within a symbol table in GDXViewer.
 - Reimplemented the GDX filter dialogs which fixes several focus and keyboard shortcut bugs, especially on macOS.
+- Added MIRO Connector and Secure Module information to license dialog.
 
 Version 1.24.3
 ==================
