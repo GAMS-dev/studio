@@ -400,7 +400,7 @@ void GamsLicensingDialog::updateAboutLabel()
     else if (mLicenseFetcher->state() >= lsNetCheckout)
         ui->cdEdit->setPlaceholderText("Network license already checked out");
     else
-        ui->cdEdit->setPlaceholderText("");
+        ui->cdEdit->setPlaceholderText("Checkout duration (for network license only)");
     if (!ui->cdEdit->isEnabled())
         ui->cdEdit->setText("");
     on_cdEdit_textChanged(ui->cdEdit->text());
