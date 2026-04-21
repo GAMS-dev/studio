@@ -387,67 +387,6 @@ void GamsLicensingDialog::updateAboutLabel()
     GamsLicenseInfo licenseInfo;
     about << licenseInfo.localDistribVersionString();
     about << "</big></b><br/><br/>";
-
-    /*
-    bool licenseLines = false;
-    mContent = mGamsAboutProc->content();
-    auto lines = mContent.split('\n', Qt::SkipEmptyParts, Qt::CaseInsensitive);
-    if (!exitCode && lines.size() >= 3) {
-        lines.removeFirst();
-        lines.removeLast();
-        lines.removeLast();
-    }
-
-    QStringList licenseText;
-    int licLineCount = -1;
-    for(const auto &line : std::as_const(lines)) {
-        if (licenseLines) {
-            if (licLineCount >= 0) {
-                ++licLineCount;
-                // extract access code from line 5
-                if (licLineCount == 5 && line.startsWith("DC")) {
-                    int from = -1;
-                    for (int i = line.indexOf('_') ; i > 0 && i < line.length() ; ++i) {
-                        if (from < 0) {
-                            if (line.at(i) != '_')
-                                from = i;
-                        } else {
-                            if (line.at(i) == '_') {
-                                mAccessCode = line.mid(from, i-from);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            if (line.startsWith("#L")) {
-                // license text start/end marker
-                licLineCount = (licLineCount < 0) ? 0 : -1;
-                if (licLineCount < 0)
-                    mLicense = licenseText;
-                continue;
-            } else if (line.startsWith("Licensed platform:")) {
-                licenseLines = false;
-                about << "</pre>" " \r""<br/>" << line << "<br/>";
-            } else {
-                about << line + "\n";
-            }
-        } else if (line.startsWith("License ")) {
-            about << line << "<br/>";
-            licenseLines = true;
-            about << "<pre style=\"font-family:'Courier New',monospace\">";
-        } else if (line.contains("License file not found")) {
-            about << "<br/>" << line  << "<br/>";
-        } else if (line.contains("gamslice.txt")) {
-            about << line;
-        } else {
-            about << line << "<br/>";
-        }
-        if (licLineCount >= 0)
-            licenseText << line;
-    }
-
-*/
     about << mLicenseFetcher->formattedContent();
     setSolverLines(licenseInfo, about);
     setNonSolverLines(licenseInfo, about);

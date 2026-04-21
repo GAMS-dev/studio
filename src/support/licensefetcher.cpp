@@ -112,12 +112,11 @@ void LicenseFetcher::analyzeContent(int exitCode)
         lines.removeLast();
     }
 
-    QString modulesLine;
     QStringList licenseText;
     int licLineCount = -1;
     bool isError = lines.length() < 1 || lines.at(0).startsWith(CLicenseInvalid);
     int lineNr = 0;
-    for(const auto &line : std::as_const(lines)) {
+    for (const auto &line : std::as_const(lines)) {
         ++lineNr;
         if (isError && lineNr == 1) {
             QRegularExpressionMatch match = CRexInvalid.match(line);
