@@ -1,3 +1,4 @@
+
 Version 1.25.0  *
 ==================
 - The GDX Viewer export facility now truncates automatically determined sheet names exceeding 31 characters.
@@ -6,6 +7,10 @@ Version 1.25.0  *
 - Added double-click action to open a gdx file reference from within a symbol table in GDXViewer.
 - Reimplemented the GDX filter dialogs which fixes several focus and keyboard shortcut bugs, especially on macOS.
 - Added MIRO Connector and Secure Module information to license dialog.
+
+Version 1.24.4  *
+==================
+- Update to Qt 6.10.3.
 
 Version 1.24.3
 ==================
