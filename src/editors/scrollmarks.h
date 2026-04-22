@@ -1,0 +1,54 @@
+/**
+ * GAMS Studio
+ *
+ * Copyright (c) 2017-2026 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2026 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+#ifndef SCROLLMARKS_H
+#define SCROLLMARKS_H
+
+#include <QWidget>
+#include <QList>
+#include <QColor>
+
+class QPlainTextEdit;
+
+namespace gams {
+namespace studio {
+
+class ScrollMarks: public QWidget
+{
+public:
+    ScrollMarks(QPlainTextEdit *parent);
+    void setMarks(const QColor &color, const QList<int> &lines);
+    void clearMarks(QColor color);
+    void clearMarks();
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
+protected:
+    void paintEvent(QPaintEvent*) override;
+    void updateGeometry();
+
+private:
+    QHash<QRgb, QList<int>> mMarks;
+    QPlainTextEdit *mEdit = nullptr;
+
+};
+
+} // namespace studio
+} // namespace gams
+
+#endif // SCROLLMARKS_H

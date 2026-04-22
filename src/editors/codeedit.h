@@ -42,6 +42,7 @@ class ProfilerArea;
 class ProfilerHeader;
 class SearchWidget;
 class CodeCompleter;
+class ScrollMarks;
 
 enum BreakpointType {bpNone, bpAimedBp, bpRealBp};
 
@@ -372,6 +373,7 @@ private:
     bool mAllowBlockEdit = true;
     int mLnAreaWidth = 0;
     LinePair mFoldMark;
+    ScrollMarks *mScrollMarks = nullptr;
     QPoint mIncludeLinkLine = QPoint(-1, -1);
     bool mLinkActive = false;
     BlockSelectState mBlockSelectState = bsNone;

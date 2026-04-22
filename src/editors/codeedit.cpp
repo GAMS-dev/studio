@@ -33,6 +33,7 @@
 #include "theme.h"
 #include "editorhelper.h"
 #include "viewhelper.h"
+#include "scrollmarks.h"
 #include "search/searchlocator.h"
 #include "editors/navigationhistory.h"
 #include "editors/navigationhistorylocator.h"
@@ -75,6 +76,7 @@ CodeEdit::CodeEdit(QWidget *parent)
     mSettings = Settings::settings();
     mCompleterTimer.setSingleShot(true);
     mProfilerCol << 0;
+    mScrollMarks = new ScrollMarks(this);
 
     connect(&mCompleterTimer, &QTimer::timeout, this, &CodeEdit::checkCompleterAutoOpen);
     connect(&mBlinkBlockEdit, &QTimer::timeout, this, &CodeEdit::blockEditBlink);
@@ -1636,6 +1638,11 @@ void CodeEdit::updateLinkAppearance(QPoint pos, bool active)
 void CodeEdit::marksChanged(const QSet<int> &dirtyLines)
 {
     AbstractEdit::marksChanged(dirtyLines);
+    if (marks()) {
+        QColor color = Theme::color(Theme::Normal_Red);
+        color.setAlpha(180);
+        mScrollMarks->setMarks(color, marks()->keys());
+    }
     bool doPaint = dirtyLines.isEmpty() || dirtyLines.size() > 5;
     if (!doPaint) {
         int firstLine = topVisibleLine();
@@ -2601,6 +2608,8 @@ void CodeEdit::breakpointsChanged(const SortedIntMap &bpLines, const SortedIntMa
 {
     mBreakpoints = bpLines;
     mAimedBreakpoints = abpLines;
+    QColor color = Theme::color(Theme::Normal_Red);
+    mScrollMarks->setMarks(color, mBreakpoints.keys());
     mLineNumberArea->repaint();
 }
 
