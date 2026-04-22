@@ -19,13 +19,14 @@
  */
 #include "scrollmarks.h"
 #include "logger.h"
-#include "qstyleoption.h"
 
+#include <QStyleOption>
 #include <QPlainTextEdit>
 #include <QScrollBar>
 #include <QPainter>
 #include <QEvent>
 #include <QTextBlock>
+#include <QTimer>
 
 namespace gams {
 namespace studio {
@@ -39,7 +40,7 @@ ScrollMarks::ScrollMarks(QPlainTextEdit *parent) : QWidget(parent->verticalScrol
         mEdit->verticalScrollBar()->installEventFilter(this);
         connect(mEdit->document(), &QTextDocument::contentsChanged, this, QOverload<>::of(&ScrollMarks::update));
     }
-    updateGeometry();
+    QTimer::singleShot(0, this, &ScrollMarks::updateGeometry);
 }
 
 void ScrollMarks::setMarks(const QColor &color, const QList<int> &lines)
@@ -69,10 +70,21 @@ bool ScrollMarks::eventFilter(QObject* obj, QEvent* event)
     if (obj == mEdit->verticalScrollBar()) {
         if (event->type() == QEvent::Show || event->type() == QEvent::Hide ||
             event->type() == QEvent::Resize || event->type() == QEvent::Move) {
-            if (mEdit->verticalScrollBar()->isVisible())
-                setParent(mEdit->verticalScrollBar());
-            else
-                setParent(mEdit->viewport());
+            QWidget *wid = parentWidget();
+            if (event->type() == QEvent::Resize) {
+                QResizeEvent *eResize = static_cast<QResizeEvent*>(event);
+                wid = eResize->size().width()>0 && mEdit->verticalScrollBar()->isVisible() ?
+                          static_cast<QWidget*>(mEdit->verticalScrollBar()) : mEdit;
+            } else if (event->type() == QEvent::Show) {
+                wid = mEdit->verticalScrollBar();
+            } else if (event->type() == QEvent::Hide) {
+                wid = mEdit;
+            }
+            if (wid != parentWidget()) {
+                setParent(wid);
+                setAttribute(Qt::WA_TransparentForMouseEvents);
+                setAttribute(Qt::WA_NoSystemBackground);
+            }
             updateGeometry();
         }
     }
@@ -92,8 +104,9 @@ void ScrollMarks::paintEvent(QPaintEvent *)
     int w = width();
     int h = height();
 
-    bool sbVisible = mEdit->verticalScrollBar()->isVisible();
-    if (!sbVisible || mEdit->verticalScrollBar()->width() < w)
+    QScrollBar* sb = mEdit->verticalScrollBar();
+    bool sbVisible = sb->isVisible();
+    if (!sbVisible || sb->width() < w)
         painter.fillRect(rect(), QColor(200, 200, 200, 30));
 
     painter.setOpacity(sbVisible ? 0.7 : 0.9);
@@ -101,6 +114,8 @@ void ScrollMarks::paintEvent(QPaintEvent *)
     const qsizetype totalBlocks = mEdit->blockCount();
     if (totalBlocks <= 1) return;
     double scale = static_cast<double>(h) / static_cast<double>(totalBlocks);
+    auto* layout = qobject_cast<QPlainTextDocumentLayout*>(mEdit->document()->documentLayout());
+    if (!layout) return;
 
     QHashIterator<QRgb, QList<int>> i(mMarks);
     while (i.hasNext()) {
@@ -125,28 +140,20 @@ void ScrollMarks::updateGeometry()
     QScrollBar* sb = mEdit->verticalScrollBar();
     if (!sb) return;
 
-    if (sb->maximum() > 0) {
-
+    QRect rect;
+    if (parentWidget() == sb) {
         QStyleOptionSlider opt;
         opt.initFrom(sb);
         opt.orientation = Qt::Vertical;
-        QRect rect = sb->style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarGroove, sb);
-        if (rect.isEmpty())
-            rect = sb->geometry();
-
-        int w = sb->isVisible() ? sb->width() - 2 : 10;
-        int h = rect.height();
-        int x = sb->isVisible() ? rect.left() + 1 : (mEdit->width() - w - 1);
-
-        if (sb->isVisible() && rect.width() < w)
-            x -= (w - rect.width());
-
-        setGeometry(x, rect.top(), w, h);
-        show();
-        raise();
+        rect = sb->style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarGroove, sb);
+        if (rect.isEmpty()) rect = sb->geometry();
     } else {
-        hide();
+        rect = mEdit->geometry();
+        rect.setLeft( rect.right() - 10);
     }
+    setGeometry(rect);
+    show();
+    raise();
 }
 
 
