@@ -34,6 +34,8 @@
 
 using namespace gams::studio::support::LicenseStateEnum;
 
+const QString UC_Checkmark("\u2713");
+
 namespace gams {
 namespace studio {
 
@@ -174,7 +176,7 @@ void StatusWidgets::setLicenseState(support::LicenseState licenseState, const QD
         background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .6);
         icon = Theme::icon(":/solid/computer");
         toolTip = "Local GAMS license";
-        text = "\u2713";
+        text = UC_Checkmark;
         break;
     case lsLocalEnd:
         background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Yellow, .8);
@@ -192,7 +194,7 @@ void StatusWidgets::setLicenseState(support::LicenseState licenseState, const QD
         background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .6);
         icon = Theme::icon(":/solid/internet");
         toolTip = "GAMS network license (validated)";
-        text = "\u2713";
+        text = UC_Checkmark;
         break;
     case lsNetEnd:
         background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Yellow, .8);
@@ -215,7 +217,7 @@ void StatusWidgets::setLicenseState(support::LicenseState licenseState, const QD
     case lsNetCheckout:
         background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .6);
         icon = Theme::icon(":/solid/plane");
-        text = "\u2713";
+        text = UC_Checkmark;
         toolTip = "GAMS network license (checked out)";
         break;
     case lsNetCheckoutEnd:

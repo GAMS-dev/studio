@@ -184,8 +184,6 @@ void GamsLicensingDialog::writeLicenseFile(QStringList &license, QWidget *parent
                 text.append("Your current license location is: ");
                 text.append(QDir::toNativeSeparators(licenseFile.fileName()));
             }
-        }
-        if (!text.isEmpty()) {
             auto result = QMessageBox::question(parent, "Overwrite current GAMS license file?", text);
             if (result == QMessageBox::No)
                 return;
@@ -203,8 +201,6 @@ void GamsLicensingDialog::writeLicenseFile(QStringList &license, QWidget *parent
                 text.append("Your GAMS license location will be: ");
                 text.append(QDir::toNativeSeparators(licenseFile.fileName()));
             }
-        }
-        if (!text.isEmpty()) {
             auto result = QMessageBox::question(parent, "Create GAMS license file?", text);
             if (result == QMessageBox::No)
                 return;
