@@ -385,7 +385,7 @@ void AbstractEdit::updateSearchSelection()
     }
 }
 
-void AbstractEdit::findInSelection(QList<Result> &results)
+void AbstractEdit::searchInSelection(QList<Result> &results)
 {
     int startPos;
     int endPos;

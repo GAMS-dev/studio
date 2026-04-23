@@ -69,7 +69,7 @@ public:
     virtual void clearSearchSelection();
     virtual void setSearchSelectionActive(bool active);
     virtual void updateSearchSelection();
-    virtual void findInSelection(QList<search::Result> &results);
+    virtual void searchInSelection(QList<search::Result> &results);
     FileId fileId() const;
     virtual void replaceNext(const QRegularExpression &regex, const QString &replacementText, bool selectionScope);
     virtual int replaceAll(FileMeta *fm, const QRegularExpression &regex,

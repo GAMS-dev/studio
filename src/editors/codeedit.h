@@ -133,7 +133,7 @@ public:
     void clearSearchSelection() override;
     void setSearchSelectionActive(bool active) override;
     void updateSearchSelection() override;
-    void findInSelection(QList<search::Result> &results) override;
+    void searchInSelection(QList<search::Result> &results) override;
     bool findText(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool loop = true);
     int findReplaceAll(const QRegularExpression &rex, QTextDocument::FindFlags options, const QString &replacement);
     void replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope) override;

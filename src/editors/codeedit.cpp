@@ -2229,11 +2229,11 @@ void CodeEdit::updateSearchSelection()
     }
 }
 
-void CodeEdit::findInSelection(QList<search::Result> &results)
+void CodeEdit::searchInSelection(QList<search::Result> &results)
 {
     updateSearchSelection();
     if (!mBlockEditSelection) {
-        AbstractEdit::findInSelection(results);
+        AbstractEdit::searchInSelection(results);
         return;
     }
 

@@ -210,7 +210,7 @@ void Search::findInSelection(bool showResults)
 {
     if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
         checkFileChanged(ae->fileId());
-        ae->findInSelection(mResults);
+        ae->searchInSelection(mResults);
         mSearchDialog->relaySearchResults(showResults, &mResults);
     } else if (TextView* tv = ViewHelper::toTextView(mSearchDialog->currentEditor())) {
         checkFileChanged(tv->edit()->fileId());
