@@ -343,6 +343,7 @@ protected:
 protected:
     BlockEdit* blockEdit() {return mBlockEdit;}
     void scrollContentsBy(int dx, int dy) override;
+    void updateFindScrollMarkers(bool full = false);
 
 private:
     LineNumberArea *mLineNumberArea;

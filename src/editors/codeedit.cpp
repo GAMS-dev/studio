@@ -914,6 +914,37 @@ void CodeEdit::scrollContentsBy(int dx, int dy)
     updateExtraSelections();
 }
 
+void CodeEdit::updateFindScrollMarkers(bool full)
+{
+    QSet<int> lines;
+    if (!findTerm() || !findTerm()->isValid()) return;
+
+    QTextCursor cursor(document());
+    int lastLine = document()->lineCount() +1;
+    if (!full) {
+        lines = QSet(mScrollMarks->marks(Theme::color(Theme::Edit_findBg)).constBegin(),
+                     mScrollMarks->marks(Theme::color(Theme::Edit_findBg)).constEnd());
+        cursor.setPosition(firstVisibleBlock().position());
+        int lineHeight = fontMetrics().lineSpacing();
+        if (lineHeight > 0) {
+            lastLine = cursor.blockNumber() + viewport()->height() / lineHeight;
+            lines.removeIf([=](int line) { return line >= cursor.blockNumber() && line <= lastLine; });
+        }
+    }
+    int prevLine = -1;
+    while (true) {
+        cursor = document()->find(*findTerm(), cursor);
+        if (cursor.isNull()) break;
+        int currentLine = cursor.blockNumber();
+        if (currentLine > lastLine) break;
+        if (currentLine != prevLine) {
+            lines.insert(currentLine);
+            prevLine = currentLine;
+        }
+    }
+    mScrollMarks->setMarks(Theme::color(Theme::Edit_findBg), QList<int>(lines.constBegin(), lines.constEnd()));
+}
+
 void CodeEdit::setHasProfiler(bool hasProfiler)
 {
     if (mProfilerArea && !hasProfiler) {
@@ -1667,6 +1698,7 @@ void CodeEdit::blockCountHasChanged(int newBlockCount)
     mLineNumberArea->update();
     if (mProfilerArea && mProfilerArea->isVisible()) mProfilerArea->update();
     updateViewportSize();
+    updateFindScrollMarkers(true);
 }
 
 void CodeEdit::dragEnterEvent(QDragEnterEvent* e)
@@ -2283,6 +2315,7 @@ bool CodeEdit::findText(const QRegularExpression &rex, QTextDocument::FindFlags 
         lockSelectedFind();
     }
     setFindTerm(rex, options);
+    updateFindScrollMarkers(true);
     return !cur.isNull();
 }
 
@@ -2540,6 +2573,7 @@ void CodeEdit::recalcExtraSelections()
 
 void CodeEdit::startCompleterTimer()
 {
+    updateFindScrollMarkers(false);
     if (mCompleter && !mCompleter->isOpenSuppressed() && mSettings->toBool(skEdCompleterAutoOpen)) {
         if (mCompleter && mCompleter->isVisible())
             showCompleter();

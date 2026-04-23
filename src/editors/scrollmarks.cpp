@@ -65,6 +65,11 @@ void ScrollMarks::clearMarks()
     update();
 }
 
+QList<int> ScrollMarks::marks(const QColor &color)
+{
+    return mMarks.value(color.rgba());
+}
+
 bool ScrollMarks::eventFilter(QObject* obj, QEvent* event)
 {
     if (obj == mEdit->verticalScrollBar()) {

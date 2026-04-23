@@ -36,6 +36,7 @@ public:
     void setMarks(const QColor &color, const QList<int> &lines);
     void clearMarks(QColor color);
     void clearMarks();
+    QList<int> marks(const QColor &color);
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 protected:
