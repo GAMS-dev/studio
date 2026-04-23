@@ -920,26 +920,29 @@ void CodeEdit::updateFindScrollMarkers(bool full)
     if (!findTerm() || !findTerm()->isValid()) return;
 
     QTextCursor cursor(document());
-    int lastLine = document()->lineCount() +1;
-    if (!full) {
+    if (full) {
+        while (true) {
+            cursor = document()->find(*findTerm(), cursor);
+            if (cursor.isNull()) break;
+            int currentLine = cursor.blockNumber();
+            lines.insert(currentLine);
+        }
+    } else {
         lines = QSet(mScrollMarks->marks(Theme::color(Theme::Edit_findBg)).constBegin(),
                      mScrollMarks->marks(Theme::color(Theme::Edit_findBg)).constEnd());
-        cursor.setPosition(firstVisibleBlock().position());
+        QTextBlock block = firstVisibleBlock();
+        cursor.setPosition(block.position());
         int lineHeight = fontMetrics().lineSpacing();
+        int lastLine = document()->lineCount();
         if (lineHeight > 0) {
             lastLine = cursor.blockNumber() + viewport()->height() / lineHeight;
             lines.removeIf([=](int line) { return line >= cursor.blockNumber() && line <= lastLine; });
         }
-    }
-    int prevLine = -1;
-    while (true) {
-        cursor = document()->find(*findTerm(), cursor);
-        if (cursor.isNull()) break;
-        int currentLine = cursor.blockNumber();
-        if (currentLine > lastLine) break;
-        if (currentLine != prevLine) {
-            lines.insert(currentLine);
-            prevLine = currentLine;
+        while (block.isValid() && block.blockNumber() <= lastLine) {
+            QString text = block.text();
+            if (text.contains(*findTerm()))
+                lines.insert(block.blockNumber());
+            block = block.next();
         }
     }
     mScrollMarks->setMarks(Theme::color(Theme::Edit_findBg), QList<int>(lines.constBegin(), lines.constEnd()));
