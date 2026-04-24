@@ -7,6 +7,7 @@ Version 1.25.0  *
 - Added double-click action to open a gdx file reference from within a symbol table in GDXViewer.
 - Reimplemented the GDX filter dialogs which fixes several focus and keyboard shortcut bugs, especially on macOS.
 - Added MIRO Connector and Secure Module information to license dialog.
+- Added the current license state to the status bar.
 
 Version 1.24.4  *
 ==================
