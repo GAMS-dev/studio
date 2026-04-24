@@ -127,7 +127,7 @@ int CodeEdit::lineNumberAreaWidth()
     int space = 0;
 
     if (showLineNr()) {
-        space = fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
+        space = fontMetrics().horizontalAdvance(QChar('9')) * digits;
         if (showFolding())
             space += iconSize();
     }
@@ -403,7 +403,7 @@ void CodeEdit::copySelection()
         mBlockEdit->selectionToClipboard();
     } else {
         QMimeData *dat = new QMimeData();
-        dat->setData(QLatin1String("text/html"), HtmlConverter::toHtml(textCursor(), Theme::instance()->color(Theme::Edit_background)));
+        dat->setData("text/html", HtmlConverter::toHtml(textCursor(), Theme::instance()->color(Theme::Edit_background)));
         const QTextDocumentFragment fragment(textCursor());
         dat->setText(fragment.toPlainText());
         QGuiApplication::clipboard()->setMimeData(dat);

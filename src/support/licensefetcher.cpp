@@ -396,6 +396,7 @@ void LicenseFetcher::fetchLicenseType(const QString &line)
 
 void LicenseFetcher::updateState(bool isError)
 {
+    Q_UNUSED(isError)
     mFetchTimer.stop();
     mLicenseState = mLicenseType;
     QDateTime now = QDateTime::currentDateTime();

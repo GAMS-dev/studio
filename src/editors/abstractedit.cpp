@@ -20,7 +20,6 @@
 #include "editors/abstractedit.h"
 #include "search/search.h"
 #include "search/searchlocator.h"
-#include "viewhelper.h"
 #include "keys.h"
 #include "theme.h"
 
@@ -32,6 +31,7 @@
 #include <QApplication>
 #include <QMenu>
 
+using namespace std::chrono_literals;
 
 namespace gams {
 namespace studio {
@@ -42,10 +42,10 @@ AbstractEdit::AbstractEdit(QWidget *parent)
 {
     setTextInteractionFlags(Qt::TextEditorInteraction);
     mSelUpdater.setSingleShot(true);
-    mSelUpdater.setInterval(10);
+    mSelUpdater.setInterval(10ms);
     connect(&mSelUpdater, &QTimer::timeout, this, &AbstractEdit::internalExtraSelUpdate);
     mToolTipUpdater.setSingleShot(true);
-    mToolTipUpdater.setInterval(500);
+    mToolTipUpdater.setInterval(500ms);
     connect(&mToolTipUpdater, &QTimer::timeout, this, &AbstractEdit::internalToolTipUpdate);
     connect(this, &AbstractEdit::cursorPositionChanged, this, &AbstractEdit::ensureCursorVisible);
 

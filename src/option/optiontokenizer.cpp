@@ -966,6 +966,7 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
 
 bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value, const QString &text, OptionItem *item)
 {
+    Q_UNUSED(text)
     if (!mOption->available())
         return false;
 
