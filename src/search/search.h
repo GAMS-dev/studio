@@ -76,6 +76,7 @@ public:
     bool isSearching() const;
     QList<Result> results() const;
     QList<Result> filteredResultList(const QString &fileLocation);
+    SortedIntMap matchLines(FileId fileId);
     const Parameters& parameters() const;
     bool hasSearchSelection();
     void reset();
@@ -118,6 +119,7 @@ private:
     SearchDialog* mSearchDialog;
     QList<Result> mResults;
     QHash<QString, QList<Result>> mResultHash;
+    QHash<FileId, SortedIntMap> mResultLines;
     Parameters mParameters;
 
     AbstractSearchFileHandler* mFileHandler;

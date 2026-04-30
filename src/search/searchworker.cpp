@@ -30,9 +30,11 @@ SearchWorker::SearchWorker(const SearchFile &file,
                            QPoint from,
                            QPoint to,
                            QList<Result> *list,
+                           QHash<FileId, SortedIntMap> *resultLines,
                            bool showResults)
     : mFiles(QList<SearchFile>() << file)
     , mMatches(list)
+    , mResultLines(resultLines)
     , mRegex(regex)
     , mFrom(from)
     , mTo(to)
@@ -48,9 +50,11 @@ SearchWorker::SearchWorker(const SearchFile &file,
 SearchWorker::SearchWorker(const QList<SearchFile> &files,
                            const QRegularExpression &regex,
                            QList<Result> *list,
+                           QHash<FileId, SortedIntMap> *resultLines,
                            bool showResults)
     : mFiles(files)
     , mMatches(list)
+    , mResultLines(resultLines)
     , mRegex(regex)
     , mFrom(QPoint(0,0))
     , mTo(QPoint(0,0))
@@ -59,7 +63,7 @@ SearchWorker::SearchWorker(const QList<SearchFile> &files,
     mFindInSelection = false;
 }
 
-void SearchWorker::findInFiles()
+void SearchWorker::searchInFiles()
 {
     bool cacheFull = false;
     NodeId projectGroup;
@@ -94,6 +98,7 @@ void SearchWorker::findInFiles()
                 QString line = arry;
                 QRegularExpressionMatch match;
                 QRegularExpressionMatchIterator i = mRegex.globalMatch(line);
+                // TODO(JM) Use indexOf() for normal search, it's faster than RegEx
                 while (i.hasNext() && !cacheFull) {
                     match = i.next();
                     // abort: too many results
@@ -105,6 +110,13 @@ void SearchWorker::findInFiles()
                         mMatches->append(Result(lineCounter, match.capturedStart(),
                                                 match.capturedLength(), file.fileName(),
                                                 projectGroup, line));
+                        if (sf.fileMeta()) {
+                            if (!mResultLines->contains(sf.fileMeta()->id())) {
+                                // take map instead of set because it's ordered
+                                mResultLines->insert(sf.fileMeta()->id(), SortedIntMap());
+                            }
+                            (*mResultLines)[sf.fileMeta()->id()].insert(lineCounter-1, lineCounter-1);
+                        }
                     }
                 }
 

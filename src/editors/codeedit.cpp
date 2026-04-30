@@ -48,6 +48,8 @@ namespace studio {
 using namespace search;
 using namespace std::chrono_literals;
 
+const int CodeEdit::CFindBlockSize = 5000;
+
 QHash<ProfilerColumn, QString> CodeEdit::mProfilerHeaderToolTip
     {{pcTime, "Elapsed Time"}, {pcMemory, "Memory Usage"}, {pcRows, "Number of Assignments"}, {pcSteps, "Execution Steps"}};
 QRegularExpression CodeEdit::mRex0LeadingSpaces("^(\\s*)");
@@ -86,7 +88,7 @@ CodeEdit::CodeEdit(QWidget *parent)
     connect(this, &CodeEdit::updateRequest, this, &CodeEdit::updateViewport);
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
-    connect(this, &CodeEdit::textChanged, this, &CodeEdit::startCompleterTimer);
+    connect(this, &CodeEdit::textChanged, this, &CodeEdit::handleTextChanged);
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::updateCompleter);
     connect(document(), &QTextDocument::undoCommandAdded, this, &CodeEdit::undoCommandAdded);
 
@@ -916,36 +918,30 @@ void CodeEdit::scrollContentsBy(int dx, int dy)
 
 void CodeEdit::updateFindScrollMarkers(bool full)
 {
-    QSet<int> lines;
-    if (!findTerm() || !findTerm()->isValid()) return;
+    mCurrentFindRow = 0;
+    mPendingFindResults.clear();
+    processFindBlock();
+}
 
-    QTextCursor cursor(document());
-    if (full) {
-        while (true) {
-            cursor = document()->find(*findTerm(), cursor);
-            if (cursor.isNull()) break;
-            int currentLine = cursor.blockNumber();
-            lines.insert(currentLine);
-        }
-    } else {
-        lines = QSet(mScrollMarks->marks(Theme::color(Theme::Edit_findBg)).constBegin(),
-                     mScrollMarks->marks(Theme::color(Theme::Edit_findBg)).constEnd());
-        QTextBlock block = firstVisibleBlock();
-        cursor.setPosition(block.position());
-        int lineHeight = fontMetrics().lineSpacing();
-        int lastLine = document()->lineCount();
-        if (lineHeight > 0) {
-            lastLine = cursor.blockNumber() + viewport()->height() / lineHeight;
-            lines.removeIf([=](int line) { return line >= cursor.blockNumber() && line <= lastLine; });
-        }
-        while (block.isValid() && block.blockNumber() <= lastLine) {
-            QString text = block.text();
-            if (text.contains(*findTerm()))
-                lines.insert(block.blockNumber());
-            block = block.next();
-        }
+void CodeEdit::processFindBlock()
+{
+    if (!findTerm()) return;
+    QTextBlock block = document()->findBlockByNumber(mCurrentFindRow);
+    int lastFindRow = mCurrentFindRow + CFindBlockSize;
+    QRegularExpression term = *findTerm();
+
+    while (block.isValid() && mCurrentFindRow < lastFindRow) {
+        if (block.text().contains(term))
+            mPendingFindResults.append(block.blockNumber());
+        block = block.next();
+        mCurrentFindRow++;
     }
-    mScrollMarks->setMarks(Theme::color(Theme::Edit_findBg), QList<int>(lines.constBegin(), lines.constEnd()));
+    mScrollMarks->setMarks(Theme::color(Theme::Edit_findBg), mPendingFindResults);
+
+    if (block.isValid()) {
+        // Qt::QueuedConnection to allow other events in between
+        QMetaObject::invokeMethod(this, "processFindBlock", Qt::QueuedConnection);
+    }
 }
 
 void CodeEdit::setHasProfiler(bool hasProfiler)
@@ -1673,9 +1669,23 @@ void CodeEdit::marksChanged(const QSet<int> &dirtyLines)
 {
     AbstractEdit::marksChanged(dirtyLines);
     if (marks()) {
-        QColor color = Theme::color(Theme::Normal_Red);
+        QList<int> errMarks;
+        QList<int> bookMarks;
+        auto it = marks()->constBegin();
+        while (it != marks()->constEnd()) {
+            int key = it.key();
+            if (it.value()->type() == TextMark::bookmark)
+                bookMarks.append(key);
+            else
+                errMarks.append(key);
+            ++it;
+        }
+        QColor color = Theme::color(Theme::Normal_Red).darker();
         color.setAlpha(180);
-        mScrollMarks->setMarks(color, marks()->keys());
+        mScrollMarks->setMarks(color, errMarks);
+        color = Theme::color(Theme::Normal_Blue);
+        color.setAlpha(180);
+        mScrollMarks->setMarks(color, bookMarks);
     }
     bool doPaint = dirtyLines.isEmpty() || dirtyLines.size() > 5;
     if (!doPaint) {
@@ -2264,11 +2274,11 @@ void CodeEdit::updateSearchSelection()
     }
 }
 
-void CodeEdit::searchInSelection(QList<search::Result> &results)
+void CodeEdit::searchInSelection(QList<search::Result> &results, SortedIntMap &lines)
 {
     updateSearchSelection();
     if (!mBlockEditSelection) {
-        AbstractEdit::searchInSelection(results);
+        AbstractEdit::searchInSelection(results, lines);
         return;
     }
 
@@ -2290,6 +2300,7 @@ void CodeEdit::searchInSelection(QList<search::Result> &results)
             if (match.hasMatch() && match.capturedEnd() <= last) {
                 results.append(Result(block.blockNumber()+1, int(match.capturedStart()), int(match.capturedLength()),
                                       property("location").toString(), projectId(), match.captured()));
+                lines.insert(block.blockNumber(), 0);
                 from = int(match.capturedEnd());
                 if (mBlockEdit) endBlockEdit();
             } else from = last;
@@ -2298,6 +2309,59 @@ void CodeEdit::searchInSelection(QList<search::Result> &results)
             break;
         block = block.next();
     }
+}
+
+bool CodeEdit::findTextInPart(const QRegularExpression &rex, const QPoint &initialPos, int startLine, int endLine,
+                              QTextDocument::FindFlags options, bool loop)
+{
+    const bool backward = options.testFlag(QTextDocument::FindBackward);
+    for (QTextBlock block = document()->findBlockByNumber(startLine); block.isValid();
+         block = backward ? block.previous() : block.next()) {
+        const int row = block.blockNumber();
+        if (backward ? (row < endLine) : (row > endLine)) break;
+
+        const QString text = block.text();
+        int min = 0;
+        int max = text.length();
+        if (row == initialPos.y()) {
+            if (loop) backward ? max = initialPos.x() : min = initialPos.x();
+            else      backward ? min = initialPos.x() : max = initialPos.x();
+        }
+
+        QRegularExpressionMatch match;
+        if (backward) {
+            auto it = rex.globalMatch(text);
+            while (it.hasNext()) {
+                auto m = it.next();
+                bool valid = loop ? m.capturedEnd() <= max && m.capturedStart() >= min
+                                  : m.capturedEnd() >= min;
+                if (valid) match = m;
+                else if (m.capturedStart() >= max) break;
+            }
+            if (match.hasMatch()) {
+                for (int p = match.capturedStart() + 1; p < max; ++p) {
+                    auto m = rex.match(text, p);
+                    bool valid = loop ? m.capturedEnd() <= max && m.capturedStart() >= min
+                                      : m.capturedEnd() >= min;
+                    if (m.hasMatch() && valid) match = m;
+                    else break;
+                }
+            }
+        } else {
+            match = rex.match(text, qMax(0, min));
+            if (match.hasMatch() && match.capturedStart() > max) match = QRegularExpressionMatch();
+        }
+
+        if (match.hasMatch()) {
+            QTextCursor cursor(block);
+            cursor.setPosition(block.position() + match.capturedStart());
+            cursor.setPosition(block.position() + match.capturedEnd(), QTextCursor::KeepAnchor);
+            setTextCursor(cursor);
+            lockSelectedFind();
+            return true;
+        }
+    }
+    return false;
 }
 
 bool CodeEdit::findText(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool loop)
@@ -2574,7 +2638,7 @@ void CodeEdit::recalcExtraSelections()
     }
 }
 
-void CodeEdit::startCompleterTimer()
+void CodeEdit::handleTextChanged()
 {
     updateFindScrollMarkers(false);
     if (mCompleter && !mCompleter->isOpenSuppressed() && mSettings->toBool(skEdCompleterAutoOpen)) {
@@ -2663,6 +2727,12 @@ void CodeEdit::setPausedPos(int line)
             mPreDebugCursor = textCursor();
         jumpTo(line);
     }
+}
+
+void CodeEdit::setSearchMarks(const QList<int> &lines)
+{
+    QColor color = Theme::color(Theme::Edit_searchBg);
+    mScrollMarks->setMarks(color, lines);
 }
 
 void CodeEdit::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)

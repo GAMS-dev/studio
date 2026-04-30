@@ -45,14 +45,16 @@ public:
                  QPoint from,
                  QPoint to,
                  QList<Result> *list,
+                 QHash<FileId, SortedIntMap> *resultLines,
                  bool showResults);
 
     SearchWorker(const QList<SearchFile> &fml,
                  const QRegularExpression &regex,
                  QList<Result> *list,
+                 QHash<FileId, SortedIntMap> *resultLines,
                  bool showResults);
 
-    void findInFiles();
+    void searchInFiles();
 
 signals:
     void update(int hits);
@@ -64,6 +66,7 @@ private:
 private:
     QList<SearchFile> mFiles;
     QList<Result>* mMatches;
+    QHash<FileId, SortedIntMap> *mResultLines;
     QRegularExpression mRegex;
     QPoint mFrom = QPoint(0,0);
     QPoint mTo = QPoint(0,0);

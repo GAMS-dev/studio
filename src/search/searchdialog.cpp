@@ -49,7 +49,12 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, MainWindow* p
     , mFileHandler(fileHandler)
     , mSearch(this, fileHandler)
 {
+#ifdef __APPLE__
+    // TODO(JM) on macOS, Qt::WindowStaysOnTopHint might need to be switched on/off when Studio gets/looses the focus
     setWindowFlags((windowFlags() & ~Qt::WindowContextHelpButtonHint) | Qt::WindowStaysOnTopHint);
+#else
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+#endif
     ui->setupUi(this);
     ui->frame_findinfiles->setVisible(false);
     ui->frame_filters->setVisible(false);
@@ -243,6 +248,7 @@ void SearchDialog::relaySearchResults(bool showResults, QList<Result> *results)
         mSearchResultModel = new SearchResultModel(createRegex(), mSearch.results());
         emit updateResults(mSearchResultModel);
     }
+    emit updateSearchMarks();
 }
 
 void SearchDialog::updateDialogState()

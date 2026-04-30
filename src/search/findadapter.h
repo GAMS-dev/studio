@@ -101,17 +101,15 @@ public:
     /// \brief findText Triggers a find action
     /// \param rex The find term
     /// \param options Options for the find action
-    /// \return TRUE if the find term has been found
     ///
-    virtual bool findText(const QRegularExpression &rex, FindOptions options) = 0;
+    virtual void findText(const QRegularExpression &rex, FindOptions options);
 
     ///
     /// \brief findText Triggers a find action
     /// \param text The find term
     /// \param options Options for the find action
-    /// \return TRUE if the find term has been found
     ///
-    virtual bool findText(const QString &text, FindOptions options);
+    virtual void findText(const QString &text, FindOptions options);
 
     ///
     /// \brief findReplaceAll Replace all occurrencies in the content of the widget
@@ -145,6 +143,23 @@ public:
     ///
     virtual bool supportsRegEx() { return true; }
 
+    ///
+    /// \return FindOptions for the current call of findText
+    ///
+    FindOptions currentOptions() const;
+
+    ///
+    /// \brief setLastMatch
+    /// \param text
+    ///
+    void setLastMatch(const QString &text);
+
+    ///
+    /// \brief lastMatch
+    /// \return
+    ///
+    QString lastMatch() const;
+
 signals:
     ///
     /// \brief allowReplaceChanged Signals when the state of \a hasSelection has changed
@@ -157,6 +172,12 @@ signals:
     void endFind();
 
     ///
+    /// \brief findDone sends if the find was successful
+    /// \param found
+    ///
+    void findDone(bool found);
+
+    ///
     /// \brief findNext Signals find next/previous for adapters whose widget doesn't implement it
     /// \param backwards
     ///
@@ -166,9 +187,17 @@ protected slots:
     void widgetDestroyed();
 
 protected:
-    // friend class EditFindAdapter;
     explicit FindAdapter(QWidget *widget = nullptr);
     QTextDocument::FindFlags findFlags(FindOptions options);
+    void stopFind();
+    virtual void emitFindDone(bool found);
+
+protected:
+    QPoint mInitialStartPos;
+    int mCurrentFindId = 0;
+    QString mLastMatch;
+    bool mIsCurrentWord = false;
+    FindOptions mCurrentOptions;
 };
 
 
@@ -185,7 +214,7 @@ public:
     bool hasSelectedFind() const override;
     void setFindTerm(const QRegularExpression &rex, FindOptions options) override;
     bool hasFindTerm() override;
-    bool findText(const QRegularExpression &rex, FindOptions options) override;
+    void findText(const QRegularExpression &rex, FindOptions options) override;
     int findReplaceAll(const QRegularExpression &rex, FindOptions options, const QString &replacement) override;
     bool findReplace(const QString &replacement) override;
     QString currentFindSelection(bool &isCurrentWord) override;
@@ -194,9 +223,12 @@ public:
 protected:
     friend class FindAdapter;
     EditFindAdapter(gams::studio::CodeEdit *edit = nullptr);
+    void emitFindDone(bool found) override;
 
 private:
     CodeEdit *mEdit;
+    void continueAsyncFind(const QRegularExpression &rex, QTextDocument::FindFlags options, int startLine,
+                           bool continued, bool loop, int findId);
 };
 
 
@@ -212,7 +244,7 @@ public:
     bool hasSelectedFind() const override;
     void setFindTerm(const QRegularExpression &rex, FindOptions options) override;
     bool hasFindTerm() override;
-    bool findText(const QRegularExpression &rex, FindOptions options) override;
+    void findText(const QRegularExpression &rex, FindOptions options) override;
     QString currentFindSelection(bool &isCurrentWord) override;
     void invalidateSelection() override;
 
@@ -237,7 +269,7 @@ public:
     bool hasSelectedFind() const override;
     void setFindTerm(const QRegularExpression &rex, FindOptions options) override;
     bool hasFindTerm() override;
-    bool findText(const QRegularExpression &rex, FindOptions options) override;
+    void findText(const QRegularExpression &rex, FindOptions options) override;
     QString currentFindSelection(bool &isCurrentWord) override;
     void invalidateSelection() override;
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -269,8 +301,8 @@ public:
     bool hasSelectedFind() const override;
     void setFindTerm(const QRegularExpression &rex, FindOptions options) override;
     bool hasFindTerm() override;
-    bool findText(const QRegularExpression &rex, FindOptions options) override;
-    bool findText(const QString &text, FindOptions options) override;
+    void findText(const QRegularExpression &rex, FindOptions options) override;
+    void findText(const QString &text, FindOptions options) override;
     QString currentFindSelection(bool &isCurrentWord) override;
     void invalidateSelection() override;
     bool supportsRegEx() override { return false; }

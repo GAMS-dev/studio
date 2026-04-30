@@ -144,13 +144,13 @@ void Search::runSearch(const QList<SearchFile> &files)
     }
 
     // start background task first
-    SearchWorker* sw = new SearchWorker(unmodified, mParameters.regex(), &mResults,
+    SearchWorker* sw = new SearchWorker(unmodified, mParameters.regex(), &mResults, &mResultLines,
                                         mParameters.showResults());
     sw->moveToThread(&mSearchThread);
 
     connect(&mSearchThread, &QThread::finished, this, &Search::finished, UniqueConnection);
     connect(&mSearchThread, &QThread::finished, sw, &QObject::deleteLater, UniqueConnection);
-    connect(&mSearchThread, &QThread::started, sw, &SearchWorker::findInFiles, UniqueConnection);
+    connect(&mSearchThread, &QThread::started, sw, &SearchWorker::searchInFiles, UniqueConnection);
     connect(sw, &SearchWorker::update, mSearchDialog, &SearchDialog::intermediateUpdate, UniqueConnection);
     connect(sw, &SearchWorker::showResults, mSearchDialog, &SearchDialog::relaySearchResults, UniqueConnection);
 
@@ -208,16 +208,20 @@ void Search::invalidateCache()
 
 void Search::findInSelection(bool showResults)
 {
+    if (!mResultLines.contains(mSearchSelectionFile))
+        mResultLines.insert(mSearchSelectionFile, SortedIntMap());
     if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
         checkFileChanged(ae->fileId());
-        ae->searchInSelection(mResults);
+        ae->searchInSelection(mResults, mResultLines[mSearchSelectionFile]);
         mSearchDialog->relaySearchResults(showResults, &mResults);
     } else if (TextView* tv = ViewHelper::toTextView(mSearchDialog->currentEditor())) {
         checkFileChanged(tv->edit()->fileId());
-        tv->findInSelection(mParameters.regex(),
-                            mSearchDialog->fileHandler()->fileMeta(mSearchSelectionFile),
-                            &mResults, showResults);
+        tv->searchInSelection(mParameters.regex(),
+                              mSearchDialog->fileHandler()->fileMeta(mSearchSelectionFile),
+                              &mResults, &mResultLines, showResults);
     }
+    if (mResultLines.value(mSearchSelectionFile).isEmpty())
+        mResultLines.remove(mSearchSelectionFile);
     mSearchDialog->updateClearButton();
 
     // nothing more to do, update UI and return
@@ -252,6 +256,7 @@ void Search::findInDoc(FileMeta* fm)
                                    fm->location(),
                                    fm->projectId(),
                                    cursor.block().text()));
+            mResultLines[fm->id()].insert(cursor.blockNumber(), cursor.blockNumber());
         }
         if (mResults.size() > MAX_SEARCH_RESULTS)
             break;
@@ -611,6 +616,13 @@ QList<Result> Search::results() const
 QList<Result> Search::filteredResultList(const QString &fileLocation)
 {
     return mResultHash.value(fileLocation);
+}
+
+SortedIntMap Search::matchLines(FileId fileId)
+{
+    if (mResultLines.contains(fileId))
+        return mResultLines.value(fileId);
+    return SortedIntMap();
 }
 
 void Search::replaceNext(const QString& replacementText)

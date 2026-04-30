@@ -399,7 +399,8 @@ MainWindow::MainWindow(QWidget *parent)
         auto keyEvent = new QKeyEvent(QEvent::KeyPress, Qt::Key_Colon, Qt::NoModifier, ":");
         emit mNavigatorInput->sendKeyEvent(keyEvent);
     });
-    connect(mSearchDialog, &search::SearchDialog::updateResults, this, &MainWindow::updateResults);
+    connect(mSearchDialog, &search::SearchDialog::updateResults, this, &MainWindow::updateSearchResults);
+    connect(mSearchDialog, &search::SearchDialog::updateSearchMarks, this, qOverload<>(&MainWindow::updateSearchMarks));
     connect(mSearchDialog, &search::SearchDialog::closeResults, this, &MainWindow::closeResultsView);
     connect(mSearchDialog, &search::SearchDialog::openHelpDocument, this, &MainWindow::receiveOpenDoc);
     connect(mSearchDialog, &search::SearchDialog::invalidateResultsView, this, &MainWindow::invalidateResultsView);
@@ -6224,7 +6225,7 @@ void MainWindow::toggleSearchDialog()
     }
 }
 
-void MainWindow::updateResults(search::SearchResultModel* model)
+void MainWindow::updateSearchResults(search::SearchResultModel* model)
 {
     int index = ui->logTabs->indexOf(resultsView()); // did widget exist before?
 
@@ -6248,6 +6249,27 @@ void MainWindow::updateResults(search::SearchResultModel* model)
     ui->logTabs->setCurrentWidget(mResultsView);
 
     mResultsView->resizeColumnsToContent();
+}
+
+void MainWindow::updateSearchMarks()
+{
+    if (ui->mainTabs->currentWidget()) {
+        if (CodeEdit *edit = ViewHelper::toCodeEdit(ui->mainTabs->currentWidget()))
+            updateSearchMarks(edit);
+    }
+
+    if (mPinView && mPinView->widget()) {
+        if (CodeEdit *edit = ViewHelper::toCodeEdit(mPinView->widget()))
+            updateSearchMarks(edit);
+    }
+}
+
+void MainWindow::updateSearchMarks(CodeEdit *edit)
+{
+    if (FileMeta *meta = mFileMetaRepo.fileMeta(edit)) {
+        SortedIntMap lines = mSearchDialog->search()->matchLines(meta->id());
+        edit->setSearchMarks(QList<int>(lines.constBegin(), lines.constEnd()));
+    }
 }
 
 void MainWindow::continueFind(bool backwards)

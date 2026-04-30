@@ -385,7 +385,7 @@ void AbstractEdit::updateSearchSelection()
     }
 }
 
-void AbstractEdit::searchInSelection(QList<Result> &results)
+void AbstractEdit::searchInSelection(QList<Result> &results, SortedIntMap &lines)
 {
     int startPos;
     int endPos;
@@ -412,6 +412,7 @@ void AbstractEdit::searchInSelection(QList<Result> &results)
             results.append(Result(item.blockNumber()+1, item.positionInBlock() - int(item.selectedText().length()),
                                   int(item.selectedText().length()), property("location").toString(),
                                   projectId(), item.block().text()));
+            lines.insert(item.blockNumber(), item.blockNumber());
         } else break;
         if (results.size() > MAX_SEARCH_RESULTS) break;
     } while (!item.isNull());

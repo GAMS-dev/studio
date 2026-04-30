@@ -100,6 +100,7 @@ signals:
     void extraSelectionsUpdated();
     void toggle();
     void updateResults(gams::studio::search::SearchResultModel* resultModel);
+    void updateSearchMarks();
 
 protected:
     void showEvent(QShowEvent *event) override;

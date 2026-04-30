@@ -69,6 +69,7 @@ void FindWidget::setEditWidget(QWidget *widget)
     connect(mFinder, &FindAdapter::destroyed, this, &FindWidget::editDestroyed);
     connect(mFinder, &FindAdapter::allowReplaceChanged, this, &FindWidget::allowReplaceChanged);
     connect(mFinder, &FindAdapter::endFind, this, &FindWidget::on_bClose_clicked);
+    connect(mFinder, &FindAdapter::findDone, this, &FindWidget::findDone);
     connect(mFinder, &FindAdapter::findNext, this, [this](bool backwards) {
         if (backwards) on_bPrev_clicked();
         else on_bNext_clicked();
@@ -128,15 +129,15 @@ void FindWidget::updateButtonStates()
     ui->bReplaceAll->setEnabled(canReplace);
 }
 
-void FindWidget::setLastMatch(const QString &text, size_t pos)
+void FindWidget::findDone(bool found)
 {
-    mLastMatch = text;
-    mLastPos = pos;
-}
+    if (mFinder->currentOptions().testFlag(foFocusEdit))
+        mFinder->setFocus();
+    bool dummy; // unused dummy for isCurrentWord
+    QString match = mFinder->currentFindSelection(dummy);
 
-bool FindWidget::checkLastMatch(const QString &text, size_t pos)
-{
-    return (text.compare(mLastMatch) == 0 && pos == mLastPos);
+    if (!match.isEmpty())
+        mFinder->setLastMatch(match);
 }
 
 QString FindWidget::getFindText() const
@@ -146,7 +147,9 @@ QString FindWidget::getFindText() const
 
 bool FindWidget::setFindText(const QString &text)
 {
-    if (mLastMatch.isEmpty() || text != mLastMatch) {
+    if (!mFinder) return false;
+
+    if (mFinder->lastMatch().isEmpty() || text != mFinder->lastMatch()) {
         ui->edFind->setText(text);
         if (!ui->edFind->isRegEx() || ui->edFind->regExp().isValid())
             find();
@@ -182,14 +185,13 @@ QTextDocument::FindFlags FindWidget::findFlags(bool backwards)
     return res;
 }
 
-bool FindWidget::find(FindOptions options, bool keepSearchTerm)
+void FindWidget::find(FindOptions options, bool keepSearchTerm)
 {
-    if (!mFinder) return false;
+    if (!mFinder) return;
 
-    if (!mLastMatch.isEmpty())
-        mLastMatch = QString();
+    if (!mFinder->lastMatch().isEmpty())
+        mFinder->setLastMatch(QString());
     QString match;
-    size_t pos = 0;
     bool isCurrentWord = false;
     if (!mFinder->hasFindTerm() && mFinder->supportsRegEx() && !ui->edFind->hasFocus())
         keepSearchTerm = false;
@@ -205,18 +207,9 @@ bool FindWidget::find(FindOptions options, bool keepSearchTerm)
     }
     if (ui->edFind->exactMatch()) options.setFlag(foExactMatch);
     if (ui->edFind->isCaseSensitive()) options.setFlag(foCaseSense);
-    bool found = mFinder->supportsRegEx() ? mFinder->findText(termRegEx(), options)
-                                          : mFinder->findText(ui->edFind->text(), options);
-    if (options.testFlag(foFocusEdit))
-        mFinder->setFocus();
-    match = mFinder->currentFindSelection(isCurrentWord);
-    if (!found)
-        mFinder->invalidateSelection();
-
-    if (!match.isEmpty())
-        setLastMatch(match, pos);
-
-    return !match.isEmpty();
+    mFinder->supportsRegEx() ? mFinder->findText(termRegEx(), options)
+                             : mFinder->findText(ui->edFind->text(), options);
+    return;
 }
 
 QString FindWidget::currentFindSelection(bool &isCurrentWord)
@@ -346,8 +339,8 @@ bool FindWidget::replace()
 {
     if (!mFinder || !mFinder->canReplace()) return false;
 
-    if (!mLastMatch.isEmpty())
-        mLastMatch = QString();
+    if (!mFinder->lastMatch().isEmpty())
+        mFinder->setLastMatch(QString());
     FindOptions options;
     if (ui->edFind->exactMatch()) options.setFlag(foExactMatch);
     if (ui->edFind->isCaseSensitive()) options.setFlag(foCaseSense);

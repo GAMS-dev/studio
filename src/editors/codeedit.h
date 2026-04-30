@@ -133,8 +133,7 @@ public:
     void clearSearchSelection() override;
     void setSearchSelectionActive(bool active) override;
     void updateSearchSelection() override;
-    void searchInSelection(QList<search::Result> &results) override;
-    bool findText(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool loop = true);
+    void searchInSelection(QList<search::Result> &results, SortedIntMap &lines) override;
     int findReplaceAll(const QRegularExpression &rex, QTextDocument::FindFlags options, const QString &replacement);
     void replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope) override;
     int replaceAll(FileMeta *fm, const QRegularExpression &regex, const QString &replaceText,
@@ -142,8 +141,10 @@ public:
     QStringList getEnabledContextActions() override;
     void setHasProfiler(bool hasProfiler);
     bool findReplace(const QString &replacement) override;
+    void updateFindScrollMarkers(bool full = false);
 
     static int findAlphaNum(const QString &text, int start, bool back);
+    static const int CFindBlockSize;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -226,6 +227,10 @@ public slots:
     void unfold(const QTextBlock &block) override;
     void breakpointsChanged(const gams::studio::SortedIntMap &bpLines, const gams::studio::SortedIntMap &abpLines);
     void setPausedPos(int line);
+    bool findText(const QRegularExpression &rex, QTextDocument::FindFlags options, bool continued, bool loop = true);
+    bool findTextInPart(const QRegularExpression &rex, const QPoint &initialPos, int startLine, int endLine,
+                        QTextDocument::FindFlags options, bool loop);
+    void setSearchMarks(const QList<int> &lines);
 
 protected slots:
     void marksChanged(const QSet<int> &dirtyLines = QSet<int>()) override;
@@ -234,13 +239,13 @@ private slots:
     void blockCountHasChanged(int newBlockCount);
     void updateViewportSize(/*int newBlockCount*/);
     void recalcExtraSelections();
-    void startCompleterTimer();
     void updateCompleter();
     void updateViewport(const QRect &, int);
     void blockEditBlink();
     void checkBlockInsertion();
     void undoCommandAdded();
     void switchCurrentFolding();
+    void processFindBlock();
 
 private:
     friend class BlockEdit;
@@ -343,7 +348,7 @@ protected:
 protected:
     BlockEdit* blockEdit() {return mBlockEdit;}
     void scrollContentsBy(int dx, int dy) override;
-    void updateFindScrollMarkers(bool full = false);
+    void handleTextChanged();
 
 private:
     LineNumberArea *mLineNumberArea;
@@ -367,6 +372,8 @@ private:
     QString mBlockEditInsText;
     QVector<BlockEditPos*> mBlockEditPos;
     bool mSmartType = false;
+    int mCurrentFindRow = 0;
+    QList<int> mPendingFindResults;
     // QRegularExpression *mFindREx = nullptr;
     int mIconCols = 0;
     const QString mOpening = "([{'\""; // characters that will be auto closed if mSmartType is true

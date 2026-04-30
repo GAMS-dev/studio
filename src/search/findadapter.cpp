@@ -34,6 +34,8 @@ namespace gams {
 namespace studio {
 namespace find {
 
+const int  CMaxParallelFind = 1000;
+
 //  -------------------------- FindAdapter
 
 FindAdapter *FindAdapter::createAdapter(QWidget *widget)
@@ -78,10 +80,15 @@ bool FindAdapter::canReplace() const
     return false;
 }
 
-bool FindAdapter::findText(const QString &text, FindOptions options)
+void FindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
-    if (text.isEmpty())
-        return false;
+    mCurrentOptions = options;
+}
+
+void FindAdapter::findText(const QString &text, FindOptions options)
+{
+    if (text.isEmpty()) return;
+
     QString filter;
     QRegularExpression::WildcardConversionOptions opt = QRegularExpression::NonPathWildcardConversion;
     if (!options.testFlag(foExactMatch))
@@ -90,7 +97,7 @@ bool FindAdapter::findText(const QString &text, FindOptions options)
     if (options.testFlag(foExactMatch))
         filter = "\\b"+text+"\\b";
     QRegularExpression rex = QRegularExpression(filter, QRegularExpression::CaseInsensitiveOption);
-    return findText(rex, options);
+    findText(rex, options);
 }
 
 int FindAdapter::findReplaceAll(const QRegularExpression &rex, FindOptions options, const QString &replacement)
@@ -110,6 +117,33 @@ bool FindAdapter::findReplace(const QString &replacement)
 void FindAdapter::widgetDestroyed()
 {
     delete this;
+}
+
+void FindAdapter::stopFind()
+{
+    mCurrentFindId = -1;
+}
+
+void FindAdapter::emitFindDone(bool found)
+{
+    if (!found)
+        invalidateSelection();
+    emit findDone(found);
+}
+
+QString FindAdapter::lastMatch() const
+{
+    return mLastMatch;
+}
+
+FindOptions FindAdapter::currentOptions() const
+{
+    return mCurrentOptions;
+}
+
+void FindAdapter::setLastMatch(const QString &text)
+{
+    mLastMatch = text;
 }
 
 FindAdapter::FindAdapter(QWidget *widget)
@@ -140,6 +174,12 @@ EditFindAdapter::EditFindAdapter(CodeEdit *edit)
     edit->updateExtraSelections();
 }
 
+void EditFindAdapter::emitFindDone(bool found)
+{
+    FindAdapter::findDone(found);
+    mEdit->updateFindScrollMarkers(true);
+}
+
 EditFindAdapter::~EditFindAdapter()
 {}
 
@@ -168,9 +208,54 @@ bool EditFindAdapter::hasFindTerm()
     return mEdit->findTerm();
 }
 
-bool EditFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
+void EditFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
-    return mEdit->findText(rex, findFlags(options), options.testFlag(foContinued));
+    mCurrentFindId = (mCurrentFindId + 1) % CMaxParallelFind;
+    FindAdapter::findText(rex, options);
+
+    QTextCursor cursor = mEdit->textCursor();
+    int newPos = (options.testFlag(foBackwards) == options.testFlag(foContinued))
+                     ? qMin(cursor.position(), cursor.anchor())
+                     : qMax(cursor.position(), cursor.anchor());
+    cursor.setPosition(newPos);
+
+    mInitialStartPos = QPoint(cursor.positionInBlock(), cursor.blockNumber());
+    QTextDocument::FindFlags qtOptions = findFlags(options);
+    mEdit->setFindTerm(rex, qtOptions);
+    continueAsyncFind(rex, qtOptions, mInitialStartPos.y(), false /*options.testFlag(foContinued)*/, true, mCurrentFindId);
+}
+
+void EditFindAdapter::continueAsyncFind(const QRegularExpression &rex, QTextDocument::FindFlags options,
+                                        int startLine, bool continued, bool loop, int findId)
+{
+    if (findId != mCurrentFindId) return;
+
+    const bool backward = options.testFlag(QTextDocument::FindBackward);
+    const int totalBlocks = mEdit->document()->blockCount();
+
+    int endLine = backward ? qMax(0, startLine - CodeEdit::CFindBlockSize)
+                           : qMin(totalBlocks - 1, startLine + CodeEdit::CFindBlockSize);
+    if (!loop && mInitialStartPos.y() != -1)
+        endLine = backward ? qMax(endLine, mInitialStartPos.y()) : qMin(endLine, mInitialStartPos.y());
+
+    if (mEdit->findTextInPart(rex, mInitialStartPos, startLine, endLine, options, loop)) {
+        emitFindDone(true);
+        return;
+    }
+
+    int nextStart = backward ? endLine - 1 : endLine + 1;
+    bool outOfBounds = backward ? (nextStart < 0) : (nextStart >= totalBlocks);
+    if (outOfBounds && loop) {
+        nextStart = backward ? totalBlocks - 1 : 0;
+        loop = false;
+    } else if (outOfBounds || (!loop && (backward ? (endLine <= mInitialStartPos.y()) : (endLine >= mInitialStartPos.y())))) {
+        emitFindDone(false);
+        return;
+    }
+
+    QMetaObject::invokeMethod(this, [this, rex, options, nextStart, loop, findId]() {
+        continueAsyncFind(rex, options, nextStart, false, loop, findId);
+    }, Qt::QueuedConnection);
 }
 
 bool EditFindAdapter::findReplace(const QString &replacement)
@@ -237,11 +322,12 @@ bool ViewFindAdapter::hasFindTerm()
     return static_cast<CodeEdit*>(mView->edit())->findTerm();
 }
 
-bool ViewFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
+void ViewFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
+    FindAdapter::findText(rex, options);
     if (rex.pattern().isEmpty()) {
         mView->setFindTerm(rex, findFlags(options));
-        return false;
+        emitFindDone(false);
     }
     if (!options.testFlag(foContinued) && mView->anchor().y() == mView->position().y()) {
         QPoint pos = mView->position();
@@ -257,7 +343,7 @@ bool ViewFindAdapter::findText(const QRegularExpression &rex, FindOptions option
         mView->jumpToEnd();
         res = mView->findText(rex, findFlags(options), options.testFlag(foContinued));
     }
-    return res;
+    emitFindDone(res);
 }
 
 QString ViewFindAdapter::currentFindSelection(bool &isCurrentWord)
@@ -321,15 +407,17 @@ bool ChangelogFindAdapter::hasFindTerm()
     return mRex && mRex->isValid() && !mRex->pattern().isEmpty();
 }
 
-bool ChangelogFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
+void ChangelogFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
+    FindAdapter::findText(rex, options);
     if (rex.pattern().isEmpty()) {
         invalidateSelection();
         setFindTerm(rex, options);
         QTextCursor cur = mView->textCursor();
         cur.clearSelection();
         mView->setTextCursor(cur);
-        return false;
+        emitFindDone(false);
+        return;
     }
     int pos = mView->textCursor().hasSelection() ? mView->textCursor().anchor()
                                                  : mView->textCursor().position();
@@ -350,7 +438,7 @@ bool ChangelogFindAdapter::findText(const QRegularExpression &rex, FindOptions o
         mView->setTextCursor(cur);
     }
     setFindTerm(rex, options);
-    return !cur.isNull();
+    emitFindDone(!cur.isNull());
 }
 
 QString ChangelogFindAdapter::currentFindSelection(bool &isCurrentWord)
@@ -470,24 +558,25 @@ bool WebViewFindAdapter::hasFindTerm()
     return false;
 }
 
-bool WebViewFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
+void WebViewFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
     Q_UNUSED(rex)
     Q_UNUSED(options)
     DEB() << "Regular Expression not supported in WebEngineView";
-    return false;
+    emitFindDone(false);
 }
 
-bool WebViewFindAdapter::findText(const QString &text, FindOptions options)
+void WebViewFindAdapter::findText(const QString &text, FindOptions options)
 {
+    FindAdapter::findText(text, options);
     auto resFunc = std::function<void(const QWebEngineFindTextResult &)>();
     QWebEnginePage::FindFlags opt = {};
     if (options.testFlag(foBackwards)) opt.setFlag(QWebEnginePage::FindBackward);
     if (options.testFlag(foCaseSense)) opt.setFlag(QWebEnginePage::FindCaseSensitively);
     mView->findText(text, opt);
     if (text.isEmpty())
-        return false;
-    return true;
+        return emitFindDone(false);
+    return emitFindDone(true);
 }
 
 QString WebViewFindAdapter::currentFindSelection(bool &isCurrentWord)

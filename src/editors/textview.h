@@ -71,7 +71,8 @@ public:
     void lockSelectedFind();
     bool hasSelectedFind();
     void clearSelectedFind();
-    void findInSelection(const QRegularExpression &searchRegex, FileMeta *file, QList<search::Result> *results, bool showResults);
+    void searchInSelection(const QRegularExpression &searchRegex, FileMeta *file, QList<search::Result> *results,
+                           QHash<FileId, SortedIntMap> *lines, bool showResults);
     void clearSearchSelection();
     void setSearchSelectionActive(bool active);
     TextKind textKind() const;

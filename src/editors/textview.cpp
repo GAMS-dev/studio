@@ -365,8 +365,8 @@ void TextView::clearSelectedFind()
     }
 }
 
-void TextView::findInSelection(const QRegularExpression &searchRegex, FileMeta* file,
-                               QList<search::Result> *results, bool showResults)
+void TextView::searchInSelection(const QRegularExpression &searchRegex, FileMeta* file,
+                                 QList<search::Result> *results, QHash<FileId, SortedIntMap> *lines, bool showResults)
 {
     if (!mMapper->hasSearchSelection()) {
         mEdit->updateSearchSelection();
@@ -374,8 +374,8 @@ void TextView::findInSelection(const QRegularExpression &searchRegex, FileMeta* 
     }
     if (!mMapper->hasSearchSelection()) return;
     SearchWorker sw(SearchFile(file), searchRegex, mMapper->searchSelectionStart(), mMapper->searchSelectionEnd(),
-                    results, showResults);
-    sw.findInFiles();
+                    results, lines, showResults);
+    sw.searchInFiles();
 }
 
 void TextView::clearSearchSelection()

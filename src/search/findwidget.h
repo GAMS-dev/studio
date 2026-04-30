@@ -37,7 +37,6 @@ class FindWidget;
 class FindWidget : public QWidget
 {
     Q_OBJECT
-
 public:
     explicit FindWidget(QWidget *parent = nullptr);
     ~FindWidget();
@@ -45,14 +44,12 @@ public:
     QWidget *editWidget() const;
     bool isActive() const;
     void setActive(bool newActive);
-    void setLastMatch(const QString &text, size_t pos);
-    bool checkLastMatch(const QString &text, size_t pos);
     QString getFindText() const;
     bool setFindText(const QString &text);
     bool hasTerm();
     QRegularExpression termRegEx();
     QTextDocument::FindFlags findFlags(bool backwards = false);
-    bool find(FindOptions options = FindOptions(), bool keepSearchTerm = true);
+    void find(FindOptions options = FindOptions(), bool keepSearchTerm = true);
     QString currentFindSelection(bool &isCurrentWord);
     bool canReplace() const;
     void toggleReplace(bool ensureVisible = false);
@@ -67,6 +64,7 @@ private slots:
     void termChanged();
     void allowReplaceChanged();
     void updateButtonStates();
+    void findDone(bool found);
 
     void on_bClose_clicked();
     void on_bNext_clicked();
@@ -88,8 +86,6 @@ private:
     FindAdapter *mFinder = nullptr;
     bool mActive = false;
     bool mReplaceVisible = false;
-    QString mLastMatch;
-    size_t mLastPos = 0;
 };
 
 } // namespace find

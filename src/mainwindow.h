@@ -216,7 +216,9 @@ public slots:
     void updateCursorHistoryAvailability();
     void closeProject(gams::studio::PExProjectNode *project);
     void closeFileEditors(const FileId &fileId, bool willReopen = false);
-    void updateResults(search::SearchResultModel* model);
+    void updateSearchResults(search::SearchResultModel* model);
+    void updateSearchMarks();
+    void updateSearchMarks(CodeEdit *edit);
     void continueFind(bool backwards);
     void continueSearch(bool backwards);
     void closeResultsView();

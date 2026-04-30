@@ -108,10 +108,10 @@ void FileWorker::filterFiles(const QList<SearchFile> &files,
         }
         if (!isValidFile(sf.path(), params.ignoreReadOnly()))
             continue;
-        // if we can get an fm check if that file is read only
-        FileMeta* fm = mFileHandler->findFile(sf.path());
+
+        FileMeta* fm = sf.fileMeta() ? sf.fileMeta() : mFileHandler->findFile(sf.path());
         if (include || ignoreWildcard) {
-            matched << ((fm && fm->isModified()) ? sf : sf.path());
+            matched << (fm  ? sf : sf.path());
         }
     }
 }
