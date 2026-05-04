@@ -37,6 +37,7 @@ FindWidget::FindWidget(QWidget *parent)
     ui->edFind->showOptions(FilterLineEdit::foCaSens);
     ui->edFind->setBoundaryMode(FilterLineEdit::bmWordBound);
     ui->edFind->setNoWildcards(true);
+    connect(ui->edFind, &FilterLineEdit::regExpChanged, this, &FindWidget::termChanged);
     ui->bClose->setIcon(Theme::icon(":/%1/remove"));
     ui->bNext->setIcon(Theme::icon(":/%1/sort-desc"));
     ui->bPrev->setIcon(Theme::icon(":/%1/sort-asc"));
@@ -107,13 +108,13 @@ void FindWidget::setActive(bool newActive)
 {
     mActive = newActive;
     if (!mActive) {
-        hide();
+        ui->edFind->clear();
         if (mFinder) {
             mFinder->setFocus();
             mFinder->setFindTerm(QRegularExpression(), foNone);
             mFinder->invalidateSelection();
         }
-        ui->edFind->clear();
+        hide();
     }
 }
 
@@ -151,8 +152,7 @@ bool FindWidget::setFindText(const QString &text)
 
     if (mFinder->lastMatch().isEmpty() || text != mFinder->lastMatch()) {
         ui->edFind->setText(text);
-        if (!ui->edFind->isRegEx() || ui->edFind->regExp().isValid())
-            find();
+        find();
         updateButtonStates();
         return true;
     }
@@ -209,7 +209,6 @@ void FindWidget::find(FindOptions options, bool keepSearchTerm)
     if (ui->edFind->isCaseSensitive()) options.setFlag(foCaseSense);
     mFinder->supportsRegEx() ? mFinder->findText(termRegEx(), options)
                              : mFinder->findText(ui->edFind->text(), options);
-    return;
 }
 
 QString FindWidget::currentFindSelection(bool &isCurrentWord)
@@ -327,12 +326,6 @@ void FindWidget::on_bReplaceAll_clicked()
     QString countText = (count ? QString::number(count) : QString("No"));
     DEB() << QString("%1 occurrencies replaced").arg(countText);
     // TODO(JM) show count of replacements
-}
-
-void FindWidget::on_edFind_textEdited(const QString &term)
-{
-    Q_UNUSED(term)
-    termChanged();
 }
 
 bool FindWidget::replace()

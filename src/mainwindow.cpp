@@ -4094,7 +4094,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
                 if (getViewOrEdit(find) == focusWidget()) {
                     if (FileMeta *meta = mFileMetaRepo.fileMeta(focusWidget())) {
                         meta->clearFindings();
-                        find->hide();
+                        find->setActive(false);
                     }
                 }
             }
@@ -6275,7 +6275,7 @@ void MainWindow::updateSearchMarks(CodeEdit *edit)
 void MainWindow::continueFind(bool backwards)
 {
     if (find::FindWidget *findWid = getCurrentFindWidget()) {
-        if (!findWid->hasTerm())
+        if (!findWid || !findWid->hasTerm())
             return;
         find::FindOptions options = {find::foFocusEdit | find::foContinued};
         if (backwards) options.setFlag(find::foBackwards);

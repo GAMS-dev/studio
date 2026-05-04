@@ -201,6 +201,7 @@ bool EditFindAdapter::hasSelectedFind() const
 void EditFindAdapter::setFindTerm(const QRegularExpression &rex, FindOptions options)
 {
     mEdit->setFindTerm(rex, findFlags(options));
+    emitFindDone(false);
 }
 
 bool EditFindAdapter::hasFindTerm()
@@ -222,13 +223,16 @@ void EditFindAdapter::findText(const QRegularExpression &rex, FindOptions option
     mInitialStartPos = QPoint(cursor.positionInBlock(), cursor.blockNumber());
     QTextDocument::FindFlags qtOptions = findFlags(options);
     mEdit->setFindTerm(rex, qtOptions);
-    continueAsyncFind(rex, qtOptions, mInitialStartPos.y(), false /*options.testFlag(foContinued)*/, true, mCurrentFindId);
+    continueAsyncFind(rex, qtOptions, mInitialStartPos.y(), options.testFlag(foContinued), true, mCurrentFindId);
 }
 
 void EditFindAdapter::continueAsyncFind(const QRegularExpression &rex, QTextDocument::FindFlags options,
                                         int startLine, bool continued, bool loop, int findId)
 {
-    if (findId != mCurrentFindId) return;
+    if (findId != mCurrentFindId) {
+        emitFindDone(false);
+        return;
+    }
 
     const bool backward = options.testFlag(QTextDocument::FindBackward);
     const int totalBlocks = mEdit->document()->blockCount();
@@ -239,7 +243,8 @@ void EditFindAdapter::continueAsyncFind(const QRegularExpression &rex, QTextDocu
         endLine = backward ? qMax(endLine, mInitialStartPos.y()) : qMin(endLine, mInitialStartPos.y());
 
     if (mEdit->findTextInPart(rex, mInitialStartPos, startLine, endLine, options, loop)) {
-        emitFindDone(true);
+        if (!continued)
+            emitFindDone(true);
         return;
     }
 
@@ -248,7 +253,7 @@ void EditFindAdapter::continueAsyncFind(const QRegularExpression &rex, QTextDocu
     if (outOfBounds && loop) {
         nextStart = backward ? totalBlocks - 1 : 0;
         loop = false;
-    } else if (outOfBounds || (!loop && (backward ? (endLine <= mInitialStartPos.y()) : (endLine >= mInitialStartPos.y())))) {
+    } else if (outOfBounds || (backward ? (endLine <= mInitialStartPos.y()) : (endLine >= mInitialStartPos.y()))) {
         emitFindDone(false);
         return;
     }

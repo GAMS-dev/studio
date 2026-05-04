@@ -916,7 +916,7 @@ void CodeEdit::scrollContentsBy(int dx, int dy)
     updateExtraSelections();
 }
 
-void CodeEdit::updateFindScrollMarkers(bool full)
+void CodeEdit::updateFindScrollMarkers(bool /*full*/)
 {
     mCurrentFindRow = 0;
     mPendingFindResults.clear();
@@ -925,7 +925,10 @@ void CodeEdit::updateFindScrollMarkers(bool full)
 
 void CodeEdit::processFindBlock()
 {
-    if (!findTerm()) return;
+    if (!findTerm()) {
+        mScrollMarks->setMarks(Theme::color(Theme::Edit_findBg), mPendingFindResults);
+        return;
+    }
     QTextBlock block = document()->findBlockByNumber(mCurrentFindRow);
     int lastFindRow = mCurrentFindRow + CFindBlockSize;
     QRegularExpression term = *findTerm();

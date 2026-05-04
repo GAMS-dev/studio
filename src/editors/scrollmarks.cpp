@@ -148,7 +148,7 @@ void ScrollMarks::paintEvent(QPaintEvent *)
         return sliderBot + qRound(ratio * qMax(0, h - markHeight - sliderBot));
     };
 
-    painter.setOpacity(0.7);
+    painter.setOpacity(0.6);
     QHashIterator<QRgb, QList<int>> i(mMarks);
     while (i.hasNext()) {
         i.next();
@@ -178,6 +178,8 @@ void ScrollMarks::updateGeometry()
         opt.orientation = Qt::Vertical;
         rect = sb->style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarGroove, sb);
         if (rect.isEmpty()) rect = sb->geometry();
+        rect.setWidth(rect.width()-2);
+        rect.setLeft(rect.left()+3);
     } else {
         rect = mEdit->geometry();
         rect.setLeft( rect.right() - 10);
