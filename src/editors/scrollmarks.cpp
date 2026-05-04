@@ -110,18 +110,44 @@ void ScrollMarks::paintEvent(QPaintEvent *)
     int h = height();
 
     QScrollBar* sb = mEdit->verticalScrollBar();
-    bool sbVisible = sb->isVisible();
-    if (!sbVisible || sb->width() < w)
-        painter.fillRect(rect(), QColor(200, 200, 200, 30));
+    if (!sb->isVisible()) return;
 
-    painter.setOpacity(sbVisible ? 0.7 : 0.9);
+    QStyleOptionSlider opt;
+    opt.initFrom(sb);
+    opt.orientation = sb->orientation();
+    opt.minimum = sb->minimum();
+    opt.maximum = sb->maximum();
+    opt.sliderPosition = sb->sliderPosition();
+    opt.pageStep = sb->pageStep();
+    opt.subControls = QStyle::SC_All;
 
-    const qsizetype totalBlocks = mEdit->blockCount();
+    QTextCursor cursor = mEdit->cursorForPosition(QPoint(0, 0));
+    int firstVisibleBlock = cursor.blockNumber();
+    QTextCursor bottomCursor = mEdit->cursorForPosition(QPoint(0, mEdit->viewport()->height()));
+    int lastVisibleBlock = bottomCursor.blockNumber();
+    int totalBlocks = mEdit->blockCount();
     if (totalBlocks <= 1) return;
-    double scale = static_cast<double>(h) / static_cast<double>(totalBlocks);
-    auto* layout = qobject_cast<QPlainTextDocumentLayout*>(mEdit->document()->documentLayout());
-    if (!layout) return;
 
+    QRect slider = sb->style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSlider, sb);
+    int arrowHeight = sb->style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSubLine, sb).height();
+    int sliderTop = slider.top() - arrowHeight;
+    int sliderHeight = sliderTop + slider.height();
+
+    auto mapLineToY = [&](int line) -> int {
+        if (line < firstVisibleBlock) {
+            double ratio = (double)line / qMax(1, firstVisibleBlock);
+            return static_cast<int>(ratio * sliderTop);
+        } else if (line <= lastVisibleBlock) {
+            double range = qMax(1, lastVisibleBlock - firstVisibleBlock);
+            double ratio = (double)(line - firstVisibleBlock) / range;
+            return sliderTop + static_cast<int>(ratio * slider.height());
+        }
+        double range = qMax(1, totalBlocks - lastVisibleBlock);
+        double ratio = (double)(line - lastVisibleBlock) / range;
+        return sliderHeight + static_cast<int>(ratio * (h - sliderHeight));
+    };
+
+    painter.setOpacity(0.7);
     QHashIterator<QRgb, QList<int>> i(mMarks);
     while (i.hasNext()) {
         i.next();
@@ -129,9 +155,8 @@ void ScrollMarks::paintEvent(QPaintEvent *)
         const QList<int>& lines = i.value();
         int lastY = -1;
 
-        for (qsizetype line : lines) {
-            int y = static_cast<int>(line * scale);
-
+        for (int line : lines) {
+            int y = mapLineToY(line);
             if (y != lastY && y >= 0 && y < h) {
                 painter.fillRect(0, y, w, 2, color);
                 lastY = y;
