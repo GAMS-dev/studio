@@ -108,6 +108,7 @@ void ScrollMarks::paintEvent(QPaintEvent *)
     QPainter painter(this);
     int w = width();
     int h = height();
+    int markHeight = 2;
 
     QScrollBar* sb = mEdit->verticalScrollBar();
     if (!sb->isVisible()) return;
@@ -131,20 +132,20 @@ void ScrollMarks::paintEvent(QPaintEvent *)
     QRect slider = sb->style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSlider, sb);
     int arrowHeight = sb->style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSubLine, sb).height();
     int sliderTop = slider.top() - arrowHeight;
-    int sliderHeight = sliderTop + slider.height();
+    int sliderBot = sliderTop + slider.height() - markHeight;
 
     auto mapLineToY = [&](int line) -> int {
-        if (line < firstVisibleBlock) {
+        if (line <= firstVisibleBlock) {
             double ratio = (double)line / qMax(1, firstVisibleBlock);
-            return static_cast<int>(ratio * sliderTop);
-        } else if (line <= lastVisibleBlock) {
+            return qRound(ratio * sliderTop);
+        } else if (line <= lastVisibleBlock - markHeight) {
             double range = qMax(1, lastVisibleBlock - firstVisibleBlock);
             double ratio = (double)(line - firstVisibleBlock) / range;
-            return sliderTop + static_cast<int>(ratio * slider.height());
+            return sliderTop + qRound(ratio * qMax(0, slider.height() - markHeight));
         }
         double range = qMax(1, totalBlocks - lastVisibleBlock);
         double ratio = (double)(line - lastVisibleBlock) / range;
-        return sliderHeight + static_cast<int>(ratio * (h - sliderHeight));
+        return sliderBot + qRound(ratio * qMax(0, h - markHeight - sliderBot));
     };
 
     painter.setOpacity(0.7);
@@ -158,7 +159,7 @@ void ScrollMarks::paintEvent(QPaintEvent *)
         for (int line : lines) {
             int y = mapLineToY(line);
             if (y != lastY && y >= 0 && y < h) {
-                painter.fillRect(0, y, w, 2, color);
+                painter.fillRect(0, y, w, markHeight, color);
                 lastY = y;
             }
         }
