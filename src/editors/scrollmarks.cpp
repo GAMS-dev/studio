@@ -134,18 +134,18 @@ void ScrollMarks::paintEvent(QPaintEvent *)
     QRect slider = sb->style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSlider, sb);
     double scrollRatio = double(sb->value() - sb->minimum()) / qMax(1, sb->maximum() - sb->minimum());
     int sliderTop = qRound(scrollRatio * (h - slider.height()));
-    int sliderBot = sliderTop + slider.height() - markHeight;
-    int hiddenGroove = h + sliderTop - sliderBot;
+    int sliderBot = sliderTop + slider.height();
+    int hiddenGroove = h + sliderTop - sliderBot - markHeight;
     bool simple = (double(slider.height())/h) - (double(visBlocks+1)/totalBlocks) < .0002;
 
     auto mapLineToY = [&](int line) -> int {
         if (simple) {
             double ratio = double(line) / qMax(1, totalBlocks);
-            return qRound(ratio * h);
+            return qRound(ratio * (h - markHeight));
         } else if (line < firstVisibleBlock) {
             double ratio = double(line) / qMax(1, hiddenBlocks);
             return qRound(ratio * hiddenGroove);
-        } else if (line < lastVisibleBlock) {
+        } else if (line <= lastVisibleBlock) {
             double range = qMax(1, lastVisibleBlock - firstVisibleBlock);
             double ratio = double(line - firstVisibleBlock) / range;
             return sliderTop + qRound(ratio * qMax(0, slider.height() - markHeight));
