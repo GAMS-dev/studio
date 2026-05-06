@@ -106,13 +106,13 @@ void ScrollMarks::paintEvent(QPaintEvent *)
     if (!mEdit || mMarks.isEmpty()) return;
 
     QPainter painter(this);
+    int totalBlocks = mEdit->blockCount();
+    if (totalBlocks <= 1) return;
     int w = width();
     int h = height();
     int markHeight = 2;
 
     QScrollBar* sb = mEdit->verticalScrollBar();
-    if (!sb->isVisible() || (sb->maximum() <= sb->minimum())) return;
-
     QStyleOptionSlider opt;
     opt.initFrom(sb);
     opt.orientation = sb->orientation();
@@ -127,8 +127,6 @@ void ScrollMarks::paintEvent(QPaintEvent *)
     QTextCursor bottomCursor = mEdit->cursorForPosition(QPoint(0, mEdit->viewport()->height()));
     int lastVisibleBlock = bottomCursor.blockNumber();
     int visBlocks = lastVisibleBlock - firstVisibleBlock;
-    int totalBlocks = mEdit->blockCount();
-    if (totalBlocks <= 1) return;
     int hiddenBlocks = totalBlocks + firstVisibleBlock - lastVisibleBlock;
 
     QRect slider = sb->style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSlider, sb);
@@ -136,7 +134,7 @@ void ScrollMarks::paintEvent(QPaintEvent *)
     int sliderTop = qRound(scrollRatio * (h - slider.height()));
     int sliderBot = sliderTop + slider.height();
     int hiddenGroove = h + sliderTop - sliderBot - markHeight;
-    bool simple = (double(slider.height())/h) - (double(visBlocks+1)/totalBlocks) < .0002;
+    bool simple = (double(slider.height()) / h) - (double(visBlocks+1) / totalBlocks) < .0002;
 
     auto mapLineToY = [&](int line) -> int {
         if (simple) {
