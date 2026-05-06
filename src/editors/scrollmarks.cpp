@@ -126,6 +126,7 @@ void ScrollMarks::paintEvent(QPaintEvent *)
     int firstVisibleBlock = cursor.blockNumber();
     QTextCursor bottomCursor = mEdit->cursorForPosition(QPoint(0, mEdit->viewport()->height()));
     int lastVisibleBlock = bottomCursor.blockNumber();
+    int visBlocks = lastVisibleBlock - firstVisibleBlock;
     int totalBlocks = mEdit->blockCount();
     if (totalBlocks <= 1) return;
     int hiddenBlocks = totalBlocks + firstVisibleBlock - lastVisibleBlock;
@@ -135,31 +136,23 @@ void ScrollMarks::paintEvent(QPaintEvent *)
     int sliderTop = qRound(scrollRatio * (h - slider.height()));
     int sliderBot = sliderTop + slider.height() - markHeight;
     int hiddenGroove = h + sliderTop - sliderBot;
+    bool simple = (double(slider.height())/h) - (double(visBlocks+1)/totalBlocks) < .0002;
 
     auto mapLineToY = [&](int line) -> int {
-        if (line <= firstVisibleBlock) {
+        if (simple) {
+            double ratio = double(line) / qMax(1, totalBlocks);
+            return qRound(ratio * h);
+        } else if (line < firstVisibleBlock) {
             double ratio = double(line) / qMax(1, hiddenBlocks);
             return qRound(ratio * hiddenGroove);
-        } else if (line <= lastVisibleBlock) {
+        } else if (line < lastVisibleBlock) {
             double range = qMax(1, lastVisibleBlock - firstVisibleBlock);
-            double ratio = (double)(line - firstVisibleBlock) / range;
+            double ratio = double(line - firstVisibleBlock) / range;
             return sliderTop + qRound(ratio * qMax(0, slider.height() - markHeight));
         }
-        double ratio = double(line) / hiddenBlocks;
+        double ratio = double(line - visBlocks) / qMax(1, hiddenBlocks);
         return slider.height() + qRound(ratio * hiddenGroove);
     };
-
-
-    // // Debug-Output für den Vergleich Windows vs. macOS
-    // painter.drawRect(0, sliderTop, 5, sliderBot-sliderTop);
-    // qDebug() << "--- Scroll Geometry Debug ---";
-    // qDebug() << "Widget H:" << h << "Edit H:" << mEdit->height();
-    // qDebug() << "FirstRange:" << firstVisibleBlock << "to" << lastVisibleBlock << "of" << totalBlocks;
-    // qDebug() << "SB Value:" << sb->value() << "SB PageStep:" << sb->pageStep() << "SB Max:" << sb->maximum();
-    // qDebug() << "Slider:" << slider;
-    // qDebug() << "SliderTop:" << sliderTop << "SliderBot:" << sliderBot;
-    // qDebug() << "-----------------------------";
-
 
     painter.setOpacity(0.6);
     QHashIterator<QRgb, QList<int>> i(mMarks);
