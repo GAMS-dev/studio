@@ -111,7 +111,7 @@ void ScrollMarks::paintEvent(QPaintEvent *)
     int markHeight = 2;
 
     QScrollBar* sb = mEdit->verticalScrollBar();
-    if (!sb->isVisible()) return;
+    if (!sb->isVisible() || (sb->maximum() <= sb->minimum())) return;
 
     QStyleOptionSlider opt;
     opt.initFrom(sb);
@@ -128,25 +128,38 @@ void ScrollMarks::paintEvent(QPaintEvent *)
     int lastVisibleBlock = bottomCursor.blockNumber();
     int totalBlocks = mEdit->blockCount();
     if (totalBlocks <= 1) return;
+    int hiddenBlocks = totalBlocks + firstVisibleBlock - lastVisibleBlock;
 
     QRect slider = sb->style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSlider, sb);
-    int arrowHeight = sb->style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSubLine, sb).height();
-    int sliderTop = slider.top() - arrowHeight;
+    double scrollRatio = double(sb->value() - sb->minimum()) / qMax(1, sb->maximum() - sb->minimum());
+    int sliderTop = qRound(scrollRatio * (h - slider.height()));
     int sliderBot = sliderTop + slider.height() - markHeight;
+    int hiddenGroove = h + sliderTop - sliderBot;
 
     auto mapLineToY = [&](int line) -> int {
         if (line <= firstVisibleBlock) {
-            double ratio = (double)line / qMax(1, firstVisibleBlock);
-            return qRound(ratio * sliderTop);
-        } else if (line <= lastVisibleBlock - markHeight) {
+            double ratio = double(line) / qMax(1, hiddenBlocks);
+            return qRound(ratio * hiddenGroove);
+        } else if (line <= lastVisibleBlock) {
             double range = qMax(1, lastVisibleBlock - firstVisibleBlock);
             double ratio = (double)(line - firstVisibleBlock) / range;
             return sliderTop + qRound(ratio * qMax(0, slider.height() - markHeight));
         }
-        double range = qMax(1, totalBlocks - lastVisibleBlock);
-        double ratio = (double)(line - lastVisibleBlock) / range;
-        return sliderBot + qRound(ratio * qMax(0, h - markHeight - sliderBot));
+        double ratio = double(line) / hiddenBlocks;
+        return slider.height() + qRound(ratio * hiddenGroove);
     };
+
+
+    // // Debug-Output für den Vergleich Windows vs. macOS
+    // painter.drawRect(0, sliderTop, 5, sliderBot-sliderTop);
+    // qDebug() << "--- Scroll Geometry Debug ---";
+    // qDebug() << "Widget H:" << h << "Edit H:" << mEdit->height();
+    // qDebug() << "FirstRange:" << firstVisibleBlock << "to" << lastVisibleBlock << "of" << totalBlocks;
+    // qDebug() << "SB Value:" << sb->value() << "SB PageStep:" << sb->pageStep() << "SB Max:" << sb->maximum();
+    // qDebug() << "Slider:" << slider;
+    // qDebug() << "SliderTop:" << sliderTop << "SliderBot:" << sliderBot;
+    // qDebug() << "-----------------------------";
+
 
     painter.setOpacity(0.6);
     QHashIterator<QRgb, QList<int>> i(mMarks);
