@@ -98,7 +98,6 @@ void SearchWorker::searchInFiles()
                 QString line = arry;
                 QRegularExpressionMatch match;
                 QRegularExpressionMatchIterator i = mRegex.globalMatch(line);
-                // TODO(JM) Use indexOf() for normal search, it's faster than RegEx
                 while (i.hasNext() && !cacheFull) {
                     match = i.next();
                     // abort: too many results
