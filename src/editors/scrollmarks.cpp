@@ -186,7 +186,8 @@ void ScrollMarks::updateGeometry()
         rect.setLeft(rect.left()+3);
     } else {
         rect = mEdit->geometry();
-        rect.setLeft( rect.right() - 10);
+        rect.setLeft( rect.right() - 8);
+        rect.setRight(rect.right() - 3);
     }
     setGeometry(rect);
     show();
