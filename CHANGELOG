@@ -8,6 +8,9 @@ Version 1.25.0  *
 - Reimplemented the GDX filter dialogs which fixes several focus and keyboard shortcut bugs, especially on macOS.
 - Added MIRO Connector and Secure Module information to license dialog.
 - Added the current license state to the status bar.
+- Added markers to the scrollbar for find and search matches, breakpoints, errors, and bookmarks.
+- Fixed short blocking behavior when using quick find in a huge file.
+- Fixed matches not being updated when clearing the term in quick find.
 
 Version 1.24.4  *
 ==================
