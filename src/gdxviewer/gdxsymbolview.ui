@@ -75,7 +75,6 @@
       <widget class="QLabel" name="laTruncatedData">
        <property name="font">
         <font>
-         <weight>75</weight>
          <bold>true</bold>
         </font>
        </property>
@@ -90,7 +89,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -104,7 +103,6 @@
       <widget class="QLabel" name="laError">
        <property name="font">
         <font>
-         <weight>75</weight>
          <bold>true</bold>
         </font>
        </property>
@@ -119,7 +117,7 @@
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -147,7 +145,7 @@
         </size>
        </property>
        <property name="contextMenuPolicy">
-        <enum>Qt::DefaultContextMenu</enum>
+        <enum>Qt::ContextMenuPolicy::DefaultContextMenu</enum>
        </property>
        <property name="toolTip">
         <string>Hide/Show specific value columns</string>
@@ -159,16 +157,16 @@
         <string>  Attributes  </string>
        </property>
        <property name="popupMode">
-        <enum>QToolButton::InstantPopup</enum>
+        <enum>QToolButton::ToolButtonPopupMode::InstantPopup</enum>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextOnly</enum>
+        <enum>Qt::ToolButtonStyle::ToolButtonTextOnly</enum>
        </property>
        <property name="autoRaise">
         <bool>false</bool>
        </property>
        <property name="arrowType">
-        <enum>Qt::DownArrow</enum>
+        <enum>Qt::ArrowType::DownArrow</enum>
        </property>
       </widget>
      </item>
@@ -196,13 +194,13 @@
         <string>  Preferences  </string>
        </property>
        <property name="popupMode">
-        <enum>QToolButton::InstantPopup</enum>
+        <enum>QToolButton::ToolButtonPopupMode::InstantPopup</enum>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextOnly</enum>
+        <enum>Qt::ToolButtonStyle::ToolButtonTextOnly</enum>
        </property>
        <property name="arrowType">
-        <enum>Qt::DownArrow</enum>
+        <enum>Qt::ArrowType::DownArrow</enum>
        </property>
       </widget>
      </item>
@@ -313,7 +311,7 @@
      <item>
       <spacer name="horizontalSpacer_3">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -322,6 +320,36 @@
         </size>
        </property>
       </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="laSymbolName">
+       <property name="frameShape">
+        <enum>QFrame::Shape::StyledPanel</enum>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="laSymbolText">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Shape::StyledPanel</enum>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -340,16 +368,16 @@
       <bool>true</bool>
      </property>
      <property name="selectionMode">
-      <enum>QAbstractItemView::ContiguousSelection</enum>
+      <enum>QAbstractItemView::SelectionMode::ContiguousSelection</enum>
      </property>
      <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectItems</enum>
+      <enum>QAbstractItemView::SelectionBehavior::SelectItems</enum>
      </property>
      <property name="verticalScrollMode">
-      <enum>QAbstractItemView::ScrollPerItem</enum>
+      <enum>QAbstractItemView::ScrollMode::ScrollPerItem</enum>
      </property>
      <property name="horizontalScrollMode">
-      <enum>QAbstractItemView::ScrollPerItem</enum>
+      <enum>QAbstractItemView::ScrollMode::ScrollPerItem</enum>
      </property>
      <property name="wordWrap">
       <bool>false</bool>
@@ -385,16 +413,16 @@
         </size>
        </property>
        <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
+        <enum>QFrame::Shape::StyledPanel</enum>
        </property>
        <property name="verticalScrollBarPolicy">
-        <enum>Qt::ScrollBarAlwaysOff</enum>
+        <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
        </property>
        <property name="horizontalScrollBarPolicy">
-        <enum>Qt::ScrollBarAlwaysOff</enum>
+        <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
        </property>
        <property name="sizeAdjustPolicy">
-        <enum>QAbstractScrollArea::AdjustIgnored</enum>
+        <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustIgnored</enum>
        </property>
        <attribute name="horizontalHeaderVisible">
         <bool>false</bool>
@@ -476,13 +504,13 @@
       <bool>true</bool>
      </property>
      <property name="selectionMode">
-      <enum>QAbstractItemView::ContiguousSelection</enum>
+      <enum>QAbstractItemView::SelectionMode::ContiguousSelection</enum>
      </property>
      <property name="verticalScrollMode">
-      <enum>QAbstractItemView::ScrollPerItem</enum>
+      <enum>QAbstractItemView::ScrollMode::ScrollPerItem</enum>
      </property>
      <property name="horizontalScrollMode">
-      <enum>QAbstractItemView::ScrollPerItem</enum>
+      <enum>QAbstractItemView::ScrollMode::ScrollPerItem</enum>
      </property>
      <property name="wordWrap">
       <bool>false</bool>

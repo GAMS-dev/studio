@@ -329,6 +329,8 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
 {
     mSym = sym;
     mGdxSymbolTable = symbolTable;
+    ui->laSymbolName->setText(sym->name());
+    ui->laSymbolText->setText(sym->explText());
     connect(mSym, &GdxSymbol::truncatedData, this, &GdxSymbolView::setTruncatedDataVisible);
     connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
