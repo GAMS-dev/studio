@@ -75,6 +75,8 @@ public:
     void applyDefaults();
     QVector<bool> showAttributes();
 
+    void setSymInfo(QString symName, QString text);
+
 signals:
     void openFile(const QString &filename);
 

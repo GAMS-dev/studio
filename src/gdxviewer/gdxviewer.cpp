@@ -112,6 +112,8 @@ void GdxViewer::updateSelectedSymbol(const QItemSelection &selected, const QItem
         }
 
         //aliases are also aliases in the sense of the view
+        QString orgSymName = selectedSymbol->name();
+        QString orgText = selectedSymbol->explText();
         if (selectedSymbol->type() == GMS_DT_ALIAS) {
             selectedIdx = selectedSymbol->subType();
             selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
@@ -126,6 +128,7 @@ void GdxViewer::updateSelectedSymbol(const QItemSelection &selected, const QItem
 
         if (ui->splitter->widget(1) != mSymbolViews.at(selectedIdx))
             ui->splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
+        mSymbolViews.at(selectedIdx)->setSymInfo(orgSymName, orgText);
     }
     else if (ui->splitter->widget(1) != ui->widget)
         ui->splitter->replaceWidget(1, ui->widget);

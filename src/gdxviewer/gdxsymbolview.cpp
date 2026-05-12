@@ -489,6 +489,12 @@ QVector<bool> GdxSymbolView::showAttributes()
     return showAttributes;
 }
 
+void GdxSymbolView::setSymInfo(QString symName, QString text)
+{
+    ui->laSymbolName->setText(symName);
+    ui->laSymbolText->setText(text);
+}
+
 void GdxSymbolView::showContextMenu(QPoint p)
 {
     //mContextMenu.exec(ui->tvListView->mapToGlobal(p));
