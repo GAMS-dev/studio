@@ -115,7 +115,7 @@ void Theme::initDefault()
     mThemeBases.clear();
 
     // default to first color theme
-    mTheme = 0;
+    mActiveTheme = 0;
 
     // Add first color theme
     int sNr = 0;
@@ -196,9 +196,10 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Syntax_embedded_bg,             CAutoBackground);
 
     // Add and switch to second color theme
-    mColorThemes << mColorThemes.at(sNr++);
+    sNr++;
+    mColorThemes << mColorThemes.at(0);
     mThemeNames << "Dark";
-    mThemeBases << 1;
+    mThemeBases << sNr;
 
     // Dark Colors
     QColor dark_highlight(243,150,25);      //QColor(243,150,25);
@@ -213,7 +214,13 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_currentLineBg,             QColor(0,73,61));
     mColorThemes[sNr].insert(Edit_errorBg,                   QColor(187,34,51));
     mColorThemes[sNr].insert(Edit_findBg,                    QColor(51,102,51));
-    mColorThemes[sNr].insert(Edit_searchBg,                  QColor(71,82,11));
+    mColorThemes[sNr].insert(Icon_Gray,                      QColor(65,55,50));
+    mColorThemes[sNr].insert(Icon_Back,                      QColor(220,220,220));
+    mColorThemes[sNr].insert(Active_Back,                    QColor(Qt::white));
+    mColorThemes[sNr].insert(Disable_Back,                   QColor(96,99,96));
+    mColorThemes[sNr].insert(Normal_Red,                     QColor(187,34,51));
+    mColorThemes[sNr].insert(Normal_Green,                   QColor(102,170,102));
+    mColorThemes[sNr].insert(Normal_Blue,                    QColor(68,153,238));
     mColorThemes[sNr].insert(Edit_foldLineBg,                QColor(80,80,80));
     mColorThemes[sNr].insert(Edit_foldLineFg,                QColor(0,0,0));
     mColorThemes[sNr].insert(Edit_linenrAreaBg,              QColor(16,16,16));
@@ -246,13 +253,297 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Syntax_assignValue,             Color(dark_assignment.lighter()));
     mColorThemes[sNr].insert(Syntax_dcoBody,                 Color(dark_highlight, fItalic));
 
-    mColorThemes[sNr].insert(Icon_Gray,                      QColor(65,55,50));
-    mColorThemes[sNr].insert(Icon_Back,                      QColor(220,220,220));
-    mColorThemes[sNr].insert(Active_Back,                    QColor(Qt::white));
-    mColorThemes[sNr].insert(Disable_Back,                   QColor(96,99,96));
-    mColorThemes[sNr].insert(Normal_Red,                     QColor(187,34,51));
-    mColorThemes[sNr].insert(Normal_Green,                   QColor(102,170,102));
-    mColorThemes[sNr].insert(Normal_Blue,                    QColor(68,153,238));
+    // Third theme is based on Okabe-Ito Palette, recommened colorblind-safe color pallette
+    sNr++;
+    mColorThemes << mColorThemes.at(0);
+    mThemeNames << "Distinct - light";
+    mThemeBases << sNr;
+
+    QColor distinct_orange     (230, 159, 0);
+    QColor distinct_skyblue    (986, 180, 233);
+    QColor distinct_bluishgreen(0, 158, 115);
+    QColor distinct_yellow     (240, 228, 66);
+    QColor distinct_blue       (0, 114, 178);
+    QColor distinct_red        (213, 94, 0);
+    QColor distinct_purple     (204, 121, 167);
+    QColor distinct_black      (0, 0, 0);
+
+    mColorThemes[sNr].clear();
+    mColorThemes[sNr].insert(invalid,                        CUndefined);
+    mColorThemes[sNr].insert(Edit_text,                      Color(distinct_black));
+    mColorThemes[sNr].insert(Syntax_neutral,                 Color(distinct_black));
+    mColorThemes[sNr].insert(Edit_background,                QColor(Qt::white));
+    mColorThemes[sNr].insert(Edit_currentLineBg,             Color(distinct_yellow));
+    mColorThemes[sNr].insert(Edit_errorBg,                   QColor(255, 220, 200));
+    mColorThemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
+    mColorThemes[sNr].insert(Edit_findBg,                    Color(distinct_yellow));
+    mColorThemes[sNr].insert(Edit_searchBg,                  Color(distinct_yellow));
+    mColorThemes[sNr].insert(Edit_foldLineBg,                QColor(200,200,200));
+    mColorThemes[sNr].insert(Edit_foldLineFg,                QColor(255,255,255));
+    mColorThemes[sNr].insert(Edit_parenthesesValidFg,        Color(distinct_red));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidFg,      Color(distinct_black));
+    mColorThemes[sNr].insert(Edit_parenthesesValidBg,        Color(distinct_bluishgreen));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      Color(distinct_red));
+    mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   Color(distinct_bluishgreen));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, Color(distinct_red));
+    mColorThemes[sNr].insert(Edit_linenrAreaBg,              QColor(245,245,245));
+    mColorThemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(225,255,235));
+    mColorThemes[sNr].insert(Edit_linenrAreaFoldBg,          QColor(135,195,255));
+    mColorThemes[sNr].insert(Edit_profilingBg1,              QColor( 55,235, 20));
+    mColorThemes[sNr].insert(Edit_profilingBg2,              QColor(255,205,  0));
+    mColorThemes[sNr].insert(Edit_profilingBg3,              QColor(255, 55, 20));
+    mColorThemes[sNr].insert(Edit_linenrAreaFg,              QColor(Qt::gray));
+    mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::black));
+    mColorThemes[sNr].insert(Edit_logRemoteBk,               QColor(245,255,235));
+
+    mColorThemes[sNr].insert(Mark_errorFg,                   Color(distinct_red));
+    mColorThemes[sNr].insert(Mark_listingFg,                 Color(distinct_blue));
+    mColorThemes[sNr].insert(Mark_fileFg,                    Color(distinct_bluishgreen));
+
+    mColorThemes[sNr].insert(Icon_Gray,                      QColor(170,150,130));
+    mColorThemes[sNr].insert(Icon_Back,                      QColor(51,68,85));
+    mColorThemes[sNr].insert(Icon_Paper,                     QColor(Qt::white));
+    mColorThemes[sNr].insert(Disable_Gray,                   QColor(180,180,175));
+    mColorThemes[sNr].insert(Disable_Back,                   QColor(170,170,170));
+    mColorThemes[sNr].insert(Active_Gray,                    QColor(54,122,195));
+    mColorThemes[sNr].insert(Active_Back,                    Color(distinct_black));
+    mColorThemes[sNr].insert(Select_Gray,                    Color(distinct_orange));
+    mColorThemes[sNr].insert(Select_Back,                    Color(distinct_yellow));
+    mColorThemes[sNr].insert(Normal_Red,                     Color(distinct_red));
+    mColorThemes[sNr].insert(Normal_Green,                   Color(distinct_bluishgreen));
+    mColorThemes[sNr].insert(Normal_Blue,                    Color(distinct_blue));
+    mColorThemes[sNr].insert(Normal_Yellow,                  Color(distinct_yellow));
+
+    mColorThemes[sNr].insert(Syntax_undefined,               CUndefined);
+    mColorThemes[sNr].insert(Syntax_dco,                     Color(distinct_red, fBold));
+    mColorThemes[sNr].insert(Syntax_dco_bg,                  CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_formula,                 Color(distinct_black));
+    mColorThemes[sNr].insert(Syntax_dcoBody,                 Color(distinct_skyblue, fItalic));
+    mColorThemes[sNr].insert(Syntax_dcoBody_bg,              CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_comment,                 Color(distinct_purple, fItalic));
+    mColorThemes[sNr].insert(Syntax_comment_bg,              CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_title,                   Color(distinct_blue, fBold));
+    mColorThemes[sNr].insert(Syntax_keyword,                 Color(distinct_red, fBold));
+    mColorThemes[sNr].insert(Syntax_keyword_bg,              CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_declaration,             Color(distinct_red, fBold));
+    mColorThemes[sNr].insert(Syntax_declaration_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_identifier,              Color(distinct_bluishgreen));
+    mColorThemes[sNr].insert(Syntax_identifier_bg,           CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_description,             Color(distinct_purple));
+    mColorThemes[sNr].insert(Syntax_description_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_assignLabel,             Color(distinct_bluishgreen));
+    mColorThemes[sNr].insert(Syntax_assignLabel_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_assignValue,             Color(distinct_orange));
+    mColorThemes[sNr].insert(Syntax_assignValue_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_tableHeader,             Color(distinct_bluishgreen, fBold));
+    mColorThemes[sNr].insert(Syntax_tableHeader_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_embedded,                Color(distinct_orange));
+    mColorThemes[sNr].insert(Syntax_embedded_bg,             CAutoBackground);
+
+    // Dracula Color Theme
+    sNr++;
+    mColorThemes << mColorThemes.at(1);
+    mThemeNames << "Dracula - dark";
+    mThemeBases << sNr;
+
+    QColor drac_background (40, 42, 54);
+    QColor drac_currentLine(98, 114, 164);
+    QColor drac_selection  (68, 71, 90);
+    QColor drac_foreground (248, 248, 242);
+    QColor drac_comment    (98, 114, 164);
+    QColor drac_cyan       (139, 233, 253);
+    QColor drac_green      (80, 250, 123);
+    QColor drac_orange     (255, 184, 108);
+    QColor drac_pink       (255, 121, 198);
+    QColor drac_purple     (189, 147, 249);
+    QColor drac_red        (255, 85, 85);
+    QColor drac_yellow     (241, 250, 140);
+
+    QColor drac_bgLighter (66, 68, 80);
+    QColor drac_bgLight   (52, 55, 70);
+    QColor drac_bgDark    (33, 34, 44);
+    QColor drac_bgDarker  (	25, 26, 33);
+
+    mColorThemes[sNr].insert(Edit_text,                      Color(drac_foreground));
+    mColorThemes[sNr].insert(Syntax_neutral,                 Color(drac_foreground));
+    mColorThemes[sNr].insert(Edit_background,                Color(drac_background));
+    mColorThemes[sNr].insert(Edit_currentLineBg,             Color(drac_yellow));
+    mColorThemes[sNr].insert(Edit_errorBg,                   Color(drac_cyan));
+    mColorThemes[sNr].insert(Edit_currentWordBg,             Color(drac_cyan));
+    mColorThemes[sNr].insert(Edit_findBg,                    Color(drac_selection));
+    mColorThemes[sNr].insert(Edit_searchBg,                  Color(drac_currentLine));
+    mColorThemes[sNr].insert(Edit_foldLineBg,                Color(drac_cyan));
+    mColorThemes[sNr].insert(Edit_foldLineFg,                Color(drac_bgLighter));
+    mColorThemes[sNr].insert(Edit_linenrAreaBg,              Color(drac_bgDarker));
+    mColorThemes[sNr].insert(Edit_linenrAreaMarkBg,          Color(drac_bgLight));
+    mColorThemes[sNr].insert(Edit_linenrAreaFoldBg,          QColor(drac_cyan).darker(190));
+    mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          Color(drac_cyan));
+    mColorThemes[sNr].insert(Edit_currentWordBg,             QColor(60,60,60));
+    mColorThemes[sNr].insert(Edit_parenthesesValidFg,        Color(drac_cyan));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidFg,      Color(drac_cyan));
+    mColorThemes[sNr].insert(Edit_parenthesesValidBg,        Color(drac_red));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      Color(drac_red));
+    mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   Color(drac_purple));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, Color(drac_red));
+    mColorThemes[sNr].insert(Edit_logRemoteBk,               Color(drac_bgDark));
+
+    mColorThemes[sNr].insert(Mark_errorFg,                   Color(drac_red));
+    mColorThemes[sNr].insert(Mark_listingFg,                 Color(drac_cyan));
+    mColorThemes[sNr].insert(Mark_fileFg,                    Color(drac_green));
+
+    mColorThemes[sNr].insert(Icon_Gray,                      QColor(170,150,130));
+    mColorThemes[sNr].insert(Icon_Back,                      QColor(51,68,85));
+    mColorThemes[sNr].insert(Icon_Paper,                     QColor(Qt::white));
+    mColorThemes[sNr].insert(Disable_Gray,                   QColor(180,180,175));
+    mColorThemes[sNr].insert(Disable_Back,                   QColor(170,170,170));
+    mColorThemes[sNr].insert(Active_Gray,                    QColor(54,122,195));
+    mColorThemes[sNr].insert(Active_Back,                    Color(distinct_black));
+    mColorThemes[sNr].insert(Select_Gray,                    Color(distinct_orange));
+    mColorThemes[sNr].insert(Select_Back,                    Color(distinct_yellow));
+    mColorThemes[sNr].insert(Normal_Red,                     Color(distinct_red));
+    mColorThemes[sNr].insert(Normal_Green,                   Color(distinct_bluishgreen));
+    mColorThemes[sNr].insert(Normal_Blue,                    Color(distinct_blue));
+    mColorThemes[sNr].insert(Normal_Yellow,                  Color(distinct_yellow));
+
+    mColorThemes[sNr].insert(Syntax_undefined,               CUndefined);
+    mColorThemes[sNr].insert(Syntax_dco,                     Color(drac_red));
+    mColorThemes[sNr].insert(Syntax_dco_bg,                  CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_formula,                 Color(dark_neutral));
+    mColorThemes[sNr].insert(Syntax_dcoBody,                 Color(drac_yellow, fItalic));
+    mColorThemes[sNr].insert(Syntax_dcoBody_bg,              CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_comment,                 Color(drac_comment, fItalic));
+    mColorThemes[sNr].insert(Syntax_comment_bg,              CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_title,                   Color(drac_yellow, fBold));
+    mColorThemes[sNr].insert(Syntax_keyword,                 Color(drac_pink, fBold));
+    mColorThemes[sNr].insert(Syntax_keyword_bg,              CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_declaration,             Color(drac_cyan, fBold));
+    mColorThemes[sNr].insert(Syntax_declaration_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_identifier,              Color( drac_foreground));
+    mColorThemes[sNr].insert(Syntax_identifier_bg,           CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_description,             Color(drac_comment));
+    mColorThemes[sNr].insert(Syntax_description_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_assignLabel,             Color(drac_purple));
+    mColorThemes[sNr].insert(Syntax_assignLabel_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_assignValue,             Color(drac_purple.lighter()));
+    mColorThemes[sNr].insert(Syntax_assignValue_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_tableHeader,             Color(drac_green, fBold));
+    mColorThemes[sNr].insert(Syntax_tableHeader_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_embedded,                Color(drac_orange));
+    mColorThemes[sNr].insert(Syntax_embedded_bg,             CAutoBackground);
+
+    // Solarized light
+    sNr++;
+    mColorThemes << mColorThemes.at(0);
+    mThemeNames << "Solarized - light";
+    mThemeBases << sNr;
+
+    QColor solarized_base0  (131, 148, 150);  // brblue
+    QColor solarized_base1  (147, 161, 161);  // brcyan
+    QColor solarized_base2  (238, 232, 213);  // white
+    QColor solarized_base3  (253, 246, 227);  // brwhite
+    QColor solarized_base00 (101, 123, 131);  // bryellow
+    QColor solarized_base01 (88, 110, 117);   // brgreen
+    QColor solarized_base02 (7, 54, 66);      // black
+    QColor solarized_base03 (0, 43, 54);      // brblack
+    QColor solarized_yellow (181, 137, 0);
+    QColor solarized_orange (203, 75, 22);    // brred
+    QColor solarized_red    (220, 50, 47);
+    QColor solarized_magenta(211, 54, 130);
+    QColor solarized_violet (108, 113, 196);  // brmagenta
+    QColor solarized_blue   (38, 139, 210);
+    QColor solarized_cyan   (42, 161, 152);
+    QColor solarized_green  (133, 153, 0);
+
+    mColorThemes[sNr].insert(invalid,                        CUndefined);
+    mColorThemes[sNr].insert(Edit_text,                      Color(solarized_base0));
+    mColorThemes[sNr].insert(Syntax_neutral,                 Color(solarized_base0));
+    mColorThemes[sNr].insert(Edit_background,                Color(solarized_base3));
+    mColorThemes[sNr].insert(Edit_currentLineBg,             Color(solarized_base0));
+    mColorThemes[sNr].insert(Edit_errorBg,                   Color(solarized_base2));
+    mColorThemes[sNr].insert(Edit_currentWordBg,             Color(solarized_base1));
+    mColorThemes[sNr].insert(Edit_findBg,                    QColor(solarized_orange).lighter(150));
+    mColorThemes[sNr].insert(Edit_searchBg,                  QColor(solarized_orange).lighter(150));
+    mColorThemes[sNr].insert(Edit_foldLineBg,                QColor(solarized_cyan).lighter(190));
+    mColorThemes[sNr].insert(Edit_foldLineFg,                Color(solarized_base1));
+    mColorThemes[sNr].insert(Edit_parenthesesValidFg,        Color(solarized_red));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidFg,      Color(solarized_base02));
+    mColorThemes[sNr].insert(Edit_parenthesesValidBg,        Color(solarized_green));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      Color(solarized_red));
+    mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   Color(solarized_green));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, Color(solarized_red));
+    mColorThemes[sNr].insert(Edit_linenrAreaBg,              Color(solarized_base2));
+    mColorThemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(solarized_cyan).lighter(215));
+    mColorThemes[sNr].insert(Edit_linenrAreaFoldBg,          QColor(solarized_cyan));
+    mColorThemes[sNr].insert(Edit_profilingBg1,              Color(solarized_green));
+    mColorThemes[sNr].insert(Edit_profilingBg2,              Color(solarized_yellow));
+    mColorThemes[sNr].insert(Edit_profilingBg3,              Color(solarized_red));
+    mColorThemes[sNr].insert(Edit_linenrAreaFg,              Color(solarized_base1));
+    mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          Color(solarized_base03));
+    mColorThemes[sNr].insert(Edit_logRemoteBk,               Color(solarized_base2));
+
+    mColorThemes[sNr].insert(Mark_errorFg,                   Color(solarized_red));
+    mColorThemes[sNr].insert(Mark_listingFg,                 Color(solarized_cyan));
+    mColorThemes[sNr].insert(Mark_fileFg,                    Color(solarized_green));
+
+    mColorThemes[sNr].insert(Syntax_undefined,               CUndefined);
+    mColorThemes[sNr].insert(Syntax_dco,                     Color(solarized_orange));
+    mColorThemes[sNr].insert(Syntax_dco_bg,                  CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_formula,                 Color(solarized_base01));
+    mColorThemes[sNr].insert(Syntax_dcoBody,                 Color(solarized_cyan, fItalic));
+    mColorThemes[sNr].insert(Syntax_dcoBody_bg,              CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_comment,                 Color(solarized_base1, fItalic));
+    mColorThemes[sNr].insert(Syntax_comment_bg,              CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_title,                   Color(solarized_yellow, fBold));
+    mColorThemes[sNr].insert(Syntax_keyword,                 Color(solarized_base01, fBold));
+    mColorThemes[sNr].insert(Syntax_keyword_bg,              CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_declaration,             Color(solarized_magenta, fBold));
+    mColorThemes[sNr].insert(Syntax_declaration_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_identifier,              Color(solarized_blue));
+    mColorThemes[sNr].insert(Syntax_identifier_bg,           CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_description,             Color(solarized_blue));
+    mColorThemes[sNr].insert(Syntax_description_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_assignLabel,             Color(solarized_base01));
+    mColorThemes[sNr].insert(Syntax_assignLabel_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_assignValue,             Color(solarized_base02));
+    mColorThemes[sNr].insert(Syntax_assignValue_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_tableHeader,             Color(solarized_green, fBold));
+    mColorThemes[sNr].insert(Syntax_tableHeader_bg,          CAutoBackground);
+    mColorThemes[sNr].insert(Syntax_embedded,                Color(solarized_violet));
+    mColorThemes[sNr].insert(Syntax_embedded_bg,             CAutoBackground);
+
+    // Solarized dark
+    mColorThemes << mColorThemes.at(sNr++);
+    mThemeNames << "Solarized - dark";
+    mThemeBases << sNr;
+
+    mColorThemes[sNr].insert(invalid,                        CUndefined);
+    mColorThemes[sNr].insert(Edit_text,                      Color(solarized_base1));
+    mColorThemes[sNr].insert(Syntax_neutral,                 Color(solarized_base1));
+    mColorThemes[sNr].insert(Edit_background,                Color(solarized_base03));
+    mColorThemes[sNr].insert(Edit_currentLineBg,             Color(solarized_base01));
+    mColorThemes[sNr].insert(Edit_errorBg,                   Color(solarized_base2));
+    mColorThemes[sNr].insert(Edit_currentWordBg,             Color(solarized_base3));
+    mColorThemes[sNr].insert(Edit_findBg,                    Color(solarized_yellow));
+    mColorThemes[sNr].insert(Edit_searchBg,                  Color(solarized_yellow));
+    mColorThemes[sNr].insert(Edit_foldLineBg,                QColor(solarized_cyan).lighter(190));
+    mColorThemes[sNr].insert(Edit_foldLineFg,                Color(solarized_base01));
+    mColorThemes[sNr].insert(Edit_parenthesesValidFg,        Color(solarized_red));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidFg,      Color(solarized_base02));
+    mColorThemes[sNr].insert(Edit_parenthesesValidBg,        Color(solarized_green));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      Color(solarized_red));
+    mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   Color(solarized_green));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, Color(solarized_red));
+    mColorThemes[sNr].insert(Edit_linenrAreaBg,              Color(solarized_base02));
+    mColorThemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(solarized_cyan).lighter(150));
+    mColorThemes[sNr].insert(Edit_linenrAreaFoldBg,          Color(solarized_cyan));
+    mColorThemes[sNr].insert(Edit_profilingBg1,              Color(solarized_green));
+    mColorThemes[sNr].insert(Edit_profilingBg2,              Color(solarized_yellow));
+    mColorThemes[sNr].insert(Edit_profilingBg3,              Color(solarized_red));
+    mColorThemes[sNr].insert(Edit_linenrAreaFg,              Color(solarized_base1));
+    mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          Color(solarized_base03));
+    mColorThemes[sNr].insert(Edit_logRemoteBk,               Color(solarized_base1));
+
+    mFixedThemeCount = mColorThemes.size();
 
     invalidate();
 }
@@ -271,35 +562,35 @@ int Theme::setActiveTheme(const QString &themeName)
 int Theme::setActiveTheme(int theme)
 {
     if (theme < 0 || theme >= mThemeNames.size()) return -1;
-    mTheme = theme;
+    mActiveTheme = theme;
     invalidate();
     return theme;
 }
 
 QString Theme::renameActiveTheme(const QString &name)
 {
-    QString currentName = mThemeNames.at(mTheme);
-    if (mTheme < 2) return currentName;
+    QString currentName = mThemeNames.at(mActiveTheme);
+    if (mActiveTheme < mFixedThemeCount) return currentName;
     if (name.compare(currentName) == 0) return name;
     QString uniqueName = findUniqueName(name, currentName);
-    mThemeNames.replace(mTheme, uniqueName);
-    if (mTheme < mThemeNames.count()-1) {
-        mThemeNames.move(mTheme, mThemeNames.count()-1);
-        mThemeBases.move(mTheme, mThemeNames.count()-1);
-        mColorThemes.move(mTheme, mThemeNames.count()-1);
-        mTheme = mThemeNames.count()-1;
+    mThemeNames.replace(mActiveTheme, uniqueName);
+    if (mActiveTheme < mThemeNames.count()-1) {
+        mThemeNames.move(mActiveTheme, mThemeNames.count()-1);
+        mThemeBases.move(mActiveTheme, mThemeNames.count()-1);
+        mColorThemes.move(mActiveTheme, mThemeNames.count()-1);
+        mActiveTheme = mThemeNames.count()-1;
     }
 
     // restore sort order
     int i = mThemeNames.count() - 1;
-    while (i > 2 && mThemeNames.at(i-1).compare(name, Qt::CaseInsensitive) > 0) --i;
+    while (i > mFixedThemeCount && mThemeNames.at(i-1).compare(name, Qt::CaseInsensitive) > 0) --i;
 
     int last = mThemeNames.count() - 1;
     if (i < last) {
         mThemeNames.move(last, i);
         mThemeBases.move(last, i);
         mColorThemes.move(last, i);
-        mTheme = i;
+        mActiveTheme = i;
     }
 
     return uniqueName;
@@ -307,12 +598,12 @@ QString Theme::renameActiveTheme(const QString &name)
 
 int Theme::activeTheme() const
 {
-    return mTheme;
+    return mActiveTheme;
 }
 
 QString Theme::activeThemeName()
 {
-    return mThemeNames.at(mTheme);
+    return mThemeNames.at(mActiveTheme);
 }
 
 int Theme::baseTheme(int theme) const
@@ -352,7 +643,7 @@ Theme::ColorSlot Theme::slot(const QString &name)
 QHash<QString, QStringList> Theme::iconCodes() const
 {
     QHash<QString, QStringList> set;
-    const ColorTheme &theme = mColorThemes.at(mTheme);
+    const ColorTheme &theme = mColorThemes.at(mActiveTheme);
     for (auto it = theme.constBegin() ; it != theme.constEnd() ; ++it) {
         QString slotName = name(it.key());
         if (slotName.startsWith("Icon_")) {
@@ -497,23 +788,23 @@ int Theme::copyTheme(int index, const QString &destName)
 
 int Theme::removeTheme(int index)
 {
-    if (index < 2 || index >= mThemeNames.count()) return mTheme;
-    if (index <= mTheme) --mTheme;
+    if (index < mFixedThemeCount || index >= mThemeNames.count()) return mActiveTheme;
+    if (index <= mActiveTheme) --mActiveTheme;
     mColorThemes.removeAt(index);
     mThemeNames.removeAt(index);
     mThemeBases.removeAt(index);
-    return mTheme;
+    return mActiveTheme;
 }
 
 QColor Theme::color(Theme::ColorSlot slot)
 {
-    int theme = instance()->mTheme;
+    int theme = instance()->mActiveTheme;
     return instance()->mColorThemes.at(theme).value(slot, CUndefined).color;
 }
 
 void Theme::setColor(Theme::ColorSlot slot, QColor color)
 {
-    int theme = instance()->mTheme;
+    int theme = instance()->mActiveTheme;
     Color dat = instance()->mColorThemes.at(theme).value(slot);
     dat.color = color;
     instance()->mColorThemes[theme].insert(slot, dat);
@@ -558,7 +849,7 @@ QByteArray &Theme::data(const QString &name, QIcon::Mode mode, int alpha)
 
 bool Theme::hasFlag(Theme::ColorSlot slot, Theme::FontFlag flag)
 {
-    int theme = instance()->mTheme;
+    int theme = instance()->mActiveTheme;
     Color cl = instance()->mColorThemes.at(theme).value(slot);
     if (flag == fNormal) return (cl.fontFlag == fNormal);
     return (FontFlag(flag & cl.fontFlag) == flag);
@@ -566,7 +857,7 @@ bool Theme::hasFlag(Theme::ColorSlot slot, Theme::FontFlag flag)
 
 void Theme::setFlags(Theme::ColorSlot slot, Theme::FontFlag flag)
 {
-    int theme = instance()->mTheme;
+    int theme = instance()->mActiveTheme;
     Color dat = instance()->mColorThemes.at(theme).value(slot);
     dat.fontFlag = flag;
     instance()->mColorThemes[theme].insert(slot, dat);
@@ -622,8 +913,8 @@ QVariantList Theme::writeUserThemes() const
 {
     QVariantList res;
     res.reserve(mColorThemes.size());
-    // starts with index i=2 (only export user settings, light and dark should be fixed)
-    for (int i = 2; i < mColorThemes.size(); ++i) {
+    // starts with index i=mBaseThemeCount (only export user settings, all studio based themes should be fixed)
+    for (int i = mFixedThemeCount; i < mColorThemes.size(); ++i) {
         QVariantMap resData;
         const QHash<ColorSlot, Color> &theme = mColorThemes.at(i);
         for (ColorSlot key = invalid; key < ColorSlotCount; key = static_cast<ColorSlot>(key+1)) {
@@ -641,9 +932,9 @@ QVariantList Theme::writeUserThemes() const
 void Theme::readUserThemes(const QVariantList &sourceThemes)
 {
     // remove user defined themes
-    while (mThemeBases.size() > 2) mThemeBases.removeLast();
-    while (mThemeNames.size() > 2) mThemeNames.removeLast();
-    while (mColorThemes.size() > 2) mColorThemes.removeLast();
+    while (mThemeBases.size() > mFixedThemeCount) mThemeBases.removeLast();
+    while (mThemeNames.size() > mFixedThemeCount) mThemeNames.removeLast();
+    while (mColorThemes.size() > mFixedThemeCount) mColorThemes.removeLast();
 
     // add new user defined themes
     for (const QVariant &vSource: sourceThemes) {
@@ -701,13 +992,13 @@ int Theme::readUserTheme(const QVariantMap &tSource)
 QVariantMap Theme::writeCurrentTheme()
 {
     QVariantMap resData;
-    const QHash<ColorSlot, Color> &theme = mColorThemes.at(mTheme);
+    const QHash<ColorSlot, Color> &theme = mColorThemes.at(mActiveTheme);
     for (ColorSlot key = invalid; key < ColorSlotCount; key = static_cast<ColorSlot>(key+1)) {
         resData.insert(name(key), theme.value(key).color.name() + "," + QString::number(theme.value(key).fontFlag));
     }
     QVariantMap resTheme;
-    resTheme.insert("name", mThemeNames.at(mTheme));
-    resTheme.insert("base", mThemeBases.at(mTheme));
+    resTheme.insert("name", mThemeNames.at(mActiveTheme));
+    resTheme.insert("base", mThemeBases.at(mActiveTheme));
     resTheme.insert("theme", resData);
     return resTheme;
 }

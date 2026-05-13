@@ -184,7 +184,8 @@ private:
     QStringList mThemeNames;
     QList<int> mThemeBases;
     QString mIconSet;
-    int mTheme;
+    int mFixedThemeCount;
+    int mActiveTheme;
     QHash<QString, QStringList> mIconCodes;
     QHash<QString, QIcon> mIconCache;
     QHash<QString, QByteArray> mDataCache;

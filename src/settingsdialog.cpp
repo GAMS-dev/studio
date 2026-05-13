@@ -76,7 +76,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     for (int i = 0; i < Theme::instance()->themeCount(); ++i) {
         ui->cbThemes->insertItem(i, Theme::instance()->themes().at(i));
     }
-    mFixedThemeCount = 2;
+    mFixedThemeCount = 6;
 #ifdef _WIN64
     ui->cbThemes->insertItem(0, "Follow Operating System");
     ++mFixedThemeCount;
@@ -309,7 +309,7 @@ void SettingsDialog::loadSettings()
     while (ui->cbThemes->count() > mFixedThemeCount)
         ui->cbThemes->removeItem(ui->cbThemes->count()-1);
     QStringList themes = Theme::instance()->themes();
-    for (int i = 2; i < Theme::instance()->themeCount(); ++i) {
+    for (int i = mFixedThemeCount; i < Theme::instance()->themeCount(); ++i) {
         ui->cbThemes->addItem(themes.at(i));
     }
     connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::appearanceIndexChanged);
