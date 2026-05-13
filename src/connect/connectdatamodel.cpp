@@ -2209,7 +2209,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
 //                       dataKeys.removeLast();
                    }
 ////                   updateInvalidExcludedItem(item);
-                   if (!schema->isSchemaDefined(key)) {
+                   if (!schema || !schema->isSchemaDefined(key)) {
                       QList<QVariant> sequenceDummyData;
                       sequenceDummyData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
                       sequenceDummyData << "";
@@ -2519,7 +2519,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
 
                                } else if (mmit->second.Type()==YAML::NodeType::Scalar || mmit->second.Type()==YAML::NodeType::Null) {
                                      QList<QVariant> mapSeqData;
-                                     if (schema->isOneOfDefined(datakeyslist.join(":"))) {
+                                     if (schema && schema->isOneOfDefined(datakeyslist.join(":"))) {
                                          int n = whichOneOfSchema(mit->second, schema, datakeyslist, keystr);
                                          keystr += QString("[%1]").arg(n);
                                          datakeyslist.removeLast();
