@@ -105,6 +105,8 @@ private slots:
     void onSearch(bool backward=false);
     void setTruncatedDataVisible(bool visible);
 
+    void on_pushButton_toggled(bool checked);
+
 private:
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;

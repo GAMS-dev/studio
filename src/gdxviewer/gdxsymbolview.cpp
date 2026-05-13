@@ -1100,6 +1100,23 @@ void GdxSymbolView::markSearchResults()
         ui->tvListView->viewport()->update();
 }
 
+void GdxSymbolView::on_pushButton_toggled(bool checked)
+{
+    auto layout = ui->horizontalLayout_3;
+    for (int i = 0; i < layout->count(); ++i) {
+        QLayoutItem* item = layout->itemAt(i);
+        if (QWidget* widget = item->widget())
+            widget->setVisible(checked);
+    }
+    layout = ui->horizontalLayout_4;
+    for (int i = 0; i < layout->count(); ++i) {
+        QLayoutItem* item = layout->itemAt(i);
+        if (QWidget* widget = item->widget())
+            widget->setVisible(checked);
+    }
+}
+
+
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams

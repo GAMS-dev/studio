@@ -229,6 +229,24 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../icons/icons.qrc">
+         <normaloff>:/solid/show</normaloff>
+         <normalon>:/solid/hide</normalon>:/solid/show</iconset>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
@@ -316,7 +334,7 @@
        <property name="sizeHint" stdset="0">
         <size>
          <width>40</width>
-         <height>20</height>
+         <height>0</height>
         </size>
        </property>
       </spacer>
@@ -348,6 +366,9 @@
        </property>
        <property name="text">
         <string/>
+       </property>
+       <property name="wordWrap">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
