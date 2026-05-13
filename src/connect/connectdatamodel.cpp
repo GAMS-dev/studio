@@ -2637,7 +2637,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                    QStringList dataKeysforTypes(datakeyslist);
 //                                   if (dataKeysforTypes.size() > 1)
 //                                       dataKeysforTypes.removeLast();
-                                   QVariant defvalue = schema->getDefaultValue(dataKeysforTypes.join(":"));
+                                   QVariant defvalue = schema ? schema->getDefaultValue(dataKeysforTypes.join(":")) : QVariant();
                                    QList<QVariant> mapSeqData;
                                    mapSeqData << QVariant( QString::fromStdString(mit->second[k].as<std::string>()) );
                                    mapSeqData << "";
