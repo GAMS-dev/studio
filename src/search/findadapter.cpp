@@ -82,6 +82,7 @@ bool FindAdapter::canReplace() const
 
 void FindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
+    Q_UNUSED(rex)
     mCurrentOptions = options;
 }
 

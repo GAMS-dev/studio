@@ -132,6 +132,7 @@ void FindWidget::updateButtonStates()
 
 void FindWidget::findDone(bool found)
 {
+    Q_UNUSED(found)
     if (mFinder->currentOptions().testFlag(foFocusEdit))
         mFinder->setFocus();
     bool dummy; // unused dummy for isCurrentWord
