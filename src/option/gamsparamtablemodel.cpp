@@ -144,11 +144,11 @@ QVariant GamsParamTableModel::data(const QModelIndex &index, int role) const
         if (mOptionTokenizer->getOption()->isValid(key) || mOptionTokenizer->getOption()->isASynonym(key)) { // valid option
             if (col==GamsParamTableModel::COLUMN_KEY) { // key
                 if (mOptionTokenizer->getOption()->isDeprecated(key)) { // deprecated option
-                    return QVariant::fromValue(QColor(Qt::gray));
+                    return QVariant::fromValue(Theme::color(Theme::Disable_Gray));
                 }  else if (mOptionItem.at(row)->value.simplified().isEmpty()) {
                     return QVariant::fromValue(Theme::color(Theme::Active_Gray));
                 } else {
-                    return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
+                    return  QVariant::fromValue(Theme::color(Theme::Edit_text));
                 }
             } else { // value
                 switch (mOptionTokenizer->getOption()->getValueErrorType(key, mOptionItem.at(row)->value)) {
@@ -157,16 +157,16 @@ QVariant GamsParamTableModel::data(const QModelIndex &index, int role) const
                 case OptionErrorType::Value_Out_Of_Range:
                     return QVariant::fromValue(Theme::color(Theme::Normal_Red));
                 case OptionErrorType::No_Error:
-                    return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
+                    return QVariant::fromValue(Theme::color(Theme::Edit_text));
                 default:
-                    return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
+                    return QVariant::fromValue(Theme::color(Theme::Edit_text));
                 }
             }
         } else { // invalid option
             if (col == GamsParamTableModel::COLUMN_KEY)
                 return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             else
-                return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
+                return QVariant::fromValue(Theme::color(Theme::Edit_text));
         }
 
     }

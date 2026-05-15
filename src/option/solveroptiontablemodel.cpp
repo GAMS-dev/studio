@@ -149,12 +149,12 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
                 else if (mOptionTokenizer->getOption()->isEOLCharDefined() && col==COLUMN_EOL_COMMENT)
                     return QVariant::fromValue(Theme::color(Theme::Disable_Gray));
                 else
-                    return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
+                    return QVariant::fromValue(Theme::color(Theme::Edit_text));
             default:
                 if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_KEY)
                     return QVariant::fromValue(Theme::color(Theme::Normal_Yellow));
                 else
-                    return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
+                    return QVariant::fromValue(Theme::color(Theme::Edit_text));
             }
         }
      }

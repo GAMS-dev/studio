@@ -108,18 +108,18 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
         if (parentItem == rootItem &&  item->modified())
             return  QVariant::fromValue(Theme::color(Theme::Normal_Blue));
         else
-            return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
+            return  QVariant::fromValue(Theme::color(Theme::Edit_text));
     }
     case Qt::BackgroundRole: {
         OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
         OptionDefinitionItem *parentItem = item->parentItem();
         if (parentItem == rootItem) {
             if (index.row() % 2 == 0)
-               return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
+               return QVariant::fromValue(Theme::color(Theme::Window_alternateBase));
             else
-                return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Window));
+                return QVariant::fromValue(Theme::color(Theme::Window_window));
         } else {
-            return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
+            return QVariant::fromValue(Theme::color(Theme::Window_alternateBase));
         }
     }
     case Qt::ToolTipRole: {
