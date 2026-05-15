@@ -5380,6 +5380,13 @@ void MainWindow::newProcessCall(const QString &text, const QString &call)
 
 void MainWindow::invalidateTheme(bool refreshSyntax)
 {
+    Theme::setThemeColorPalette(this);
+    Theme::setThemeColorPalette(ui->toolBar);
+    Theme::setThemeColorPalette(ui->menuBar);
+    Theme::setThemeColorPalette(ui->dockProjectView);
+    Theme::setThemeColorPalette(ui->dockProcessLog);
+    Theme::setThemeColorPalette(ui->dockProcessLog);
+
     for (FileMeta *fm: mFileMetaRepo.openFiles())
         fm->invalidateTheme(refreshSyntax);
     if (mTabStyle) {

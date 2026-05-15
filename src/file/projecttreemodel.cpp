@@ -101,10 +101,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     switch (role) {
     case Qt::BackgroundRole: {
         if (isSelected(ind)) {
-            if (Theme::isDark())
-                return QColor(243,150,25); // GAMS orange
-            else
-                return QColor(102,187,255,68); // "#4466BBFF"
+             return Theme::color(Theme::Window_highlight);
         } else {
             PExProjectNode *project = node(ind)->toProject();
             bool isRunningProject = (project && project->process() && project->process()->state() != QProcess::NotRunning);

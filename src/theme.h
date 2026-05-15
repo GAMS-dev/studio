@@ -109,6 +109,18 @@ public:
         Syntax_embedded,
         Syntax_embedded_bg,
 
+        Window_window,          // Main Panel Background
+        Window_windowText,      // Labels and Generic Text
+        Window_base,            // Data Entry Background
+        Window_alternateBase,   //
+        Window_text,            // Data Entry Text
+        Window_button,          // Button Surface
+        Window_buttonText,      // Button Label
+        Window_placeHolderText, //
+        Window_highlight,       // Selection Highlight Background
+        Window_highlightedText, // Selected Text color
+        Window_link,            // hyperlinks
+
         ColorSlotCount
     };
     Q_ENUM(ColorSlot)
@@ -147,6 +159,7 @@ public:
     void readUserThemes(const QVariantList &sourceThemes);
     int readUserTheme(const QVariantMap &tSource);
 
+    static void setThemeColorPalette(QWidget *widget);
     static bool isDark();
     static QString name(ColorSlot slot);
     static QString text(ColorSlot slot);
