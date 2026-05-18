@@ -45,23 +45,23 @@ PinViewWidget::PinViewWidget(QWidget *parent) :
     mPrefSize = Settings::settings()->toSize(skPinViewSize);
     if (mPrefSize == QSize(10,10))
         mPrefSize = QSize(mSplitter->width() / 2, mSplitter->height() / 2);
-    ui->toolBar->setIconSize(QSize(16,16));
+    ui->pinToolBar->setIconSize(QSize(16,16));
 
     mActOrient = new QAction(Theme::icon(":/%1/split-h"), "Pin below", this);
     connect(mActOrient, &QAction::triggered, this, &PinViewWidget::onSwitchOrientation);
-    ui->toolBar->addAction(mActOrient);
+    ui->pinToolBar->addAction(mActOrient);
 
     bool locked = Settings::settings()->toBool(skPinScollLock);
     mActSync = new QAction(Theme::icon(":/%1/lock-open"), "Synchronize scrolling", this);
     mActSync->setCheckable(true);
     connect(mActSync, &QAction::triggered, this, &PinViewWidget::onSyncScroll);
-    ui->toolBar->addAction(mActSync);
+    ui->pinToolBar->addAction(mActSync);
     mActSync->setChecked(locked);
     setScrollLocked(locked);
 
     mActClose = new QAction(Theme::icon(":/%1/remove"), "Close split view", this);
     connect(mActClose, &QAction::triggered, this, &PinViewWidget::onClose);
-    ui->toolBar->addAction(mActClose);
+    ui->pinToolBar->addAction(mActClose);
     ui->laFile->installEventFilter(this);
     mFindWidget = new find::FindWidget(this);
 }
