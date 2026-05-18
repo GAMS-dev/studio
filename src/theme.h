@@ -109,15 +109,17 @@ public:
         Syntax_embedded,
         Syntax_embedded_bg,
 
-        Window_window,          // Main Panel Background
-        Window_windowText,      // Labels and Generic Text
+        Window_window,          // Panel Background
+        Window_windowText,      // Labels and Text Foreground
         Window_base,            // Data Entry Background
-        Window_alternateBase,   //
-        Window_text,            // Data Entry Text
-        Window_button,          // Button Surface
-        Window_buttonText,      // Button Label
-        Window_placeHolderText, //
-        Window_highlight,       // Selection Highlight Background
+        Window_alternateBase,   // Alternating Row Colors
+        Window_ToolTipBase,     // Tooltip Background
+        Window_ToolTipText,     // Tooltip Foreground
+        Window_text,            // Foreground used with Base
+        Window_button,          // Button Background
+        Window_buttonText,      // Button Foreground
+        Window_placeHolderText, // Text Input Foreground
+        Window_highlight,       // Item Selection Highlight Background
         Window_highlightedText, // Selected Text color
         Window_link,            // hyperlinks
 
@@ -159,6 +161,7 @@ public:
     void readUserThemes(const QVariantList &sourceThemes);
     int readUserTheme(const QVariantMap &tSource);
 
+    static void fillThemeColorPalette(QPalette& palette);
     static void setThemeColorPalette(QWidget *widget);
     static bool isDark();
     static QString name(ColorSlot slot);

@@ -19,7 +19,6 @@
  */
 #include "theme.h"
 #include <QHash>
-#include "logger.h"
 #include "svgengine.h"
 #include "viewhelper.h"
 
@@ -30,6 +29,8 @@
 #include <QJsonDocument>
 #include <QGuiApplication>
 #include <QWidget>
+#include <QApplication>
+#include <QStyleHints>
 
 namespace gams {
 namespace studio {
@@ -717,53 +718,42 @@ int Theme::baseTheme(int theme) const
     return mThemeBases.at(theme);
 }
 
+void Theme::fillThemeColorPalette(QPalette &palette)
+{
+    palette.setColor(QPalette::Window,        Theme::color(Theme::Window_window));
+    palette.setColor(QPalette::WindowText,    Theme::color(Theme::Window_text));
+    palette.setColor(QPalette::Base,          Theme::color(Theme::Window_base));
+    palette.setColor(QPalette::AlternateBase, Theme::color(Theme::Window_alternateBase));
+    palette.setColor(QPalette::Text,          Theme::color(Theme::Window_text));
+    palette.setColor(QPalette::Button,        Theme::color(Theme::Window_button));
+    palette.setColor(QPalette::ButtonText,    Theme::color(Theme::Window_buttonText));
+    palette.setColor(QPalette::BrightText,    Theme::color(Theme::Normal_Red));
+    palette.setColor(QPalette::Link,          Theme::color(Theme::Window_link));
+
+    palette.setColor(QPalette::PlaceholderText, Theme::color(Theme::Window_placeHolderText));
+    palette.setColor(QPalette::Highlight,       Theme::color(Theme::Window_highlight));
+    palette.setColor(QPalette::HighlightedText, Theme::color(Theme::Window_highlightedText));
+
+    palette.setColor(QPalette::Disabled, QPalette::WindowText, Theme::color(Active_Gray));
+    palette.setColor(QPalette::Disabled, QPalette::Text,       Theme::color(Active_Gray));
+    palette.setColor(QPalette::Disabled, QPalette::ButtonText, Theme::color(Active_Gray));
+}
+
 void Theme::setThemeColorPalette(QWidget *widget)
 {
     if (!widget)
         return;
 
     QPalette palette = widget->palette();
-
-    palette.setColor(QPalette::Window, Theme::color(Theme::Window_window));
-    palette.setColor(QPalette::WindowText, Theme::color(Theme::Window_text));
-    palette.setColor(QPalette::Base, Theme::color(Theme::Window_base));
-    palette.setColor(QPalette::AlternateBase, Theme::color(Theme::Window_alternateBase));
-    palette.setColor(QPalette::Text, Theme::color(Theme::Window_text));
-    palette.setColor(QPalette::Button, Theme::color(Theme::Window_button));
-    palette.setColor(QPalette::ButtonText, Theme::color(Theme::Window_buttonText));
-    palette.setColor(QPalette::PlaceholderText, Theme::color(Theme::Window_placeHolderText));
-    palette.setColor(QPalette::Highlight, Theme::color(Theme::Window_highlight));
-    palette.setColor(QPalette::HighlightedText, Theme::color(Theme::Window_highlightedText));
-
-    palette.setColor(QPalette::Disabled, QPalette::WindowText, Theme::color(Active_Gray));
-    palette.setColor(QPalette::Disabled, QPalette::Text, Theme::color(Active_Gray));
-    palette.setColor(QPalette::Disabled, QPalette::ButtonText, Theme::color(Active_Gray));
-
+    Theme::fillThemeColorPalette(palette);
     widget->setPalette(palette);
-    for (QWidget *child : widget->findChildren<QWidget*>()) {
-        child->setPalette(palette);
-        child->setAutoFillBackground(true);
-    }
+    widget->setAutoFillBackground(true);
 
-    if (AbstractEdit *e = ViewHelper::toAbstractEdit(widget)) {
-        if (e->verticalScrollBar()) {
-            e->verticalScrollBar()->setAutoFillBackground(true);
-            e->verticalScrollBar()->setPalette(palette);
-        }
-        if (e->horizontalScrollBar()) {
-            e->horizontalScrollBar()->setAutoFillBackground(true);
-            e->verticalScrollBar()->setPalette(palette);
-        }
-    }
-    if (CodeEdit *ce = ViewHelper::toCodeEdit(widget)) {
-        if (ce->verticalScrollBar()) {
-            ce->verticalScrollBar()->setAutoFillBackground(true);
-            ce->verticalScrollBar()->setPalette(palette);
-        }
-        if (ce->horizontalScrollBar()) {
-            ce->horizontalScrollBar()->setAutoFillBackground(true);
-            ce->verticalScrollBar()->setPalette(palette);
-        }
+    for (QWidget *child : widget->findChildren<QWidget*>()) {
+        QPalette cpalette = child->palette();
+        Theme::fillThemeColorPalette(cpalette);
+        child->setPalette(cpalette);
+        child->setAutoFillBackground(true);
     }
 }
 
