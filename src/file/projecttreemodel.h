@@ -72,7 +72,7 @@ protected:
     friend class ProjectRepo;
     friend class ProjectProxyModel;
 
-    bool insertChild(int row, PExGroupNode* parent, PExAbstractNode* child);
+    bool appendChild(PExGroupNode* parent, PExAbstractNode* child);
     bool removeChild(PExAbstractNode* child);
     NodeId nodeId(const QModelIndex &ind) const;
     PExAbstractNode* node(const QModelIndex& index) const;

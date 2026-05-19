@@ -294,16 +294,23 @@ Qt::ItemFlags ProjectTreeModel::flags(const QModelIndex &index) const
     return flags;
 }
 
-bool ProjectTreeModel::insertChild(int row, PExGroupNode* parent, PExAbstractNode* child)
+bool ProjectTreeModel::appendChild(PExGroupNode* parent, PExAbstractNode* child)
 {
-    QModelIndex prevMi = asIndex(child);
-    if (prevMi.isValid() && prevMi.parent().isValid()) {
-        beginRemoveRows(prevMi.parent(), prevMi.row(), prevMi.row());
-        endRemoveRows();
+    if (!parent || !child) return false;
+    PExGroupNode* oldParent = child->parentNode() ? child->parentNode()->toGroup() : nullptr;
+    if (oldParent == parent) return false;
+
+    if (oldParent) {
+        QModelIndex prevMi = asIndex(child);
+        if (prevMi.isValid()) {
+            beginRemoveRows(prevMi.parent(), prevMi.row(), prevMi.row());
+            oldParent->removeChild(child);
+            child->setParentNode(nullptr);
+            endRemoveRows();
+        }
     }
     QModelIndex parMi = asIndex(parent);
-    if (child->parentNode() == parent) return false;
-    beginInsertRows(parMi, row, row);
+    beginInsertRows(parMi, parent->childCount(), parent->childCount());
     child->setParentNode(parent);
     endInsertRows();
     emit childrenChanged();

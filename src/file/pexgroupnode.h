@@ -79,6 +79,7 @@ public slots:
 protected:
     friend class ProjectRepo;
     friend class PExAbstractNode;
+    friend class ProjectTreeModel;
     friend class PExLogNode;
     friend class PExFileNode;
 
