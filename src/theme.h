@@ -142,7 +142,8 @@ public:
     ~Theme() override;
     static Theme *instance();
     void initDefault();
-    int themeCount() { return mThemeNames.size(); }
+    int fixedThemeCount() { return mFixedThemeCount; }
+    int themeCount()      { return mThemeNames.size(); }
     QStringList themes();
     int setActiveTheme(const QString &themeName);
     int setActiveTheme(int theme);

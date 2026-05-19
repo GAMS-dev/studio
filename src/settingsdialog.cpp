@@ -76,7 +76,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     for (int i = 0; i < Theme::instance()->themeCount(); ++i) {
         ui->cbThemes->insertItem(i, Theme::instance()->themes().at(i));
     }
-    mFixedThemeCount = 6;
+    mFixedThemeCount = Theme::instance()->fixedThemeCount();
 #ifdef _WIN64
     ui->cbThemes->insertItem(0, "Follow Operating System");
     ++mFixedThemeCount;
@@ -774,7 +774,7 @@ bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
             int i = ui->cbThemes->currentIndex();
             ui->cbThemes->removeItem(i);
             i = Theme::instance()->themes().indexOf(name);
-            int shift = mFixedThemeCount-2;
+            int shift = mFixedThemeCount-Theme::instance()->fixedThemeCount();
             ui->cbThemes->insertItem(i+shift, name);
             ui->cbThemes->setCurrentIndex(i+shift);
             if (conflict) {
@@ -1170,7 +1170,7 @@ void SettingsDialog::on_btCopyTheme_clicked()
 {
     Theme *theme = Theme::instance();
     int i = theme->copyTheme(theme->activeTheme(), theme->activeThemeName());
-    int shift = mFixedThemeCount-2;
+    int shift = mFixedThemeCount-Theme::instance()->fixedThemeCount();
     ui->cbThemes->insertItem(i+shift, Theme::instance()->themes().at(i));
     ui->cbThemes->setCurrentIndex(i+shift);
     for (ThemeWidget *wid : std::as_const(mColorWidgets)) {
@@ -1182,7 +1182,7 @@ void SettingsDialog::on_btRemoveTheme_clicked()
 {
     int old = Theme::instance()->activeTheme();
     int i = Theme::instance()->removeTheme(old);
-    int shift = mFixedThemeCount-2;
+    int shift = mFixedThemeCount-Theme::instance()->fixedThemeCount();
     ui->cbThemes->removeItem(old+shift);
     ui->cbThemes->setCurrentIndex(i+shift);
     for (ThemeWidget *wid : std::as_const(mColorWidgets)) {
@@ -1198,7 +1198,7 @@ void SettingsDialog::on_btImportTheme_clicked()
     connect(fd, &QFileDialog::finished, this, [this, fd](int res) {
         const QStringList selFiles = fd->selectedFiles();
         if (res && !selFiles.isEmpty()) {
-            int shift = mFixedThemeCount-2;
+            int shift = mFixedThemeCount-Theme::instance()->fixedThemeCount();
             int index = ui->cbThemes->currentIndex() - shift;
             for (const QString &fName : selFiles) {
                 index = Theme::instance()->readUserTheme(Settings::settings()->importTheme(fName));

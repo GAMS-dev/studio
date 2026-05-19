@@ -959,7 +959,7 @@ int Theme::copyTheme(int index, const QString &destName)
 
     // restore sort order
     int i = mThemeNames.count() - 1;
-    while (i > 2 && mThemeNames.at(i-1).compare(name, Qt::CaseInsensitive) > 0) --i;
+    while (i > mFixedThemeCount && mThemeNames.at(i-1).compare(name, Qt::CaseInsensitive) > 0) --i;
 
     int last = mThemeNames.count() - 1;
     if (i < last) {
