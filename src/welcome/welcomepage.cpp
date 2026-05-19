@@ -87,7 +87,8 @@ WelcomePage::WelcomePage(MainWindow *parent)
 
     setupIcons();
     auto p = palette();
-    p.setColor(QPalette::Window, p.color(QPalette::Base).lighter());
+    Theme::fillThemeColorPalette(p);
+    setPalette(p);
 
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);

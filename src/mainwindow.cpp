@@ -5380,16 +5380,14 @@ void MainWindow::newProcessCall(const QString &text, const QString &call)
 
 void MainWindow::invalidateTheme(bool refreshSyntax)
 {
-    QApplication* app = qobject_cast<QApplication*>(QApplication::instance());
-    if (app) {
-        app->setStyle(QStyleFactory::create("Fusion"));
-        QPalette palette = app->palette();
-        Theme::fillThemeColorPalette(palette);
-        app->setPalette(palette);
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+    QPalette palette = qApp->palette();
+    Theme::fillThemeColorPalette(palette);
+    qApp->setPalette(palette);
 
-        Theme::setThemeColorPalette(ui->dockProjectView);
-        Theme::setThemeColorPalette(ui->dockProcessLog);
-    }
+    Theme::setThemeColorPalette(mWp);
+    Theme::setThemeColorPalette(ui->dockProjectView);
+    Theme::setThemeColorPalette(ui->dockProcessLog);
 
     for (FileMeta *fm: mFileMetaRepo.openFiles())
         fm->invalidateTheme(refreshSyntax);
