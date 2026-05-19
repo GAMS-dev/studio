@@ -61,7 +61,6 @@ SOURCES += \
     autosavehandler.cpp \
     checkmenu.cpp \
     cleanupfiltermodel.cpp \
-    colors/palettemanager.cpp \
     commandlineparser.cpp \
     common.cpp \
     commonpaths.cpp \
@@ -303,7 +302,6 @@ HEADERS += \
     autosavehandler.h \
     checkmenu.h \
     cleanupfiltermodel.h \
-    colors/palettemanager.h \
     commandlineparser.h \
     common.h \
     commonpaths.h \

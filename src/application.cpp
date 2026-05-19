@@ -31,7 +31,6 @@
 #include "settingsdialog.h"
 #include "msgbox.h"
 #ifndef __APPLE__
-# include "colors/palettemanager.h"
 #endif
 
 #include <iostream>
@@ -104,9 +103,6 @@ Application::~Application()
 {
     NetworkManager::cleanup();
     Settings::releaseSettings();
-#ifndef __APPLE__
-    PaletteManager::deleteInstance();
-#endif
     delete mDistribValidator;
 }
 

@@ -9,7 +9,6 @@ HEADERS += \
     $$SRCPATH/file/dynamicfile.h \
     $$SRCPATH/theme.h \
     $$SRCPATH/svgengine.h \
-    $$SRCPATH/colors/palettemanager.h \
     $$SRCPATH/editors/sysloglocator.h \
     $$SRCPATH/editors/abstractsystemlogger.h \
     $$SRCPATH/editors/defaultsystemlogger.h \
@@ -24,7 +23,6 @@ SOURCES += \
     $$SRCPATH/file/dynamicfile.cpp \
     $$SRCPATH/theme.cpp \
     $$SRCPATH/svgengine.cpp \
-    $$SRCPATH/colors/palettemanager.cpp \
     $$SRCPATH/editors/sysloglocator.cpp \
     $$SRCPATH/editors/defaultsystemlogger.cpp   \
     $$SRCPATH/search/searchcommon.cpp

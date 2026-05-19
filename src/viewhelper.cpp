@@ -22,7 +22,6 @@
 #include "file/filemeta.h"
 #include "settings.h"
 #ifndef __APPLE__
-# include "colors/palettemanager.h"
 #endif
 
 #ifdef __APPLE__
@@ -118,10 +117,6 @@ void ViewHelper::changeAppearance(int appearance)
     }
 #endif
 
-#ifndef __APPLE__
-    int base = Theme::instance()->baseTheme(pickedTheme);
-    PaletteManager::instance()->setPalette(base);
-#endif
     Theme::instance()->setActiveTheme(pickedTheme);
 }
 

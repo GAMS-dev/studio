@@ -85,8 +85,6 @@
 
 #ifdef __APPLE__
 # include "../platform/macos/macoscocoabridge.h"
-#else
-# include <colors/palettemanager.h>
 #endif
 #ifdef _WIN64
 # include <Windows.h>
@@ -512,15 +510,6 @@ MainWindow::MainWindow(QWidget *parent)
         });
     }
 
-    // Themes
-#ifndef __APPLE__
-    connect(PaletteManager::instance(), &PaletteManager::paletteChanged, this, [this]() {
-        QPalette pal = qApp->palette();
-        ui->logTabs->setPalette(pal);
-        pal.setColor(QPalette::Highlight, Qt::transparent);
-        ui->projectView->setPalette(pal);
-    });
-#endif
     ViewHelper::changeAppearance();
     connect(Theme::instance(), &Theme::changed, this, &MainWindow::invalidateTheme);
     invalidateTheme(false);
