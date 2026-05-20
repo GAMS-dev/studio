@@ -1,7 +1,8 @@
 Version 1.24.4  *
 ==================
 - Fixed initial font size for GDX and reference viewer when the font size has been changed.
-- Upgraded to Qt 6.11.1
+- Upgraded to Qt 6.11.1.
+- Fixed occasional crash when updating project base path.
 
 Version 1.24.3
 ==================
