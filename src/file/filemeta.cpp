@@ -472,6 +472,7 @@ void FileMeta::updateSyntaxColors(bool refreshSyntax)
 void FileMeta::initEditorColors()
 {
     for (QWidget *w: std::as_const(mEditors)) {
+        Theme::setThemeColorPalette(w);
         if (reference::ReferenceViewer *rv = ViewHelper::toReferenceViewer(w)) {
             rv->updateStyle();
             continue;
@@ -487,10 +488,9 @@ void FileMeta::initEditorColors()
             ed->setAutoFillBackground(false);
             ed->setPalette(qApp->palette());
         } else if (ed->palette().windowText().color() != Theme::color(Theme::Edit_text) ||
-                ed->palette().window().color() != Theme::color(Theme::Edit_background)) {
+                   ed->palette().window().color() != Theme::color(Theme::Edit_background)) {
             ed->setAutoFillBackground(true);
             QPalette pal = qApp->palette();
-            pal.setColor(ed->backgroundRole(), Theme::color(Theme::Edit_background));
             pal.setColor(QPalette::Text, Theme::color(Theme::Edit_text));
             pal.setColor(QPalette::Base, Theme::color(Theme::Edit_background));
             ed->setPalette(pal);
@@ -502,7 +502,6 @@ void FileMeta::updateEditorColors()
 {
     initEditorColors();
     for (QWidget *w: std::as_const(mEditors)) {
-        Theme::setThemeColorPalette(w);
         if (AbstractEdit *ce = ViewHelper::toAbstractEdit(w))
             ce->updateExtraSelections();
         if (CodeEdit *ce = ViewHelper::toCodeEdit(w))

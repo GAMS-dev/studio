@@ -550,6 +550,8 @@ void Theme::initDefault()
     QColor solarized_cyan   (42, 161, 152);
     QColor solarized_green  (133, 153, 0);
 
+    Q_UNUSED(solarized_base00)
+
     mColorThemes[sNr].insert(invalid,                        CUndefined);
     mColorThemes[sNr].insert(Edit_text,                      solarized_base0);
     mColorThemes[sNr].insert(Syntax_neutral,                 solarized_base0);

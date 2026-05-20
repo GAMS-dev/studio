@@ -131,16 +131,16 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
 
         if (index.column()==COLUMN_MIN_VERSION) {
             if (mOptionItem[index.row()]->minVersion.isEmpty())
-                return QVariant::fromValue(Theme::color(Theme::Edit_text)); // QApplication::palette().color(QPalette::Text));
+                return QVariant::fromValue(Theme::color(Theme::Edit_text));
             else if (mOptionTokenizer->getOption()->isConformantVersion(mOptionItem[index.row()]->minVersion))
-                     return QVariant::fromValue(Theme::color(Theme::Edit_text)); // QApplication::palette().color(QPalette::Text));
+                     return QVariant::fromValue(Theme::color(Theme::Edit_text));
             else
                  return QVariant::fromValue(Theme::color(Theme::Normal_Red));
         } else if (index.column()==COLUMN_MAX_VERSION) {
             if (mOptionItem[index.row()]->maxVersion.isEmpty())
-                return QVariant::fromValue(Theme::color(Theme::Edit_text)); // QApplication::palette().color(QPalette::Text));
+                return QVariant::fromValue(Theme::color(Theme::Edit_text));
             else if (mOptionTokenizer->getOption()->isConformantVersion(mOptionItem[index.row()]->maxVersion))
-                    return QVariant::fromValue(Theme::color(Theme::Edit_text)); // QApplication::palette().color(QPalette::Text));
+                    return QVariant::fromValue(Theme::color(Theme::Edit_text));
             else
                 return QVariant::fromValue(Theme::color(Theme::Normal_Red));
         }
@@ -148,14 +148,14 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
             if (!mOptionTokenizer->getOption()->isDoubleDashedOptionNameValid( mOptionTokenizer->getOption()->getOptionKey(mOptionItem.at(row)->key)) )
                 return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             else
-                 return QVariant::fromValue(Theme::color(Theme::Edit_text)); // QApplication::palette().color(QPalette::Text));
+                 return QVariant::fromValue(Theme::color(Theme::Edit_text));
         }
         if (mOptionTokenizer->getOption()->isValid(mOptionItem.at(row)->key) || mOptionTokenizer->getOption()->isASynonym(mOptionItem.at(row)->key)) { // valid option
             if (col==COLUMN_KEY) { // key
                 if (mOptionTokenizer->getOption()->isDeprecated(mOptionItem.at(row)->key)) { // deprecated option
                     return QVariant::fromValue(QColor(Theme::Disable_Gray));
                 } else {
-                    return  QVariant::fromValue(Theme::color(Theme::Edit_text)); // QApplication::palette().color(QPalette::Text));
+                    return  QVariant::fromValue(Theme::color(Theme::Edit_text));
                 }
             } else if (col==COLUMN_VALUE) { // value
                   switch (mOptionTokenizer->getOption()->getValueErrorType(mOptionItem.at(row)->key, mOptionItem.at(row)->value)) {
@@ -164,9 +164,9 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
                       case OptionErrorType::Value_Out_Of_Range:
                             return QVariant::fromValue(Theme::color(Theme::Normal_Red));
                       case OptionErrorType::No_Error:
-                            return QVariant::fromValue(Theme::color(Theme::Edit_text)); // QApplication::palette().color(QPalette::Text));
+                            return QVariant::fromValue(Theme::color(Theme::Edit_text));
                       default:
-                           return QVariant::fromValue(Theme::color(Theme::Edit_text)); // QApplication::palette().color(QPalette::Text));
+                           return QVariant::fromValue(Theme::color(Theme::Edit_text));
                   }
             } else if (col==COLUMN_MIN_VERSION && mOptionTokenizer->getOption()->isConformantVersion(mOptionItem.at(row)->minVersion)) {
                       return QVariant::fromValue(Theme::color(Theme::Normal_Red));
@@ -177,7 +177,7 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
             if (col ==COLUMN_KEY)
                return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             else
-                return QVariant::fromValue(Theme::color(Theme::Edit_text)); // QApplication::palette().color(QPalette::Text));
+                return QVariant::fromValue(Theme::color(Theme::Edit_text));
         }
 
      }
