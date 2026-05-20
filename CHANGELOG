@@ -1,6 +1,7 @@
 Version 1.24.4  *
 ==================
 - Update to Qt 6.10.3.
+- Fixed initial font size for GDX and reference viewer when the font size has been changed.
 
 Version 1.24.3
 ==================
