@@ -1,4 +1,3 @@
-
 Version 1.25.0  *
 ==================
 - The GDX Viewer export facility now truncates automatically determined sheet names exceeding 31 characters.
@@ -11,9 +10,6 @@ Version 1.25.0  *
 - Added markers to the scrollbar for find and search matches, breakpoints, errors, and bookmarks.
 - Fixed short blocking behavior when using quick find in a huge file.
 - Fixed matches not being updated when clearing the term in quick find.
-
-Version 1.24.4  *
-==================
 - Fixed initial font size for GDX and reference viewer when the font size has been changed.
 - Upgraded to Qt 6.11.1
 
