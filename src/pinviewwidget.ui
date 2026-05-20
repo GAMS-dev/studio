@@ -67,7 +67,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QToolBar" name="toolBar"/>
+       <widget class="QToolBar" name="pinToolBar"/>
       </item>
      </layout>
     </widget>

@@ -731,9 +731,9 @@ void MainWindow::adjustFonts()
     const qreal fontFactor = 0.95;
     const qreal fontFactorStatusbar = 0.85;
     QFont f(ui->menuBar->font());
+    mTableFontSizeDif = f.pointSizeF() - QFontDatabase::systemFont(QFontDatabase::FixedFont).pointSizeF() - 2;
 
     f.setPointSizeF(ui->menuBar->font().pointSizeF() * fontFactor);
-    mTableFontSizeDif = f.pointSizeF() - Settings::settings()->toInt(skEdFontSize);
     ui->centralWidget->setFont(f);
     ui->splitter->setFont(f);
     ui->dockProjectView->setFont(f);
@@ -898,7 +898,6 @@ void MainWindow::initFonts()
         if (i < 0)
             DEB() << "Could not load font " << fName;
     }
-    QFont systemFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     if (settings->toString(skEdFontFamily).isEmpty()) {
         settings->setString(skEdFontFamily, defaultFamily);
         int size = settings->toInt(skEdFontSize) - 1;
