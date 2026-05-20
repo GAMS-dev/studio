@@ -118,7 +118,7 @@ void Theme::initDefault()
     mThemeNames.clear();
     mThemeBases.clear();
 
-    // default to first color theme
+    // default to first color theme - Light
     mActiveTheme = 0;
 
     // Add first color theme
@@ -129,7 +129,7 @@ void Theme::initDefault()
 
     QColor light_base      (Qt::white);
     QColor light_text      (Qt::black);
-    QColor light_darkbase  (QColor(Qt::lightGray).lighter(225));
+    QColor light_darkbase  (QColor(Qt::lightGray).lighter(190));
     QColor light_lightgray (240, 240, 235);
     QColor light_gray      (180,180,180);
     QColor light_darkgray  (120, 120, 120);
@@ -177,7 +177,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Icon_Paper,                     light_base);
     mColorThemes[sNr].insert(Disable_Gray,                   light_gray);
     mColorThemes[sNr].insert(Disable_Back,                   light_gray);
-    mColorThemes[sNr].insert(Active_Gray,                    light_darkgray);
+    mColorThemes[sNr].insert(Active_Gray,                    light_gray);
     mColorThemes[sNr].insert(Active_Back,                    QColor(34,102,170));
     mColorThemes[sNr].insert(Select_Gray,                    light_lightblue);
     mColorThemes[sNr].insert(Select_Back,                    light_base);
@@ -212,19 +212,19 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Syntax_embedded,                Color(QColor(200, 70, 0)));
     mColorThemes[sNr].insert(Syntax_embedded_bg,             CAutoBackground);
 
-    mColorThemes[sNr].insert(Window_window,                  light_base);
+    mColorThemes[sNr].insert(Window_window,                  light_darkbase.darker(100));
     mColorThemes[sNr].insert(Window_windowText,              light_text);
-    mColorThemes[sNr].insert(Window_base,                    light_base);
+    mColorThemes[sNr].insert(Window_base,                    light_darkbase.darker(100));
     mColorThemes[sNr].insert(Window_alternateBase,           light_lightgray);
     mColorThemes[sNr].insert(Window_text,                    light_text);
-    mColorThemes[sNr].insert(Window_button,                  light_darkbase);
+    mColorThemes[sNr].insert(Window_button,                  light_darkbase.darker(110));
     mColorThemes[sNr].insert(Window_buttonText,              light_text);
     mColorThemes[sNr].insert(Window_placeHolderText,         light_gray);
     mColorThemes[sNr].insert(Window_highlight,               light_lightblue);
     mColorThemes[sNr].insert(Window_highlightedText,         light_text);
     mColorThemes[sNr].insert(Window_link,                    QColor(Normal_Blue));
 
-    // Add and switch to second color theme
+    // Add and switch to second color theme - Dark
     sNr++;
     mColorThemes << mColorThemes.at(0);
     mThemeNames << "Dark";
@@ -355,10 +355,10 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_foldLineFg,                QColor(255,255,255));
     mColorThemes[sNr].insert(Edit_parenthesesValidFg,        distinct_red);
     mColorThemes[sNr].insert(Edit_parenthesesInvalidFg,      distinct_black);
-    mColorThemes[sNr].insert(Edit_parenthesesValidBg,        distinct_bluishgreen);
-    mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      distinct_red);
-    mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   distinct_bluishgreen);
-    mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, distinct_red);
+    mColorThemes[sNr].insert(Edit_parenthesesValidBg,        distinct_bluishgreen.lighter(130));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      distinct_red.lighter(150));
+    mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   distinct_bluishgreen.lighter(130));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, distinct_red.lighter(115));
     mColorThemes[sNr].insert(Edit_linenrAreaBg,              distinct_lightgray);
     mColorThemes[sNr].insert(Edit_linenrAreaMarkBg,          light_lightgray);
     mColorThemes[sNr].insert(Edit_linenrAreaFoldBg,          distinct_yellow);
@@ -463,12 +463,12 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_linenrAreaFoldBg,          drac_purple.darker(190));
     mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          drac_bgLight.lighter(190));
     mColorThemes[sNr].insert(Edit_currentWordBg,             drac_cyan);
-    mColorThemes[sNr].insert(Edit_parenthesesValidFg,        drac_cyan);
-    mColorThemes[sNr].insert(Edit_parenthesesInvalidFg,      drac_cyan);
-    mColorThemes[sNr].insert(Edit_parenthesesValidBg,        drac_red);
-    mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      drac_red);
-    mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   drac_purple);
-    mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, drac_red);
+    mColorThemes[sNr].insert(Edit_parenthesesValidFg,        drac_foreground);
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidFg,      drac_foreground);
+    mColorThemes[sNr].insert(Edit_parenthesesValidBg,        drac_comment.lighter(90));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      drac_red.lighter(150));
+    mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   drac_comment.lighter(120));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, drac_red.lighter(115));
     mColorThemes[sNr].insert(Edit_logRemoteBk,               drac_bgDark);
 
     mColorThemes[sNr].insert(Mark_errorFg,                   drac_red);
@@ -527,7 +527,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_highlightedText,         dark_neutral);
     mColorThemes[sNr].insert(Window_link,                    drac_cyan);
 
-    // Solarized light
+    // Solarized light Theme
     sNr++;
     mColorThemes << mColorThemes.at(0);
     mThemeNames << "Solarized - light";
@@ -563,12 +563,13 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_searchBg,                  solarized_orange.lighter(150));
     mColorThemes[sNr].insert(Edit_foldLineBg,                solarized_cyan.lighter(190));
     mColorThemes[sNr].insert(Edit_foldLineFg,                solarized_base1);
-    mColorThemes[sNr].insert(Edit_parenthesesValidFg,        solarized_red);
-    mColorThemes[sNr].insert(Edit_parenthesesInvalidFg,      solarized_base02);
-    mColorThemes[sNr].insert(Edit_parenthesesValidBg,        solarized_green);
-    mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      solarized_red);
-    mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   solarized_green);
-    mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, solarized_red);
+
+    mColorThemes[sNr].insert(Edit_parenthesesValidFg,        solarized_green);
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidFg,      solarized_red);
+    mColorThemes[sNr].insert(Edit_parenthesesValidBg,        solarized_green.lighter(125));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      solarized_base01.lighter(125));
+    mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   solarized_green.lighter(125));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, solarized_base1.lighter(125));
     mColorThemes[sNr].insert(Edit_linenrAreaBg,              solarized_base2);
     mColorThemes[sNr].insert(Edit_linenrAreaMarkBg,          solarized_cyan.lighter(215));
     mColorThemes[sNr].insert(Edit_linenrAreaFoldBg,          solarized_cyan);
@@ -586,7 +587,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Icon_Gray,                      solarized_base1);
     mColorThemes[sNr].insert(Icon_Back,                      solarized_base0);
     mColorThemes[sNr].insert(Icon_Paper,                     solarized_base3);
-    mColorThemes[sNr].insert(Active_Gray,                    solarized_base1.lighter(190));
+    mColorThemes[sNr].insert(Active_Gray,                    solarized_base3); //base1.lighter(190));
     mColorThemes[sNr].insert(Active_Back,                    solarized_base01.lighter(125));
     mColorThemes[sNr].insert(Disable_Gray,                   solarized_base01.lighter(175));
     mColorThemes[sNr].insert(Disable_Back,                   solarized_base1.lighter(125));
@@ -628,20 +629,20 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_base,                    solarized_base3);
     mColorThemes[sNr].insert(Window_alternateBase,           solarized_base2);
     mColorThemes[sNr].insert(Window_text,                    solarized_base01);
-    mColorThemes[sNr].insert(Window_button,                  solarized_base3);
+    mColorThemes[sNr].insert(Window_button,                  solarized_base2);
     mColorThemes[sNr].insert(Window_buttonText,              solarized_base02);
     mColorThemes[sNr].insert(Window_placeHolderText,         solarized_base1);
     mColorThemes[sNr].insert(Window_highlight,               solarized_cyan.lighter());
     mColorThemes[sNr].insert(Window_highlightedText,         solarized_base02);
     mColorThemes[sNr].insert(Window_link,                    solarized_cyan);
 
-    // Solarized dark
+    // Solarized dark Theme
     mColorThemes << mColorThemes.at(sNr++);
     mThemeNames << "Solarized - dark";
     mThemeBases << sNr;
 
     mColorThemes[sNr].insert(invalid,                        CUndefined);
-    mColorThemes[sNr].insert(Edit_text,                      solarized_base1);
+    mColorThemes[sNr].insert(Edit_text,                      solarized_base1.lighter(120));
     mColorThemes[sNr].insert(Syntax_neutral,                 solarized_base1);
     mColorThemes[sNr].insert(Edit_background,                solarized_base03);
     mColorThemes[sNr].insert(Edit_currentLineBg,             solarized_base01);
@@ -651,12 +652,12 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_searchBg,                  solarized_yellow);
     mColorThemes[sNr].insert(Edit_foldLineBg,                solarized_cyan.lighter(190));
     mColorThemes[sNr].insert(Edit_foldLineFg,                solarized_base01);
-    mColorThemes[sNr].insert(Edit_parenthesesValidFg,        solarized_red);
-    mColorThemes[sNr].insert(Edit_parenthesesInvalidFg,      solarized_base02);
-    mColorThemes[sNr].insert(Edit_parenthesesValidBg,        solarized_green);
-    mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      solarized_red);
-    mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   solarized_green);
-    mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, solarized_red);
+    mColorThemes[sNr].insert(Edit_parenthesesValidFg,        solarized_base01);
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidFg,      solarized_base01);
+    mColorThemes[sNr].insert(Edit_parenthesesValidBg,        solarized_cyan.darker(90));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      solarized_red.darker(90));
+    mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   solarized_cyan.darker(90));
+    mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, solarized_red.darker(120));
     mColorThemes[sNr].insert(Edit_linenrAreaBg,              solarized_base02);
     mColorThemes[sNr].insert(Edit_linenrAreaMarkBg,          solarized_cyan.darker(150));
     mColorThemes[sNr].insert(Edit_linenrAreaFoldBg,          solarized_cyan);
