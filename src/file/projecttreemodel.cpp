@@ -440,20 +440,20 @@ void ProjectTreeModel::sortChildNodes(PExGroupNode *group)
 
 void ProjectTreeModel::updateProjectExtNums(PExGroupNode *group)
 {
+    if (!group) return;
+    QMap<QString, int> nameCounts;
     for (int i = 0; i < group->childCount(); ++i) {
-        PExAbstractNode *node = group->childNode(i);
-        if (!node) continue;
-        QString name = node->name();
-        QString ext;
-        int nr = 0;
-        for (int j = 0; j < i; ++j) {
-            PExAbstractNode *other = group->childNode(j);
-            if (other && other->name(NameModifier::withNameExt) == name + ext) {
-                ++nr;
-                ext = QString::number(nr);
+        if (PExAbstractNode *node = group->childNode(i)) {
+            QString baseName = node->name();
+            QString ext;
+            if (nameCounts.contains(baseName)) {
+                nameCounts[baseName]++;
+                ext = QString::number(nameCounts[baseName]);
+            } else {
+                nameCounts[baseName] = 0;
             }
+            node->setNameExt(ext);
         }
-        node->setNameExt(ext);
     }
     emit projectListChanged();
 }

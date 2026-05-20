@@ -618,7 +618,7 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file)
     }
     // add to (new) destination
     mTreeModel->appendChild(newParent, file);
-    for (PExGroupNode *group : unsortedGroup)
+    for (PExGroupNode *group : std::as_const(unsortedGroup))
         sortChildNodes(group);
     purgeGroup(oldParent);
 }
