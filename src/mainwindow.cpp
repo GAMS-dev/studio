@@ -2068,6 +2068,11 @@ void MainWindow::on_actionSave_As_triggered()
         QStringList filters;
         if (fileMeta->kind() == FileKind::Opt) {
             filters << ViewHelper::dialogOptFileFilter(fi.baseName());
+#ifdef _WIN64
+            // Workaround for Windows bug to always add the 1st suffix if it doesn't match
+            filters.clear();
+            filters << "All files (*.*)";
+#endif
             filePath = QFileDialog::getSaveFileName(this, "Save file as...",
                                                     filePath, filters.join(";;"), &filters.first(),
                                                     QFileDialog::DontConfirmOverwrite);
