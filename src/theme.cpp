@@ -777,11 +777,13 @@ int Theme::baseTheme(int theme) const
     return mThemeBases.at(theme);
 }
 
-void Theme::fillThemeColorPalette(QPalette &palette)
+void Theme::fillThemeColorPalette(QPalette &palette, bool useEditBackground)
 {
-    palette.setColor(QPalette::Window,          Theme::color(Theme::Window_window));
+    palette.setColor(QPalette::Window,          useEditBackground ? Theme::color(Theme::Edit_background)
+                                                                  : Theme::color(Theme::Window_window));
     palette.setColor(QPalette::WindowText,      Theme::color(Theme::Window_text));
-    palette.setColor(QPalette::Base,            Theme::color(Theme::Window_base));
+    palette.setColor(QPalette::Base,            useEditBackground ? Theme::color(Theme::Edit_background)
+                                                                  : Theme::color(Theme::Window_window));
     palette.setColor(QPalette::AlternateBase,   Theme::color(Theme::Window_alternateBase));
     palette.setColor(QPalette::Text,            Theme::color(Theme::Window_text));
     palette.setColor(QPalette::Button,          Theme::color(Theme::Window_button));
@@ -796,21 +798,19 @@ void Theme::fillThemeColorPalette(QPalette &palette)
     palette.setColor(QPalette::Disabled, QPalette::ButtonText, Theme::color(Theme::Disable_Gray));
 }
 
-void Theme::setThemeColorPalette(QWidget *widget)
+void Theme::setThemeColorPalette(QWidget *widget,bool useEditBackground)
 {
     if (!widget)
         return;
 
     QPalette palette = widget->palette();
-    Theme::fillThemeColorPalette(palette);
+    Theme::fillThemeColorPalette(palette, useEditBackground);
     widget->setPalette(palette);
-    widget->setAutoFillBackground(false);
 
     for (QWidget *child : widget->findChildren<QWidget*>()) {
         QPalette cpalette = child->palette();
-        Theme::fillThemeColorPalette(cpalette);
+        Theme::fillThemeColorPalette(cpalette, false);
         child->setPalette(cpalette);
-        child->setAutoFillBackground(false);
     }
 }
 

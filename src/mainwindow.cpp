@@ -5372,12 +5372,12 @@ void MainWindow::invalidateTheme(bool refreshSyntax)
     Theme::setActiveThemeStyle(qApp);
 
     QPalette palette = qApp->palette();
-    Theme::fillThemeColorPalette(palette);
+    Theme::fillThemeColorPalette(palette, false);
     qApp->setPalette(palette);
 
-    Theme::setThemeColorPalette(mWp);
-    Theme::setThemeColorPalette(ui->dockProjectView);
-    Theme::setThemeColorPalette(ui->dockProcessLog);
+    Theme::setThemeColorPalette(mWp, true);
+    Theme::setThemeColorPalette(ui->dockProjectView, false);
+    Theme::setThemeColorPalette(ui->dockProcessLog, false);
 
     for (FileMeta *fm: mFileMetaRepo.openFiles())
         fm->invalidateTheme(refreshSyntax);

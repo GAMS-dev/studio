@@ -86,9 +86,10 @@ WelcomePage::WelcomePage(MainWindow *parent)
 
 
     setupIcons();
-    auto p = palette();
-    Theme::fillThemeColorPalette(p);
-    setPalette(p);
+    setAutoFillBackground(true);
+    QPalette p = this->palette();
+    Theme::fillThemeColorPalette(p, false);
+    this->setPalette(p);
 
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
@@ -352,6 +353,17 @@ bool WelcomePage::event(QEvent *event)
         const auto laList = findChildren<WpLabel*>();
         for (WpLabel* w : laList)
             w->setPalette(p);
+
+        ui->label_newfile->setPalette(p);
+        ui->label_browseLib->setPalette(p);
+        ui->label_trnsport->setPalette(p);
+        ui->label_doc_studio->setPalette(p);
+        ui->label_doc_tut->setPalette(p);
+
+        ui->label_whats_new->setPalette(p);
+        ui->label_changelog->setPalette(p);
+        ui->label_gamsworld->setPalette(p);
+        ui->label_contact->setPalette(p);
     }
 #ifdef QWEBENGINE
     if (mOverview && event->type() == QEvent::KeyPress) {

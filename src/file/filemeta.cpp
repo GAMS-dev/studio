@@ -472,7 +472,6 @@ void FileMeta::updateSyntaxColors(bool refreshSyntax)
 void FileMeta::initEditorColors()
 {
     for (QWidget *w: std::as_const(mEditors)) {
-        Theme::setThemeColorPalette(w);
         if (reference::ReferenceViewer *rv = ViewHelper::toReferenceViewer(w)) {
             rv->updateStyle();
             continue;
@@ -484,7 +483,7 @@ void FileMeta::initEditorColors()
             ed = tv->edit();
         if (!ed) continue;
         if (Theme::color(Theme::Edit_text) == Qt::transparent &&
-                Theme::color(Theme::Edit_background) == Qt::transparent) {
+            Theme::color(Theme::Edit_background) == Qt::transparent) {
             ed->setAutoFillBackground(false);
             ed->setPalette(qApp->palette());
         } else if (ed->palette().windowText().color() != Theme::color(Theme::Edit_text) ||
