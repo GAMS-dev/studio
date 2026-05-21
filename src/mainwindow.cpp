@@ -731,7 +731,7 @@ void MainWindow::adjustFonts()
     const qreal fontFactor = 0.95;
     const qreal fontFactorStatusbar = 0.85;
     QFont f(ui->menuBar->font());
-    mTableFontSizeDif = f.pointSizeF() - QFontDatabase::systemFont(QFontDatabase::FixedFont).pointSizeF() - 2;
+    mTableFontSizeDif = f.pointSizeF() - QFontDatabase::systemFont(QFontDatabase::FixedFont).pointSizeF() - 1;
 
     f.setPointSizeF(ui->menuBar->font().pointSizeF() * fontFactor);
     ui->centralWidget->setFont(f);
