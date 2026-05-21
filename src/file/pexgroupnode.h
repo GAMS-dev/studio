@@ -108,7 +108,7 @@ public:
     void setTimestamp(const QDateTime &timestamp);
 
     bool hasLogNode() const;
-    PExLogNode* logNode();
+    PExLogNode* logNode(const QString &filestem = QString());
     FileMeta *mainFile() const;
     void setMainFile(FileMeta *gmsFile = nullptr);
     bool dynamicMainFile() const;
