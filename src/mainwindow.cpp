@@ -97,6 +97,9 @@ using namespace std::chrono_literals;
 namespace gams {
 namespace studio {
 
+static const int CMaxAddFiles = 499;
+static const int CMaxOpenFiles = 25;
+
 static const QStringList COpenAltText {"&Open in New Project...",
                                        "&Open in Current Project...",
                                        "Open the file(s) in a new project",
@@ -215,7 +218,16 @@ MainWindow::MainWindow(QWidget *parent)
         mProjectRepo.selectionChanged(selected, deselected);
         updateAllowedMenus();
     });
-    connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
+    connect(ui->projectView, &ProjectTreeView::dropFiles, this, [this](QModelIndex idx, QStringList files,
+            QList<gams::studio::NodeId> knownIds, Qt::DropAction act, QList<QModelIndex> &newSelection) {
+        if (files.count() > CMaxAddFiles) {
+            int choice = MsgBox::warning("Warning: many files", "Dropped selection contains " + QString::number(files.count()) +
+                            " files. Adding that many files can take a long time to complete.\nDo you want to continue?",
+                            this, "Yes", "No", QString(), 1);
+            if (choice == 1) return; // abort
+        }
+        mProjectRepo.dropFiles(idx, files, knownIds, act, newSelection);
+    });
     connect(ui->projectView, &ProjectTreeView::getHasRunBlocker, this, [this](const QList<NodeId> &ids, bool &runBlocked) {
         QList<PExAbstractNode*> nodes;
         for (const NodeId &id : ids) {
@@ -2021,7 +2033,7 @@ void MainWindow::openFolder(const QString &path, PExProjectNode *project)
             allFiles.insert(f.absoluteFilePath());
     }
 
-    if (allFiles.count() > 499) {
+    if (allFiles.count() > CMaxAddFiles) {
         int choice = MsgBox::warning("Warning: many files", path + " contains " + QString::number(allFiles.count()) +
                         " files. Adding that many files can take a long time to complete.\nDo you want to continue?",
                         this, "Yes", "No", QString(), 1);
@@ -4150,7 +4162,7 @@ void MainWindow::dropEvent(QDropEvent* e)
     e->accept();
 
     int answer;
-    if (pathList.size() > 25) {
+    if (pathList.size() > CMaxOpenFiles) {
         raise();
         activateWindow();
         QMessageBox msgBox;
