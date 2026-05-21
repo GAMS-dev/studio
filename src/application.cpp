@@ -21,6 +21,7 @@
 #include "support/distributionvalidator.h"
 #include "exception.h"
 #include "qstylefactory.h"
+#include "palettestylemanager.h"
 #include "version.h"
 #include "settings.h"
 #include "commonpaths.h"
@@ -81,9 +82,8 @@ QString sdsToString(SysDirSelector sds)
 Application::Application(int& argc, char** argv)
     : QApplication(argc, argv)
 {
-#ifdef _WIN64
-    QApplication::setStyle(QStyleFactory::create("Fusion"));
-#endif
+    QApplication::setStyle(QStyleFactory::create(PaletteStyleManager::nativeStyleKey()));
+
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
     parseCmdArgs();
     QString userName;

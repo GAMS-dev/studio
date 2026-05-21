@@ -5369,7 +5369,8 @@ void MainWindow::newProcessCall(const QString &text, const QString &call)
 
 void MainWindow::invalidateTheme(bool refreshSyntax)
 {
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    Theme::setActiveThemeStyle(qApp);
+
     QPalette palette = qApp->palette();
     Theme::fillThemeColorPalette(palette);
     qApp->setPalette(palette);

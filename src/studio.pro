@@ -468,6 +468,7 @@ HEADERS += \
     option/gamsparameditor.h \
     option/solveroptioneditor.h \
     option/gamsparameterwidget.h \
+    palettestylemanager.h \
     pinviewwidget.h \
     process/abstractprocess.h \
     process/connectprocess.h \

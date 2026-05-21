@@ -150,6 +150,7 @@ public:
     QString renameActiveTheme(const QString &name);
     int activeTheme() const;
     QString activeThemeName();
+    QString activeThemeStyle();
     int baseTheme(int theme) const;
     ColorSlot slot(const QString &name);
     void invalidate();
@@ -164,6 +165,7 @@ public:
 
     static void fillThemeColorPalette(QPalette& palette);
     static void setThemeColorPalette(QWidget *widget);
+    static void setActiveThemeStyle(QApplication* app);
     static bool isDark();
     static QString name(ColorSlot slot);
     static QString text(ColorSlot slot);
@@ -196,10 +198,11 @@ private:
 private:
     static Theme *mInstance;
     typedef QHash<ColorSlot, Color> ColorTheme;
-    QList<ColorTheme> mColorThemes;
+    QList<ColorTheme>         mColorThemes;
     QHash<ColorSlot, QString> mSlotText;
-    QStringList mThemeNames;
-    QList<int> mThemeBases;
+    QStringList               mThemeNames;
+    QList<int>                mThemeBases;
+    QStringList               mThemeStyles;
     QString mIconSet;
     int mFixedThemeCount;
     int mActiveTheme;
