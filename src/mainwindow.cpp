@@ -2062,7 +2062,8 @@ void MainWindow::on_actionSave_As_triggered()
     if (!node) return;
     FileMeta *fileMeta = node->file();
     int choice = 0;
-    QString filePath = fileMeta->location();
+    QString oldFilePath = fileMeta->location();
+    QString filePath = oldFilePath;
     QFileInfo fi(filePath);
     while (choice < 1) {
         QStringList filters;
@@ -2097,10 +2098,11 @@ void MainWindow::on_actionSave_As_triggered()
         if (filePath.isEmpty()) return;
 
         if (filePath.compare(node->location(), FileType::fsCaseSense()) == 0) {
-            appendSystemLogWarning("The file '" + filePath + "' cannot be overwritten with itself.");
+            choice = MsgBox::question("Unchanged filename", "Filename hasn't changed. Save anyway?", this, "Yes", "No", 0, 1);
+            if (choice == 0)
+                on_actionSave_triggered();
             return;
         }
-
 
         choice = 1;
         QString text = "The option file name '%1' is different than source option file name '%2'. "
