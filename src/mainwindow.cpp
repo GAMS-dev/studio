@@ -97,7 +97,7 @@ using namespace std::chrono_literals;
 namespace gams {
 namespace studio {
 
-static const int CMaxAddFiles = 499;
+static const int CMaxAddFiles = 99;
 static const int CMaxOpenFiles = 25;
 
 static const QStringList COpenAltText {"&Open in New Project...",
@@ -4169,10 +4169,11 @@ void MainWindow::dropEvent(QDropEvent* e)
         msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
                        " files or folders at once. This may take a long time.");
         msgBox.setInformativeText("Do you want to continue?");
-        msgBox.setStandardButtons(QMessageBox::Open | QMessageBox::Cancel);
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
         answer = msgBox.exec();
 
-        if (answer != QMessageBox::Open) return;
+        if (answer != QMessageBox::Yes) return;
     }
     openFiles(pathList);
 }
@@ -7481,7 +7482,8 @@ void MainWindow::on_actionPrint_triggered()
     }
     QMessageBox msgBox;
     msgBox.setWindowTitle("Print large file?");
-    msgBox.setText("The file you intend to print contains " + QString::number(numberLines) + " lines. It might take several minutes to print. Are you sure you want to continue?");
+    msgBox.setText("The file you intend to print contains " + QString::number(numberLines)
+                   + " lines. It might take several minutes to print. Are you sure you want to continue?");
     msgBox.setStandardButtons(QMessageBox::Yes);
     msgBox.addButton(QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::No);
