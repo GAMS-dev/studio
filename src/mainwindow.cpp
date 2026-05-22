@@ -4575,49 +4575,26 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
 
     processMainFileDynamics();
 
-    // clear the TextMarks for this project
-    QSet<TextMark::Type> markTypes;
-    markTypes << TextMark::error << TextMark::link << TextMark::target;
+    // cleanup the TextMarks for this project
+    QSet<TextMark::Type> markTypes = {TextMark::error, TextMark::link, TextMark::target};
     project->clearTextMarks(markTypes);
 
-    // prepare the log
-    PExLogNode* logNode = mProjectRepo.logNode(project);
-    markTypes << TextMark::bookmark;
-    mTextMarkRepo.removeMarks(logNode->file()->id(), logNode->assignedProject()->id(), markTypes);
-
-    logNode->resetLst();
-    if (!logNode->file()->isOpen()) {
-        QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), getEditorFont(fgLog), logNode->file()->encoding());
-        logNode->file()->addToTab(ui->logTabs, wid);
-
-        // wid->setFont(getEditorFont(fgLog));
-        if (TextView* tv = ViewHelper::toTextView(wid)) {
-            tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
-            connect(tv, &TextView::continueFindPressed, this, &MainWindow::continueFind);
-        }
+    // cleanup marks from previous LOG
+    if (project->hasLogNode()) {
+        PExLogNode* logNode = project->logNode();
+        markTypes = {TextMark::error, TextMark::link, TextMark::target, TextMark::bookmark};
+        mTextMarkRepo.removeMarks(logNode->file()->id(), logNode->assignedProject()->id(), markTypes);
     }
-    if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
-        connect(tv, &TextView::selectionChanged, this, &MainWindow::updateStatusPos, Qt::UniqueConnection);
-        connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateStatusLineCount, Qt::UniqueConnection);
-        connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateStatusLoadAmount, Qt::UniqueConnection);
-        connect(project, &PExProjectNode::addProcessLog, tv, &TextView::addProcessLog, Qt::UniqueConnection);
-    }
+
     // cleanup bookmarks
     const QVector<QString> cleanupKinds {"gdx",  "gsp", "log", "lst", "ls2", "lxi", "ref"};
-    markTypes = QSet<TextMark::Type>() << TextMark::bookmark;
+    markTypes = {TextMark::bookmark};
     for (const QString &kind: cleanupKinds) {
         if (project->hasParameter(kind)) {
             FileMeta *file = mFileMetaRepo.fileMeta(project->parameter(kind));
             if (file) mTextMarkRepo.removeMarks(file->id(), markTypes);
         }
     }
-
-    if (settings->toBool(skEdClearLog)) logNode->clearLog();
-
-    disconnect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
-    ui->logTabs->setCurrentWidget(logNode->file()->editors().first());
-    ui->dockProcessLog->setVisible(true);
-    connect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
 
     // select gms-file and working dir to run
     QString gmsFilePath = project->parameter("gms");
@@ -4628,7 +4605,6 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     }
     FileMeta *runMeta = mFileMetaRepo.fileMeta(gmsFilePath);
     PExFileNode *runNode = project->findFile(runMeta);
-    logNode->file()->setEncoding(runNode ? runNode->file()->encoding() : QString());
     QString workDirName = project->workDir();
     QDir workDir(workDirName);
 
@@ -4647,15 +4623,38 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
         project->setProcess(process);
     AbstractProcess* projectProc = project->process();
     int logOption = 0;
-    logNode->linkToProcess(projectProc);
     projectProc->setParameters(project->analyzeParameters(workDir.relativeFilePath(gmsFilePath), projectProc->defaultParameters()
                                                           , itemList, opt , comMode, logOption));
     qDeleteAll(itemList);
     itemList.clear();
-
     if (projectProc->parameters().isEmpty())
         return false;
 
+    // prepare the LOG
+    PExLogNode* logNode = project->logNode();
+    logNode->resetLst();
+    if (!logNode->file()->isOpen()) {
+        QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), getEditorFont(fgLog), logNode->file()->encoding());
+        logNode->file()->addToTab(ui->logTabs, wid);
+        // wid->setFont(getEditorFont(fgLog));
+        if (TextView* tv = ViewHelper::toTextView(wid)) {
+            tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
+            connect(tv, &TextView::continueFindPressed, this, &MainWindow::continueFind);
+        }
+    }
+    if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
+        connect(tv, &TextView::selectionChanged, this, &MainWindow::updateStatusPos, Qt::UniqueConnection);
+        connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateStatusLineCount, Qt::UniqueConnection);
+        connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateStatusLoadAmount, Qt::UniqueConnection);
+        connect(project, &PExProjectNode::addProcessLog, tv, &TextView::addProcessLog, Qt::UniqueConnection);
+    }
+    if (settings->toBool(skEdClearLog)) logNode->clearLog();
+    ui->logTabs->setCurrentWidget(logNode->file()->editors().first());
+    logNode->file()->setEncoding(runNode ? runNode->file()->encoding() : QString());
+    disconnect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
+    ui->dockProcessLog->setVisible(true);
+    connect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
+    logNode->linkToProcess(projectProc);
     logNode->prepareRun(logOption);
     logNode->setJumpToLogEnd(true);
 
