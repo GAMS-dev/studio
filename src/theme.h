@@ -163,8 +163,8 @@ public:
     void readUserThemes(const QVariantList &sourceThemes);
     int readUserTheme(const QVariantMap &tSource);
 
-    static void fillThemeColorPalette(QPalette& palette, bool useEditBackground=false);
-    static void setThemeColorPalette(QWidget *widget, bool useEditBackground=false);
+    static void fillThemeColorPalette(QPalette& palette, bool useEditBackground=false, bool highlighTransparent=false);
+    static void setThemeColorPalette(QWidget *widget, bool useEditBackground=false, bool highlighTransparent=false);
     static void setActiveThemeStyle(QApplication* app);
     static bool isDark();
     static QString name(ColorSlot slot);

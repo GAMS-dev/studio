@@ -777,7 +777,7 @@ int Theme::baseTheme(int theme) const
     return mThemeBases.at(theme);
 }
 
-void Theme::fillThemeColorPalette(QPalette &palette, bool useEditBackground)
+void Theme::fillThemeColorPalette(QPalette &palette, bool useEditBackground, bool highlighTransparent)
 {
     palette.setColor(QPalette::Window,          useEditBackground ? Theme::color(Theme::Edit_background)
                                                                   : Theme::color(Theme::Window_window));
@@ -790,7 +790,8 @@ void Theme::fillThemeColorPalette(QPalette &palette, bool useEditBackground)
     palette.setColor(QPalette::ButtonText,      Theme::color(Theme::Window_buttonText));
     palette.setColor(QPalette::BrightText,      Theme::color(Theme::Normal_Red));
     palette.setColor(QPalette::PlaceholderText, Theme::color(Theme::Window_placeHolderText));
-    palette.setColor(QPalette::Highlight,       Theme::color(Theme::Window_highlight));
+    palette.setColor(QPalette::Highlight,       highlighTransparent ? Qt::transparent
+                                                                    : Theme::color(Theme::Window_highlight));
     palette.setColor(QPalette::HighlightedText, Theme::color(Theme::Window_highlightedText));   
     palette.setColor(QPalette::Link,            Theme::color(Theme::Window_link));
 
@@ -798,18 +799,18 @@ void Theme::fillThemeColorPalette(QPalette &palette, bool useEditBackground)
     palette.setColor(QPalette::Disabled, QPalette::ButtonText, Theme::color(Theme::Disable_Gray));
 }
 
-void Theme::setThemeColorPalette(QWidget *widget,bool useEditBackground)
+void Theme::setThemeColorPalette(QWidget *widget,bool useEditBackground, bool highlighTranaaprent)
 {
     if (!widget)
         return;
 
     QPalette palette = widget->palette();
-    Theme::fillThemeColorPalette(palette, useEditBackground);
+    Theme::fillThemeColorPalette(palette, useEditBackground, highlighTranaaprent);
     widget->setPalette(palette);
 
     for (QWidget *child : widget->findChildren<QWidget*>()) {
         QPalette cpalette = child->palette();
-        Theme::fillThemeColorPalette(cpalette, false);
+        Theme::fillThemeColorPalette(cpalette, useEditBackground, highlighTranaaprent);
         child->setPalette(cpalette);
     }
 }
@@ -817,6 +818,7 @@ void Theme::setThemeColorPalette(QWidget *widget,bool useEditBackground)
 void Theme::setActiveThemeStyle(QApplication *app)
 {
     app->setStyle(QStyleFactory::create(instance()->activeThemeStyle()));
+    QGuiApplication::styleHints()->setColorScheme(Theme::isDark() ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light );
 }
 
 bool Theme::isDark()
