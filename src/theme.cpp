@@ -117,7 +117,6 @@ void Theme::initDefault()
     mColorThemes.clear();
     mThemeNames.clear();
     mThemeBases.clear();
-    mThemeStyles.clear();
 
     // default to first color theme - Light
     mActiveTheme = 0;
@@ -127,7 +126,6 @@ void Theme::initDefault()
     mColorThemes << ColorTheme();
     mThemeNames  << "Light";
     mThemeBases  << 0;
-    mThemeStyles << PaletteStyleManager::nativeStyleKey();
 
     QColor light_white        (Qt::white);
     QColor light_darkWhite    (245, 245, 245);
@@ -249,7 +247,6 @@ void Theme::initDefault()
     mColorThemes << mColorThemes.at(0);
     mThemeNames  << "Dark";
     mThemeBases  << sNr;
-    mThemeStyles << PaletteStyleManager::nativeStyleKey();
 
     // Dark Colors
     QColor dark_highlight   (243,150,25);      // gams orange
@@ -353,7 +350,6 @@ void Theme::initDefault()
     mColorThemes << mColorThemes.at(0);
     mThemeNames  << "Distinct - light";
     mThemeBases  << sNr;
-    mThemeStyles << PaletteStyleManager::uniformStyleKey();
 
     QColor distinct_orange     (230, 159, 0);
     QColor distinct_skyblue    (986, 180, 233);
@@ -463,7 +459,6 @@ void Theme::initDefault()
     mColorThemes << mColorThemes.at(1);
     mThemeNames  << "Dracula - dark";
     mThemeBases  << sNr;
-    mThemeStyles << PaletteStyleManager::uniformStyleKey();
 
     QColor drac_background (40, 42, 54);
     QColor drac_currentLine(98, 114, 164);
@@ -566,7 +561,6 @@ void Theme::initDefault()
     mColorThemes << mColorThemes.at(0);
     mThemeNames  << "Solarized - light";
     mThemeBases  << sNr;
-    mThemeStyles << PaletteStyleManager::uniformStyleKey();
 
     QColor solarized_base0  (131, 148, 150);  // text
     QColor solarized_base1  (147, 161, 161);  // light text
@@ -675,7 +669,6 @@ void Theme::initDefault()
     mColorThemes << mColorThemes.at(sNr++);
     mThemeNames  << "Solarized - dark";
     mThemeBases  << sNr;
-    mThemeStyles << PaletteStyleManager::uniformStyleKey();
 
     mColorThemes[sNr].insert(invalid,                        CUndefined);
     mColorThemes[sNr].insert(Edit_text,                      solarized_base1.lighter(120));
@@ -764,7 +757,6 @@ QString Theme::renameActiveTheme(const QString &name)
     if (mActiveTheme < mThemeNames.count()-1) {
         mThemeNames.move(mActiveTheme, mThemeNames.count()-1);
         mThemeBases.move(mActiveTheme, mThemeNames.count()-1);
-        mThemeStyles.move(mActiveTheme, mThemeNames.count()-1);
         mColorThemes.move(mActiveTheme, mThemeNames.count()-1);
         mActiveTheme = mThemeNames.count()-1;
     }
@@ -777,7 +769,6 @@ QString Theme::renameActiveTheme(const QString &name)
     if (i < last) {
         mThemeNames.move(last, i);
         mThemeBases.move(last, i);
-        mThemeStyles.move(last, i);
         mColorThemes.move(last, i);
         mActiveTheme = i;
     }
@@ -793,11 +784,6 @@ int Theme::activeTheme() const
 QString Theme::activeThemeName()
 {
     return mThemeNames.at(mActiveTheme);
-}
-
-QString Theme::activeThemeStyle()
-{
-    return mThemeStyles.at(mActiveTheme);
 }
 
 int Theme::baseTheme(int theme) const
@@ -853,8 +839,8 @@ void Theme::setThemeColorPalette(QWidget *widget,bool useBaseBackground, bool hi
 
 void Theme::setActiveThemeStyle(QApplication *app)
 {
-    app->setStyle(QStyleFactory::create(instance()->activeThemeStyle()));
-    QGuiApplication::styleHints()->setColorScheme(Theme::isDark() ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light );
+    app->setStyle(QStyleFactory::create(PaletteStyleManager::uniformStyleKey()));
+    QGuiApplication::styleHints()->setColorScheme( Theme::isDark() ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light );
 }
 
 bool Theme::isDark()
@@ -1016,7 +1002,6 @@ int Theme::copyTheme(int index, const QString &destName)
     mColorThemes << mColorThemes.at(index);
     mThemeNames  << name;
     mThemeBases  << mThemeBases.at(index);
-    mThemeStyles << mThemeStyles.at(index);
 
     // restore sort order
     int i = mThemeNames.count() - 1;
@@ -1027,7 +1012,6 @@ int Theme::copyTheme(int index, const QString &destName)
         mThemeNames.move(last, i);
         mThemeBases.move(last, i);
         mColorThemes.move(last, i);
-        mThemeStyles.move(last, i);
     }
 
     return i;
@@ -1040,7 +1024,6 @@ int Theme::removeTheme(int index)
     mColorThemes.removeAt(index);
     mThemeNames.removeAt(index);
     mThemeBases.removeAt(index);
-    mThemeStyles.removeAt(index);
     return mActiveTheme;
 }
 
@@ -1171,7 +1154,6 @@ QVariantList Theme::writeUserThemes() const
         QVariantMap resTheme;
         resTheme.insert("name",  mThemeNames.at(i));
         resTheme.insert("base",  mThemeBases.at(i));
-        resTheme.insert("style", mThemeStyles.at(i));
         resTheme.insert("theme", resData);
         res << resTheme;
     }
@@ -1183,7 +1165,6 @@ void Theme::readUserThemes(const QVariantList &sourceThemes)
     // remove user defined themes
     while (mThemeBases.size()  > mFixedThemeCount) mThemeBases.removeLast();
     while (mThemeNames.size()  > mFixedThemeCount) mThemeNames.removeLast();
-    while (mThemeStyles.size() > mFixedThemeCount) mThemeStyles.removeLast();
     while (mColorThemes.size() > mFixedThemeCount) mColorThemes.removeLast();
 
     // add new user defined themes
@@ -1249,7 +1230,6 @@ QVariantMap Theme::writeCurrentTheme()
     QVariantMap resTheme;
     resTheme.insert("name",  mThemeNames.at(mActiveTheme));
     resTheme.insert("base",  mThemeBases.at(mActiveTheme));
-    resTheme.insert("style", mThemeStyles.at(mActiveTheme));
     resTheme.insert("theme", resData);
     return resTheme;
 }

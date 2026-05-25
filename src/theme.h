@@ -160,7 +160,6 @@ public:
     QString renameActiveTheme(const QString &name);
     int activeTheme() const;
     QString activeThemeName();
-    QString activeThemeStyle();
     int baseTheme(int theme) const;
     ColorSlot slot(const QString &name);
     void invalidate();
@@ -212,7 +211,6 @@ private:
     QHash<ColorSlot, QString> mSlotText;
     QStringList               mThemeNames;
     QList<int>                mThemeBases;
-    QStringList               mThemeStyles;
     QString mIconSet;
     int mFixedThemeCount;
     int mActiveTheme;
