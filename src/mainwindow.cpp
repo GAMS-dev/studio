@@ -5375,9 +5375,9 @@ void MainWindow::invalidateTheme(bool refreshSyntax)
     Theme::fillThemeColorPalette(palette, false, false);
     qApp->setPalette(palette);
 
-    Theme::setThemeColorPalette(mWp, true, false);
-    Theme::setThemeColorPalette(ui->dockProjectView, false, true);
-    Theme::setThemeColorPalette(ui->dockProcessLog, false, false);
+    Theme::setThemeColorPalette(mWp, false, false);
+    Theme::setThemeColorPalette(ui->dockProjectView, true, true);
+    Theme::setThemeColorPalette(ui->dockProcessLog,  true, false);
 
     for (FileMeta *fm: mFileMetaRepo.openFiles())
         fm->invalidateTheme(refreshSyntax);

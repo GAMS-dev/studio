@@ -117,7 +117,7 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
             if (index.row() % 2 == 0)
                return QVariant::fromValue(Theme::color(Theme::Window_alternateBase));
             else
-                return QVariant::fromValue(Theme::color(Theme::Window_window));
+                return QVariant::fromValue(Theme::color(Theme::Window_base));
         } else {
             return QVariant::fromValue(Theme::color(Theme::Window_alternateBase));
         }

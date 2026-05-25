@@ -196,17 +196,17 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
         } else if (item->data( static_cast<int>(DataItemColumn::CheckState) ).toInt() <= static_cast<int>(DataCheckState::ListItem)   ||
                    item->data( static_cast<int>(DataItemColumn::CheckState) ).toInt() == static_cast<int>(DataCheckState::ListAppend) ||
                    item->data( static_cast<int>(DataItemColumn::CheckState) ).toInt() == static_cast<int>(DataCheckState::MapAppend)        ) {
-                   return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Window));
+                   return QVariant::fromValue(Theme::color(Theme::Window_window)); //QGuiApplication::palette().color(QPalette::Window));
         } else if (index.column() > static_cast<int>(DataItemColumn::Value)) {
-                   return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
+                   return QVariant::fromValue(Theme::color(Theme::Window_base)); //QApplication::palette().color(QPalette::Base));
         } else if (index.column()==static_cast<int>(DataItemColumn::Key) &&
                    item->data( static_cast<int>(DataItemColumn::CheckState)).toInt()==static_cast<int>(DataCheckState::ElementValue) ) {
-                   return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
+                   return QVariant::fromValue(Theme::color(Theme::Window_base)); //QApplication::palette().color(QPalette::Base));
         } else if (index.column()==static_cast<int>(DataItemColumn::Value) &&
                    item->data( static_cast<int>(DataItemColumn::CheckState)).toInt()==static_cast<int>(DataCheckState::ElementKey) ) {
-                   return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
+                   return QVariant::fromValue(Theme::color(Theme::Window_base)); //QApplication::palette().color(QPalette::Base));
         } else {
-            return QVariant::fromValue(QApplication::palette().color(QPalette::AlternateBase));
+            return QVariant::fromValue(Theme::color(Theme::Window_alternateBase)); //QApplication::palette().color(QPalette::AlternateBase));
         }
     }
     case Qt::UserRole: {

@@ -472,6 +472,7 @@ void FileMeta::updateSyntaxColors(bool refreshSyntax)
 void FileMeta::initEditorColors()
 {
     for (QWidget *w: std::as_const(mEditors)) {
+        Theme::setThemeColorPalette(w, true, false);
         if (reference::ReferenceViewer *rv = ViewHelper::toReferenceViewer(w)) {
             rv->updateStyle();
             continue;

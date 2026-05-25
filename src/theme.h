@@ -118,10 +118,20 @@ public:
         Window_text,            // Foreground used with Base
         Window_button,          // Button Background
         Window_buttonText,      // Button Foreground
+        Window_brightText,      // Text Foreground
         Window_placeHolderText, // Text Input Foreground
         Window_highlight,       // Item Selection Highlight Background
         Window_highlightedText, // Selected Text color
         Window_link,            // hyperlinks
+
+        Window_disable_window,          // disable window
+        Window_disable_base,            // disable base, and button
+        Window_disable_text,            // disable text, button text, hightlight text
+        Window_disable_brightText,      // disable bright text
+        Window_disable_placeholderText, // disable place holder text
+        Window_disable_highlight,       // disable highlight
+        Window_disable_hightlightText,  // disable highlight text
+        Window_disable_link,            // disable hyperlinks
 
         ColorSlotCount
     };
@@ -163,8 +173,8 @@ public:
     void readUserThemes(const QVariantList &sourceThemes);
     int readUserTheme(const QVariantMap &tSource);
 
-    static void fillThemeColorPalette(QPalette& palette, bool useEditBackground=false, bool highlighTransparent=false);
-    static void setThemeColorPalette(QWidget *widget, bool useEditBackground=false, bool highlighTransparent=false);
+    static void fillThemeColorPalette(QPalette& palette, bool useBaseBackground=false, bool highlighTransparent=false);
+    static void setThemeColorPalette(QWidget *widget,    bool useBaseBackground=false, bool highlighTransparent=false);
     static void setActiveThemeStyle(QApplication* app);
     static bool isDark();
     static QString name(ColorSlot slot);
