@@ -12,6 +12,7 @@ Version 1.25.0  *
 - Fixed matches not being updated when clearing the term in quick find.
 - Fixed initial font size for GDX and reference viewer when the font size has been changed.
 - Upgraded to Qt 6.11.1
+- Fixed: The command line parameter `filestem` has been ignored for the log-file name.
 
 Version 1.24.3
 ==================
