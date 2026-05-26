@@ -21,13 +21,10 @@
 #include "editors/abstractedit.h"
 #include "file/filemeta.h"
 #include "settings.h"
-#ifndef __APPLE__
-#endif
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
 #endif
-
 #include <QVariant>
 
 namespace gams {
@@ -71,13 +68,6 @@ void ViewHelper::setModified(QWidget *widget, bool modified)
 bool ViewHelper::updateBaseTheme()
 {
     int currentTheme = Theme::instance()->activeTheme();
-#ifdef __APPLE__
-    Theme::instance()->setActiveTheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
-    if (currentTheme != Theme::instance()->activeTheme()) {
-        Settings::settings()->setInt(skEdAppearance, Theme::instance()->activeTheme());
-        Settings::settings()->save();
-    }
-#endif
     return currentTheme != Theme::instance()->activeTheme();
 }
 
@@ -107,6 +97,9 @@ void ViewHelper::changeAppearance(int appearance)
     int pickedTheme = appearance;
 
 #ifdef _WIN64
+    // TODO(JM) "canFollowOS" may be activated for macOS too when we can track this:
+    // MacOSCocoaBridge::isDarkMode()
+
     bool canFollowOS = true; // deactivate follow OS option for linux
 
     if (canFollowOS && pickedTheme == 0) { // do OS specific things

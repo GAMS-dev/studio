@@ -42,7 +42,7 @@ void TabWidget::updateSystemLogTab()
 {
     ++mMsgCount;
     setTabText(0, QString("%1 (%2)").arg(ViewStrings::SystemLog).arg(mMsgCount));
-    QFont font =  tabBar()->font();
+    QFont font =  qApp->font();
     font.setBold(true);
     tabBar()->setFont(font);
 }
@@ -56,7 +56,7 @@ void TabWidget::resetSystemLogTab(int index)
         setTabText(0, ViewStrings::SystemLog);
         if (!widget(0))
             return;
-        QFont font =  widget(0)->font();
+        QFont font =  qApp->font();
         font.setBold(false);
         tabBar()->setFont(font);
 
