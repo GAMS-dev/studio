@@ -1,21 +1,22 @@
-Version 1.25.0  *
+Version 1.25.0
 ==================
-- The GDX Viewer export facility now truncates automatically determined sheet names exceeding 31 characters.
-- On adding multiple files, Studio doesn't open all files anymore.
-- On opening a project, Studio opens the main file if assigned. Otherwise the project options are opened.
 - Added double-click action to open a gdx file reference from within a symbol table in GDXViewer.
-- Reimplemented the GDX filter dialogs which fixes several focus and keyboard shortcut bugs, especially on macOS.
 - Added MIRO Connector and Secure Module information to license dialog.
 - Added the current license state to the status bar.
 - Added markers to the scrollbar for find and search matches, breakpoints, errors, and bookmarks.
+- Added warning when dropping more than 99 files to the project explorer.
+- The GDX Viewer export facility now truncates automatically determined sheet names exceeding 31 characters.
+- On adding multiple files, Studio doesn't open all files anymore.
+- On opening a project, Studio opens the main file if assigned. Otherwise the project options are opened.
+- Reimplemented the GDX filter dialogs which fixes several focus and keyboard shortcut bugs, especially on macOS.
 - Fixed short blocking behavior when using quick find in a huge file.
 - Fixed matches not being updated when clearing the term in quick find.
 - Fixed initial font size for GDX and reference viewer when the font size has been changed.
 - Fixed occasional crash when updating project base path.
 - Fixed automatic numbering for projects or files with the same name in the Project Explorer that sometimes assigned the same number twice.
-- Added warning when dropping more than 99 files to the project explorer.
 - Fixed: The command line parameter `filestem` has been ignored for the log-file name.
 - Fixed an issue on Windows where an opt file couldn't be saved under a different suffix, e.g. `.op2`.
+- Upgraded to Qt 6.11.1
 
 Version 1.24.3
 ==================
