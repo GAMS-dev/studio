@@ -14,6 +14,7 @@ Version 1.25.0  *
 - Upgraded to Qt 6.11.1
 - Added warning when dropping more than 99 files to the project explorer.
 - Fixed: The command line parameter `filestem` has been ignored for the log-file name.
+- Fixed an issue on Windows where an opt file couldn't be saved under a different suffix, e.g. `.op2`.
 
 Version 1.24.3
 ==================
