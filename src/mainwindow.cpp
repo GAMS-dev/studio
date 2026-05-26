@@ -4164,7 +4164,7 @@ void MainWindow::dropEvent(QDropEvent* e)
     if (pathList.size() > CMaxOpenFiles) {
         raise();
         activateWindow();
-        int choice = MsgBox::warning("Warning: Open many files", "Dropped selection contains " + QString::number(files.count()) +
+        int choice = MsgBox::warning("Warning: Open many files", "Dropped selection contains " + QString::number(pathList.size()) +
                         " files. Opening that many files can take a long time.\nDo you want to continue?",
                         this, "Yes", "No", QString(), 1);
         if (choice == 1) return;
