@@ -56,7 +56,7 @@ void TreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     if (!nameExt.isEmpty()) {
         QRect nxRect = opt.rect;
         nxRect.setLeft(nxRect.left() + opt.decorationSize.width() + 6);
-        nxRect = nxRect.marginsRemoved(QMargins(4,4,4,4));
+        nxRect = nxRect.marginsRemoved(QMargins(4,2,2,2));
         QString name = index.model()->data(index, Qt::EditRole).toString();
         painter->setPen(Qt::gray);
         painter->setFont(qvariant_cast<QFont>(index.model()->data(index, Qt::FontRole)));

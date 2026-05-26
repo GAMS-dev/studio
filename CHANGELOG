@@ -11,7 +11,8 @@ Version 1.25.0  *
 - Fixed short blocking behavior when using quick find in a huge file.
 - Fixed matches not being updated when clearing the term in quick find.
 - Fixed initial font size for GDX and reference viewer when the font size has been changed.
-- Upgraded to Qt 6.11.1
+- Fixed occasional crash when updating project base path.
+- Fixed automatic numbering for projects or files with the same name in the Project Explorer that sometimes assigned the same number twice.
 - Added warning when dropping more than 99 files to the project explorer.
 - Fixed: The command line parameter `filestem` has been ignored for the log-file name.
 - Fixed an issue on Windows where an opt file couldn't be saved under a different suffix, e.g. `.op2`.

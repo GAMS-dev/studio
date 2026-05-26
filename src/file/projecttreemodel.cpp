@@ -294,16 +294,23 @@ Qt::ItemFlags ProjectTreeModel::flags(const QModelIndex &index) const
     return flags;
 }
 
-bool ProjectTreeModel::insertChild(int row, PExGroupNode* parent, PExAbstractNode* child)
+bool ProjectTreeModel::appendChild(PExGroupNode* parent, PExAbstractNode* child)
 {
-    QModelIndex prevMi = asIndex(child);
-    if (prevMi.isValid() && prevMi.parent().isValid()) {
-        beginRemoveRows(prevMi.parent(), prevMi.row(), prevMi.row());
-        endRemoveRows();
+    if (!parent || !child) return false;
+    PExGroupNode* oldParent = child->parentNode() ? child->parentNode()->toGroup() : nullptr;
+    if (oldParent == parent) return false;
+
+    if (oldParent) {
+        QModelIndex prevMi = asIndex(child);
+        if (prevMi.isValid()) {
+            beginRemoveRows(prevMi.parent(), prevMi.row(), prevMi.row());
+            oldParent->removeChild(child);
+            child->setParentNode(nullptr);
+            endRemoveRows();
+        }
     }
     QModelIndex parMi = asIndex(parent);
-    if (child->parentNode() == parent) return false;
-    beginInsertRows(parMi, row, row);
+    beginInsertRows(parMi, parent->childCount(), parent->childCount());
     child->setParentNode(parent);
     endInsertRows();
     emit childrenChanged();
@@ -433,20 +440,20 @@ void ProjectTreeModel::sortChildNodes(PExGroupNode *group)
 
 void ProjectTreeModel::updateProjectExtNums(PExGroupNode *group)
 {
+    if (!group) return;
+    QMap<QString, int> nameCounts;
     for (int i = 0; i < group->childCount(); ++i) {
-        PExAbstractNode *node = group->childNode(i);
-        if (!node) continue;
-        QString name = node->name();
-        QString ext;
-        int nr = 0;
-        for (int j = 0; j < i; ++j) {
-            PExAbstractNode *other = group->childNode(j);
-            if (other && other->name(NameModifier::withNameExt) == name + ext) {
-                ++nr;
-                ext = QString::number(nr);
+        if (PExAbstractNode *node = group->childNode(i)) {
+            QString baseName = node->name();
+            QString ext;
+            if (nameCounts.contains(baseName)) {
+                nameCounts[baseName]++;
+                ext = QString::number(nameCounts[baseName]);
+            } else {
+                nameCounts[baseName] = 0;
             }
+            node->setNameExt(ext);
         }
-        node->setNameExt(ext);
     }
     emit projectListChanged();
 }

@@ -617,8 +617,8 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file)
         }
     }
     // add to (new) destination
-    mTreeModel->insertChild(newParent->childCount(), newParent, file);
-    for (PExGroupNode *group : unsortedGroup)
+    mTreeModel->appendChild(newParent, file);
+    for (PExGroupNode *group : std::as_const(unsortedGroup))
         sortChildNodes(group);
     purgeGroup(oldParent);
 }
@@ -712,7 +712,7 @@ PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, co
         connect(project, &PExProjectNode::switchToTab, this, &ProjectRepo::switchToTab);
     }
     addToIndex(project);
-    mTreeModel->insertChild(root->childCount(), root, project);
+    mTreeModel->appendChild(root, project);
     connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
     emit changed();
     mTreeView->setExpanded(mProxyModel->asIndex(project), false);
@@ -797,7 +797,7 @@ PExGroupNode *ProjectRepo::findOrCreateFolder(const QString &folderName, PExGrou
     PExGroupNode* folder = new PExGroupNode(folderName, isAbs ? folderName
                                                               : QDir::cleanPath(parentNode->location()+'/'+folderName));
     addToIndex(folder);
-    mTreeModel->insertChild(parentNode->childCount(), parentNode, folder);
+    mTreeModel->appendChild(parentNode, folder);
     connect(folder, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
     sortChildNodes(parentNode);
     return folder;
