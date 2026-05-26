@@ -221,8 +221,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->projectView, &ProjectTreeView::dropFiles, this, [this](QModelIndex idx, QStringList files,
             QList<gams::studio::NodeId> knownIds, Qt::DropAction act, QList<QModelIndex> &newSelection) {
         if (files.count() > CMaxAddFiles) {
-            int choice = MsgBox::warning("Warning: many files", "Dropped selection contains " + QString::number(files.count()) +
-                            " files. Adding that many files can take a long time to complete.\nDo you want to continue?",
+            int choice = MsgBox::warning("Warning: Add many files", "Dropped selection contains " + QString::number(files.count()) +
+                            " files. Adding that many files can take a long time.\nDo you want to continue?",
                             this, "Yes", "No", QString(), 1);
             if (choice == 1) return; // abort
         }
@@ -2034,8 +2034,8 @@ void MainWindow::openFolder(const QString &path, PExProjectNode *project)
     }
 
     if (allFiles.count() > CMaxAddFiles) {
-        int choice = MsgBox::warning("Warning: many files", path + " contains " + QString::number(allFiles.count()) +
-                        " files. Adding that many files can take a long time to complete.\nDo you want to continue?",
+        int choice = MsgBox::warning("Warning: Add many files", path + " contains " + QString::number(allFiles.count()) +
+                        " files. Adding that many files can take a long time.\nDo you want to continue?",
                         this, "Yes", "No", QString(), 1);
         if (choice == 1) return; // abort
     }
@@ -4161,19 +4161,13 @@ void MainWindow::dropEvent(QDropEvent* e)
     if (pathList.isEmpty()) return;
     e->accept();
 
-    int answer;
     if (pathList.size() > CMaxOpenFiles) {
         raise();
         activateWindow();
-        QMessageBox msgBox;
-        msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
-                       " files or folders at once. This may take a long time.");
-        msgBox.setInformativeText("Do you want to continue?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-        msgBox.setDefaultButton(QMessageBox::No);
-        answer = msgBox.exec();
-
-        if (answer != QMessageBox::Yes) return;
+        int choice = MsgBox::warning("Warning: Open many files", "Dropped selection contains " + QString::number(files.count()) +
+                        " files. Opening that many files can take a long time.\nDo you want to continue?",
+                        this, "Yes", "No", QString(), 1);
+        if (choice == 1) return;
     }
     openFiles(pathList);
 }
