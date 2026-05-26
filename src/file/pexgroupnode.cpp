@@ -701,11 +701,11 @@ void PExProjectNode::refreshProjectTabName()
     }
 }
 
-PExLogNode *PExProjectNode::logNode()
+PExLogNode *PExProjectNode::logNode(const QString &filestem)
 {
     if (!mLogNode) {
         QString suffix = FileType::from(FileKind::Log).defaultSuffix();
-        QString logName = workDir()+"/"+name()+"."+suffix;
+        QString logName = workDir()+"/" + (filestem.isEmpty() ? name() : filestem) + "." + suffix;
         FileMeta* fm = fileRepo()->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
         mLogNode = new PExLogNode(fm, this);
     }
@@ -1173,7 +1173,14 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
     if (path.isEmpty()) path = workDir();
     else if (QDir(path).isRelative()) path = workDir() + '/' + path;
 
-    setLogLocation(cleanPath(path, name() + "." + FileType::from(FileKind::Log).defaultSuffix()));
+    if (mLogNode) {
+        QFileInfo fi(mLogNode->location());
+        if (fi.completeBaseName().compare(filestem, FileType::fsCaseSense()) != 0) {
+            mLogNode = nullptr;
+            logNode(filestem);
+        }
+    }
+    setLogLocation(cleanPath(path, filestem + "." + FileType::from(FileKind::Log).defaultSuffix()));
 
     clearParameters();
     // set default lst name to revert deleted o parameter values
