@@ -1132,7 +1132,7 @@ void ProjectRepo::stepRunAnimation()
 void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act
                             , QList<QModelIndex> &newSelection)
 {
-    while (files.count() && files.first().isEmpty())
+    while (!files.isEmpty() && files.first().isEmpty())
         files.removeFirst();
 
     QList<NodeId> addIds;
