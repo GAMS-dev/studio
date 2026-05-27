@@ -866,12 +866,6 @@ void Theme::setThemeColorPalette(QWidget *widget,bool useBaseBackground, bool hi
     QPalette palette = widget->palette();
     Theme::fillThemeColorPalette(palette, useBaseBackground, highlighTranaaprent);
     widget->setPalette(palette);
-
-    for (QWidget *child : widget->findChildren<QWidget*>()) {
-        QPalette cpalette = child->palette();
-        Theme::fillThemeColorPalette(cpalette, useBaseBackground, highlighTranaaprent);
-        child->setPalette(cpalette);
-    }
 }
 
 void Theme::setActiveThemeStyle(QApplication *app)
