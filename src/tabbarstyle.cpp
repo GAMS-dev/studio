@@ -29,6 +29,8 @@
 namespace gams {
 namespace studio {
 
+QRegularExpression TabBarStyle::RexSystemLog = QRegularExpression(QString("^%1 \\(\\d+\\)$").arg(ViewStrings::SystemLog));
+
 // Special remarks: If this is assigned to mainTabs-tabBar, the drawControl is accidently also called for other tabBars
 // (Qt 15.2)        like logTabs and the SettingsDialog tabs. However this isn't true for the sizeFromContents. That
 //                  is ONLY called if this Style is additionally applied to e.g. the logTabs-tabBar!
@@ -96,17 +98,44 @@ QSize TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOptio
 {
     QSize res = QProxyStyle::sizeFromContents(type, option, size, widget);
     QTabWidget *tabWidget = widget == mMainTabs->tabBar() ? mMainTabs : widget == mLogTabs->tabBar() ? mLogTabs : nullptr;
-    if (tabWidget && widget == mMainTabs->tabBar()) {
-        if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
-            if (QWidget *wid = tabWidget->widget(tab->tabIndex)) {
-                QStyleOptionTab opt(*tab);
-                QSize newSize = size;
-                opt.text = platformGetText(opt.text, wid);
-                if (opt.text != tab->text) {
-                    const QFont &f = widget->font();
-                    int diff = QFontMetrics(f).horizontalAdvance(opt.text) - tab->fontMetrics.horizontalAdvance(tab->text);
-                    newSize.setWidth(newSize.width() + diff);
-                    res = QProxyStyle::sizeFromContents(type, &opt, newSize, widget);
+    if (tabWidget) {
+        if (widget == mMainTabs->tabBar()) {
+            if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
+                if (QWidget *wid = tabWidget->widget(tab->tabIndex)) {
+                    QStyleOptionTab opt(*tab);
+                    QSize newSize = size;
+                    opt.text = platformGetText(opt.text, wid);
+                    if (opt.text != tab->text) {
+                        const QFont &f = widget->font();
+                        int diff = QFontMetrics(f).horizontalAdvance(opt.text) - tab->fontMetrics.horizontalAdvance(tab->text);
+                        newSize.setWidth(newSize.width() + diff);
+                        res = QProxyStyle::sizeFromContents(type, &opt, newSize, widget);
+                    }
+                }
+            }
+        } else if (widget == mLogTabs->tabBar()) {
+            if (type == CT_TabBarTab) {
+                if (const QStyleOptionTab *tabOption = qstyleoption_cast<const QStyleOptionTab *>(option)) {
+                    const QTabBar *tabBar = qobject_cast<const QTabBar *>(widget);
+                    if (tabBar) {
+                        int tabIndex = tabBar->tabAt(tabOption->rect.center());
+                       if (tabIndex == 0) {
+                            QString text = tabBar->tabText(tabIndex);
+                            if (RexSystemLog.match(text).hasMatch()) {
+                                // To fix the truncated text of the tab because the bounded box of the bold font
+                                // has been calculated beforehand during drawControl(),
+                                // suggesting the amount of pixels needed to fit the bold layout.
+                                QFont font = qApp->font();
+                                QFontMetrics fontMetrics(font);
+                                font.setBold(true);
+                                QFontMetrics boldMetrics(font);
+                                int textWidthNormal = fontMetrics.horizontalAdvance(tabOption->text);
+                                int textWidthBold = boldMetrics.horizontalAdvance(tabOption->text);
+                                int extraWidth = textWidthBold - textWidthNormal;
+                                res.setWidth(res.width() + extraWidth);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -145,6 +174,13 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                 painter->setPen(platformGetTextColor(state, opt.state.testFlag(State_Selected)));
                 opt.rect = opt.rect.marginsRemoved(QMargins(12,0,12,0));
                 opt.text = platformGetText(tab->text, tabWidget->widget(tab->tabIndex));
+                if (tabWidget && widget == mLogTabs->tabBar()) {
+                   if (RexSystemLog.match(opt.text).hasMatch()) {
+                       QFont font = qApp->font();
+                       font.setBold(true);
+                       painter->setFont(font);
+                   }
+                }
                 if (int dy = platformGetDyLifter(tabWidget->tabPosition(), opt.state.testFlag(State_Selected))) {
                     opt.rect.moveTop(opt.rect.top() + dy);
                 }

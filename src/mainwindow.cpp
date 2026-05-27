@@ -395,7 +395,7 @@ MainWindow::MainWindow(QWidget *parent)
     CommonPaths::setDefaultWorkingDir(Settings::settings()->toString(SettingsKey::skDefaultWorkspace));
     engine::EngineProcess::startupInit();
     mEngineAuthToken = Settings::settings()->toString(SettingsKey::skEngineUserToken);
-    mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
+    mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, qApp->style()->objectName());
     initIcons();
     restoreFromSettings();
     connect(ui->menuEdit, &QMenu::aboutToShow, this, &MainWindow::updateEditActions);
@@ -5383,7 +5383,7 @@ void MainWindow::invalidateTheme(bool refreshSyntax)
         fm->invalidateTheme(refreshSyntax);
     if (mTabStyle) {
         TabBarStyle *old = mTabStyle;
-        mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
+        mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, qApp->style()->objectName());
         delete old;
     }
     repaint();

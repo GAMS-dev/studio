@@ -47,6 +47,8 @@ private:
 private:
     QTabWidget *mMainTabs;
     QTabWidget *mLogTabs;
+
+    static QRegularExpression RexSystemLog;
 };
 
 } // namespace studio
