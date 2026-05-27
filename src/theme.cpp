@@ -134,7 +134,7 @@ void Theme::initDefault()
     QColor light_inactiveWhite(200, 200, 200);
 
     QColor light_black        (Qt::black);
-    // QColor light_lightBlack   (50, 50, 50);
+    QColor light_lightBlack   (50, 50, 50);
     QColor light_darkGray     (170, 170, 170);
     QColor light_gray         (140, 140, 140);
     QColor light_lightGray    (128, 128, 128);
@@ -142,7 +142,7 @@ void Theme::initDefault()
     QColor light_brightRed    (255, 51, 51);
     QColor light_grayRed      (200, 100, 100);
 
-    QColor light_highlightblue(220, 238, 255);
+    QColor light_highlightblue(204, 228, 250);
     QColor light_selectBlue   (0, 120, 215);
     QColor light_linkBlue     (0, 102, 204);
 
@@ -232,7 +232,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_brightText,              light_brightRed);
     mColorThemes[sNr].insert(Window_placeHolderText,         light_lightGray);
     mColorThemes[sNr].insert(Window_highlight,               light_highlightblue);
-    mColorThemes[sNr].insert(Window_highlightedText,         light_darkWhite);
+    mColorThemes[sNr].insert(Window_highlightedText,         light_lightBlack);
     mColorThemes[sNr].insert(Window_link,                    light_selectBlue);
 
     mColorThemes[sNr].insert(Window_disable_window,          light_white);
@@ -241,7 +241,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_disable_brightText,      light_grayRed);
     mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
     mColorThemes[sNr].insert(Window_disable_hightlightText,  light_lightGray);
-    mColorThemes[sNr].insert(Window_disable_highlight,       light_darkerWhite);
+    mColorThemes[sNr].insert(Window_disable_highlight,       light_highlightblue);
     mColorThemes[sNr].insert(Window_disable_link,            light_gray);
 
     // Add and switch to second color theme - Dark
