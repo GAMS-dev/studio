@@ -74,6 +74,8 @@ public:
     void setBoundaryMode(BoundaryMode newDocMode);
     bool noWildcards() const;
     void setNoWildcards(bool newNoWildcards);
+    QStringList save();
+    void restore(const QStringList &data);
 
 signals:
     void regExpChanged(QRegularExpression regExp);

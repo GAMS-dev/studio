@@ -134,21 +134,26 @@ QTableView* ModelDialog::tableAt(int i)
         return nullptr;
 }
 
-void ModelDialog::setSelectedLib(const QString &libName)
+void ModelDialog::setState(QStringList state)
 {
+    if (state.size() < 2) return;
+
     for (int i = 0; i < ui->tabWidget->count(); ++i) {
-        if (ui->tabWidget->tabBar()->tabText(i).compare(libName) == 0) {
+        if (ui->tabWidget->tabBar()->tabText(i).compare(state.at(0)) == 0) {
             ui->tabWidget->setCurrentIndex(i);
             return;
         }
     }
+    state.remove(0);
+    ui->lineEdit->restore(state);
 }
 
-QString ModelDialog::selectedLib()
+QStringList ModelDialog::readState()
 {
-    if (ui->tabWidget->currentIndex() >= 0)
-        return ui->tabWidget->tabBar()->tabText(ui->tabWidget->currentIndex());
-    return QString();
+    QStringList res;
+    res << (ui->tabWidget->currentIndex() >= 0 ? ui->tabWidget->tabBar()->tabText(ui->tabWidget->currentIndex()) : "");
+    res << ui->lineEdit->save();
+    return res;
 }
 
 void ModelDialog::changeHeader(QTableView *view)

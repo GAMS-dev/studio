@@ -3749,14 +3749,14 @@ void MainWindow::on_actionGAMS_Library_triggered()
 {
     QString path = Settings::settings()->toString(skUserModelLibraryDir).split(',', Qt::SkipEmptyParts).first();
     modeldialog::ModelDialog dialog(path, this);
-    dialog.setSelectedLib(mCurrentModelLib);
+    dialog.setState(mCurrentModelLib);
     if(dialog.exec() == QDialog::Accepted) {
         QMessageBox msgBox;
         modeldialog::LibraryItem *item = dialog.selectedLibraryItem();
 
         triggerGamsLibFileCreation(item);
     }
-    mCurrentModelLib = dialog.selectedLib();
+    mCurrentModelLib = dialog.readState();
 }
 
 void MainWindow::on_actionGDX_Diff_triggered()

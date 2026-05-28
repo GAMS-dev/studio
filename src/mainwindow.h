@@ -590,7 +590,7 @@ private:
     MainTabContextMenu mMainTabContextMenu;
     LogTabContextMenu mLogTabContextMenu;
     NavigatorLineEdit* mNavigatorInput = nullptr;
-    QString mCurrentModelLib;
+    QStringList mCurrentModelLib;
 
     QMutex mFileMutex;
     QVector<FileEventData> mFileEvents;

@@ -45,8 +45,8 @@ public:
     ~ModelDialog() override;
     LibraryItem *selectedLibraryItem() const;
     QTableView* tableAt(int i);
-    void setSelectedLib(const QString &libName);
-    QString selectedLib();
+    void setState(QStringList state);
+    QStringList readState();
 
 public slots:
     void changeHeader(QTableView *view);

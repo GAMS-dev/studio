@@ -271,6 +271,32 @@ void FilterLineEdit::setNoWildcards(bool newNoWildcards)
         mRegExButton->setToolTip(tips.at(0));
 }
 
+QString pack(const QAbstractButton *val, QString key)
+{
+    return val->isVisible() && val->isChecked() ? key : QString();
+}
+
+QStringList FilterLineEdit::save()
+{
+    QStringList res;
+    res << text();
+    res << QString("%1,%2,%3,%4").arg(buttonState(mExactButton)).arg(buttonState(mRegExButton))
+               .arg(buttonState(mAllColButton)).arg(buttonState(mCaseSenseButton));
+    return res;
+}
+
+void FilterLineEdit::restore(const QStringList &data)
+{
+    if (data.size() != 2) return;
+    setText(data.at(0));
+    QStringList states = data.at(1).split(",");
+    if (states.size() != 4) return;
+    nextButtonState(mExactButton, states.at(0).toInt());
+    nextButtonState(mRegExButton, states.at(1).toInt());
+    nextButtonState(mAllColButton, states.at(2).toInt());
+    nextButtonState(mCaseSenseButton, states.at(3).toInt());
+}
+
 FilterLineEdit::BoundaryMode FilterLineEdit::docMode() const
 {
     return mBoundaryMode;
