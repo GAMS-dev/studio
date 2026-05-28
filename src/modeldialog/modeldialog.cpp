@@ -134,6 +134,23 @@ QTableView* ModelDialog::tableAt(int i)
         return nullptr;
 }
 
+void ModelDialog::setSelectedLib(const QString &libName)
+{
+    for (int i = 0; i < ui->tabWidget->count(); ++i) {
+        if (ui->tabWidget->tabBar()->tabText(i).compare(libName) == 0) {
+            ui->tabWidget->setCurrentIndex(i);
+            return;
+        }
+    }
+}
+
+QString ModelDialog::selectedLib()
+{
+    if (ui->tabWidget->currentIndex() >= 0)
+        return ui->tabWidget->tabBar()->tabText(ui->tabWidget->currentIndex());
+    return QString();
+}
+
 void ModelDialog::changeHeader(QTableView *view)
 {
     auto index = ui->tabWidget->indexOf(view);
