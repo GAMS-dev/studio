@@ -146,9 +146,14 @@ void Theme::initDefault()
     QColor light_selectBlue   (0, 120, 215);
     QColor light_linkBlue     (0, 102, 204);
 
-    QColor profile_green   (55,235, 20);
-    QColor profile_yellow  (255,205,  0);
-    QColor profile_red     (255, 55, 20);
+    QColor profile_green      (55,235, 20);
+    QColor profile_yellow     (255,205,  0);
+    QColor profile_red        (255, 55, 20);
+
+    QColor light_red          (187,0,0);
+    QColor light_green        (52,134,25);
+    QColor light_blue         (34,102,170);
+    QColor light_yellow       (236,140,20);
 
     mColorThemes[sNr].clear();
     mColorThemes[sNr].insert(invalid,                        CUndefined);
@@ -191,10 +196,10 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Active_Back,                    QColor(34,102,170));
     mColorThemes[sNr].insert(Select_Gray,                    QColor(54,122,195));
     mColorThemes[sNr].insert(Select_Back,                    QColor(34,102,170));
-    mColorThemes[sNr].insert(Normal_Red,                     QColor(187,0,0));
-    mColorThemes[sNr].insert(Normal_Green,                   QColor(52,134,25));
-    mColorThemes[sNr].insert(Normal_Blue,                    QColor(34,102,170));
-    mColorThemes[sNr].insert(Normal_Yellow,                  QColor(236,140,20));
+    mColorThemes[sNr].insert(Normal_Red,                     light_red);
+    mColorThemes[sNr].insert(Normal_Green,                   light_green);
+    mColorThemes[sNr].insert(Normal_Blue,                    light_blue);
+    mColorThemes[sNr].insert(Normal_Yellow,                  light_yellow);
 
     mColorThemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorThemes[sNr].insert(Syntax_dco,                     Color(QColor(Qt::darkMagenta).darker(120)));
@@ -261,6 +266,11 @@ void Theme::initDefault()
     QColor dark_neutral     (223,224,223);
     QColor dark_background  (Qt::black);
 
+    QColor dark_red         (187,34,51);
+    QColor dark_green       (102,170,102);
+    QColor dark_blue        (68,153,238);
+    QColor dark_yellow      (236,140,20);
+
     mColorThemes[sNr].insert(Edit_text,                      dark_neutral);
     mColorThemes[sNr].insert(Syntax_neutral,                 dark_neutral);
     mColorThemes[sNr].insert(Edit_background,                Color(dark_base));
@@ -303,10 +313,10 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Disable_Back,                   dark_unobstrusive.lighter(75));
     mColorThemes[sNr].insert(Select_Gray,                    dark_highlight);
     mColorThemes[sNr].insert(Select_Back,                    dark_base);
-    mColorThemes[sNr].insert(Normal_Red,                     QColor(187,34,51));
-    mColorThemes[sNr].insert(Normal_Green,                   QColor(102,170,102));
-    mColorThemes[sNr].insert(Normal_Blue,                    QColor(68,153,238));
-    mColorThemes[sNr].insert(Normal_Yellow,                  QColor(236,140,20));
+    mColorThemes[sNr].insert(Normal_Red,                     dark_red);
+    mColorThemes[sNr].insert(Normal_Green,                   dark_green);
+    mColorThemes[sNr].insert(Normal_Blue,                    dark_blue);
+    mColorThemes[sNr].insert(Normal_Yellow,                  dark_yellow);
 
     mColorThemes[sNr].insert(Syntax_title,                   Color(dark_highlight, fBold));
     mColorThemes[sNr].insert(Syntax_dco,                     QColor(200,60,90));
@@ -412,10 +422,14 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Disable_Back,                   QColor(201,201,201));
     mColorThemes[sNr].insert(Select_Gray,                    distinct_yellow);
     mColorThemes[sNr].insert(Select_Back,                    light_white);
-    mColorThemes[sNr].insert(Normal_Red,                     distinct_red);
-    mColorThemes[sNr].insert(Normal_Green,                   distinct_bluishgreen);
-    mColorThemes[sNr].insert(Normal_Blue,                    distinct_blue);
-    mColorThemes[sNr].insert(Normal_Yellow,                  distinct_yellow);
+    mColorThemes[sNr].insert(Normal_Red,                     QColor(187,0,0));
+    mColorThemes[sNr].insert(Normal_Green,                   QColor(52,134,25));
+    mColorThemes[sNr].insert(Normal_Blue,                    QColor(34,102,170));
+    mColorThemes[sNr].insert(Normal_Yellow,                  QColor(236,140,20));
+    mColorThemes[sNr].insert(Normal_Red,                     light_red);
+    mColorThemes[sNr].insert(Normal_Green,                   light_green);
+    mColorThemes[sNr].insert(Normal_Blue,                    light_blue);
+    mColorThemes[sNr].insert(Normal_Yellow,                  light_yellow);
 
     mColorThemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorThemes[sNr].insert(Syntax_dco,                     Color(distinct_red, fBold));
@@ -523,10 +537,10 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Disable_Back,                   dark_unobstrusive.lighter(75));
     mColorThemes[sNr].insert(Select_Gray,                    dark_highlight);
     mColorThemes[sNr].insert(Select_Back,                    dark_base);
-    mColorThemes[sNr].insert(Normal_Red,                     QColor(187,34,51));
-    mColorThemes[sNr].insert(Normal_Green,                   QColor(102,170,102));
-    mColorThemes[sNr].insert(Normal_Blue,                    QColor(68,153,238));
-    mColorThemes[sNr].insert(Normal_Yellow,                  QColor(236,140,20));
+    mColorThemes[sNr].insert(Normal_Red,                     dark_red);
+    mColorThemes[sNr].insert(Normal_Green,                   dark_green);
+    mColorThemes[sNr].insert(Normal_Blue,                    dark_blue);
+    mColorThemes[sNr].insert(Normal_Yellow,                  dark_yellow);
 
     mColorThemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorThemes[sNr].insert(Syntax_dco,                     drac_red);
@@ -641,10 +655,10 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Disable_Back,                   solarized_base1.lighter(125));
     mColorThemes[sNr].insert(Select_Gray,                    solarized_blue);
     mColorThemes[sNr].insert(Select_Back,                    solarized_blue);
-    mColorThemes[sNr].insert(Normal_Red,                     solarized_red);
-    mColorThemes[sNr].insert(Normal_Green,                   solarized_green);
-    mColorThemes[sNr].insert(Normal_Blue,                    solarized_blue);
-    mColorThemes[sNr].insert(Normal_Yellow,                  solarized_yellow);
+    mColorThemes[sNr].insert(Normal_Red,                     light_red);
+    mColorThemes[sNr].insert(Normal_Green,                   light_green);
+    mColorThemes[sNr].insert(Normal_Blue,                    light_blue);
+    mColorThemes[sNr].insert(Normal_Yellow,                  light_yellow);
 
     mColorThemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorThemes[sNr].insert(Syntax_dco,                     Color(solarized_red, fBold));
@@ -734,10 +748,10 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Disable_Back,                   dark_unobstrusive.darker(150));
     mColorThemes[sNr].insert(Select_Gray,                    solarized_blue);
     mColorThemes[sNr].insert(Select_Back,                    solarized_blue);
-    mColorThemes[sNr].insert(Normal_Red,                     solarized_red);
-    mColorThemes[sNr].insert(Normal_Green,                   solarized_green);
-    mColorThemes[sNr].insert(Normal_Blue,                    solarized_blue);
-    mColorThemes[sNr].insert(Normal_Yellow,                  solarized_yellow);
+    mColorThemes[sNr].insert(Normal_Red,                     dark_red);
+    mColorThemes[sNr].insert(Normal_Green,                   dark_green);
+    mColorThemes[sNr].insert(Normal_Blue,                    dark_blue);
+    mColorThemes[sNr].insert(Normal_Yellow,                  dark_yellow);
 
     mColorThemes[sNr].insert(Window_window,                  solarized_base03);
     mColorThemes[sNr].insert(Window_windowText,              solarized_base0);
