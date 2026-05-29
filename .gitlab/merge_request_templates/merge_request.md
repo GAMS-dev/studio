@@ -18,3 +18,7 @@ Closes #TICKETNUMBER
   - [ ] Memory checks, e.g. valgrind
   - [ ] Profiling
   - [ ] Unit Tests
+
+/assign me
+/request_review me
+/draft

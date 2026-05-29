@@ -1,6 +1,6 @@
 **BETA-Release Steps**
 
-- [ ] ensure `?.??.x-release` exists
+- [ ] ensure `#.##.x-release` exists
 - [ ] proofread `CHANGELOG` - remove `*`
 - [ ] update `version` 
   - ++studio
@@ -13,3 +13,7 @@
 - [ ] merge release into master
 - [ ] email to staff about the release
 - [ ] proceed with products release MR
+
+/assign me
+/request_review me
+/draft
