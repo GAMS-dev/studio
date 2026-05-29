@@ -3464,6 +3464,7 @@ void MainWindow::restoreFromSettings()
     }
 
     Theme::instance()->readUserThemes(settings->toList(SettingsKey::skUserThemes));
+    settings->updateAppearanceAndTheme();
     Encoding::setDefaultEncoding(settings->toString(skDefaultEncoding));
     ui->tbProjectFilter->setChecked(settings->toBool(skShowProjectFilter));
     on_tbProjectFilter_clicked();

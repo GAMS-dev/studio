@@ -145,6 +145,7 @@ enum SettingsKey {
     skEdCompleterCasing,
     skEdFoldedDcoOnOpen,
     skEdSmartTooltipHelp,
+    skCurrentTheme,
 
     // GDX Viewer
     skGdxDefaultSymbolView,
@@ -280,6 +281,7 @@ public:
     void exportTheme(const QVariant &vTheme, const QString &fileName);
     QVariantMap importTheme(const QString &filepath);
 
+    void updateAppearanceAndTheme();
     void updateSettingsFiles();
 
     void reload();

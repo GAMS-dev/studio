@@ -485,6 +485,7 @@ void SettingsDialog::saveSettings()
 
     // colors page
     mSettings->setInt(skEdAppearance, ui->cbThemes->currentIndex());
+    mSettings->setInt(skCurrentTheme, ui->cbThemes->currentIndex());
     mSettings->setList(SettingsKey::skUserThemes, Theme::instance()->writeUserThemes());
 
     // GDX Viewer

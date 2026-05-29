@@ -36,6 +36,7 @@
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "search/searchcommon.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -398,6 +399,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEdCompleterCasing, scUser, {"editor","completerCasing"}, 0);
     safelyAdd(res, skEdFoldedDcoOnOpen, scUser, {"editor","foldedDcoOnOpen"}, false);
     safelyAdd(res, skEdSmartTooltipHelp, scUser, {"editor","smartTooltipHelp"}, true);
+    safelyAdd(res, skCurrentTheme, scUser, {"editor","currentTheme"}, 0);
 
     //GDX Viewer
     safelyAdd(res, skGdxDefaultSymbolView, scUser, {"gdxViewer","gdxDefaultSymbolView"}, 0);
@@ -897,6 +899,26 @@ QVariantMap Settings::importTheme(const QString &filepath)
     theme.insert("base", base);
     theme.insert("theme", data);
     return theme;
+}
+
+void Settings::updateAppearanceAndTheme()
+{
+    int previousFixThemeCount = 2;
+    int offset = Theme::instance()->fixedThemeCount() - previousFixThemeCount;
+    int appearance   =  directValue(scUser, "editor", "appearance").toInt();
+    int currentTheme =  directValue(scUser, "editor", "currentTheme").toInt();
+    if (appearance < 0 || appearance > Theme::instance()->themeCount()-1) {
+        setValue(skCurrentTheme, QVariant(0));
+        setValue(skEdAppearance, QVariant(0));
+    } else if (appearance != currentTheme) {
+              if (appearance >= previousFixThemeCount) {
+                   int value = (appearance+offset < Theme::instance()->themeCount() ? appearance+offset : 0 );
+                   setValue(skEdAppearance, QVariant(value));
+                   setValue(skCurrentTheme, QVariant(value));
+              } else {
+                  setValue(skCurrentTheme, QVariant(appearance));
+              }
+    }
 }
 
 
