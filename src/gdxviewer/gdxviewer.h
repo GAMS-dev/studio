@@ -69,6 +69,9 @@ public:
     GdxSymbolTableModel *gdxSymbolTable() const;
     void saveDelete();
 
+    bool headerControlsVisible() const;
+    void setHeaderControlsVisible(bool newHeaderControlsVisible);
+
 signals:
     void openFile(const QString &filePath);
 
@@ -119,6 +122,9 @@ private:
     GdxViewerState* mState = nullptr;
     bool mPendingInvalidate = false;
     ExportDialog *mExportDialog = nullptr;
+
+    bool mHeaderControlsVisible = true;
+
 };
 
 } // namespace gdxviewer

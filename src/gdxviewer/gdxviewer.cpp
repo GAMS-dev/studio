@@ -548,6 +548,16 @@ void GdxViewer::showExportDialog()
     mExportDialog->show();
 }
 
+bool GdxViewer::headerControlsVisible() const
+{
+    return mHeaderControlsVisible;
+}
+
+void GdxViewer::setHeaderControlsVisible(bool newHeaderControlsVisible)
+{
+    mHeaderControlsVisible = newHeaderControlsVisible;
+}
+
 GdxSymbolTableModel *GdxViewer::gdxSymbolTable() const
 {
     return mGdxSymbolTable;

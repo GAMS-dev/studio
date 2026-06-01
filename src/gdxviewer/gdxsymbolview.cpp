@@ -32,6 +32,7 @@
 #include "numericalformatcontroller.h"
 #include "valuefilterdialog.h"
 #include "labelfilterdialog.h"
+#include "gdxviewer.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
@@ -493,6 +494,9 @@ void GdxSymbolView::setSymInfo(QString symName, QString text)
 {
     ui->laSymbolName->setText(symName);
     ui->laSymbolText->setText(text);
+
+    GdxViewer *gdxViewer = static_cast<GdxViewer*>(parent());
+    ui->pbHeaderControls->setChecked(gdxViewer->headerControlsVisible());
 }
 
 void GdxSymbolView::showContextMenu(QPoint p)
@@ -1100,8 +1104,9 @@ void GdxSymbolView::markSearchResults()
         ui->tvListView->viewport()->update();
 }
 
-void GdxSymbolView::on_pushButton_toggled(bool checked)
+void GdxSymbolView::on_pbHeaderControls_toggled(bool checked)
 {
+    static_cast<GdxViewer*>(parent())->setHeaderControlsVisible(checked);
     auto layout = ui->horizontalLayout_3;
     for (int i = 0; i < layout->count(); ++i) {
         QLayoutItem* item = layout->itemAt(i);
@@ -1115,7 +1120,6 @@ void GdxSymbolView::on_pushButton_toggled(bool checked)
             widget->setVisible(checked);
     }
 }
-
 
 } // namespace gdxviewer
 } // namespace studio
