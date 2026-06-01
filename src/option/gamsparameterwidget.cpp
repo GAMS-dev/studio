@@ -46,6 +46,8 @@ GamsParameterWidget::GamsParameterWidget(QAction *aRun, QAction *aCompile, QActi
     setInterruptActionGroup();
     setFocusPolicy(Qt::StrongFocus);
 
+    Theme::setThemeColorPalette(this, true, false);
+
     mExtendedEditor = new QDockWidget("GAMS Parameters", this);
     mExtendedEditor->setObjectName("gamsArguments");
 

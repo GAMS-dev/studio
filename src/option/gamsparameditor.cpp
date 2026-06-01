@@ -39,6 +39,8 @@ GamsParamEditor::GamsParamEditor(FileKind kind,
     mDefinitionModel = new GamsOptionDefinitionModel(callstr(),
                                                      mOptionTokenizer->getOption(), 0, this);
 
+    Theme::setThemeColorPalette(this, true, false);
+
     initActions();
     initToolBar();
     initOptionTableView();

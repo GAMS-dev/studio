@@ -5376,9 +5376,13 @@ void MainWindow::invalidateTheme(bool refreshSyntax)
     Theme::fillThemeColorPalette(palette, false, false);
     qApp->setPalette(palette);
 
-    Theme::setThemeColorPalette(mWp, false, false);
-    Theme::setThemeColorPalette(ui->dockProjectView, true, true);
-    Theme::setThemeColorPalette(ui->dockProcessLog,  true, false);
+    Theme::setThemeColorPalette(mGamsParameterEditor,              true, false);
+    Theme::setThemeColorPalette(mGamsParameterEditor->dockChild(), true, false);
+    Theme::setThemeColorPalette(mNavigatorInput,     true,  false);
+    Theme::setThemeColorPalette(mNavigatorDialog,    true,  false);
+    Theme::setThemeColorPalette(mWp,                 false, false);
+    Theme::setThemeColorPalette(ui->dockProjectView, true,  true);
+    Theme::setThemeColorPalette(ui->dockProcessLog,  true,  false);
 
     for (FileMeta *fm: mFileMetaRepo.openFiles())
         fm->invalidateTheme(refreshSyntax);

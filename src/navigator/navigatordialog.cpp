@@ -52,6 +52,8 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView->installEventFilter(this);
 
+    Theme::setThemeColorPalette(this, true, false);
+
     connect(mInput, &QLineEdit::returnPressed, this, &NavigatorDialog::returnPressed);
     connect(ui->tableView, &QTableView::clicked, this, &NavigatorDialog::itemClicked);
     connect(mInput, &QLineEdit::textEdited, this, &NavigatorDialog::inputChanged);

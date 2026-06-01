@@ -52,9 +52,7 @@ LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent
     ui->splitter->setStretchFactor(1, 3);
     setFocusProxy(ui->lxiTreeView);
 
-    QPalette palette = this->palette();
-    Theme::fillThemeColorPalette(palette, true, false);
-    Theme::fillThemeColorPalette(palette, true, false);
+    Theme::setThemeColorPalette(this, true, false);
 
     connect(ui->lxiTreeView, &QTreeView::clicked, this, &LxiViewer::jumpToLine);
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);

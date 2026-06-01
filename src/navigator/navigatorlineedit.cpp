@@ -18,12 +18,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "navigatorlineedit.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
 
 NavigatorLineEdit::NavigatorLineEdit(QWidget* parent) : FilterLineEdit(parent)
-{ }
+{
+    Theme::setThemeColorPalette(this, true, false);
+}
 
 void NavigatorLineEdit::mouseReleaseEvent(QMouseEvent* event)
 {
