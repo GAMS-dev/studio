@@ -68,7 +68,10 @@ void WpLabel::updateMouseOverColor(bool hovered)
     mActive = hovered && !inCloseButton(pos);
 
     auto p = qApp->palette();
-    p.setColor(QPalette::Window, mActive ? GAMS_ORANGE : p.color(QPalette::Base).lighter());
+    p.setColor(QPalette::Window,     mActive ? Theme::color(Theme::Window_labelHighlight)
+                                             : Theme::color(Theme::Window_base).lighter());
+    p.setColor(QPalette::WindowText, mActive ? Theme::color(Theme::Window_labelHighlightText)
+                                             : Theme::color(Theme::Window_text));
     setPalette(p);
 }
 

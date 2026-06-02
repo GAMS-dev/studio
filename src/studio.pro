@@ -542,6 +542,7 @@ HEADERS += \
     tabwidget.h \
     theme.h \
     themewidget.h \
+    tooltipproxystyle.h \
     version.h \
     viewhelper.h \
     welcome/welcomepage.h \

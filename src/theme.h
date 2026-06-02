@@ -124,6 +124,11 @@ public:
         Window_highlightedText, // Selected Text color
         Window_link,            // hyperlinks
 
+        Window_tooltipBase,             // Tooltip Background
+        Window_tooltipText,             // tooltip Foreground
+        Window_labelHighlight,          // tooltip Foreground
+        Window_labelHighlightText,      // tooltip Foreground
+
         Window_disable_window,          // disable window
         Window_disable_base,            // disable base, and button
         Window_disable_text,            // disable text, button text, hightlight text
@@ -174,7 +179,6 @@ public:
 
     static void fillThemeColorPalette(QPalette& palette, bool useBaseBackground=false, bool highlighTransparent=false);
     static void setThemeColorPalette(QWidget *widget,    bool useBaseBackground=false, bool highlighTransparent=false);
-    static void setActiveThemeStyle(QApplication* app);
     static bool isDark();
     static QString name(ColorSlot slot);
     static QString text(ColorSlot slot);

@@ -82,6 +82,8 @@
 #include "msgbox.h"
 #include "encoding.h"
 #include "file/gprimporter.h"
+#include "tooltipproxystyle.h"
+#include "palettestylemanager.h"
 
 #ifdef __APPLE__
 # include "../platform/macos/macoscocoabridge.h"
@@ -509,6 +511,8 @@ MainWindow::MainWindow(QWidget *parent)
             checkForUpdates(mC4U->versionInformationShort());
         });
     }
+
+    app->setStyle( new TooltipProxyStyle( PaletteStyleManager::uniformStyleKey()) );
 
     ViewHelper::changeAppearance();
     connect(Theme::instance(), &Theme::changed, this, &MainWindow::invalidateTheme);
@@ -5370,7 +5374,8 @@ void MainWindow::newProcessCall(const QString &text, const QString &call)
 
 void MainWindow::invalidateTheme(bool refreshSyntax)
 {
-    Theme::setActiveThemeStyle(qApp);
+    qApp->styleHints()->setColorScheme( Theme::isDark() ? Qt::ColorScheme::Dark
+                                                        : Qt::ColorScheme::Light );
 
     QPalette palette = qApp->palette();
     Theme::fillThemeColorPalette(palette, false, false);

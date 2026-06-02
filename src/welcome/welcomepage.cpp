@@ -43,6 +43,7 @@ WelcomePage::WelcomePage(MainWindow *parent)
     , mMain(parent)
 {
     ui->setupUi(this);
+
     if (!Settings::settings()->toBool(skSupressWebEngine))
         initReleaseOverview();
     checkReleaseNotes();
@@ -87,10 +88,7 @@ WelcomePage::WelcomePage(MainWindow *parent)
 
     setupIcons();
     setAutoFillBackground(true);
-    QPalette p = this->palette();
-    Theme::fillThemeColorPalette(p, false);
-    this->setPalette(p);
-
+    Theme::setThemeColorPalette(this, false, false);
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
     connect(this, &WelcomePage::relayDocOpen, parent, &MainWindow::receiveOpenDoc);
@@ -348,6 +346,7 @@ bool WelcomePage::event(QEvent *event)
 {
     if (event->type() == QEvent::PaletteChange) {
         auto p = qApp->palette();
+        Theme::fillThemeColorPalette(p, false, false);
         p.setColor(QPalette::Window, p.color(QPalette::Base).lighter());
 
         const auto laList = findChildren<WpLabel*>();

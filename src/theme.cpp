@@ -20,7 +20,6 @@
 #include "theme.h"
 #include <QHash>
 #include "svgengine.h"
-#include "palettestylemanager.h"
 
 #include <QMetaEnum>
 #include <QFile>
@@ -155,6 +154,9 @@ void Theme::initDefault()
     QColor light_blue         (34,102,170);
     QColor light_yellow       (236,140,20);
 
+    QColor gams_orange        (243,150,25);
+    QColor buttery_yellow     (255, 240, 200);
+
     mColorThemes[sNr].clear();
     mColorThemes[sNr].insert(invalid,                        CUndefined);
     mColorThemes[sNr].insert(Edit_text,                      light_black);
@@ -240,6 +242,11 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_highlightedText,         light_black);
     mColorThemes[sNr].insert(Window_link,                    light_selectBlue);
 
+    mColorThemes[sNr].insert(Window_tooltipBase,             buttery_yellow);
+    mColorThemes[sNr].insert(Window_tooltipText,             light_black);
+    mColorThemes[sNr].insert(Window_labelHighlight,          gams_orange);
+    mColorThemes[sNr].insert(Window_labelHighlightText,      light_black);
+
     mColorThemes[sNr].insert(Window_disable_window,          light_white);
     mColorThemes[sNr].insert(Window_disable_base,            light_white);
     mColorThemes[sNr].insert(Window_disable_text,            light_inactiveWhite);
@@ -256,7 +263,6 @@ void Theme::initDefault()
     mThemeBases  << sNr;
 
     // Dark Colors
-    QColor dark_highlight   (243,150,25);      // gams orange
     QColor dark_selection   (214, 135, 31);
     QColor dark_base        (45,45,45);
     QColor dark_disabled    (65, 65, 65);
@@ -308,24 +314,24 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Active_Back,                    QColor(Qt::white));
     mColorThemes[sNr].insert(Disable_Gray,                   dark_unobstrusive);
     mColorThemes[sNr].insert(Disable_Back,                   dark_unobstrusive.lighter(75));
-    mColorThemes[sNr].insert(Select_Gray,                    dark_highlight);
+    mColorThemes[sNr].insert(Select_Gray,                    gams_orange);
     mColorThemes[sNr].insert(Select_Back,                    dark_base);
     mColorThemes[sNr].insert(Normal_Red,                     dark_red);
     mColorThemes[sNr].insert(Normal_Green,                   dark_green);
     mColorThemes[sNr].insert(Normal_Blue,                    dark_blue);
     mColorThemes[sNr].insert(Normal_Yellow,                  dark_yellow);
 
-    mColorThemes[sNr].insert(Syntax_title,                   Color(dark_highlight, fBold));
+    mColorThemes[sNr].insert(Syntax_title,                   Color(gams_orange, fBold));
     mColorThemes[sNr].insert(Syntax_dco,                     QColor(200,60,90));
     mColorThemes[sNr].insert(Syntax_dco_bg,                  CAutoBackground);
     mColorThemes[sNr].insert(Syntax_formula,                 Color(dark_neutral));
-    mColorThemes[sNr].insert(Syntax_dcoBody,                 Color(dark_highlight, fItalic));
+    mColorThemes[sNr].insert(Syntax_dcoBody,                 Color(gams_orange, fItalic));
     mColorThemes[sNr].insert(Syntax_dcoBody_bg,              CAutoBackground);
     mColorThemes[sNr].insert(Syntax_comment,                 Color(dark_unobstrusive, fItalic));
     mColorThemes[sNr].insert(Syntax_comment_bg,              CAutoBackground);
-    mColorThemes[sNr].insert(Syntax_keyword,                 Color(dark_highlight, fBold));
+    mColorThemes[sNr].insert(Syntax_keyword,                 Color(gams_orange, fBold));
     mColorThemes[sNr].insert(Syntax_keyword_bg,              CAutoBackground);
-    mColorThemes[sNr].insert(Syntax_declaration,             Color(dark_highlight, fBold));
+    mColorThemes[sNr].insert(Syntax_declaration,             Color(gams_orange, fBold));
     mColorThemes[sNr].insert(Syntax_declaration_bg,          CAutoBackground);
     mColorThemes[sNr].insert(Syntax_identifier,              Color(dark_id));
     mColorThemes[sNr].insert(Syntax_identifier_bg,           CAutoBackground);
@@ -352,6 +358,11 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_highlight,               dark_selection);
     mColorThemes[sNr].insert(Window_highlightedText,         dark_base);
     mColorThemes[sNr].insert(Window_link,                    Color(Normal_Blue));
+
+    mColorThemes[sNr].insert(Window_tooltipBase,             dark_base);
+    mColorThemes[sNr].insert(Window_tooltipText,             dark_neutral);
+    mColorThemes[sNr].insert(Window_labelHighlight,          gams_orange);
+    mColorThemes[sNr].insert(Window_labelHighlightText,      dark_neutral);
 
     mColorThemes[sNr].insert(Window_disable_window,          dark_base);
     mColorThemes[sNr].insert(Window_disable_base,            dark_neutral);
@@ -450,7 +461,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Syntax_embedded,                distinct_orange);
     mColorThemes[sNr].insert(Syntax_embedded_bg,             CAutoBackground);
 
-    mColorThemes[sNr].insert(Window_window,                  light_white);
+    mColorThemes[sNr].insert(Window_window,                  light_grayWhite);
     mColorThemes[sNr].insert(Window_windowText,              distinct_black);
     mColorThemes[sNr].insert(Window_base,                    light_white);
     mColorThemes[sNr].insert(Window_alternateBase,           light_inactiveWhite.lighter(105));
@@ -461,6 +472,11 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_highlight,               distinct_yellow);
     mColorThemes[sNr].insert(Window_highlightedText,         distinct_black);
     mColorThemes[sNr].insert(Window_link,                    light_linkBlue);
+
+    mColorThemes[sNr].insert(Window_tooltipBase,             buttery_yellow);
+    mColorThemes[sNr].insert(Window_tooltipText,             light_black);
+    mColorThemes[sNr].insert(Window_labelHighlight,          distinct_yellow);
+    mColorThemes[sNr].insert(Window_labelHighlightText,      light_black);
 
     mColorThemes[sNr].insert(Window_disable_window,          light_white);
     mColorThemes[sNr].insert(Window_disable_base,            light_white);
@@ -508,7 +524,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_linenrAreaMarkBg,          drac_bgLighter);
     mColorThemes[sNr].insert(Edit_linenrAreaFoldBg,          drac_bgLight);
     mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          drac_purple);
-    mColorThemes[sNr].insert(Edit_currentWordBg,             drac_bgDarker); //drac_background);
+    mColorThemes[sNr].insert(Edit_currentWordBg,             drac_bgDarker);
     mColorThemes[sNr].insert(Edit_parenthesesValidFg,        drac_foreground);
     mColorThemes[sNr].insert(Edit_parenthesesInvalidFg,      drac_background);
     mColorThemes[sNr].insert(Edit_parenthesesValidBg,        drac_comment.lighter(90));
@@ -572,6 +588,11 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_highlight,               drac_purple);
     mColorThemes[sNr].insert(Window_highlightedText,         drac_background);
     mColorThemes[sNr].insert(Window_link,                    drac_cyan);
+
+    mColorThemes[sNr].insert(Window_tooltipBase,             dark_base);
+    mColorThemes[sNr].insert(Window_tooltipText,             dark_neutral);
+    mColorThemes[sNr].insert(Window_labelHighlight,          drac_purple);
+    mColorThemes[sNr].insert(Window_labelHighlightText,      dark_neutral);
 
     mColorThemes[sNr].insert(Window_disable_window,          dark_base);
     mColorThemes[sNr].insert(Window_disable_base,            dark_neutral);
@@ -679,7 +700,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Syntax_embedded,                solarized_orange);
     mColorThemes[sNr].insert(Syntax_embedded_bg,             CAutoBackground);
 
-    mColorThemes[sNr].insert(Window_window,                  solarized_base3);
+    mColorThemes[sNr].insert(Window_window,                  solarized_base2);
     mColorThemes[sNr].insert(Window_windowText,              solarized_base01);
     mColorThemes[sNr].insert(Window_base,                    solarized_base3);
     mColorThemes[sNr].insert(Window_alternateBase,           solarized_base2);
@@ -690,6 +711,11 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_highlight,               solarized_cyan.lighter(110));
     mColorThemes[sNr].insert(Window_highlightedText,         solarized_base02);
     mColorThemes[sNr].insert(Window_link,                    solarized_cyan);
+
+    mColorThemes[sNr].insert(Window_tooltipBase,             buttery_yellow);
+    mColorThemes[sNr].insert(Window_tooltipText,             light_black);
+    mColorThemes[sNr].insert(Window_labelHighlight,          solarized_cyan.lighter(110));
+    mColorThemes[sNr].insert(Window_labelHighlightText,      light_black);
 
     mColorThemes[sNr].insert(Window_disable_window,          light_white);
     mColorThemes[sNr].insert(Window_disable_base,            light_white);
@@ -757,6 +783,11 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_highlight,               solarized_cyan);
     mColorThemes[sNr].insert(Window_highlightedText,         solarized_base02);
     mColorThemes[sNr].insert(Window_link,                    solarized_blue);
+
+    mColorThemes[sNr].insert(Window_tooltipBase,             dark_base);
+    mColorThemes[sNr].insert(Window_tooltipText,             dark_neutral);
+    mColorThemes[sNr].insert(Window_labelHighlight,          solarized_cyan);
+    mColorThemes[sNr].insert(Window_labelHighlightText,      solarized_base1.lighter(120));
 
     mColorThemes[sNr].insert(Window_disable_window,          solarized_base03);
     mColorThemes[sNr].insert(Window_disable_base,            solarized_base03);
@@ -856,9 +887,9 @@ void Theme::fillThemeColorPalette(QPalette &palette, bool useBaseBackground, boo
     palette.setColor(QPalette::Link,            Theme::color(Theme::Window_link));
 
     // Muted text to signal un-clickable layout
-    palette.setColor(QPalette::Disabled, QPalette::WindowText,      Theme::color(Window_disable_text));
-    palette.setColor(QPalette::Disabled, QPalette::Text,            Theme::color(Window_disable_text));
-    palette.setColor(QPalette::Disabled, QPalette::ButtonText,      Theme::color(Window_disable_text));
+    palette.setColor(QPalette::Disabled, QPalette::WindowText, Theme::color(Window_disable_text));
+    palette.setColor(QPalette::Disabled, QPalette::Text,       Theme::color(Window_disable_text));
+    palette.setColor(QPalette::Disabled, QPalette::ButtonText, Theme::color(Window_disable_text));
 
     // Non-interactive selection colors
     palette.setColor(QPalette::Disabled, QPalette::HighlightedText, Theme::color(Window_disable_brightText));
@@ -873,12 +904,6 @@ void Theme::setThemeColorPalette(QWidget *widget,bool useBaseBackground, bool hi
     QPalette palette = widget->palette();
     Theme::fillThemeColorPalette(palette, useBaseBackground, highlighTransparent);
     widget->setPalette(palette);
-}
-
-void Theme::setActiveThemeStyle(QApplication *app)
-{
-    app->setStyle(QStyleFactory::create(PaletteStyleManager::uniformStyleKey()));
-    QGuiApplication::styleHints()->setColorScheme( Theme::isDark() ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light );
 }
 
 bool Theme::isDark()
