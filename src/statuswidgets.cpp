@@ -160,6 +160,8 @@ void StatusWidgets::setLoadingText(const QString &loadingText)
 
 void StatusWidgets::setLicenseState(support::LicenseState licenseState, const QDateTime &expire)
 {
+    Theme::setThemeColorPalette(mStatusBar, false, false);
+
     QColor background = Qt::white;
     QIcon icon = Theme::icon(":/solid/new-w");
     QIcon icon2;
