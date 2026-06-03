@@ -157,7 +157,8 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                 painter->setBrush(tab->palette.color(tab->state.testFlag(State_Selected) ? QPalette::AlternateBase
                                                                                          : QPalette::Window));
                 QRect rect = tab->rect;
-                rect.setBottom(rect.bottom()+1);
+                if (tab->state.testFlag(State_Selected))
+                    rect.setBottom(rect.bottom() + 1);
                 painter->drawRoundedRect(rect, 2.0, 2.0);
                 painter->restore();
                 return;
@@ -199,6 +200,24 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
     }
 
     QProxyStyle::drawControl(element, option, painter, widget);
+}
+
+void TabBarStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *option, QPainter *painter,
+                                const QWidget *widget) const
+{
+    if (element == PE_FrameTabBarBase) {
+        painter->fillRect(option->rect, option->palette.color(QPalette::Window));
+        painter->setPen(option->palette.color(QPalette::Mid));
+        QTabWidget *tabWidget = widget == mMainTabs->tabBar() ? mMainTabs : widget == mLogTabs->tabBar() ? mLogTabs
+                                                                                                         : nullptr;
+        bool tabsAtBottom = tabWidget && tabWidget->tabPosition() == QTabWidget::South;
+        QPoint p1 = tabsAtBottom ? option->rect.topLeft()  : option->rect.bottomLeft();
+        QPoint p2 = tabsAtBottom ? option->rect.topRight() : option->rect.bottomRight();
+        painter->drawLine(p1, p2);
+        return;
+    }
+
+    QProxyStyle::drawPrimitive(element, option, painter, widget);
 }
 
 

@@ -37,6 +37,7 @@ public:
 
     QSize sizeFromContents(ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const override;
     void drawControl(ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const override;
+    void drawPrimitive(PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const override;
 
 private:
     TabState getState(const QWidget *tabWidget, bool selected) const;
@@ -49,6 +50,9 @@ private:
     QTabWidget *mLogTabs;
 
     static QRegularExpression RexSystemLog;
+
+    // QStyle interface
+public:
 };
 
 } // namespace studio
