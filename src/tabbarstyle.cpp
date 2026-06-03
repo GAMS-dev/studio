@@ -149,18 +149,20 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
     QTabWidget *tabWidget = widget == mMainTabs->tabBar() ? mMainTabs : widget == mLogTabs->tabBar() ? mLogTabs : nullptr;
     if (tabWidget) {
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
-
-//            if (element == CE_TabBarTabShape) { // change the color of the background
-//                QStyleOptionTabV4 opt(*tab);
-//                QProxyStyle::drawControl(element, &opt, painter, widget);
-//                painter->save();
-//                painter->setBrush(Qt::darkGreen);
-//                painter->setPen(Qt::NoPen);
-//                painter->drawRect(opt.rect.marginsRemoved(QMargins(1,1,1,1)));
-//                painter->restore();
-//                return;
-//            }
-
+            // tab element
+            if (element == CE_TabBarTabShape) {
+                painter->save();
+                painter->setRenderHint(QPainter::Antialiasing);
+                painter->setPen(tab->palette.color(QPalette::Mid));
+                painter->setBrush(tab->palette.color(tab->state.testFlag(State_Selected) ? QPalette::AlternateBase
+                                                                                         : QPalette::Window));
+                QRect rect = tab->rect;
+                rect.setBottom(rect.bottom()+1);
+                painter->drawRoundedRect(rect, 2.0, 2.0);
+                painter->restore();
+                return;
+            }
+            // tab text
             if (element == CE_TabBarTabLabel) {
                 QStyleOptionTab opt(*tab);
                 TabState state = tsNormal;
