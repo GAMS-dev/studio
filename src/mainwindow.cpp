@@ -1547,10 +1547,13 @@ void MainWindow::gamsProcessStateChanged(PExProjectNode *project)
     for (int i = 0; i < ui->logTabs->children().size(); i++) {
         if (mFileMetaRepo.fileMeta(ui->logTabs->widget(i)) == log->file()) {
 
-            if (project->gamsProcessState() == QProcess::Running)
-                ui->logTabs->tabBar()->tabButton(i, closeSide)->hide();
-            else if (project->gamsProcessState() == QProcess::NotRunning)
-                ui->logTabs->tabBar()->tabButton(i, closeSide)->show();
+            if (project->gamsProcessState() == QProcess::Running) {
+                if (auto b = ui->logTabs->tabBar()->tabButton(i, closeSide))
+                    b->hide();
+            } else if (project->gamsProcessState() == QProcess::NotRunning) {
+                if (auto b = ui->logTabs->tabBar()->tabButton(i, closeSide))
+                    b->show();
+            }
         }
     }
     int count = mProjectRepo.activeProcesses();
