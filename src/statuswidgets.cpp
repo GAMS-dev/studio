@@ -236,7 +236,7 @@ void StatusWidgets::setLicenseState(support::LicenseState licenseState, const QD
         background = Theme::mixColor(QColor(255,255,255), Theme::Normal_Red, .9);
         icon = Theme::icon(":/solid/new-w");
         text = "?";
-        toolTip = "GAMS license not found";
+        toolTip = "GAMS license not found (click for details).";
         break;
     }
     if (expire.isValid()) {
