@@ -420,7 +420,7 @@ void LicenseFetcher::updateState(bool isError)
             mExpire = mBaseDate.addDays(mDurationMonths * 30).toLocalTime();
             if (mExpire < now) {
                 qint64 sec = now.secsTo(mExpire);
-                if (sec < 86400 * 7) { // when change is in less than a week, start a timer
+                if (sec > 0 && sec < 86400 * 7) { // when change is in less than a week, start a timer
                     mFetchTimer.singleShot((sec +2) * 1000, this, &LicenseFetcher::fetchGamsLicense);
                 }
                 mLicenseState = LicenseState(mLicenseState + 1);
@@ -428,7 +428,7 @@ void LicenseFetcher::updateState(bool isError)
                 if (mExpire < now) {
                     mLicenseState = LicenseState(mLicenseState + 1);
                     ensureServer = false;
-                } else if (sec < 86400 * 7) { // when change is in less than a week, start a timer
+                } else if (sec > 0 && sec < 86400 * 7) { // when change is in less than a week, start a timer
                     mFetchTimer.singleShot((sec +2) * 1000, this, &LicenseFetcher::fetchGamsLicense);
                 }
             } else {
