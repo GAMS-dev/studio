@@ -107,6 +107,8 @@ bool LxiViewer::eventFilter(QObject *watched, QEvent *event)
             qApp->sendEvent(mTextView->edit()->viewport(), wheelEv);
             return true;
         }
+    } else if (event->type() == QEvent::PaletteChange) {
+               mTextView->updateView();
     }
     return false;
 }
