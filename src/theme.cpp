@@ -184,7 +184,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_profilingBg3,              profile_red);
     mColorThemes[sNr].insert(Edit_linenrAreaFg,              light_gray);
     mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          light_black);
-    mColorThemes[sNr].insert(Edit_logRemoteBk,               QColor(245,255,235));
+    mColorThemes[sNr].insert(Edit_logRemoteBk,               light_lightYellow);
 
     mColorThemes[sNr].insert(Mark_errorFg,                   QColor(Qt::darkRed));
     mColorThemes[sNr].insert(Mark_listingFg,                 QColor(Qt::blue));
@@ -417,7 +417,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_profilingBg3,              profile_red);
     mColorThemes[sNr].insert(Edit_linenrAreaFg,              light_lightGray);
     mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::black));
-    mColorThemes[sNr].insert(Edit_logRemoteBk,               QColor(245,255,235));
+    mColorThemes[sNr].insert(Edit_logRemoteBk,               light_lightYellow);
 
     mColorThemes[sNr].insert(Mark_errorFg,                   distinct_red);
     mColorThemes[sNr].insert(Mark_listingFg,                 distinct_blue);
@@ -629,16 +629,18 @@ void Theme::initDefault()
     QColor solarized_green  (133, 153, 0);
 
     QColor solarized_highlight (140, 197, 183);
+    QColor solarized_lightgreen(200, 228, 212);
+    QColor solarized_linebg    (210, 205, 190);
 
     Q_UNUSED(solarized_base00)
 
     mColorThemes[sNr].insert(invalid,                        CUndefined);
-    mColorThemes[sNr].insert(Edit_text,                      solarized_base01);
-    mColorThemes[sNr].insert(Syntax_neutral,                 solarized_base01);
+    mColorThemes[sNr].insert(Edit_text,                      solarized_base02);
+    mColorThemes[sNr].insert(Syntax_neutral,                 solarized_base02);
     mColorThemes[sNr].insert(Edit_background,                solarized_base3);
-    mColorThemes[sNr].insert(Edit_currentLineBg,             solarized_highlight);
+    mColorThemes[sNr].insert(Edit_currentLineBg,             solarized_linebg);
     mColorThemes[sNr].insert(Edit_errorBg,                   solarized_red.lighter(130));
-    mColorThemes[sNr].insert(Edit_currentWordBg,             solarized_base2.darker(110));
+    mColorThemes[sNr].insert(Edit_currentWordBg,             solarized_lightgreen);
     mColorThemes[sNr].insert(Edit_findBg,                    QColor(145, 149, 211));
     mColorThemes[sNr].insert(Edit_searchBg,                  QColor(147, 197, 233));
     mColorThemes[sNr].insert(Edit_foldLineBg,                solarized_yellow);
@@ -658,7 +660,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_profilingBg3,              solarized_red);
     mColorThemes[sNr].insert(Edit_linenrAreaFg,              solarized_base1);
     mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          solarized_base01);
-    mColorThemes[sNr].insert(Edit_logRemoteBk,               solarized_base2);
+    mColorThemes[sNr].insert(Edit_logRemoteBk,               solarized_linebg);
 
     mColorThemes[sNr].insert(Mark_errorFg,                   solarized_red.lighter(130));
     mColorThemes[sNr].insert(Mark_listingFg,                 solarized_cyan);
@@ -705,12 +707,12 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Syntax_embedded_bg,             CAutoBackground);
 
     mColorThemes[sNr].insert(Window_window,                  solarized_base2);
-    mColorThemes[sNr].insert(Window_windowText,              solarized_base01);
+    mColorThemes[sNr].insert(Window_windowText,              solarized_base02);
     mColorThemes[sNr].insert(Window_base,                    solarized_base3);
     mColorThemes[sNr].insert(Window_alternateBase,           solarized_base2);
-    mColorThemes[sNr].insert(Window_text,                    solarized_base01);
+    mColorThemes[sNr].insert(Window_text,                    solarized_base02);
     mColorThemes[sNr].insert(Window_button,                  solarized_base2);
-    mColorThemes[sNr].insert(Window_buttonText,              solarized_base01);
+    mColorThemes[sNr].insert(Window_buttonText,              solarized_base02);
     mColorThemes[sNr].insert(Window_placeHolderText,         solarized_base1);
     mColorThemes[sNr].insert(Window_highlight,               solarized_highlight);
     mColorThemes[sNr].insert(Window_highlightedText,         solarized_base02);
