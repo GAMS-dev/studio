@@ -1,3 +1,7 @@
+Version 1.25.1 *
+==================
+- Remember the recent filter and tab in the Model Library Explorer during active Studio session.
+
 Version 1.25.0
 ==================
 - Added double-click action to open a gdx file reference from within a symbol table in GDXViewer.
