@@ -94,8 +94,6 @@ Application::Application(int& argc, char** argv)
     userName = qEnvironmentVariable("USERNAME", QString());
 #endif
     mServerName = "com.gams.studio." + userName;
-    QPalette pal = palette();
-    pal.setColor(QPalette::Disabled, QPalette::Window, QColor(255,255,255));
 
     connect(&mServer, &QLocalServer::newConnection, this, &Application::newConnection);
 }
