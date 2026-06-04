@@ -152,12 +152,7 @@ void ReferenceViewer::updateStyle()
 {
     mRefTabStyle.reset(new ReferenceTabStyle(QApplication::style()->objectName()));
     ui->tabWidget->tabBar()->setStyle(mRefTabStyle.data());
-    QPalette palette = ui->tabWidget->palette();
-    palette.setColor(QPalette::Window, Theme::color(Theme::Window_window));
-    palette.setColor(QPalette::WindowText, Theme::color(Theme::Window_text));
-    palette.setColor(QPalette::Button, Theme::color(Theme::Window_button));
-    palette.setColor(QPalette::ButtonText, Theme::color(Theme::Window_buttonText));
-    ui->tabWidget->setPalette(palette);
+    Theme::setThemeColorPalette(ui->tabWidget, true, false);
 }
 
 void ReferenceViewer::selectSearchField() const

@@ -5392,6 +5392,11 @@ void MainWindow::invalidateTheme(bool refreshSyntax)
     Theme::setThemeColorPalette(ui->dockProjectView, true,  true);
     Theme::setThemeColorPalette(ui->dockProcessLog,  true,  false);
 
+    if (mResultsView)
+        mResultsView->updateTheme();
+    if (mSearchDialog)
+        mSearchDialog->updateTheme();
+
     for (FileMeta *fm: mFileMetaRepo.openFiles())
         fm->invalidateTheme(refreshSyntax);
     if (mTabStyle) {

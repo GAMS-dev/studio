@@ -59,6 +59,8 @@ public:
     void zoomOut();
     void resetZoom();
 
+    void updateTheme();
+
 signals:
     void updateMatchLabel(int row, int max);
 

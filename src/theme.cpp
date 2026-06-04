@@ -878,10 +878,8 @@ void Theme::fillThemeColorPalette(QPalette &palette, bool useBaseBackground, boo
     palette.setColor(QPalette::Window,          useBaseBackground ? Theme::color(Theme::Edit_background)
                                                                   : Theme::color(Theme::Window_window));
     palette.setColor(QPalette::WindowText,      Theme::color(Theme::Window_text));
-    palette.setColor(QPalette::Base,            useBaseBackground ? Theme::color(Theme::Window_base)
-                                                                  : Theme::color(Theme::Window_window));
-    palette.setColor(QPalette::AlternateBase,   useBaseBackground ? Theme::color(Theme::Window_alternateBase)
-                                                                  : Theme::color(Theme::Window_base));
+    palette.setColor(QPalette::Base,            Theme::color(Theme::Window_base));
+    palette.setColor(QPalette::AlternateBase,   Theme::color(Theme::Window_alternateBase));
     palette.setColor(QPalette::Text,            Theme::color(Theme::Window_text));
     palette.setColor(QPalette::Button,          Theme::color(Theme::Window_button));
     palette.setColor(QPalette::ButtonText,      Theme::color(Theme::Window_buttonText));

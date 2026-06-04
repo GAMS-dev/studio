@@ -49,6 +49,24 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QFont f = ui->laWarn->font();
     f.setBold(true);
     ui->laWarn->setFont(f);
+
+    QPalette palette = qApp->palette();
+    Theme::fillThemeColorPalette(palette, true, false);
+    ui->cbLoginMethod->setPalette(palette);
+    ui->edUrl->setPalette(palette);
+    ui->edUser->setPalette(palette);
+    ui->edPassword->setPalette(palette);
+    ui->edSsoName->setPalette(palette);
+    ui->edJobTag->setPalette(palette);
+    ui->edSsoName->setPalette(palette);
+    ui->cbNamespace->setPalette(palette);
+    ui->cbAcceptCert->setPalette(palette);
+    ui->cbForceGdx->setPalette(palette);
+    ui->cbInstActivate->setPalette(palette);
+    ui->cbInstance->setPalette(palette);
+    ui->cbPriority->setPalette(palette);
+    ui->edToken->setPalette(palette);
+
     connect(ui->bOk, &QPushButton::clicked, this, [this]() { buttonClicked(ui->bOk); });
     connect(ui->bCancel, &QPushButton::clicked, this, [this]() { buttonClicked(ui->bCancel); });
     connect(ui->bAlways, &QPushButton::clicked, this, [this]() { buttonClicked(ui->bAlways); });

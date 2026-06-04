@@ -25,7 +25,9 @@ namespace studio {
 
 NavigatorLineEdit::NavigatorLineEdit(QWidget* parent) : FilterLineEdit(parent)
 {
-    Theme::setThemeColorPalette(this, true, false);
+    QPalette palette = qApp->palette();
+    Theme::fillThemeColorPalette(palette, true, false);
+    setPalette(palette);
 }
 
 void NavigatorLineEdit::mouseReleaseEvent(QMouseEvent* event)

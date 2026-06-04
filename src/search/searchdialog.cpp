@@ -77,6 +77,8 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, MainWindow* p
     ui->combo_includePattern->installEventFilter(this);
     ui->directoryComboBox->installEventFilter(this);
     ui->scopeComboBox->installEventFilter(this);
+
+    updateTheme();
 }
 
 SearchDialog::~SearchDialog()
@@ -926,6 +928,23 @@ bool SearchDialog::eventFilter(QObject *watched, QEvent *event)
         }
     }
     return QDialog::eventFilter(watched, event);
+}
+
+void SearchDialog::updateTheme()
+{
+    Theme::setThemeColorPalette(this, false, false);
+
+    // customize palette for some ui elements
+    Theme::setThemeColorPalette(ui->termComboBox,         true, false);
+    Theme::setThemeColorPalette(ui->replaceEdit,          true, false);
+    Theme::setThemeColorPalette(ui->scopeComboBox,        true, false);
+    Theme::setThemeColorPalette(ui->combo_excludePattern, true, false);
+    Theme::setThemeColorPalette(ui->combo_includePattern, true, false);
+    Theme::setThemeColorPalette(ui->directoryComboBox,    true, false);
+    Theme::setThemeColorPalette(ui->cb_caseSens,          true, false);
+    Theme::setThemeColorPalette(ui->cb_regex,             true, false);
+    Theme::setThemeColorPalette(ui->cb_wholeWords,        true, false);
+    Theme::setThemeColorPalette(ui->cb_subdirs,           true, false);
 }
 
 void SearchDialog::setSearchedFiles(int files)

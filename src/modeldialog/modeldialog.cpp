@@ -57,6 +57,10 @@ ModelDialog::ModelDialog(const QString &userLibPath, QWidget *parent)
     ui->lineEdit->setKeyColumn(2);
     ui->lineEdit->setOptionState(FilterLineEdit::foColumn, 1);
 
+    QPalette palette = qApp->palette();
+    Theme::fillThemeColorPalette(palette, true, false);
+    ui->lineEdit->setPalette(palette);
+
     this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     if (!mUserLibPath.isEmpty())

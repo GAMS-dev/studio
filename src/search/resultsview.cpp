@@ -39,10 +39,12 @@ ResultsView::ResultsView(SearchResultModel* results, SearchDialog *dialog, QWidg
 {
     ui->setupUi(this);
     ui->resultView->setModel(mResultModel);
+
     QPalette palette = qApp->palette();
+    Theme::fillThemeColorPalette(palette, true, false);
+    setPalette(palette);
+
     palette.setColor(QPalette::Inactive, QPalette::AlternateBase, palette.color(QPalette::Active, QPalette::AlternateBase));
-    palette.setColor(QPalette::Highlight, ui->resultView->palette().highlight().color());
-    palette.setColor(QPalette::HighlightedText, ui->resultView->palette().highlightedText().color());
     ui->resultView->setPalette(palette);
     mDelegate = new SearchResultViewItemDelegate(this);
     ui->resultView->setItemDelegateForColumn(0, mDelegate);
@@ -209,6 +211,14 @@ void ResultsView::resetZoom()
 {
     ui->resultView->resetZoom();
     mDelegate->setFont(ui->resultView->font());
+}
+
+void ResultsView::updateTheme()
+{
+    QPalette palette = qApp->palette();
+    Theme::fillThemeColorPalette(palette, true, false);
+    palette.setColor(QPalette::Inactive, QPalette::AlternateBase, palette.color(QPalette::Active, QPalette::AlternateBase));
+    ui->resultView->setPalette(palette);
 }
 
 void ResultsView::selectItem(int row)

@@ -71,6 +71,7 @@ public:
     void show(const QPoint &pos);
     void updateSettings();
     bool eventFilter(QObject *watched, QEvent *event) override;
+    void updateTheme();
 
 public slots:
     void on_searchNext();

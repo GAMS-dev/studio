@@ -61,6 +61,13 @@ GamsLicensingDialog::GamsLicensingDialog(const QString &title, LicenseFetcher *l
     ui->gamslogo->setPixmap(Theme::icon(":/img/gams-w24").pixmap(ui->gamslogo->size()));
     QRegularExpression regex("^\\d+$");
     ui->cdEdit->setValidator(new QRegularExpressionValidator(regex, this));
+
+    QPalette palette = qApp->palette();
+    Theme::fillThemeColorPalette(palette, true, false);
+    ui->idEdit->setPalette(palette);
+    ui->cdEdit->setPalette(palette);
+    ui->opEdit->setPalette(palette);
+
     connect(ui->copyButton, &QPushButton::clicked, this, &GamsLicensingDialog::copyLicenseInfo);
     connect(ui->fileButton, &QPushButton::clicked, this, &GamsLicensingDialog::installFile);
     connect(ui->alpButton, &QPushButton::clicked, this, &GamsLicensingDialog::requestAlpLicense);

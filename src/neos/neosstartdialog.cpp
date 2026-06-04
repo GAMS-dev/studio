@@ -22,6 +22,7 @@
 #include "settings.h"
 #include "neosprocess.h"
 #include "logger.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -34,6 +35,16 @@ NeosStartDialog::NeosStartDialog(const QString &eMail, QWidget *parent) :
     setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
     ui->setupUi(this);
     setModal(true);
+
+    QPalette palette = qApp->palette();
+    Theme::fillThemeColorPalette(palette, true, false);
+    ui->edEmail->setPalette(palette);
+    ui->cbForceGdx->setPalette(palette);
+    ui->rbShort->setPalette(palette);
+    ui->rbLong->setPalette(palette);
+    ui->cbTerms->setPalette(palette);
+    ui->cbHideTerms->setPalette(palette);
+
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NeosStartDialog::buttonClicked);
     connect(ui->bAlways, &QPushButton::clicked, this, [this](){
         buttonClicked(ui->bAlways);
