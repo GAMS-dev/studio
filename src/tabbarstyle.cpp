@@ -154,8 +154,8 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                 painter->save();
                 painter->setRenderHint(QPainter::Antialiasing);
                 painter->setPen(tab->palette.color(QPalette::Mid));
-                painter->setBrush(tab->palette.color(tab->state.testFlag(State_Selected) ? QPalette::AlternateBase
-                                                                                         : QPalette::Window));
+                painter->setBrush(tab->palette.color(tab->state.testFlag(State_Selected) ? Theme::isDark() ? QPalette::AlternateBase : QPalette::Base
+                                                                                         : Theme::isDark() ? QPalette::Window : QPalette::AlternateBase ));
                 QRect rect = tab->rect;
                 if (tab->state.testFlag(State_Selected))
                     rect.setBottom(rect.bottom() + 1);
@@ -206,7 +206,8 @@ void TabBarStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *op
                                 const QWidget *widget) const
 {
     if (element == PE_FrameTabBarBase) {
-        painter->fillRect(option->rect, option->palette.color(QPalette::Window));
+        painter->fillRect(option->rect, option->palette.color( Theme::isDark() ? QPalette::Window
+                                                                               : QPalette::AlternateBase ));
         painter->setPen(option->palette.color(QPalette::Mid));
         QTabWidget *tabWidget = widget == mMainTabs->tabBar() ? mMainTabs : widget == mLogTabs->tabBar() ? mLogTabs
                                                                                                          : nullptr;

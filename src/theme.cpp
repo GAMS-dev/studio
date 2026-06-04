@@ -230,7 +230,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Syntax_embedded,                Color(QColor(200, 70, 0)));
     mColorThemes[sNr].insert(Syntax_embedded_bg,             CAutoBackground);
 
-    mColorThemes[sNr].insert(Window_window,                  light_grayWhite);
+    mColorThemes[sNr].insert(Window_window,                  light_darkWhite);
     mColorThemes[sNr].insert(Window_windowText,              light_black);
     mColorThemes[sNr].insert(Window_base,                    light_white);
     mColorThemes[sNr].insert(Window_alternateBase,           light_darkerWhite);
@@ -713,7 +713,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_text,                    solarized_base02);
     mColorThemes[sNr].insert(Window_button,                  solarized_base2);
     mColorThemes[sNr].insert(Window_buttonText,              solarized_base02);
-    mColorThemes[sNr].insert(Window_placeHolderText,         solarized_base1);
+    mColorThemes[sNr].insert(Window_placeHolderText,         solarized_base01);
     mColorThemes[sNr].insert(Window_highlight,               solarized_highlight);
     mColorThemes[sNr].insert(Window_highlightedText,         solarized_base02);
     mColorThemes[sNr].insert(Window_link,                    solarized_cyan);
@@ -781,7 +781,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_window,                  solarized_base03);
     mColorThemes[sNr].insert(Window_windowText,              solarized_base0);
     mColorThemes[sNr].insert(Window_base,                    solarized_base02);
-    mColorThemes[sNr].insert(Window_alternateBase,           solarized_base03);
+    mColorThemes[sNr].insert(Window_alternateBase,           QColor(66, 83, 88));
     mColorThemes[sNr].insert(Window_text,                    solarized_base0);
     mColorThemes[sNr].insert(Window_button,                  solarized_base02);
     mColorThemes[sNr].insert(Window_buttonText,              solarized_base1);
