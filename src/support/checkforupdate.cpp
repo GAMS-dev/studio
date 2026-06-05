@@ -92,8 +92,8 @@ void CheckForUpdate::checkForUpdate(bool downloadVersions)
 {
     mLicenseInfo.reset(new GamsLicenseInfo);
     mToday = mLicenseInfo->today();
-    mMainDate = mLicenseInfo->licenseData();
-    mEvalDate = mLicenseInfo->evaluationLicenseData();
+    mMainDate = mLicenseInfo->licenseDate();
+    mEvalDate = mLicenseInfo->evaluationLicenseDate();
     mValidLicense = mLicenseInfo->isLicenseValid();
     mLocalDistribVersion = mLicenseInfo->localDistribVersion();
     mLocalDistribVersionString = mLicenseInfo->localDistribVersionString();

@@ -214,7 +214,7 @@ void LicenseFetcher::addNetworkWatcher()
     if (QNetworkInformation::loadBackendByFeatures(QNetworkInformation::Feature::Reachability)) {
         QNetworkInformation *info = QNetworkInformation::instance();
         QObject::connect(info, &QNetworkInformation::reachabilityChanged, this, [this](QNetworkInformation::Reachability reachability) {
-            if (reachability == QNetworkInformation::Reachability::Online && mLicenseType == LicenseStateEnum::lsNet) {
+            if (reachability == QNetworkInformation::Reachability::Online && mLicenseType == lsNet) {
                 QTimer::singleShot(100ms, this, &LicenseFetcher::fetchGamsLicense);
             } else {
                 QTimer::singleShot(100ms, this, &LicenseFetcher::pingServer);
@@ -246,7 +246,7 @@ void LicenseFetcher::ensureLicenseCopy()
 
 bool LicenseFetcher::restoreLicenseCopy()
 {
-    if (QFile::exists(mLicenseFile) && mLicenseType == LicenseStateEnum::lsNetCheckout) {
+    if (QFile::exists(mLicenseFile) && mLicenseType == lsNetCheckout) {
         QString bkFile = mLicenseFile + ".~bk";
         if (QFile::exists(bkFile)) {
             LicenseFetcher fetcher(this);
@@ -337,22 +337,31 @@ void LicenseFetcher::fetchLicenseValues(const QString &lineLic, const QString &l
     }
     mLicenseValids.clear();
     mDurationChar = QChar('~');
+    mMaintenanceChar = QChar('~');
     mDurationMonths = 0;
     for (int i = 0; i < lineLic.length(); ++i) {
         if (lineLic.at(i) == '_') break;
         if (lineVal.at(i) == '_') {
             emit error("Inconsistent license values");
-            mDurationChar = QChar('0');
+            mDurationChar = QChar('~');
+            mMaintenanceChar = QChar('~');
             mLicenseValids.clear();
             break;
         }
-        if (!(i%2)) continue;
-        if (lineVal.at(i) == 0) continue;   // license hasn't a duration
-        mLicenseValids.insert(lineLic.mid(i-1, 2), lineVal.at(i));
-        if (lineVal.at(i) < mDurationChar)
-            mDurationChar = lineVal.at(i);
+        if (i%2) {
+            if (lineVal.at(i) == '0') continue;   // license hasn't a duration
+            mLicenseValids.insert(lineLic.mid(i-1, 2), lineVal.at(i));
+            if (lineVal.at(i) < mDurationChar)
+                mDurationChar = lineVal.at(i);
+        } else {
+            if (lineVal.at(i) == '0') continue;   // license hasn't a maintenance duration
+            mLicenseValids.insert(lineLic.mid(i, 2), lineVal.at(i));
+            if (lineVal.at(i) < mMaintenanceChar)
+                mMaintenanceChar = lineVal.at(i);
+        }
     }
     mDurationMonths = convertDuration(mDurationChar);
+    mMaintenanceMonths = convertDuration(mMaintenanceChar);
 }
 
 void LicenseFetcher::fetchAccessCode(const QString &line)
@@ -374,10 +383,13 @@ void LicenseFetcher::fetchAccessCode(const QString &line)
 
 void LicenseFetcher::fetchLicenseType(const QString &line)
 {
-    mLicenseType = lsLocal;
     mCheckoutHours = 0;
     mLicenseServer = QString();
     mLicensePort = 8080;
+    mLicenseType = lsNone;
+    if (mDurationChar == '~' && mMaintenanceChar == '~')
+        return;
+    mLicenseType = mDurationChar != '~' ? lsLocal : lsMaintenance;
     if (line.startsWith("server:")) {
         mLicenseType = lsNet;
         QRegularExpressionMatch match = CRexServer.match(line);
@@ -394,11 +406,22 @@ void LicenseFetcher::fetchLicenseType(const QString &line)
     }
 }
 
+bool LicenseFetcher::isMaintenanceValid()
+{
+    GamsLicenseInfo liceInfo = GamsLicenseInfo();
+    int maintenanceDate = liceInfo.licenseDate() + 30;
+    return liceInfo.isCurrentMaintenance(maintenanceDate);
+}
+
 void LicenseFetcher::updateState(bool isError)
 {
     Q_UNUSED(isError)
     mFetchTimer.stop();
     mLicenseState = mLicenseType;
+    if (mLicenseState == lsNone) {
+        emit stateChanged(mLicenseState, QDateTime());
+        return;
+    }
     QDateTime now = QDateTime::currentDateTime();
     mExpire = QDateTime();
     if (mLicenseType == lsNetCheckout) {
@@ -415,7 +438,25 @@ void LicenseFetcher::updateState(bool isError)
             }
         }
     } else {
-        if (mDurationChar != '~') {
+        if (mLicenseType == lsMaintenance) {
+            mExpire = mBaseDate.addDays(mMaintenanceMonths * 30).toLocalTime();
+
+            // TODO(JM) REMOVE! Just for TEST
+            int diff = -200;
+            mExpire = mExpire.addDays(diff);
+
+            GamsLicenseInfo liceInfo = GamsLicenseInfo();
+            int maintenanceDate = liceInfo.licenseDate();
+
+            // TODO(JM) REMOVE! Just for TEST
+            maintenanceDate += diff;
+            DEB() << "  ### expire-diff " << (liceInfo.julian() - maintenanceDate);
+
+            if (!liceInfo.isCurrentMaintenance(maintenanceDate + 30)) {
+                mLicenseState = lsMaintenanceInvalid;
+                mExpire = mExpire.addDays(30);
+            }
+        } else if (mDurationChar != '~') {
             bool ensureServer = mLicenseType == lsNet;
             mExpire = mBaseDate.addDays(mDurationMonths * 30).toLocalTime();
             if (mExpire < now) {

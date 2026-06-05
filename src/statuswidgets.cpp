@@ -162,6 +162,7 @@ void StatusWidgets::setLicenseState(support::LicenseState licenseState, const QD
 {
     QColor background = Qt::white;
     QIcon icon = Theme::icon(":/solid/new-w");
+    QIcon icon2;
     QString text;
     QString toolTip;
     QPalette pal = mStatusBar->palette();
@@ -171,6 +172,18 @@ void StatusWidgets::setLicenseState(support::LicenseState licenseState, const QD
         background = pal.color(QPalette::Window);
         icon = Theme::icon(":/solid/search");
         toolTip = "Validating GAMS license";
+        break;
+    case lsMaintenance:
+        background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .6);
+        icon = Theme::icon(":/solid/computer");
+        toolTip = "Local GAMS maintenance license";
+        icon2 = Theme::icon(":/solid/tlock-open");
+        break;
+    case lsMaintenanceInvalid:
+        background = Theme::mixColor(QColor(255,255,255), Theme::Normal_Red, .9);
+        toolTip = "Local GAMS maintenance license (GAMS version too new)\nSee Settings > General to change the version.";
+        icon = Theme::icon(":/solid/computer");
+        icon2 = Theme::icon(":/solid/tlock");
         break;
     case lsLocal:
         background = Theme::mixColor(pal.color(QPalette::Window), Theme::Normal_Green, .6);
@@ -250,6 +263,7 @@ void StatusWidgets::setLicenseState(support::LicenseState licenseState, const QD
     pal.setColor(QPalette::AlternateBase, background);
     mLicense->setPalette(pal);
     mLicenseTextLabel->setText(text);
+    mLicenseTextLabel->setPixmap(icon2.pixmap(14,14));
     mLicenseIconLabel->setPixmap(icon.pixmap(14,14));
     mLicense->setToolTip(toolTip);
     mLicenseState = licenseState;

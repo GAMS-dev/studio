@@ -35,14 +35,16 @@ inline namespace LicenseStateEnum {
 enum LicenseState {
     lsNone,
     lsChecking,
-    lsLocal,
+    lsMaintenance,          // maintenance license (perpetual)
+    lsMaintenanceInvalid,
+    lsLocal,                // local license
     lsLocalEnd,
     lsLocalInvalid,
-    lsNet,
+    lsNet,                  // network license
     lsNetEnd,
     lsNetInvalid,
     lsNetNoConnection,
-    lsNetCheckout,
+    lsNetCheckout,          // checked out network license
     lsNetCheckoutEnd,
     lsNetCheckoutInvalid,
 };
@@ -83,6 +85,7 @@ protected:
     void fetchLicenseValues(const QString &lineLic, const QString &lineVal);
     void fetchAccessCode(const QString &line);
     void fetchLicenseType(const QString &line);
+    bool isMaintenanceValid();
     void updateState(bool isError);
     void pingServer();
 
@@ -104,6 +107,8 @@ private:
     QHash<QString, QString> mLicenseValids;
     QChar mDurationChar = QChar('~');
     int mDurationMonths = 0;
+    QChar mMaintenanceChar = QChar('~');
+    int mMaintenanceMonths = 0;
     int mCheckoutHours = 0;
     QString mAccessCode;
     bool mCheckLicenseCopy = false;

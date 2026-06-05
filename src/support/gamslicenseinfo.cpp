@@ -310,12 +310,12 @@ bool GamsLicenseInfo::isGenericLicense() const
     return !QString(platform).compare("GEN", Qt::CaseInsensitive);
 }
 
-int GamsLicenseInfo::evaluationLicenseData()
+int GamsLicenseInfo::evaluationLicenseDate()
 {
     return palLicenseGetEvalDate(mPAL);
 }
 
-int GamsLicenseInfo::licenseData()
+int GamsLicenseInfo::licenseDate()
 {
     return palLicenseGetMaintDate(mPAL);
 }

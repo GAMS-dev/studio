@@ -76,8 +76,8 @@ public:
     bool isCurrentMaintenance(int mainDate);
     bool isLicenseValidationSuccessful() const;
     bool isGenericLicense() const;
-    int evaluationLicenseData();
-    int licenseData();
+    int evaluationLicenseDate();
+    int licenseDate();
 
     int julian();
     int today();
