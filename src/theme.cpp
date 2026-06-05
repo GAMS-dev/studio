@@ -141,7 +141,7 @@ void Theme::initDefault()
     QColor light_brightRed    (255, 51, 51);
     QColor light_grayRed      (200, 100, 100);
 
-    QColor light_highlightblue(128, 199, 239);
+    QColor light_highlightblue(160, 210, 238);
     QColor light_selectBlue   (0, 120, 215);
     QColor light_linkBlue     (0, 102, 204);
 
