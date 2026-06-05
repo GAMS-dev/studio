@@ -54,6 +54,11 @@ ResultsView::ResultsView(SearchResultModel* results, SearchDialog *dialog, QWidg
         setFocus();
     });
     resizeColumnsToContent();
+    connect(mResultModel, &QAbstractItemModel::dataChanged,
+            this, [this](auto, auto, auto) {
+        ui->resultView->viewport()->update();
+    });
+
 }
 
 ResultsView::~ResultsView()
@@ -219,6 +224,9 @@ void ResultsView::updateTheme()
     Theme::fillThemeColorPalette(palette, true, false);
     palette.setColor(QPalette::Inactive, QPalette::AlternateBase, palette.color(QPalette::Active, QPalette::AlternateBase));
     ui->resultView->setPalette(palette);
+
+    if (mResultModel)
+        mResultModel->updateAllRowsPalette();
 }
 
 void ResultsView::selectItem(int row)

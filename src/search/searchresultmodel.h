@@ -55,7 +55,11 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
+    void updateAllRowsPalette();
+
 private:
+    void updatePaletteRecursively(const QModelIndex &parentIndex);
+
     QRegularExpression mSearchRegex;
     QList<Result> mResults;
     QHash<int, ResultItem*> mItems;

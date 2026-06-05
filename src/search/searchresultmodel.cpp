@@ -174,6 +174,39 @@ QVariant SearchResultModel::headerData(int section, Qt::Orientation orientation,
     return QVariant();
 }
 
+void SearchResultModel::updateAllRowsPalette()
+{
+    if (mResults.isEmpty()) return;
+
+    updatePaletteRecursively(QModelIndex());
+}
+
+void SearchResultModel::updatePaletteRecursively(const QModelIndex &parentIndex)
+{
+    int numRows = rowCount(parentIndex);
+    if (numRows == 0) return;
+
+    for (int i = 0; i < numRows; ++i) {
+        QModelIndex childIndex = index(i, 0, parentIndex);
+
+        if (hasChildren(childIndex)) {
+            updatePaletteRecursively(childIndex);
+        } else {
+            QString newContext = childIndex.siblingAtColumn(0).data().toString();
+            const QRegularExpression regex("background-color:(#[0-9a-fA-F]{6});");
+            newContext.replace(regex, QString("background-color:%1;").arg(Theme::color(Theme::Edit_searchBg).name()));
+
+            ResultItem *item = static_cast<ResultItem*>(childIndex.internalPointer());
+            item->updateResultContext( newContext );
+        }
+    }
+
+    QModelIndex topLeft = index(0, 0, parentIndex);
+    QModelIndex bottomRight = index(numRows - 1, columnCount(parentIndex) - 1, parentIndex);
+
+    emit dataChanged(topLeft, bottomRight, {Qt::DisplayRole});
+}
+
 }
 }
 }

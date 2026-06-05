@@ -105,6 +105,11 @@ int ResultItem::row() const
     return 0;
 }
 
+void ResultItem::updateResultContext(QString context)
+{
+    mResult.SetContext(context);
+}
+
 const Result &ResultItem::data() const
 {
     return mResult;

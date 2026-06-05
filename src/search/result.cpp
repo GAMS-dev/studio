@@ -73,6 +73,11 @@ void Result::setFilePath(const QString &fp)
     mFilePath = fp;
 }
 
+void Result::SetContext(QString newContext)
+{
+    mContext = std::move(newContext);
+}
+
 QString Result::context() const
 {
     return mContext;

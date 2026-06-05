@@ -57,6 +57,7 @@ public:
     int rowCount() const;
     int row() const;
 
+    void updateResultContext(QString context);
     const Result& data() const;
     QString filePathCount() const;
     ResultItem* parent() const;

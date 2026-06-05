@@ -52,6 +52,8 @@ public:
     QString filePath() const;
     void setFilePath(const QString &fp);
 
+    void SetContext(QString newContext);
+
     QString context() const;
     int length() const;
 
