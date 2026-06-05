@@ -243,9 +243,8 @@ void FileSystemItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
     if (!index.isValid()) return;
     const FilteredFileSystemModel *model = static_cast<const FilteredFileSystemModel*>(index.model());
     QStyleOptionViewItem opt(option);
-    opt.state.setFlag(QStyle::State_Selected, false);
     opt.textElideMode = Qt::ElideMiddle;
-    opt.palette.setColor(QPalette::Highlight, Qt::transparent);
+    opt.palette.setColor(QPalette::Highlight, Theme::color(Theme::Window_highlight));
     bool isFile = (model->data(index, Qt::CheckStateRole).toInt() == Qt::Checked) && !model->isDir(index);
     QRect btRect = opt.rect;
     if (isFile) {
