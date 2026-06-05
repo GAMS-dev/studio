@@ -76,9 +76,11 @@ public:
     QVector<bool> showAttributes();
 
     void setSymInfo(QString symName, QString text);
+    void setHeaderControlsChecked(bool checked);
 
 signals:
     void openFile(const QString &filename);
+    void headerControlsToggled(bool checked);
 
 public slots:
     void enableControls();

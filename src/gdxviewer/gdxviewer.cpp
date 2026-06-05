@@ -150,6 +150,7 @@ GdxSymbol *GdxViewer::selectedSymbol()
 void GdxViewer::createSymbolView(GdxSymbol *sym, int symbolIndex)
 {
     GdxSymbolView* symView = new GdxSymbolView(this);
+    symView->setHeaderControlsChecked(mHeaderControlsVisible);
     const auto headers = symView->headers();
     for (QHeaderView *header : headers) {
         headerRegister(header);
@@ -157,6 +158,7 @@ void GdxViewer::createSymbolView(GdxSymbol *sym, int symbolIndex)
 
     mSymbolViews.replace(symbolIndex, symView);
     connect(symView, &GdxSymbolView::openFile, this, &GdxViewer::openFile);
+    connect(symView, &GdxSymbolView::headerControlsToggled, this, &GdxViewer::setHeaderControlsVisible);
 
     if (mState && mState->symbolViewStates().contains(sym->name()))
         symView->setSym(sym, mGdxSymbolTable, mState->symbolViewState(sym->name()));
@@ -555,7 +557,16 @@ bool GdxViewer::headerControlsVisible() const
 
 void GdxViewer::setHeaderControlsVisible(bool newHeaderControlsVisible)
 {
+    if (mHeaderControlsVisible == newHeaderControlsVisible)
+        return;
+
     mHeaderControlsVisible = newHeaderControlsVisible;
+
+    for (GdxSymbolView* view : std::as_const(mSymbolViews)) {
+        if (view) {
+            view->setHeaderControlsChecked(mHeaderControlsVisible);
+        }
+    }
 }
 
 GdxSymbolTableModel *GdxViewer::gdxSymbolTable() const

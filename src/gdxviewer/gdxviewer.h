@@ -70,7 +70,6 @@ public:
     void saveDelete();
 
     bool headerControlsVisible() const;
-    void setHeaderControlsVisible(bool newHeaderControlsVisible);
 
 signals:
     void openFile(const QString &filePath);
@@ -78,6 +77,7 @@ signals:
 public slots:
     void invalidate();
     int reload(const QString &encoding, bool quiet=false, bool triggerReload=true);
+    void setHeaderControlsVisible(bool newHeaderControlsVisible);
 
 private slots:
     void hideUniverseSymbol();

@@ -32,7 +32,6 @@
 #include "numericalformatcontroller.h"
 #include "valuefilterdialog.h"
 #include "labelfilterdialog.h"
-#include "gdxviewer.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
@@ -494,9 +493,28 @@ void GdxSymbolView::setSymInfo(QString symName, QString text)
 {
     ui->laSymbolName->setText(symName);
     ui->laSymbolText->setText(text);
+}
 
-    GdxViewer *gdxViewer = static_cast<GdxViewer*>(parent());
-    ui->pbHeaderControls->setChecked(gdxViewer->headerControlsVisible());
+void GdxSymbolView::setHeaderControlsChecked(bool checked)
+{
+    QSignalBlocker blocker(ui->pbHeaderControls);
+
+    if (ui->pbHeaderControls->isChecked() != checked) {
+        ui->pbHeaderControls->setChecked(checked);
+
+        // Explicitly execute your visibility layout-hiding logic
+        // (Since the signal blocker prevents on_pbHeaderControls_toggled from firing)
+        auto layout = ui->horizontalLayout_3;
+        for (int i = 0; i < layout->count(); ++i) {
+            if (QWidget* widget = layout->itemAt(i)->widget())
+                widget->setVisible(checked);
+        }
+        layout = ui->horizontalLayout_4;
+        for (int i = 0; i < layout->count(); ++i) {
+            if (QWidget* widget = layout->itemAt(i)->widget())
+                widget->setVisible(checked);
+        }
+    }
 }
 
 void GdxSymbolView::showContextMenu(QPoint p)
@@ -1106,17 +1124,16 @@ void GdxSymbolView::markSearchResults()
 
 void GdxSymbolView::on_pbHeaderControls_toggled(bool checked)
 {
-    static_cast<GdxViewer*>(parent())->setHeaderControlsVisible(checked);
+    emit headerControlsToggled(checked);
+
     auto layout = ui->horizontalLayout_3;
     for (int i = 0; i < layout->count(); ++i) {
-        QLayoutItem* item = layout->itemAt(i);
-        if (QWidget* widget = item->widget())
+        if (QWidget* widget = layout->itemAt(i)->widget())
             widget->setVisible(checked);
     }
     layout = ui->horizontalLayout_4;
     for (int i = 0; i < layout->count(); ++i) {
-        QLayoutItem* item = layout->itemAt(i);
-        if (QWidget* widget = item->widget())
+        if (QWidget* widget = layout->itemAt(i)->widget())
             widget->setVisible(checked);
     }
 }
