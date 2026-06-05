@@ -498,22 +498,17 @@ void GdxSymbolView::setSymInfo(QString symName, QString text)
 void GdxSymbolView::setHeaderControlsChecked(bool checked)
 {
     QSignalBlocker blocker(ui->pbHeaderControls);
+    ui->pbHeaderControls->setChecked(checked);
 
-    if (ui->pbHeaderControls->isChecked() != checked) {
-        ui->pbHeaderControls->setChecked(checked);
-
-        // Explicitly execute your visibility layout-hiding logic
-        // (Since the signal blocker prevents on_pbHeaderControls_toggled from firing)
-        auto layout = ui->horizontalLayout_3;
-        for (int i = 0; i < layout->count(); ++i) {
-            if (QWidget* widget = layout->itemAt(i)->widget())
-                widget->setVisible(checked);
-        }
-        layout = ui->horizontalLayout_4;
-        for (int i = 0; i < layout->count(); ++i) {
-            if (QWidget* widget = layout->itemAt(i)->widget())
-                widget->setVisible(checked);
-        }
+    auto layout = ui->horizontalLayout_3;
+    for (int i = 0; i < layout->count(); ++i) {
+        if (QWidget* widget = layout->itemAt(i)->widget())
+            widget->setVisible(checked);
+    }
+    layout = ui->horizontalLayout_4;
+    for (int i = 0; i < layout->count(); ++i) {
+        if (QWidget* widget = layout->itemAt(i)->widget())
+            widget->setVisible(checked);
     }
 }
 
@@ -1125,17 +1120,6 @@ void GdxSymbolView::markSearchResults()
 void GdxSymbolView::on_pbHeaderControls_toggled(bool checked)
 {
     emit headerControlsToggled(checked);
-
-    auto layout = ui->horizontalLayout_3;
-    for (int i = 0; i < layout->count(); ++i) {
-        if (QWidget* widget = layout->itemAt(i)->widget())
-            widget->setVisible(checked);
-    }
-    layout = ui->horizontalLayout_4;
-    for (int i = 0; i < layout->count(); ++i) {
-        if (QWidget* widget = layout->itemAt(i)->widget())
-            widget->setVisible(checked);
-    }
 }
 
 } // namespace gdxviewer
