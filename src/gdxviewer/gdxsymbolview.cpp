@@ -1000,6 +1000,7 @@ void GdxSymbolView::enableControls()
     ui->lineEdit->setEnabled(true);
     if (mSym->dim()>1)
         ui->pbToggleView->setEnabled(true);
+    ui->pbHeaderControls->setEnabled(true);
 }
 
 bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv) {

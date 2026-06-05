@@ -231,6 +231,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="pbHeaderControls">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string/>
        </property>
