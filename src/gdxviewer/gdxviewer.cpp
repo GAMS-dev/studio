@@ -150,7 +150,7 @@ GdxSymbol *GdxViewer::selectedSymbol()
 void GdxViewer::createSymbolView(GdxSymbol *sym, int symbolIndex)
 {
     GdxSymbolView* symView = new GdxSymbolView(this);
-    symView->setHeaderControlsChecked(mHeaderControlsVisible);
+    symView->setHeaderControlsVisible(mHeaderControlsVisible);
     const auto headers = symView->headers();
     for (QHeaderView *header : headers) {
         headerRegister(header);
@@ -465,10 +465,11 @@ void GdxViewer::saveState()
         QString name =ui->tvSymbols->model()->data(index).toString();
         mState->setSelectedSymbol(name);
         mState->setSelectedSymbolIsAlias(mGdxSymbolTable->getSymbolByName(name)->type() == GMS_DT_ALIAS);
-
     }
     mState->setSymbolTableHeaderState(ui->tvSymbols->horizontalHeader()->saveState());
     mState->setSymbolFilter(ui->lineEdit->text());
+
+    mState->setHeaderControlsVisible(mHeaderControlsVisible);
     for (GdxSymbolView* symView : std::as_const(mSymbolViews)) {
         if (symView && symView->sym()->isLoaded()) {
             GdxSymbolViewState* symViewState = mState->addSymbolViewState(symView->sym()->name());
@@ -498,7 +499,9 @@ void GdxViewer::applyState()
     ui->tvSymbols->resizeColumnsToContents();
     ui->tvSymbols->horizontalHeader()->setStretchLastSection(true);
     ui->lineEdit->setText(mState->symbolFilter());
-    // delete symbols that do not exist anymore or differ in dimension or type
+    mHeaderControlsVisible = mState->headerControlsVisible();
+
+    //delete symbols that do not exist anymore or differ in dimension or type
     auto svStates = mState->symbolViewStates();
     for (auto it = svStates.constBegin() ; it != svStates.constEnd() ; ++it) {
         GdxSymbol* sym = mGdxSymbolTable->getSymbolByName(it.key());
@@ -560,11 +563,14 @@ void GdxViewer::setHeaderControlsVisible(bool newHeaderControlsVisible)
     if (mHeaderControlsVisible == newHeaderControlsVisible)
         return;
 
+    if (mState)
+        mState->setHeaderControlsVisible(mHeaderControlsVisible);
+
     mHeaderControlsVisible = newHeaderControlsVisible;
 
     for (GdxSymbolView* view : std::as_const(mSymbolViews)) {
         if (view) {
-            view->setHeaderControlsChecked(mHeaderControlsVisible);
+            view->setHeaderControlsVisible(mHeaderControlsVisible);
         }
     }
 }

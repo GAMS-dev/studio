@@ -76,7 +76,7 @@ public:
     QVector<bool> showAttributes();
 
     void setSymInfo(QString symName, QString text);
-    void setHeaderControlsChecked(bool checked);
+    void setHeaderControlsVisible(bool visible);
 
 signals:
     void openFile(const QString &filename);

@@ -56,12 +56,16 @@ public:
     QString symbolFilter() const;
     void setSymbolFilter(const QString &newSymbolFilter);
 
+    bool headerControlsVisible() const;
+    void setHeaderControlsVisible(bool newHeaderControlsVisible);
+
 private:
     QByteArray mSymbolTableHeaderState;
     QMap<QString, GdxSymbolViewState*> mSymbolViewState;
     QString mSelectedSymbol;
     bool mSelectedSymbolIsAlias = false;
     QString mSymbolFilter;
+    bool mHeaderControlsVisible = true;
 };
 
 } // namespace gdxviewer

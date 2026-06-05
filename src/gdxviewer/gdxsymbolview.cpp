@@ -495,20 +495,20 @@ void GdxSymbolView::setSymInfo(QString symName, QString text)
     ui->laSymbolText->setText(text);
 }
 
-void GdxSymbolView::setHeaderControlsChecked(bool checked)
+void GdxSymbolView::setHeaderControlsVisible(bool visible)
 {
     QSignalBlocker blocker(ui->pbHeaderControls);
-    ui->pbHeaderControls->setChecked(checked);
+    ui->pbHeaderControls->setChecked(visible);
 
     auto layout = ui->horizontalLayout_3;
     for (int i = 0; i < layout->count(); ++i) {
         if (QWidget* widget = layout->itemAt(i)->widget())
-            widget->setVisible(checked);
+            widget->setVisible(visible);
     }
     layout = ui->horizontalLayout_4;
     for (int i = 0; i < layout->count(); ++i) {
         if (QWidget* widget = layout->itemAt(i)->widget())
-            widget->setVisible(checked);
+            widget->setVisible(visible);
     }
 }
 
