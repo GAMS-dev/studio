@@ -440,18 +440,8 @@ void LicenseFetcher::updateState(bool isError)
     } else {
         if (mLicenseType == lsMaintenance) {
             mExpire = mBaseDate.addDays(mMaintenanceMonths * 30).toLocalTime();
-
-            // TODO(JM) REMOVE! Just for TEST
-            int diff = -200;
-            mExpire = mExpire.addDays(diff);
-
             GamsLicenseInfo liceInfo = GamsLicenseInfo();
             int maintenanceDate = liceInfo.licenseDate();
-
-            // TODO(JM) REMOVE! Just for TEST
-            maintenanceDate += diff;
-            DEB() << "  ### expire-diff " << (liceInfo.julian() - maintenanceDate);
-
             if (!liceInfo.isCurrentMaintenance(maintenanceDate + 30)) {
                 mLicenseState = lsMaintenanceInvalid;
                 mExpire = mExpire.addDays(30);
