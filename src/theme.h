@@ -115,12 +115,9 @@ public:
         Window_windowText,      // Labels and Text Foreground
         Window_base,            // Data Entry Background
         Window_alternateBase,   // Alternating Row Colors
-        Window_ToolTipBase,     // Tooltip Background
-        Window_ToolTipText,     // Tooltip Foreground
         Window_text,            // Foreground used with Base
         Window_button,          // Button Background
         Window_buttonText,      // Button Foreground
-        Window_brightText,      // Text Foreground
         Window_placeHolderText, // Text Input Foreground
         Window_highlight,       // Item Selection Highlight Background
         Window_highlightedText, // Selected Text color
@@ -134,7 +131,6 @@ public:
         Window_disable_window,          // disable window
         Window_disable_base,            // disable base, and button
         Window_disable_text,            // disable text, button text, hightlight text
-        Window_disable_brightText,      // disable bright text
         Window_disable_placeholderText, // disable place holder text
         Window_disable_highlight,       // disable highlight
         Window_disable_hightlightText,  // disable highlight text
