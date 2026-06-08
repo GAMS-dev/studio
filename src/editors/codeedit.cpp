@@ -2823,7 +2823,7 @@ void CodeEdit::extraSelFindMatches(QList<QTextEdit::ExtraSelection> &selections)
             tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, int(m.capturedLength(0)));
 
             selection.cursor = tc;
-            selection.format.setForeground(Qt::white);
+            selection.format.setForeground(toColor(Theme::Edit_searchFg));
             selection.format.setBackground(toColor(Theme::Edit_findBg));
             selections << selection;
         }
@@ -2869,7 +2869,7 @@ void CodeEdit::extraSelSearchMatches(QList<QTextEdit::ExtraSelection> &selection
             }
 
             selection.cursor = tc;
-            selection.format.setForeground(Qt::white);
+            selection.format.setForeground(toColor(Theme::Edit_searchFg));
             selection.format.setBackground(toColor(Theme::Edit_searchBg));
             selections << selection;
         }

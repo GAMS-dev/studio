@@ -193,9 +193,9 @@ void SearchResultModel::updatePaletteRecursively(const QModelIndex &parentIndex)
             updatePaletteRecursively(childIndex);
         } else {
             QString newContext = childIndex.siblingAtColumn(0).data().toString();
-            const QRegularExpression regex("background-color:(#[0-9a-fA-F]{6});");
-            newContext.replace(regex, QString("background-color:%1;").arg(Theme::color(Theme::Edit_searchBg).name()));
-
+            const QRegularExpression regex("background-color:(#[0-9a-fA-F]{6});color:(#[0-9a-fA-F]{6})");
+            newContext.replace(regex, QString("background-color:%1;color:%2").arg(Theme::color(Theme::Edit_searchBg).name())
+                                                                             .arg(Theme::color(Theme::Edit_searchFg).name()) );
             ResultItem *item = static_cast<ResultItem*>(childIndex.internalPointer());
             item->updateResultContext( newContext );
         }

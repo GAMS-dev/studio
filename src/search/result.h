@@ -75,7 +75,7 @@ private:
     int mLogicalIndex;
 
     QString matchHighlightStart = QString("<b style=background-color:%1;color:%2>")
-            .arg(Theme::color(Theme::Edit_searchBg).name(), QColor(Qt::white).name());
+            .arg(Theme::color(Theme::Edit_searchBg).name()).arg(Theme::color(Theme::Edit_searchFg).name());
     QString matchHighlightEnd = QString("</b>");
 };
 

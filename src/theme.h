@@ -46,6 +46,8 @@ public:
         Edit_currentWordBg,
         Edit_findBg,
         Edit_searchBg,
+        Edit_findFg,
+        Edit_searchFg,
         Edit_foldLineBg,
         Edit_foldLineFg,
         Edit_parenthesesValidFg,

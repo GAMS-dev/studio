@@ -65,8 +65,8 @@ void Theme::initSlotTexts()
     mSlotText.insert(Edit_currentLineBg,        "Current line");
     mSlotText.insert(Edit_errorBg,              "Error");
     mSlotText.insert(Edit_currentWordBg,        "Current word");
-    mSlotText.insert(Edit_findBg,               "Find matches");
-    mSlotText.insert(Edit_searchBg,             "Search result");
+    mSlotText.insert(Edit_findFg,               "Find matches");
+    mSlotText.insert(Edit_searchFg,             "Search result");
     mSlotText.insert(Edit_foldLineBg,           "Fold lines marker");
     mSlotText.insert(Edit_parenthesesValidFg,   "Matching parentheses");
     mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
@@ -168,6 +168,8 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
     mColorThemes[sNr].insert(Edit_findBg,                    QColor(92,194,75));
     mColorThemes[sNr].insert(Edit_searchBg,                  QColor(102,164,0));
+    mColorThemes[sNr].insert(Edit_findFg,                    light_white);
+    mColorThemes[sNr].insert(Edit_searchFg,                  light_white);
     mColorThemes[sNr].insert(Edit_foldLineBg,                QColor(135,195,255));
     mColorThemes[sNr].insert(Edit_foldLineFg,                QColor(255,255,255));
     mColorThemes[sNr].insert(Edit_parenthesesValidFg,        QColor(Qt::red));
@@ -283,10 +285,13 @@ void Theme::initDefault()
 
     mColorThemes[sNr].insert(Edit_text,                      dark_neutral);
     mColorThemes[sNr].insert(Syntax_neutral,                 dark_neutral);
-    mColorThemes[sNr].insert(Edit_background,                Color(dark_base));
+    mColorThemes[sNr].insert(Edit_background,                dark_base);
     mColorThemes[sNr].insert(Edit_currentLineBg,             dark_linebg);
     mColorThemes[sNr].insert(Edit_errorBg,                   QColor(187,34,51));
     mColorThemes[sNr].insert(Edit_findBg,                    QColor(51,102,51));
+    mColorThemes[sNr].insert(Edit_searchBg,                  QColor(102,164,0));
+    mColorThemes[sNr].insert(Edit_findFg,                    light_white);
+    mColorThemes[sNr].insert(Edit_searchFg,                  light_white);
     mColorThemes[sNr].insert(Edit_foldLineBg,                dark_selection.darker(150));
     mColorThemes[sNr].insert(Edit_foldLineFg,                QColor(0,0,0));
     mColorThemes[sNr].insert(Edit_linenrAreaBg,              dark_lightBlack);
@@ -395,12 +400,14 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(invalid,                        CUndefined);
     mColorThemes[sNr].insert(Edit_text,                      distinct_black);
     mColorThemes[sNr].insert(Syntax_neutral,                 distinct_black);
-    mColorThemes[sNr].insert(Edit_background,                QColor(Qt::white));
+    mColorThemes[sNr].insert(Edit_background,                light_white);
     mColorThemes[sNr].insert(Edit_currentLineBg,             light_lightYellow);
     mColorThemes[sNr].insert(Edit_errorBg,                   QColor(255, 220, 200));
     mColorThemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
     mColorThemes[sNr].insert(Edit_findBg,                    distinct_red);
     mColorThemes[sNr].insert(Edit_searchBg,                  distinct_orange);
+    mColorThemes[sNr].insert(Edit_findFg,                    light_white);
+    mColorThemes[sNr].insert(Edit_searchFg,                  light_white);
     mColorThemes[sNr].insert(Edit_foldLineBg,                distinct_yellow.darker(100));
     mColorThemes[sNr].insert(Edit_foldLineFg,                distinct_black.lighter(120));
     mColorThemes[sNr].insert(Edit_parenthesesValidFg,        distinct_red);
@@ -520,6 +527,8 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_errorBg,                   drac_red);
     mColorThemes[sNr].insert(Edit_findBg,                    drac_pink.darker(190));
     mColorThemes[sNr].insert(Edit_searchBg,                  drac_pink);
+    mColorThemes[sNr].insert(Edit_findFg,                    drac_foreground);
+    mColorThemes[sNr].insert(Edit_searchFg,                  drac_foreground);
     mColorThemes[sNr].insert(Edit_foldLineBg,                drac_purple.darker(90));
     mColorThemes[sNr].insert(Edit_foldLineFg,                drac_bgLighter);
     mColorThemes[sNr].insert(Edit_linenrAreaBg,              drac_bgDarker);
@@ -643,6 +652,8 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_currentWordBg,             solarized_lightgreen);
     mColorThemes[sNr].insert(Edit_findBg,                    QColor(145, 149, 211));
     mColorThemes[sNr].insert(Edit_searchBg,                  QColor(147, 197, 233));
+    mColorThemes[sNr].insert(Edit_findFg,                    solarized_base3);
+    mColorThemes[sNr].insert(Edit_searchFg,                  solarized_base3);
     mColorThemes[sNr].insert(Edit_foldLineBg,                solarized_yellow);
     mColorThemes[sNr].insert(Edit_foldLineFg,                solarized_base2);
 
@@ -736,8 +747,7 @@ void Theme::initDefault()
     mColorThemes << mColorThemes.at(sNr++);
     mThemeNames  << "Solarized - dark";
     mThemeBases  << sNr;
-
-    mColorThemes[sNr].insert(invalid,                        CUndefined);
+   mColorThemes[sNr].insert(invalid,                         CUndefined);
     mColorThemes[sNr].insert(Edit_text,                      solarized_base1.lighter(120));
     mColorThemes[sNr].insert(Syntax_neutral,                 solarized_base1);
     mColorThemes[sNr].insert(Edit_background,                solarized_base02);
@@ -745,7 +755,9 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_errorBg,                   solarized_red.lighter(50));
     mColorThemes[sNr].insert(Edit_currentWordBg,             dark_background);
     mColorThemes[sNr].insert(Edit_findBg,                    QColor(145, 149, 211));
-    mColorThemes[sNr].insert(Edit_searchBg,                  solarized_blue.lighter(90));
+    mColorThemes[sNr].insert(Edit_searchBg,                  solarized_blue.lighter(120));
+    mColorThemes[sNr].insert(Edit_findFg,                    solarized_base2);
+    mColorThemes[sNr].insert(Edit_searchFg,                  solarized_base2);
     mColorThemes[sNr].insert(Edit_foldLineBg,                solarized_green.darker(90));
     mColorThemes[sNr].insert(Edit_foldLineFg,                solarized_base02);
     mColorThemes[sNr].insert(Edit_parenthesesValidFg,        solarized_base02);
