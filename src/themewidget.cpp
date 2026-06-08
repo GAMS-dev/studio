@@ -76,7 +76,8 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, QWidg
     ui->colorBG2->hide();
 }
 
-ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, Theme::ColorSlot slotBg2, QWidget *parent) :
+ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, Theme::ColorSlot slotBg2, QWidget *parent,
+                         bool disableFg, bool disableBg) :
     QWidget(parent),
     ui(new Ui::ThemeWidget)
 {
@@ -86,11 +87,21 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, Theme
     ui->iconEx->setVisible(false);
     ui->textFrame->setVisible(false);
 
-    setFormatVisible(Theme::hasFontProps(slotFg));
-    ui->name->setText(' ' + Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
+    setFormatVisible(disableFg || disableBg ? false
+                                            : Theme::hasFontProps(slotFg));
+    ui->name->setText(disableFg ? ' ' + Theme::instance()->text(slotBg ? slotBg : slotFg) + ' '
+                                : ' ' + Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
     initSlot(mSlotFg, slotFg, ui->colorFG);
     initSlot(mSlotBg, slotBg, ui->colorBG1);
     initSlot(mSlotBg2, slotBg2, ui->colorBG2);
+    if (disableFg || disableBg) {
+        ui->textEx->setVisible(false);
+        ui->colorBG2->setVisible(false);
+        if (disableFg)
+            ui->colorFG->setVisible(false);
+        if (disableBg)
+           ui->colorBG1->setVisible(false);
+    }
 }
 
 ThemeWidget::~ThemeWidget()

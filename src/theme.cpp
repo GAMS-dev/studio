@@ -109,6 +109,20 @@ void Theme::initSlotTexts()
     mSlotText.insert(Syntax_tableHeader_bg,     "Table header background");
     mSlotText.insert(Syntax_embedded,           "Embedded code");
     mSlotText.insert(Syntax_embedded_bg,        "Embedded code background");
+
+    mSlotText.insert(Window_window,             "Window Background");
+    mSlotText.insert(Window_windowText,         "Window Foreground");
+    mSlotText.insert(Window_base,               "Text Background");
+    mSlotText.insert(Window_alternateBase,      "Alternate Background");
+    mSlotText.insert(Window_tooltipBase,        "Tooltip Background");
+    mSlotText.insert(Window_tooltipText,        "Tooltip Foreground");
+    mSlotText.insert(Window_text,               "Text Foreground");
+    mSlotText.insert(Window_button,             "Button Background");
+    mSlotText.insert(Window_buttonText,         "Button Foreground");
+    mSlotText.insert(Window_placeHolderText,    "Input Foreground");
+    mSlotText.insert(Window_highlight,          "Selection Background");
+    mSlotText.insert(Window_highlightedText,    "Selection Foreground");
+    mSlotText.insert(Window_link,               "Hyperlinks Foreground");
 }
 
 void Theme::initDefault()
@@ -358,7 +372,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_placeHolderText,         dark_unobstrusive);
     mColorThemes[sNr].insert(Window_highlight,               dark_selection);
     mColorThemes[sNr].insert(Window_highlightedText,         dark_base);
-    mColorThemes[sNr].insert(Window_link,                    Color(Normal_Blue));
+    mColorThemes[sNr].insert(Window_link,                    light_selectBlue);
 
     mColorThemes[sNr].insert(Window_tooltipBase,             dark_base);
     mColorThemes[sNr].insert(Window_tooltipText,             dark_neutral);
@@ -718,7 +732,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_placeHolderText,         solarized_base01);
     mColorThemes[sNr].insert(Window_highlight,               solarized_highlight);
     mColorThemes[sNr].insert(Window_highlightedText,         solarized_base02);
-    mColorThemes[sNr].insert(Window_link,                    solarized_cyan);
+    mColorThemes[sNr].insert(Window_link,                    solarized_blue);
 
     mColorThemes[sNr].insert(Window_tooltipBase,             buttery_yellow);
     mColorThemes[sNr].insert(Window_tooltipText,             light_black);
@@ -926,7 +940,7 @@ QString Theme::text(Theme::ColorSlot slot)
 
 bool Theme::hasFontProps(Theme::ColorSlot slot)
 {
-    return slot >= Syntax_undefined;
+    return slot >= Syntax_undefined && slot < Window_window;
 }
 
 Theme::ColorSlot Theme::slot(const QString &name)

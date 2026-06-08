@@ -40,9 +40,10 @@ public:
     explicit ThemeWidget(QWidget *parent);
     explicit ThemeWidget(const QList<Theme::ColorSlot> &colors, QWidget *parent, bool iconExample = false);
     explicit ThemeWidget(Theme::ColorSlot slotFg = Theme::invalid,
-                          Theme::ColorSlot slotBg = Theme::invalid, QWidget *parent = nullptr);
+                         Theme::ColorSlot slotBg = Theme::invalid, QWidget *parent = nullptr);
     explicit ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg,
-                          Theme::ColorSlot slotBg2, QWidget *parent = nullptr);
+                         Theme::ColorSlot slotBg2, QWidget *parent = nullptr,
+                         bool disableFg = false, bool disableBg = false);
     ~ThemeWidget() override;
     void setTextVisible(bool visible);
     void setFormatVisible(bool visible);
