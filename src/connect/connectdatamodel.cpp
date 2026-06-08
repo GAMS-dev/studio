@@ -136,12 +136,12 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                      if (index.column()==static_cast<int>(DataItemColumn::Value)) {
                         bool undefined = item->data(static_cast<int>(DataItemColumn::Undefined)).toBool();
                         return (invalid && !undefined ? QVariant::fromValue(Theme::color(Theme::Normal_Red))
-                                                      : QVariant::fromValue(Theme::color(Theme::Syntax_keyword)) );
+                                                      : QVariant::fromValue(Theme::color(Theme::Edit_text)));
                      }
                   } else {
                       return  (index.column()==static_cast<int>(DataItemColumn::Key)
-                                       ? QVariant::fromValue(QApplication::palette().color(QPalette::Text))
-                                       : QVariant::fromValue(Theme::color(Theme::Syntax_keyword)) );
+                                       ? QVariant::fromValue(Theme::color(Theme::Window_text))
+                                       : QVariant::fromValue(Theme::color(Theme::Edit_text)));
                   }
                   return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         } else if (state==static_cast<int>(DataCheckState::ElementMap)) {
@@ -150,9 +150,9 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                     return  QVariant::fromValue(Theme::color(Theme::Normal_Red));
                 }
             } else {
-                return QVariant::fromValue(Theme::color(Theme::Syntax_keyword));
+                return QVariant::fromValue(Theme::color(Theme::Edit_text));
             }
-            return  QVariant::fromValue(Theme::color(Theme::Syntax_keyword));
+            return  QVariant::fromValue(Theme::color(Theme::Edit_text));
         } else if (state==static_cast<int>(DataCheckState::ElementKey)) {
                   if (invalid) {
                      return  QVariant::fromValue(Theme::color(Theme::Normal_Red));

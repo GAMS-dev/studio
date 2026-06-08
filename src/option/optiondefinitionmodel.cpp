@@ -108,7 +108,7 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
         if (parentItem == rootItem &&  item->modified())
             return  QVariant::fromValue(Theme::color(Theme::Normal_Blue));
         else
-            return  QVariant::fromValue(Theme::color(Theme::Edit_text));
+            return  QVariant::fromValue(Theme::color(Theme::Window_text));
     }
     case Qt::BackgroundRole: {
         OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
