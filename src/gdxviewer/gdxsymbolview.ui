@@ -234,6 +234,9 @@
        <property name="enabled">
         <bool>false</bool>
        </property>
+       <property name="toolTip">
+        <string>Hide/Show search bar and symbol info</string>
+       </property>
        <property name="text">
         <string/>
        </property>
@@ -356,6 +359,9 @@
        </property>
        <property name="text">
         <string/>
+       </property>
+       <property name="margin">
+        <number>1</number>
        </property>
       </widget>
      </item>
