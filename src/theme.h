@@ -125,8 +125,8 @@ public:
 
         Window_tooltipBase,             // Tooltip Background
         Window_tooltipText,             // tooltip Foreground
-        Window_labelHighlight,          // tooltip Foreground
-        Window_labelHighlightText,      // tooltip Foreground
+        Window_labelHighlight,          // Label Foreground
+        Window_labelHighlightText,      // Label Foreground
 
         Window_disable_window,          // disable window
         Window_disable_base,            // disable base, and button

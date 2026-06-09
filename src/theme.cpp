@@ -111,17 +111,19 @@ void Theme::initSlotTexts()
     mSlotText.insert(Syntax_embedded_bg,        "Embedded code background");
 
     mSlotText.insert(Window_window,             "Window Background");
-    mSlotText.insert(Window_windowText,         "Window Foreground");
+    mSlotText.insert(Window_windowText,         "Window Foreground and Background");
     mSlotText.insert(Window_base,               "Text Background");
     mSlotText.insert(Window_alternateBase,      "Alternate Background");
     mSlotText.insert(Window_tooltipBase,        "Tooltip Background");
-    mSlotText.insert(Window_tooltipText,        "Tooltip Foreground");
-    mSlotText.insert(Window_text,               "Text Foreground");
+    mSlotText.insert(Window_tooltipText,        "Tooltip Foreground and Background");
+    mSlotText.insert(Window_labelHighlight,     "Label Background");
+    mSlotText.insert(Window_labelHighlightText, "Label Foreground and Background");
+    mSlotText.insert(Window_text,               "Text Foreground, Background, and Alternate");
     mSlotText.insert(Window_button,             "Button Background");
-    mSlotText.insert(Window_buttonText,         "Button Foreground");
+    mSlotText.insert(Window_buttonText,         "Button Foreground and Background");
     mSlotText.insert(Window_placeHolderText,    "Input Foreground");
     mSlotText.insert(Window_highlight,          "Selection Background");
-    mSlotText.insert(Window_highlightedText,    "Selection Foreground");
+    mSlotText.insert(Window_highlightedText,    "Selection Foreground and Background");
     mSlotText.insert(Window_link,               "Hyperlinks Foreground");
 }
 

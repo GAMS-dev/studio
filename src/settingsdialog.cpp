@@ -1030,22 +1030,22 @@ void SettingsDialog::initColorPage()
     // General colors
     box = ui->generalColors;
     grid = qobject_cast<QGridLayout*>(box->layout());
-    cols = 3;
+    cols = 2;
 
     slot2 = {
-        {Theme::Window_text,            Theme::Window_window,          Theme::invalid},
-        {Theme::Window_text,            Theme::Window_base,            Theme::invalid},
-        {Theme::Window_text,            Theme::Window_alternateBase,   Theme::invalid},
-        {Theme::Window_buttonText,      Theme::Window_button,          Theme::invalid},
-        {Theme::Window_highlightedText, Theme::Window_highlight,       Theme::invalid},
-        {Theme::Window_tooltipText,     Theme::Window_tooltipBase,     Theme::invalid},
-    };
+        {Theme::Window_windowText,         Theme::Window_window,          Theme::invalid},
+        {Theme::Window_text,               Theme::Window_base,            Theme::Window_alternateBase},
+        {Theme::Window_buttonText,         Theme::Window_button,          Theme::invalid},
+        {Theme::Window_highlightedText,    Theme::Window_highlight,       Theme::invalid},
+        {Theme::Window_tooltipText,        Theme::Window_tooltipBase,     Theme::invalid},
+        {Theme::Window_labelHighlightText, Theme::Window_labelHighlight,  Theme::invalid},
+     };
     for (int i = 0; i < slot2.size(); ++i) {
         if (slot2.at(i).isEmpty()) continue;
         Theme::ColorSlot fg   = slot2.at(i).at(0);
         Theme::ColorSlot bg1  = slot2.at(i).at(1);
         Theme::ColorSlot bg2  = slot2.at(i).at(2);
-        wid = new ThemeWidget(fg, bg1, bg2, box, true, false);
+        wid = new ThemeWidget(fg, bg1, bg2, box);
         wid->setAlignment(Qt::AlignRight);
         grid->addWidget(wid, i, 0, Qt::AlignRight);
         connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
@@ -1058,12 +1058,7 @@ void SettingsDialog::initColorPage()
     grid->setColumnStretch(cols, 0);
 
     slot2 = {
-        {Theme::Window_windowText,      Theme::invalid,            Theme::invalid},
-        {Theme::Window_text,            Theme::invalid,            Theme::invalid},
         {Theme::Window_placeHolderText, Theme::invalid,            Theme::invalid},
-        {Theme::Window_buttonText,      Theme::Window_button,      Theme::invalid},
-        {Theme::Window_highlightedText, Theme::Window_highlight,   Theme::invalid},
-        {Theme::Window_tooltipText,     Theme::Window_tooltipBase, Theme::invalid},
         {Theme::Window_link,            Theme::invalid,            Theme::invalid},
     };
 
