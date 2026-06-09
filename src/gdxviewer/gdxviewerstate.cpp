@@ -142,7 +142,7 @@ void GdxViewerState::read(const QVariantMap &map)
     mSelectedSymbol = map.value("selected").toString();
     mSelectedSymbolIsAlias = map.value("isAlias").toInt();
     mSymbolFilter = QByteArray::fromBase64(map.value("symbolFilter").toByteArray());
-    mHeaderControlsVisible = map.value("headerControlsVisible").toBool();
+    mHeaderControlsVisible = map.value("headerControlsVisible", true).toBool();
 
     if (map.contains("symbolViewStates")) {
         for (auto it = mSymbolViewState.begin(); it != mSymbolViewState.end();)
