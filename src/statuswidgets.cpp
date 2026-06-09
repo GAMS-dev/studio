@@ -262,8 +262,8 @@ void StatusWidgets::setLicenseState(support::LicenseState licenseState, const QD
     pal.setColor(QPalette::ButtonText, Qt::white);
     pal.setColor(QPalette::AlternateBase, background);
     mLicense->setPalette(pal);
-    mLicenseTextLabel->setText(text);
     mLicenseTextLabel->setPixmap(icon2.pixmap(14,14));
+    mLicenseTextLabel->setText(text);
     mLicenseIconLabel->setPixmap(icon.pixmap(14,14));
     mLicense->setToolTip(toolTip);
     mLicenseState = licenseState;
