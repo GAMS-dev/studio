@@ -133,7 +133,7 @@ void GdxViewerState::write(QVariantMap &map) const
         symViews.append(state);
     }
     map.insert("symbolViewStates", symViews);
-    map.insert("headerControlsVisible", mHeaderControlsVisible);
+    map.insert("headerControlsVisible", mHeaderControlsVisible ? 1 : 0);
 }
 
 void GdxViewerState::read(const QVariantMap &map)
@@ -142,7 +142,7 @@ void GdxViewerState::read(const QVariantMap &map)
     mSelectedSymbol = map.value("selected").toString();
     mSelectedSymbolIsAlias = map.value("isAlias").toInt();
     mSymbolFilter = QByteArray::fromBase64(map.value("symbolFilter").toByteArray());
-    mHeaderControlsVisible = map.value("headerControlsVisible", true).toBool();
+    mHeaderControlsVisible = map.value("headerControlsVisible", 1).toInt();
 
     if (map.contains("symbolViewStates")) {
         for (auto it = mSymbolViewState.begin(); it != mSymbolViewState.end();)
