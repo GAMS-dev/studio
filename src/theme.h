@@ -178,6 +178,8 @@ public:
     static void fillThemeColorPalette(QPalette& palette, bool useBaseBackground=false, bool highlighTransparent=false);
     static void setThemeColorPalette(QWidget *widget,    bool useBaseBackground=false, bool highlighTransparent=false);
     static bool isDark();
+    static bool isDark(int theme);
+    static bool isDark(QColor foreground, QColor background);
     static QString name(ColorSlot slot);
     static QString text(ColorSlot slot);
     static bool hasFontProps(ColorSlot slot);

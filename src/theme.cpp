@@ -927,7 +927,18 @@ void Theme::setThemeColorPalette(QWidget *widget,bool useBaseBackground, bool hi
 
 bool Theme::isDark()
 {
-    return color(Edit_text).black() < color(Edit_background).black();
+    return isDark(instance()->mActiveTheme);
+}
+
+bool Theme::isDark(int theme)
+{
+    return isDark(instance()->mColorThemes.at(theme).value(Window_windowText).color,
+                  instance()->mColorThemes.at(theme).value(Window_window).color);
+}
+
+bool Theme::isDark(QColor foreground, QColor background)
+{
+    return foreground.lightness() > background.lightness() ;
 }
 
 QString Theme::name(Theme::ColorSlot slot)
@@ -1235,7 +1246,7 @@ QVariantList Theme::writeUserThemes() const
         }
         QVariantMap resTheme;
         resTheme.insert("name",  mThemeNames.at(i));
-        resTheme.insert("base",  mThemeBases.at(i));
+        resTheme.insert("base",  Theme::isDark(i) ? 1 : 0);
         resTheme.insert("theme", resData);
         res << resTheme;
     }
@@ -1254,8 +1265,8 @@ void Theme::readUserThemes(const QVariantList &sourceThemes)
         QVariantMap tSource = vSource.toMap();
         if (tSource.isEmpty() || !tSource.contains("name") || !tSource.contains("theme")) continue;
         QString name = tSource.value("name").toString();
-        int base = tSource.value("base").toInt();
 
+        int base = tSource.value("base").toInt();
         // clone base theme to apply the changes
         int newInd = copyTheme(base, name);
         ColorTheme currentTheme = mColorThemes.at(newInd);
@@ -1311,7 +1322,7 @@ QVariantMap Theme::writeCurrentTheme()
     }
     QVariantMap resTheme;
     resTheme.insert("name",  mThemeNames.at(mActiveTheme));
-    resTheme.insert("base",  mThemeBases.at(mActiveTheme));
+    resTheme.insert("base",  Theme::isDark(mActiveTheme) ? 1 : 0);
     resTheme.insert("theme", resData);
     return resTheme;
 }
