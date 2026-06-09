@@ -1,6 +1,8 @@
 Version 1.25.1 *
 ==================
 - Remember the recent filter and tab in the Model Library Explorer during active Studio session.
+- Fixed endless license check loop for some license cases.
+- Improved tooltip when the license couldn't be checked.
 
 Version 1.25.0
 ==================
