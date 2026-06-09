@@ -453,6 +453,7 @@ QVector<int> GdxSymbolView::listViewDimOrder()
 
 void GdxSymbolView::setFocusSearchEdit()
 {
+    on_pbHeaderControls_toggled(true);
     ui->lineEdit->setFocus();
 }
 
