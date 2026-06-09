@@ -5,6 +5,11 @@ Version 1.25.1 *
 - Improved tooltip when the license couldn't be checked.
 - Enhanced the GDX Viewer symbol view with additional meta data (symbol name and explanatory text).
 - Added a new visibility toggle to the GDX Viewer symbol view to easily hide the search bar and symbol info panel.
+- Introduce a unified cross-platform look and feel with four new custom themes:
+   1. Distinct - light: a specialized theme with colorblind-friendly colors for all users.
+   2. Dracula - dark: a high-contrast, dark theme with bright colors for higher readability.
+   3. Solarized - light: a low-contrast, eye-friendly light theme for bright environments.
+   4. Solarized - dark:- a low-contrast, dark background for dim environments.
 
 Version 1.25.0
 ==================
