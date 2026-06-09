@@ -54,6 +54,7 @@ ThemeWidget::ThemeWidget(const QList<Theme::ColorSlot> &colors, QWidget *parent,
     }
 
     ui->name->setText(' ' + Theme::instance()->text(colors.at(0)) + ' ');
+    ui->name->installEventFilter(this);
     setFormatVisible(Theme::hasFontProps(colors.at(0)));
     initSlot(mSlotFg, colors.at(0), ui->colorFG);
     initSlot(mSlotBg, colors.at(1), ui->colorBG1);
@@ -71,6 +72,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, QWidg
 
     setFormatVisible(Theme::hasFontProps(slotFg));
     ui->name->setText(' ' + Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
+    ui->name->installEventFilter(this);
     initSlot(mSlotFg, slotFg, ui->colorFG);
     initSlot(mSlotBg, slotBg, ui->colorBG1);
     ui->colorBG2->hide();
@@ -91,6 +93,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, Theme
                                             : Theme::hasFontProps(slotFg));
     ui->name->setText(disableFg ? ' ' + Theme::instance()->text(slotBg ? slotBg : slotFg) + ' '
                                 : ' ' + Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
+    ui->name->installEventFilter(this);
     initSlot(mSlotFg, slotFg, ui->colorFG);
     initSlot(mSlotBg, slotBg, ui->colorBG1);
     initSlot(mSlotBg2, slotBg2, ui->colorBG2);
@@ -162,8 +165,7 @@ bool ThemeWidget::eventFilter(QObject *watched, QEvent *event)
             else showColorSelector(ui->colorBG1);
         } else if (watched == ui->colorBG2)
             showColorSelector(ui->colorBG2);
-    }
-    if (event->type() == QEvent::Enter || event->type() == QEvent::Leave) {
+    } else if (event->type() == QEvent::Enter || event->type() == QEvent::Leave) {
         if (event->type() == QEvent::Leave) {
             emit hintTextChanged("");
         } else if (watched == ui->colorFG) {
@@ -172,6 +174,8 @@ bool ThemeWidget::eventFilter(QObject *watched, QEvent *event)
             emit hintTextChanged(ui->name->text() + " - Background Color");
         } else if (watched == ui->colorBG2) {
             emit hintTextChanged(ui->name->text() + " - Alternate Background Color");
+        } else if (watched == ui->name) {
+            emit hintTextChanged(ui->name->text());
         }
     }
     return false;

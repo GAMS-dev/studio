@@ -642,6 +642,7 @@ void SettingsDialog::appearanceIndexChanged(int index)
     ViewHelper::changeAppearance(index);
     setThemeEditable(index >= mFixedThemeCount);
     emit themeChanged(true);
+    QTimer::singleShot(0, this, &SettingsDialog::themeModified);
 }
 
 void SettingsDialog::editorBaseColorChanged()
@@ -1037,8 +1038,6 @@ void SettingsDialog::initColorPage()
     // General colors
     box = ui->generalColors;
     grid = qobject_cast<QGridLayout*>(box->layout());
-    cols = 2;
-
     slot2 = {
         {Theme::Window_windowText,         Theme::Window_window,          Theme::invalid},
         {Theme::Window_text,               Theme::Window_base,            Theme::Window_alternateBase},
