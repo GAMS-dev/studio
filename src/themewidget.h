@@ -57,6 +57,7 @@ signals:
     void aboutToChange();
     void changed();
     void getTextBackground(QColor bkColor);
+    void hintTextChanged(const QString &text);
 
 private slots:
     void colorChanged(const QColor &color);

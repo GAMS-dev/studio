@@ -92,6 +92,7 @@ private slots:
     void appearanceIndexChanged(int index);
     void editorBaseColorChanged();
     void afterLoad();
+    void hintTextChanged(const QString &text);
 
     void on_buttonBox_clicked(QAbstractButton *button);
     void on_tabWidget_currentChanged(int index);

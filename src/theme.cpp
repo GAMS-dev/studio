@@ -61,7 +61,7 @@ Theme *Theme::instance()
 void Theme::initSlotTexts()
 {
     mSlotText.clear();
-    mSlotText.insert(Edit_text,                 "Default Text");
+    mSlotText.insert(Edit_text,                 "Default text");
     mSlotText.insert(Edit_currentLineBg,        "Current line");
     mSlotText.insert(Edit_errorBg,              "Error");
     mSlotText.insert(Edit_currentWordBg,        "Current word");
@@ -99,32 +99,32 @@ void Theme::initSlotTexts()
     mSlotText.insert(Syntax_declaration_bg,     "Declaration Keyword background");
     mSlotText.insert(Syntax_identifier,         "Identifier");
     mSlotText.insert(Syntax_identifier_bg,      "Identifier background");
-    mSlotText.insert(Syntax_description,        "Symbol Text");
-    mSlotText.insert(Syntax_description_bg,     "Symbol Text background");
+    mSlotText.insert(Syntax_description,        "Symbol text");
+    mSlotText.insert(Syntax_description_bg,     "Symbol text background");
     mSlotText.insert(Syntax_assignLabel,        "Element");
     mSlotText.insert(Syntax_assignLabel_bg,     "Element background");
-    mSlotText.insert(Syntax_assignValue,        "Element Text/Value");
-    mSlotText.insert(Syntax_assignValue_bg,     "Element Text/Value background");
+    mSlotText.insert(Syntax_assignValue,        "Element text/value");
+    mSlotText.insert(Syntax_assignValue_bg,     "Element text/value background");
     mSlotText.insert(Syntax_tableHeader,        "Table header");
     mSlotText.insert(Syntax_tableHeader_bg,     "Table header background");
     mSlotText.insert(Syntax_embedded,           "Embedded code");
     mSlotText.insert(Syntax_embedded_bg,        "Embedded code background");
 
-    mSlotText.insert(Window_window,             "Window Background");
-    mSlotText.insert(Window_windowText,         "Window Foreground and Background");
-    mSlotText.insert(Window_base,               "Text Background");
-    mSlotText.insert(Window_alternateBase,      "Alternate Background");
-    mSlotText.insert(Window_tooltipBase,        "Tooltip Background");
-    mSlotText.insert(Window_tooltipText,        "Tooltip Foreground and Background");
-    mSlotText.insert(Window_labelHighlight,     "Label Background");
-    mSlotText.insert(Window_labelHighlightText, "Label Foreground and Background");
-    mSlotText.insert(Window_text,               "Text Foreground, Background, and Alternate");
-    mSlotText.insert(Window_button,             "Button Background");
-    mSlotText.insert(Window_buttonText,         "Button Foreground and Background");
-    mSlotText.insert(Window_placeHolderText,    "Input Foreground");
-    mSlotText.insert(Window_highlight,          "Selection Background");
-    mSlotText.insert(Window_highlightedText,    "Selection Foreground and Background");
-    mSlotText.insert(Window_link,               "Hyperlinks Foreground");
+    mSlotText.insert(Window_window,             "Window background");
+    mSlotText.insert(Window_windowText,         "Window");
+    mSlotText.insert(Window_base,               "Text background");
+    mSlotText.insert(Window_alternateBase,      "Alternate background");
+    mSlotText.insert(Window_tooltipBase,        "Tooltip background");
+    mSlotText.insert(Window_tooltipText,        "Tooltip");
+    mSlotText.insert(Window_labelHighlight,     "Label background");
+    mSlotText.insert(Window_labelHighlightText, "Label");
+    mSlotText.insert(Window_text,               "Text");
+    mSlotText.insert(Window_button,             "Button background");
+    mSlotText.insert(Window_buttonText,         "Button");
+    mSlotText.insert(Window_placeHolderText,    "Input");
+    mSlotText.insert(Window_highlight,          "Selection background");
+    mSlotText.insert(Window_highlightedText,    "Selection");
+    mSlotText.insert(Window_link,               "Hyperlink");
 }
 
 void Theme::initDefault()

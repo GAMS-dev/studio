@@ -163,6 +163,17 @@ bool ThemeWidget::eventFilter(QObject *watched, QEvent *event)
         } else if (watched == ui->colorBG2)
             showColorSelector(ui->colorBG2);
     }
+    if (event->type() == QEvent::Enter || event->type() == QEvent::Leave) {
+        if (event->type() == QEvent::Leave) {
+            emit hintTextChanged("");
+        } else if (watched == ui->colorFG) {
+            emit hintTextChanged(ui->name->text() + " - Foreground Color");
+        } else if (watched == ui->colorBG1) {
+            emit hintTextChanged(ui->name->text() + " - Background Color");
+        } else if (watched == ui->colorBG2) {
+            emit hintTextChanged(ui->name->text() + " - Alternate Background Color");
+        }
+    }
     return false;
 }
 

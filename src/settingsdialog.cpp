@@ -658,6 +658,11 @@ void SettingsDialog::afterLoad()
     mNeedRehighlight = false;
 }
 
+void SettingsDialog::hintTextChanged(const QString &text)
+{
+    ui->laHint->setText(text);
+}
+
 void SettingsDialog::themeModified()
 {
     setModified();
@@ -974,6 +979,7 @@ void SettingsDialog::initColorPage()
         int effectiveRow = row + (row >= sep ? 2 : 1);
 
         grid->addWidget(wid, effectiveRow, col, Qt::AlignRight);
+        connect(wid, &ThemeWidget::hintTextChanged, this, &SettingsDialog::hintTextChanged);
         connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
         connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
         mColorWidgets << wid;
@@ -1018,6 +1024,7 @@ void SettingsDialog::initColorPage()
         wid = new ThemeWidget(fg, bg1, bg2, box);
         wid->setAlignment(Qt::AlignRight);
         grid->addWidget(wid, row+1, col, Qt::AlignRight);
+        connect(wid, &ThemeWidget::hintTextChanged, this, &SettingsDialog::hintTextChanged);
         connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
         if (fg == Theme::Edit_text)
             connect(wid, &ThemeWidget::changed, this, &SettingsDialog::editorBaseColorChanged);
@@ -1039,41 +1046,33 @@ void SettingsDialog::initColorPage()
         {Theme::Window_highlightedText,    Theme::Window_highlight,       Theme::invalid},
         {Theme::Window_tooltipText,        Theme::Window_tooltipBase,     Theme::invalid},
         {Theme::Window_labelHighlightText, Theme::Window_labelHighlight,  Theme::invalid},
+
+        {Theme::Window_placeHolderText, Theme::invalid,            Theme::invalid},
+        {Theme::Window_link,            Theme::invalid,            Theme::invalid},
      };
+    cols = 2;
+    rows = ((slot2.count()-1) / cols) + 1;
+    sep = 3;
     for (int i = 0; i < slot2.size(); ++i) {
         if (slot2.at(i).isEmpty()) continue;
+        int row = i % rows;
+        int col = i / rows;
         Theme::ColorSlot fg   = slot2.at(i).at(0);
         Theme::ColorSlot bg1  = slot2.at(i).at(1);
         Theme::ColorSlot bg2  = slot2.at(i).at(2);
         wid = new ThemeWidget(fg, bg1, bg2, box);
         wid->setAlignment(Qt::AlignRight);
-        grid->addWidget(wid, i, 0, Qt::AlignRight);
+        int effectiveRow = row + (row >= sep ? 2 : 1);
+
+        grid->addWidget(wid, effectiveRow, col, Qt::AlignRight | Qt::AlignTop);
+        connect(wid, &ThemeWidget::hintTextChanged, this, &SettingsDialog::hintTextChanged);
         connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
         connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
         mColorWidgets << wid;
     }
-
+    grid->addWidget(ui->generalColorLine, sep+1, 0, 1, 2);
     for (int col = 0; col < cols; ++col)
         grid->setColumnStretch(col, 1);
-    grid->setColumnStretch(cols, 0);
-
-    slot2 = {
-        {Theme::Window_placeHolderText, Theme::invalid,            Theme::invalid},
-        {Theme::Window_link,            Theme::invalid,            Theme::invalid},
-    };
-
-    for (int i = 0; i < slot2.size(); ++i) {
-        if (slot2.at(i).isEmpty()) continue;
-        Theme::ColorSlot fg  = slot2.at(i).at(0);
-        Theme::ColorSlot bg1 = slot2.at(i).at(1);
-        Theme::ColorSlot bg2 = slot2.at(i).at(2);
-        wid = new ThemeWidget(fg, bg1, bg2, box, false, true);
-        wid->setAlignment(Qt::AlignRight);
-        grid->addWidget(wid, i, 1, Qt::AlignRight);
-        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
-        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
-        mColorWidgets << wid;
-    }
 
     // ICON colors
 //    box = ui->groupIconColors;
