@@ -3,6 +3,8 @@ Version 1.25.1 *
 - Remember the recent filter and tab in the Model Library Explorer during active Studio session.
 - Fixed endless license check loop for some license cases.
 - Improved tooltip when the license couldn't be checked.
+- Enhanced the GDX Viewer symbol view with additional meta data (symbol name and explanatory text).
+- Added a new visibility toggle to the GDX Viewer symbol view to easily hide the search bar and symbol info panel.
 
 Version 1.25.0
 ==================
