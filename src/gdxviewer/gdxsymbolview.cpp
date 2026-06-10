@@ -823,6 +823,18 @@ QList<QStringList> GdxSymbolView::pendingUncheckedLabels() const
     return mPendingUncheckedLabels;
 }
 
+void GdxSymbolView::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Escape) {
+        if (ui->tvListView->hasFocus())
+            ui->tvListView->selectionModel()->clearSelection();
+        else if (ui->tvTableView->hasFocus())
+            ui->tvTableView->selectionModel()->clearSelection();
+        e->accept();
+    }
+    QWidget::keyPressEvent(e);
+}
+
 bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 {
     if (event->type() == QEvent::Resize) {

@@ -96,6 +96,7 @@ public slots:
 
 protected:
     bool event(QEvent *event) override;
+    void keyPressEvent(QKeyEvent *e) override;
 
 private slots:
     void showContextMenu(QPoint p);
