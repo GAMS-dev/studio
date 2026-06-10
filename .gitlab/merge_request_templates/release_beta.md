@@ -4,7 +4,7 @@
 - [ ] proofread `CHANGELOG` - remove `*`
 - [ ] update `version` 
   - ++studio
-  - ++GAMS (to GAMS xx.**0**)
+  - ++GAMS (to GAMS xx.`0`)
 - [ ] Test the last build
   - [ ] WEI
   - [ ] LEG
