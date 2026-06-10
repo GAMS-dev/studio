@@ -4,7 +4,7 @@
 - [ ] proofread `CHANGELOG` - remove `*`
 - [ ] update `version` 
   - ++studio
-  - ensure GAMS minor version is GAMS xx.**1**
+  - ensure GAMS minor version is GAMS xx.`1`
 - [ ] Test the last build
   - [ ] WEI
   - [ ] LEG
