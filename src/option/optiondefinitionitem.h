@@ -22,7 +22,7 @@
 
 #include <QVariant>
 #include <QList>
-#include <QVector>
+#include <QList>
 #include <QVariant>
 
 namespace gams {

@@ -343,7 +343,7 @@ void NestedHeaderView::updateSectionWidths()
     if (orientation() == Qt::Vertical) {
         sectionWidth.resize(dimension);
         for (int i=0; i<dimension; i++) {
-            QVector<QList<QString>> labelsInRows = sym()->labelsInRows();
+            QList<QList<QString>> labelsInRows = sym()->labelsInRows();
             for (const QString &label : labelsInRows.at(i))
                 sectionWidth.replace(i, qMax(sectionWidth.at(i), fm.horizontalAdvance(label)));
         }
@@ -384,7 +384,7 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
         else
             newColDim--;
     }
-    QVector<int> tvDims = sym()->tvDimOrder();
+    QList<int> tvDims = sym()->tvDimOrder();
 
     if (dimIdxStart < dimIdxEnd)
         dimIdxEnd--;

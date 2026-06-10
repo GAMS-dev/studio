@@ -37,7 +37,7 @@ FileEventHandler::FileEventHandler(MainWindow *mainWindow, QObject *parent)
     connect(mDialog, &FileChangeDialog::ready, this, &FileEventHandler::messageBoxFinished);
 }
 
-void FileEventHandler::process(Type type, const QVector<FileEventData> &events)
+void FileEventHandler::process(Type type, const QList<FileEventData> &events)
 {
     if (mDialog->isVisible()) {
         for (const auto &event: events) {
@@ -53,7 +53,7 @@ void FileEventHandler::process(Type type, const QVector<FileEventData> &events)
         process();
 }
 
-bool FileEventHandler::filter(const QVector<FileEventData> &events)
+bool FileEventHandler::filter(const QList<FileEventData> &events)
 {
     if (events.isEmpty())
         return false;
@@ -271,7 +271,7 @@ void FileEventHandler::removeFile(FileMeta *file)
     if (file->exists(true)) return;
     mMainWindow->textMarkRepo()->removeMarks(file->id(), QSet<TextMark::Type>() << TextMark::all);
     if (!file->isOpen()) {
-        QVector<PExFileNode*> nodes = mMainWindow->projectRepo()->fileNodes(file->id());
+        QList<PExFileNode*> nodes = mMainWindow->projectRepo()->fileNodes(file->id());
         for (PExFileNode* node: std::as_const(nodes))
             mMainWindow->projectRepo()->closeNode(node);
         mMainWindow->removeFromHistory(file->location());

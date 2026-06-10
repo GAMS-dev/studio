@@ -370,7 +370,7 @@ private:
     Settings *mSettings = nullptr;
     int mBlockEditRealPos = -1;
     QString mBlockEditInsText;
-    QVector<BlockEditPos*> mBlockEditPos;
+    QList<BlockEditPos*> mBlockEditPos;
     bool mSmartType = false;
     int mCurrentFindRow = 0;
     QList<int> mPendingFindResults;

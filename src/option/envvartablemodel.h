@@ -61,7 +61,7 @@ signals:
 
 public slots:
     void on_reloadEnvVarModel(const QList<gams::studio::option::EnvVarConfigItem *> &configItem);
-    void on_updateEnvVarItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void on_updateEnvVarItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles);
     void on_removeEnvVarItem();
 
 private slots:

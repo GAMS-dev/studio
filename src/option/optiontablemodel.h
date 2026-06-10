@@ -214,7 +214,7 @@ public slots:
     virtual void on_groupDefinitionReloaded() = 0;
     virtual QString getOptionTableEntry(int row) =0;
 
-    virtual void on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) = 0;
+    virtual void on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles) = 0;
     virtual void on_removeOptionItem() = 0;
 
 //    Qt::CheckState checkState(int index) const { return mError[index]; }

@@ -97,13 +97,13 @@ private:
     int mPositionForSyntaxKind = -1;
     int mLastSyntaxKind = 0;
     int mLastFlavor = 0;
-    QVector<SyntaxKind> mSingleLineKinds;
-    QVector<SyntaxKind> mPostKindBlocker;
-    QVector<SyntaxAbstract*> mPostSyntax;
+    QList<SyntaxKind> mSingleLineKinds;
+    QList<SyntaxKind> mPostKindBlocker;
+    QList<SyntaxAbstract*> mPostSyntax;
     Kinds mKinds;
     CodeRelations mCodes;
 
-    static const QVector<SyntaxKind> cInvalidParenthesesSyntax;
+    static const QList<SyntaxKind> cInvalidParenthesesSyntax;
     static const QMap<Theme::ColorSlot, Theme::ColorSlot> cForeToBackground;
     static const QString cValidParentheses;
     static const QString cSpecialBlocks;

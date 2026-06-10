@@ -998,7 +998,7 @@ void SettingsDialog::initColorGroups(QWidget *box, QList<QList<Theme::ColorSlot>
 void SettingsDialog::initColorPage()
 {
     if (!mColorWidgets.isEmpty()) return;
-    QVector<QVector<Theme::ColorSlot>> colorSlots;
+    QList<QList<Theme::ColorSlot>> colorSlots;
 
     // SYNTAX colors
     colorSlots = {
@@ -1056,7 +1056,7 @@ void SettingsDialog::initColorPage()
     // ICON colors
 //    box = ui->groupIconColors;
 //    grid = qobject_cast<QGridLayout*>(box->layout());
-//    QVector<Theme::ColorSlot> slot1;
+//    QList<Theme::ColorSlot> slot1;
 //    slot1 = {Theme::Icon_Gray, Theme::Disable_Gray, Theme::Active_Gray, Theme::Select_Gray,
 //            Theme::Icon_Back, Theme::Disable_Back, Theme::Active_Back, Theme::Select_Back};
 //    for (int i = 0; i < slot1.size(); ++i) {

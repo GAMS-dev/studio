@@ -22,7 +22,7 @@
 
 #include <QFrame>
 #include <QMenu>
-#include <QVector>
+#include <QList>
 #include <QAction>
 #include <QCheckBox>
 #include <QSpinBox>
@@ -53,7 +53,7 @@ public:
     explicit GdxSymbolView(QWidget *parent = nullptr);
     ~GdxSymbolView() override;
 
-    QVector<QStringList> pendingUncheckedLabels() const;
+    QList<QStringList> pendingUncheckedLabels() const;
     GdxSymbol *sym() const;
     void setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, GdxSymbolViewState* symViewState=nullptr);
     void copySelectionToClipboard(const QString &separator, bool copyLabels = true);
@@ -69,11 +69,11 @@ public:
     void setDragInProgress(bool dragInProgress);
     bool isTableViewActive() const;
     TableViewModel *getTvModel() const;
-    QVector<int> listViewDimOrder();
+    QList<int> listViewDimOrder();
     void setFocusSearchEdit();
 
     void applyDefaults();
-    QVector<bool> showAttributes();
+    QList<bool> showAttributes();
 
     void setSymInfo(QString symName, QString text);
     void setHeaderControlsVisible(bool visible);
@@ -120,8 +120,8 @@ private:
     QMenu mContextMenuTV;
 
     void showListView();
-    void showTableView(int colDim = -1, const QVector<int> &tvDimOrder = QVector<int>());
-    void initTableViewModel(int colDim, const QVector<int> &tvDimOrder);
+    void showTableView(int colDim = -1, const QList<int> &tvDimOrder = QList<int>());
+    void initTableViewModel(int colDim, const QList<int> &tvDimOrder);
     void showDefaultView(GdxSymbolViewState* symViewState = nullptr);
     void toggleView();
 
@@ -133,7 +133,7 @@ private:
     bool matchAndSelect(int row, int col, QTableView *tv);
     void markSearchResults();
 
-    QVector<QCheckBox *> mShowValColActions;
+    QList<QCheckBox *> mShowValColActions;
     QCheckBox* mSqDefaults = nullptr;
     QCheckBox* mSqZeroes = nullptr;
     QSpinBox* mPrecision = nullptr;
@@ -162,7 +162,7 @@ private:
     // in case of unchecked filter labels in a restored state that could not be applied because the labels have been removed
     // in the meantime, those labels are stored in mPendingUncheckedLabels and are written back as unchecked labels when
     // the state is stored the next time. As soon as a label becomes available again, it gets unchecked when a state is applied.
-    QVector<QStringList> mPendingUncheckedLabels;
+    QList<QStringList> mPendingUncheckedLabels;
 
     bool mDragInProgress = false;
     bool mAutoResizeLV;

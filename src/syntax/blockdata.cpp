@@ -86,7 +86,7 @@ QChar BlockData::charForPos(int relPos)
     return QChar();
 }
 
-QVector<ParenthesesPos> BlockData::parentheses() const
+QList<ParenthesesPos> BlockData::parentheses() const
 {
     return mNestingData.parentheses();
 }

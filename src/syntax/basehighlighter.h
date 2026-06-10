@@ -24,7 +24,7 @@
 #include <QTextDocument>
 #include <QTextCharFormat>
 #include <QTextObject>
-#include <QVector>
+#include <QList>
 #include <QTime>
 
 namespace gams {
@@ -131,8 +131,8 @@ private:
     int mAddedBlocks = 0;
     int mMaxLineLength = -1;
     QTextBlock mCurrentBlock;
-    QVector<Interval> mDirtyBlocks;             // disjoint regions of dirty blocks
-    QVector<QTextCharFormat> mFormatChanges;
+    QList<Interval> mDirtyBlocks;             // disjoint regions of dirty blocks
+    QList<QTextCharFormat> mFormatChanges;
 
 };
 

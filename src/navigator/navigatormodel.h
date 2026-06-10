@@ -35,13 +35,13 @@ public:
     int columnCount(const QModelIndex &parent) const;
     QVariant data(const QModelIndex &index, int role) const;
     void setContent(const QSet<NavigatorContent> &content);
-    QVector<NavigatorContent> content() const;
+    QList<NavigatorContent> content() const;
     QDir currentDir() const;
     void setCurrentDir(const QDir &dir);
     int findIndex(const QString &file);
 
 private:
-    QVector<NavigatorContent> mContent;
+    QList<NavigatorContent> mContent;
     QDir mCurrentDir;
 };
 

@@ -153,7 +153,7 @@ Qt::ItemFlags OptionDefinitionModel::flags(const QModelIndex& index) const
 
 bool OptionDefinitionModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    QVector<int> roles;
+    QList<int> roles;
     switch (role) {
     case Qt::DisplayRole: {
         roles = { Qt::EditRole };

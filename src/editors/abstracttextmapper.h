@@ -21,7 +21,7 @@
 #define ABSTRACTTEXTMAPPER_H
 
 #include <QObject>
-#include <QVector>
+#include <QList>
 #include <QSet>
 #include <QTextCursor>
 #include <QTextDocument>
@@ -99,7 +99,7 @@ public:
     virtual int knownLineNrs() const = 0;
 
     virtual QString lines(int localLineNrFrom, int lineCount) const = 0;
-    virtual QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const = 0;
+    virtual QString lines(int localLineNrFrom, int lineCount, QList<LineFormat> &formats) const = 0;
     virtual bool searchText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind) = 0;
 
     virtual QString selectedText() const = 0;

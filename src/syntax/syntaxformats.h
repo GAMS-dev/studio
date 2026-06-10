@@ -237,7 +237,7 @@ class SyntaxDcoBody;
 
 class SharedSyntaxData
 {
-    QVector<SyntaxFormula*> mSubFormula;
+    QList<SyntaxFormula*> mSubFormula;
     SyntaxDcoBody *mDcoBody = nullptr;
     SyntaxCommentEndline *mCommentEndline = nullptr;
 public:
@@ -245,7 +245,7 @@ public:
     void registerCommentEndLine(SyntaxCommentEndline * syntax) { if (syntax) mCommentEndline = syntax; }
     void registerDcoBody(SyntaxDcoBody * syntax) { if (syntax) mDcoBody = syntax; }
     bool isValid() { return mCommentEndline && mDcoBody && mSubFormula.size() == 5; }
-    const QVector<SyntaxFormula*> allFormula() { return mSubFormula; }
+    const QList<SyntaxFormula*> allFormula() { return mSubFormula; }
     SyntaxCommentEndline *commentEndLine() { return mCommentEndline; }
     SyntaxDcoBody *dcoBody() { return mDcoBody; }
 };
@@ -277,10 +277,10 @@ public:
     static const QPair<QString, QString> systemEmpData;
 
 protected:
-    static const QVector<QChar> cSpecialCharacters;  // other breaking kind
+    static const QList<QChar> cSpecialCharacters;  // other breaking kind
 
     enum CharClass {ccOther, ccSpecial, ccAlpha};
-    inline int charClass(QChar ch, int &prev, const QVector<QChar> &moreSpecialChars = QVector<QChar>()) {
+    inline int charClass(QChar ch, int &prev, const QList<QChar> &moreSpecialChars = QList<QChar>()) {
         // ASCII:   "   $   '   .   0  9   ;   =   A  Z   _   a   z
         // Code:   34, 36, 39, 46, 48-57, 59, 61, 65-90, 95, 97-122
         if (ch < '"' || ch > 'z')
@@ -428,12 +428,12 @@ public:
 
 class SyntaxFormula: public SyntaxAbstract
 {
-    QVector<QChar> mSpecialDynamicChars;
+    QList<QChar> mSpecialDynamicChars;
 public:
     SyntaxFormula(SyntaxKind kind, SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, SyntaxState state, bool &hasContent) override;
-    void setSpecialDynamicChars(const QVector<QChar> &chars);
+    void setSpecialDynamicChars(const QList<QChar> &chars);
 };
 
 class SyntaxQuoted : public SyntaxAbstract

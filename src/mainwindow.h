@@ -209,9 +209,9 @@ public slots:
     void appendSystemLogError(const QString &text) const;
     void appendSystemLogWarning(const QString &text) const;
     void parameterRunChanged();
-    void newFileDialogPrepare(const QVector<gams::studio::PExProjectNode*> &projects, const QString &inPath = QString(),
+    void newFileDialogPrepare(const QList<gams::studio::PExProjectNode*> &projects, const QString &inPath = QString(),
                               const QString& solverName = QString(), gams::studio::FileKind fileKind = gams::studio::FileKind::None);
-    void newFileDialog(const QVector<gams::studio::PExProjectNode*> &projects, const QString &inPath,
+    void newFileDialog(const QList<gams::studio::PExProjectNode*> &projects, const QString &inPath,
                        const QString& solverName = QString(), gams::studio::FileKind fileKind = gams::studio::FileKind::None);
     void updateCursorHistoryAvailability();
     void closeProject(gams::studio::PExProjectNode *project);
@@ -253,7 +253,7 @@ private slots:
     void postGamsRun(const NodeId &origin, int exitCode);
     void stopDebugServer(PExProjectNode *project, bool stateChecked = false);
     void postGamsLibRun();
-    void internalCloseProject(gams::studio::PExProjectNode *project, const QVector<FileMeta *> &openFiles);
+    void internalCloseProject(gams::studio::PExProjectNode *project, const QList<FileMeta *> &openFiles);
     void neosProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void remoteProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void closeNodeConditionally(gams::studio::PExFileNode *node);
@@ -502,7 +502,7 @@ private:
     void initNavigator();
     void adjustFonts();
     void processMainFileDynamics();
-    QVector<PExAbstractNode*> selectedNodes(QModelIndex index = QModelIndex());
+    QList<PExAbstractNode*> selectedNodes(QModelIndex index = QModelIndex());
     bool handleFileChanges(FileMeta *fc, bool closeAndWillReopen);
     PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);
     FileProcessKind fileChangedExtern(const FileId &fileId);
@@ -510,7 +510,7 @@ private:
     void openModelFromLibPrepare(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void addToHistory(const QString &filePath);
-    bool terminateProcessesConditionally(const QVector<PExProjectNode *> &projects);
+    bool terminateProcessesConditionally(const QList<PExProjectNode *> &projects);
     void restoreFromSettings();
     QString currentPath(OpenPathScope scope);
     neos::NeosProcess *createNeosProcess();
@@ -524,7 +524,7 @@ private:
     int pinViewTabIndex();
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
-    bool requestCloseChanged(QVector<FileMeta*> changedFiles);
+    bool requestCloseChanged(QList<FileMeta*> changedFiles);
     bool isActiveProjectRunnable();
     bool isRecentGroupRunning();
     void loadCommandLines(PExProjectNode *oldProj, PExProjectNode *proj);
@@ -593,7 +593,7 @@ private:
     QStringList mCurrentModelLib;
 
     QMutex mFileMutex;
-    QVector<FileEventData> mFileEvents;
+    QList<FileEventData> mFileEvents;
     QTimer mFileTimer;
     QSharedPointer<FileEventHandler> mFileEventHandler;
     TabBarStyle *mTabStyle = nullptr;
@@ -606,7 +606,7 @@ private:
     QStringList mClosedTabs;
     bool mOverwriteMode = false;
     int mTimerID;
-    QVector<int> mClosedTabsIndexes;
+    QList<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
     bool mIgnoreSslErrors = false;
     bool mNeosNoDialog = false;

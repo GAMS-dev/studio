@@ -85,7 +85,7 @@ public:
     virtual bool findReplace(const QString &replacement);
 
 signals:
-    void requestLstTexts(gams::studio::NodeId groupId, const QVector<int> &lstLines, QStringList &result);
+    void requestLstTexts(gams::studio::NodeId groupId, const QList<int> &lstLines, QStringList &result);
     void toggleBookmark(gams::studio::FileId fileId, int lineNr, int posInLine);
     void jumpToNextBookmark(bool back, gams::studio::FileId refFileId, int refLineNr);
     void cloneBookmarkMenu(QMenu *menu);
@@ -134,7 +134,7 @@ protected:
     virtual void extraSelSearchSelection(QList<QTextEdit::ExtraSelection>& selections);
     virtual void updateCursorShape(bool greedy);
     virtual QPoint toolTipPos(const QPoint &mousePos);
-    virtual QVector<int> toolTipLstNumbers(const QPoint &pos);
+    virtual QList<int> toolTipLstNumbers(const QPoint &pos);
     virtual LinePair findFoldBlock(int line, bool onlyThisLine = false) const;
     virtual bool ensureUnfolded(int line);
     virtual TextLinkType checkLinks(const QPoint &mousePos, bool greedy, QString *fName = nullptr);

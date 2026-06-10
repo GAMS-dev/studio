@@ -73,7 +73,7 @@ private slots:
     void showContextMenu(const QPoint &pos);
 
     void on_selectRow(int logicalIndex);
-    void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles);
 
     void on_actionInsert_triggered();
     void on_actionDelete_triggered();

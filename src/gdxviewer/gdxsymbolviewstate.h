@@ -49,9 +49,9 @@ public:
     bool tableViewActive() const;
     void setTableViewActive(bool tableViewActive);
 
-    QVector<QStringList> uncheckedLabels() const;
+    QList<QStringList> uncheckedLabels() const;
 
-    void setUncheckedLabels(const QVector<QStringList> &uncheckedLabels);
+    void setUncheckedLabels(const QList<QStringList> &uncheckedLabels);
 
     int numericalPrecision() const;
     void setNumericalPrecision(int numericalPrecision);
@@ -77,17 +77,17 @@ public:
     int tvColDim() const;
     void setTvColDim(int tvColDim);
 
-    QVector<int> tvDimOrder() const;
-    void setTvDimOrder(const QVector<int> &tvDimOrder);
+    QList<int> tvDimOrder() const;
+    void setTvDimOrder(const QList<int> &tvDimOrder);
 
     ValueFilter &getValueFilter(int valueColumn);
-    void setValueFilter(const QVector<ValueFilter> &valueFilter);
+    void setValueFilter(const QList<ValueFilter> &valueFilter);
 
-    QVector<bool> getShowAttributes() const;
-    void setShowAttributes(const QVector<bool> &value);
+    QList<bool> getShowAttributes() const;
+    void setShowAttributes(const QList<bool> &value);
 
-    QVector<int> getTableViewColumnWidths() const;
-    void setTableViewColumnWidths(const QVector<int> &tableViewColumnWidths);
+    QList<int> getTableViewColumnWidths() const;
+    void setTableViewColumnWidths(const QList<int> &tableViewColumnWidths);
 
     bool autoResizeLV() const;
     void setAutoResizeLV(bool newAutoResizeLV);
@@ -112,21 +112,21 @@ private:
     int mDim;
     int mType;
 
-    QVector<bool> mShowAttributes;
+    QList<bool> mShowAttributes;
 
     // table view state
     int mTvColDim;
-    QVector<int> mTvDimOrder;
+    QList<int> mTvDimOrder;
 
     // column filters
-    QVector<QStringList> mUncheckedLabels;
+    QList<QStringList> mUncheckedLabels;
 
     // value filters
-    QVector<ValueFilter> mValueFilter;
+    QList<ValueFilter> mValueFilter;
 
     QByteArray mListViewHeaderState;
     QByteArray mTableViewFilterHeaderState;
-    QVector<int> mTableViewColumnWidths;
+    QList<int> mTableViewColumnWidths;
 };
 
 } // namespace gdxviewer

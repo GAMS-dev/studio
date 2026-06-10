@@ -58,7 +58,7 @@ public slots:
     void on_groupDefinitionReloaded() override;
     QString getOptionTableEntry(int row) override;
 
-    void on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override;
+    void on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles) override;
     void on_removeOptionItem() override;
 
     void toggleActiveOptionItem(int index);

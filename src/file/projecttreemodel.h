@@ -59,7 +59,7 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role) override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     QModelIndex current() {return asIndex(mCurrent);}
-    QVector<NodeId> selectedIds() const;
+    QList<NodeId> selectedIds() const;
     QMap<int, QVariant> itemData(const QModelIndex &index) const override;
 
 signals:
@@ -95,7 +95,7 @@ protected:
     ProjectRepo* projectRepo() { return mProjectRepo; }
 
 private:
-    QVector<QModelIndex> gatherChildren(QModelIndex index);
+    QList<QModelIndex> gatherChildren(QModelIndex index);
     void sortGamsProject(PExProjectNode *project, QList<PExAbstractNode *> &order);
 
 private:
@@ -103,9 +103,9 @@ private:
     PExRootNode* mRoot = nullptr;
     bool mDebug = false;
     NodeId mCurrent;
-    QVector<NodeId> mSelected;
-    QVector<QModelIndex> mDeclined;
-    QVector<QModelIndex> mAddProjects;
+    QList<NodeId> mSelected;
+    QList<QModelIndex> mDeclined;
+    QList<QModelIndex> mAddProjects;
 };
 
 } // namespace studio

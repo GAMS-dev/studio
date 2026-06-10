@@ -45,9 +45,9 @@ public:
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    QVector<bool> defaultColumnTableView() const;
+    QList<bool> defaultColumnTableView() const;
 
-    QVector<int> tvDimOrder() const;
+    QList<int> tvDimOrder() const;
 
     int dim();
 
@@ -55,7 +55,7 @@ public:
 
     int type();
 
-    void setTableView(int colDim = -1, const QVector<int> &tvDims = QVector<int>());
+    void setTableView(int colDim = -1, const QList<int> &tvDims = QList<int>());
 
     void setTableViewNoArgs();
 
@@ -65,7 +65,7 @@ public:
 
     bool needDummyColumn() const;
 
-    QVector<QList<QString> > labelsInRows() const;
+    QList<QList<QString> > labelsInRows() const;
 
     QStringList domains() const;
 
@@ -81,20 +81,20 @@ private:
     void calcDefaultColumnsTableView();
 
     void calcLabelsInRows();
-    QVector<QList<QString>> mlabelsInRows;
+    QList<QList<QString>> mlabelsInRows;
 
-    void initTableView(int nrColDim, QVector<int> dimOrder);
+    void initTableView(int nrColDim, QList<int> dimOrder);
 
     GdxSymbol* mSym;
     GdxSymbolTableModel* mGdxSymbolTable;
 
     int mTvColDim;
-    QVector<int> mTvDimOrder;
-    QVector<QVector<uint>> mTvRowHeaders;
-    QVector<QVector<uint>> mTvColHeaders;
-    QHash<QVector<uint>, int> mTvKeysToValIdx;
+    QList<int> mTvDimOrder;
+    QList<QList<uint>> mTvRowHeaders;
+    QList<QList<uint>> mTvColHeaders;
+    QHash<QList<uint>, int> mTvKeysToValIdx;
 
-    QVector<bool> mDefaultColumnTableView;
+    QList<bool> mDefaultColumnTableView;
 
     bool mNeedDummyRow = false;
     bool mNeedDummyColumn = false;

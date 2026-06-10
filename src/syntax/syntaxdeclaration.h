@@ -61,9 +61,9 @@ private:
         while (res<pre.length() && res<post.length() && pre.at(res).toUpper() == post.at(res).toUpper()) res++;
         return res;
     }
-    QVector<DictEntry*> mEntries;
-    QVector<QString> mDescript;
-    QVector<int> mEqualStart;
+    QList<DictEntry*> mEntries;
+    QList<QString> mDescript;
+    QList<int> mEqualStart;
 };
 
 /// \brief Defines the syntax for a declaration.
@@ -123,7 +123,7 @@ public:
 
 class SyntaxSubsetKey: public SyntaxKeywordBase
 {
-    QVector<int> mOtherKey;
+    QList<int> mOtherKey;
 public:
     SyntaxSubsetKey(SyntaxKind kind, SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;

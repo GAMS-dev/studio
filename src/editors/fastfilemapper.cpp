@@ -155,7 +155,7 @@ QString FastFileMapper::lines(int localLineNrFrom, int lineCount) const
     return mCache.getLines(lineNr, lineCount);
 }
 
-QString FastFileMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const
+QString FastFileMapper::lines(int localLineNrFrom, int lineCount, QList<LineFormat> &formats) const
 {
     int lineNr = visibleTopLine() + localLineNrFrom;
     adjustLines(lineNr, lineCount);

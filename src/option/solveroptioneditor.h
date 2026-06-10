@@ -60,7 +60,7 @@ signals:
     void compactViewChanged(bool compact);
 
 public slots:
-    void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles);
 
     bool saveOptionFile(const QString &location);
 

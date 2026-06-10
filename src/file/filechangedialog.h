@@ -61,7 +61,7 @@ private slots:
     void buttonClicked();
 
 private:
-    QVector<QPushButton*> mButtons;
+    QList<QPushButton*> mButtons;
     QCheckBox *mCbAll;
 
 };

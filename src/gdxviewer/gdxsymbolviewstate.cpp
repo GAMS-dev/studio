@@ -71,12 +71,12 @@ void GdxSymbolViewState::setTableViewActive(bool tableViewActive)
     mTableViewActive = tableViewActive;
 }
 
-QVector<QStringList> GdxSymbolViewState::uncheckedLabels() const
+QList<QStringList> GdxSymbolViewState::uncheckedLabels() const
 {
     return mUncheckedLabels;
 }
 
-void GdxSymbolViewState::setUncheckedLabels(const QVector<QStringList> &uncheckedLabels)
+void GdxSymbolViewState::setUncheckedLabels(const QList<QStringList> &uncheckedLabels)
 {
     mUncheckedLabels = uncheckedLabels;
 }
@@ -161,12 +161,12 @@ void GdxSymbolViewState::setTvColDim(int tvColDim)
     mTvColDim = tvColDim;
 }
 
-QVector<int> GdxSymbolViewState::tvDimOrder() const
+QList<int> GdxSymbolViewState::tvDimOrder() const
 {
     return mTvDimOrder;
 }
 
-void GdxSymbolViewState::setTvDimOrder(const QVector<int> &tvDimOrder)
+void GdxSymbolViewState::setTvDimOrder(const QList<int> &tvDimOrder)
 {
     mTvDimOrder = tvDimOrder;
 }
@@ -176,27 +176,27 @@ ValueFilter &GdxSymbolViewState::getValueFilter(int valueColumn)
     return mValueFilter[valueColumn];
 }
 
-void GdxSymbolViewState::setValueFilter(const QVector<ValueFilter> &valueFilterState)
+void GdxSymbolViewState::setValueFilter(const QList<ValueFilter> &valueFilterState)
 {
     mValueFilter = valueFilterState;
 }
 
-QVector<bool> GdxSymbolViewState::getShowAttributes() const
+QList<bool> GdxSymbolViewState::getShowAttributes() const
 {
     return mShowAttributes;
 }
 
-void GdxSymbolViewState::setShowAttributes(const QVector<bool> &value)
+void GdxSymbolViewState::setShowAttributes(const QList<bool> &value)
 {
     mShowAttributes = value;
 }
 
-QVector<int> GdxSymbolViewState::getTableViewColumnWidths() const
+QList<int> GdxSymbolViewState::getTableViewColumnWidths() const
 {
     return mTableViewColumnWidths;
 }
 
-void GdxSymbolViewState::setTableViewColumnWidths(const QVector<int> &tableViewColumnWidths)
+void GdxSymbolViewState::setTableViewColumnWidths(const QList<int> &tableViewColumnWidths)
 {
     mTableViewColumnWidths = tableViewColumnWidths;
 }

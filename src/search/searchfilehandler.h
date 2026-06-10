@@ -44,7 +44,7 @@ public:
 
     FileMeta* findFile(QString filepath) override;
     PExFileNode *openFile(QString fileName, PExProjectNode *knownProject) override;
-    QVector<PExProjectNode*> projects() override;
+    QList<PExProjectNode*> projects() override;
 
 private:
     MainWindow* mMain;

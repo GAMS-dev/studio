@@ -118,7 +118,7 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     if (role == Qt::DisplayRole || role == Qt::EditRole) {
-        QVector<uint> keys;
+        QList<uint> keys;
         if (mNeedDummyRow)
             keys = mTvColHeaders[index.column()];
         else if (mNeedDummyColumn)
@@ -163,7 +163,7 @@ void TableViewModel::calcDefaultColumnsTableView()
         else // mType == GMS_DT_EQU
             defVal = gmsDefRecEqu[mSym->mSubType][col%GMS_VAL_MAX];
         for(int row=0; row<rowCount(); row++) {
-            QVector<uint> keys;
+            QList<uint> keys;
             if (mNeedDummyRow)
                 keys = mTvColHeaders[col];
             else if (mNeedDummyColumn)
@@ -186,7 +186,7 @@ void TableViewModel::calcDefaultColumnsTableView()
 
 void TableViewModel::calcLabelsInRows()
 {
-    QVector<QSet<uint>> uelsInRows;
+    QList<QSet<uint>> uelsInRows;
 
     if (mNeedDummyRow) {
         mlabelsInRows.clear();
@@ -210,7 +210,7 @@ void TableViewModel::calcLabelsInRows()
     }
 }
 
-QVector<QList<QString> > TableViewModel::labelsInRows() const
+QList<QList<QString> > TableViewModel::labelsInRows() const
 {
     return mlabelsInRows;
 }
@@ -230,7 +230,7 @@ void TableViewModel::scrollVTriggered()
     emit headerDataChanged(Qt::Vertical, 0, 2);
 }
 
-void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
+void TableViewModel::initTableView(int nrColDim, QList<int> dimOrder)
 {
     if (dimOrder.isEmpty()) {
         for(int i=0; i<mSym->mDim; i++)
@@ -239,22 +239,22 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
 
     mTvColDim = nrColDim;
     mTvDimOrder = dimOrder;
-    QSet<QVector<uint>> seenColHeaders;
-    QSet<QVector<uint>> seenRowHeaders;
+    QSet<QList<uint>> seenColHeaders;
+    QSet<QList<uint>> seenRowHeaders;
 
     mTvRowHeaders.clear();
     mTvColHeaders.clear();
     mTvKeysToValIdx.clear();
-    QVector<uint> lastRowHeader(mSym->mDim-mTvColDim);
+    QList<uint> lastRowHeader(mSym->mDim-mTvColDim);
     for (int i=0; i<lastRowHeader.size(); i++)
         lastRowHeader[i] = 0;
-    QVector<uint> lastColHeader(mTvColDim);
+    QList<uint> lastColHeader(mTvColDim);
     for (int i=0; i<lastColHeader.size(); i++)
         lastColHeader[i] = 0;
     size_t r;
 
-    QVector<uint> rowHeader;
-    QVector<uint> colHeader;
+    QList<uint> rowHeader;
+    QList<uint> colHeader;
     size_t keyIdx;
     for (int rec=0; rec<mSym->mFilterRecCount; rec++) {
         r = mSym->mRecSortIdx[size_t(mSym->mRecFilterIdx[size_t(rec)])];
@@ -273,7 +273,7 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
                 colHeader.pop_back();
                 colHeader.push_back(uint(valIdx));
 
-                QVector<uint> keys = rowHeader + colHeader;
+                QList<uint> keys = rowHeader + colHeader;
                 mTvKeysToValIdx[keys] = r*GMS_VAL_MAX + valIdx;
 
                 if (rowHeader != lastRowHeader) {
@@ -292,7 +292,7 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
                 }
             }
         } else {
-            QVector<uint> keys = rowHeader + colHeader;
+            QList<uint> keys = rowHeader + colHeader;
             mTvKeysToValIdx[keys] = r;
 
             if (rowHeader != lastRowHeader) {
@@ -348,12 +348,12 @@ int TableViewModel::dim()
     return mSym->mDim;
 }
 
-QVector<int> TableViewModel::tvDimOrder() const
+QList<int> TableViewModel::tvDimOrder() const
 {
     return mTvDimOrder;
 }
 
-QVector<bool> TableViewModel::defaultColumnTableView() const
+QList<bool> TableViewModel::defaultColumnTableView() const
 {
     return mDefaultColumnTableView;
 }
@@ -368,7 +368,7 @@ int TableViewModel::type()
     return mSym->type();
 }
 
-void TableViewModel::setTableView(int colDim, const QVector<int> &tvDims)
+void TableViewModel::setTableView(int colDim, const QList<int> &tvDims)
 {
     beginResetModel();
     if (colDim!=-1) {

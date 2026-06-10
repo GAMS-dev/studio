@@ -204,7 +204,7 @@ bool ConfigParamTableModel::setData(const QModelIndex &index, const QVariant &va
     if (index.row() > mOptionItem.size())
         return false;
 
-    QVector<int> roles;
+    QList<int> roles;
     if (role == Qt::EditRole)   {
         roles = { Qt::EditRole };
         const QString dataValue = value.toString().simplified();
@@ -536,7 +536,7 @@ void ConfigParamTableModel::on_reloadConfigParamModel(const QList<ParamConfigIte
     connect(this, &QAbstractTableModel::dataChanged, this, &ConfigParamTableModel::on_updateOptionItem, Qt::UniqueConnection);
 }
 
-void ConfigParamTableModel::on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void ConfigParamTableModel::on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
 {
     QModelIndex idx = topLeft;
     int row = idx.row();

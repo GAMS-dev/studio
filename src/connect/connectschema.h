@@ -20,7 +20,7 @@
 #ifndef CONNECTSCHEMA_H
 #define CONNECTSCHEMA_H
 
-#include <QVector>
+#include <QList>
 #include <QMap>
 #include <QList>
 #include <QMetaEnum>

@@ -182,7 +182,7 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
     if (index.row() > mOptionItem.size())
         return false;
 
-    QVector<int> roles;
+    QList<int> roles;
     if (role == Qt::EditRole)   {
         roles = { Qt::EditRole };
         const QString dataValue = value.toString();
@@ -533,7 +533,7 @@ void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionIte
     connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateOptionItem);
 }
 
-void SolverOptionTableModel::on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void SolverOptionTableModel::on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
 {
     QModelIndex idx = topLeft;
     int row = idx.row();

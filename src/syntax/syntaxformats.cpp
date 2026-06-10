@@ -26,7 +26,7 @@ namespace gams {
 namespace studio {
 namespace syntax {
 
-const QVector<QChar> SyntaxAbstract::cSpecialCharacters = {'"', '$', '\'', '.', ';'};
+const QList<QChar> SyntaxAbstract::cSpecialCharacters = {'"', '$', '\'', '.', ';'};
 const QPair<QString, QString> SyntaxAbstract::systemEmpData = QPair<QString, QString>(QStringLiteral(u"emp.info"), "Name of the EMP Info File");
 
 QString syntaxKindName(SyntaxKind kind)
@@ -153,7 +153,7 @@ SyntaxStandard::SyntaxStandard(SharedSyntaxData *sharedData) : SyntaxAbstract(Sy
 
 SyntaxBlock SyntaxStandard::find(const SyntaxKind entryKind, SyntaxState state, const QString& line, int index)
 {
-    static QVector<SyntaxKind> invalidEntries {SyntaxKind::Declaration, SyntaxKind::DeclarationSetType,
+    static QList<SyntaxKind> invalidEntries {SyntaxKind::Declaration, SyntaxKind::DeclarationSetType,
                 SyntaxKind::DeclarationVariableType};
     Q_UNUSED(entryKind)
     Q_UNUSED(state)
@@ -584,7 +584,7 @@ SyntaxBlock SyntaxFormula::validTail(const QString &line, int index, SyntaxState
     return SyntaxBlock(this, state, index, end, SyntaxShift::shift);
 }
 
-void SyntaxFormula::setSpecialDynamicChars(const QVector<QChar> &chars)
+void SyntaxFormula::setSpecialDynamicChars(const QList<QChar> &chars)
 {
     mSpecialDynamicChars = chars;
     if (kind() == SyntaxKind::Formula)

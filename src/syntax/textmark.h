@@ -21,7 +21,7 @@
 #define TEXTMARK_H
 
 #include <QTextDocument>
-#include <QVector>
+#include <QList>
 #include <QFileInfo>
 #include "file/filetype.h"
 #include "common.h"
@@ -46,7 +46,7 @@ public:
     void setRefMark(TextMark* refMark);
     void unsetRefMark(TextMark* refMark);
     TextMark *refMark() const;
-    QVector<TextMark *> backRefs(const FileId &fileId) const;
+    QList<TextMark *> backRefs(const FileId &fileId) const;
 
     inline bool isErrorRef() { return (mReference && mReference->type() == error); }
     QColor color() const;
@@ -104,7 +104,7 @@ private:
     int mValue = -1;
     int mSpread = 0;
     TextMark* mReference = nullptr;
-    QVector<TextMark*> mBackRefs;
+    QList<TextMark*> mBackRefs;
     BlockData* mBlockData = nullptr;
 };
 

@@ -306,7 +306,7 @@ void EnvVarConfigEditor::initActions()
     ui->actionMoveDown->setIcon(Theme::icon(":/%1/move-down", true));
 }
 
-void EnvVarConfigEditor::on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void EnvVarConfigEditor::on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
 {
     Q_UNUSED(topLeft)
     Q_UNUSED(bottomRight)

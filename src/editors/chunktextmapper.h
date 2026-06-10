@@ -21,7 +21,7 @@
 #define CHUNKTEXTMAPPER_H
 
 #include <QObject>
-#include <QVector>
+#include <QList>
 #include <QSet>
 //#include <QStringConverter>
 #include <QTextCursor>
@@ -106,7 +106,7 @@ protected:
         int nr = -1;
         qint64 bStart = -1;
         QByteArray bArray;
-        QVector<int> lineBytes;
+        QList<int> lineBytes;
         QPoint markedRegion;
         int size() {
             return lineBytes.size() > 1 ? lineBytes.last() - lineBytes.first() : 0;
@@ -129,7 +129,7 @@ public:
     int knownLineNrs() const override;
 
     QString lines(int localLineNrFrom, int lineCount) const override;
-    QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;
+    QString lines(int localLineNrFrom, int lineCount, QList<LineFormat> &formats) const override;
     bool searchText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind) override;
 
     QString selectedText() const override;
@@ -192,7 +192,7 @@ private:
 
 private:
     mutable QByteArray mDelimiter;
-    mutable QVector<ChunkMetrics> mChunkMetrics;
+    mutable QList<ChunkMetrics> mChunkMetrics;
     mutable int mLastChunkWithLineNr = -1;
     mutable double mBytesPerLine = 20.0;
 

@@ -276,10 +276,10 @@ QPoint AbstractEdit::toolTipPos(const QPoint &mousePos)
     return pos;
 }
 
-QVector<int> AbstractEdit::toolTipLstNumbers(const QPoint &pos)
+QList<int> AbstractEdit::toolTipLstNumbers(const QPoint &pos)
 {
     Q_UNUSED(pos)
-    QVector<int> lstLines;
+    QList<int> lstLines;
     for (TextMark *mark: marksAtMouse()) {
         int lstLine = mark->value();
         if (lstLine < 0 && mark->refMark()) lstLine = mark->refMark()->value();
@@ -612,7 +612,7 @@ void AbstractEdit::internalToolTipUpdate()
 
 QString AbstractEdit::getToolTipText(const QPoint &pos)
 {
-    QVector<int> lstLines = toolTipLstNumbers(pos);
+    QList<int> lstLines = toolTipLstNumbers(pos);
     if (lstLines.isEmpty()) return QString();
     QStringList tips;
     emit requestLstTexts(projectId(), lstLines, tips);

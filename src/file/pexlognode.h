@@ -74,7 +74,7 @@ protected:
         int line;
         QString text;
     };
-//    QString extractLinks(const QString &text, ExtractionState &state, QVector<LinkData> &marks, bool createMarks, bool &hasError);
+//    QString extractLinks(const QString &text, ExtractionState &state, QList<LinkData> &marks, bool createMarks, bool &hasError);
 
 private:
     PExProjectNode *mProject = nullptr;

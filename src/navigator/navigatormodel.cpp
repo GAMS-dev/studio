@@ -35,7 +35,7 @@ void NavigatorModel::setContent(const QSet<NavigatorContent> &content)
     endResetModel();
 }
 
-QVector<NavigatorContent> NavigatorModel::content() const
+QList<NavigatorContent> NavigatorModel::content() const
 {
     return mContent;
 }

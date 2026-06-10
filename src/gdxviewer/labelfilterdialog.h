@@ -23,7 +23,7 @@
 #include "ui_labelfilterdialog.h"
 #include "filteruelmodel.h"
 #include "labelfilter.h"
-#include <QVector>
+#include <QList>
 #include <QDialog>
 
 namespace gams {
@@ -53,7 +53,7 @@ private slots:
     void deselectAll();
     void filterLabels();
     void toggleHideUnselected(bool checked);
-    void listDataHasChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void listDataHasChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles);
 
 private:
     Ui::LabelFilterDialog ui;

@@ -67,7 +67,7 @@ signals:
 
 public slots:
     void reloadSolverOptionModel(const QList<gams::studio::option::SolverOptionItem *> &optionItem);
-    void on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override;
+    void on_updateOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles) override;
     void on_removeOptionItem() override;
     void on_toggleRowHeader(int logicalIndex);
 

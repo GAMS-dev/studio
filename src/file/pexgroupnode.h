@@ -65,7 +65,7 @@ public:
     QList<PExFileNode*> findFiles(FileKind kind) const;
     PExProjectNode *findProject(const AbstractProcess *process) const;
     PExProjectNode *findProject(const FileId &runId) const;
-    const QVector<PExFileNode *> listFiles() const;
+    const QList<PExFileNode *> listFiles() const;
     void moveChildNode(int from, int to);
     const QList<PExAbstractNode*> &childNodes() const { return mChildNodes; }
     QDateTime timestamp() const override;
@@ -227,7 +227,7 @@ protected:
 
     PExProjectNode(const QString &filePath, const QString &basePath, FileMeta *mainFileMeta, const QString &workDir, Type type);
     void setFileName(const QString &newProjectFile);
-    void errorTexts(const QVector<int> &lstLines, QStringList &result);
+    void errorTexts(const QList<int> &lstLines, QStringList &result);
     void setLogNode(PExLogNode* logNode);
     void appendChild(PExAbstractNode *child) override;
     void removeChild(PExAbstractNode *child) override;

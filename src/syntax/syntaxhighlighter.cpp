@@ -143,7 +143,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     CodeRelationIndex cri = previousBlockCRIndex();
     if (cri < 0) cri = 0;
     int index = 0;
-    QVector<QPoint> postHighlights;
+    QList<QPoint> postHighlights;
     postHighlights << QPoint(0, text.length()-1);
     QTextBlock textBlock = currentBlock();
     if (!textBlock.userData()) textBlock.setUserData(new BlockData());
@@ -299,7 +299,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     }
 
     if (blockData->foldCount()) {
-        QVector<ParenthesesPos> blockPars = blockData->parentheses();
+        QList<ParenthesesPos> blockPars = blockData->parentheses();
         bool same = (nestingData.parentheses().size() == blockPars.size());
         for (int i = 0; i < nestingData.parentheses().size() && same; ++i) {
             same = (nestingData.parentheses().at(i).character == blockPars.at(i).character);
@@ -358,7 +358,7 @@ void SyntaxHighlighter::syntaxFlagData(const QTextBlock &block, SyntaxFlag flag,
     value = data->value(flag);
 }
 
-const QVector<SyntaxKind> SyntaxHighlighter::cInvalidParenthesesSyntax = {
+const QList<SyntaxKind> SyntaxHighlighter::cInvalidParenthesesSyntax = {
     SyntaxKind::Dco,
     SyntaxKind::DcoBody,
     SyntaxKind::DcoComment,

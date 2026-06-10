@@ -20,7 +20,7 @@
 #ifndef GAMS_STUDIO_GDXVIEWER_GDXVIEWER_H
 #define GAMS_STUDIO_GDXVIEWER_GDXVIEWER_H
 
-#include <QVector>
+#include <QList>
 #include <QItemSelection>
 
 #include "abstractview.h"
@@ -115,7 +115,7 @@ private:
     gdxHandle_t mGdx;
     QMutex* mGdxMutex = nullptr;
 
-    QVector<GdxSymbolView*> mSymbolViews;
+    QList<GdxSymbolView*> mSymbolViews;
 
     QStringDecoder mDecoder;
 

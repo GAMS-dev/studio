@@ -339,7 +339,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
     ui->tvListView->setModel(mSym);
 
     if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
-        QVector<QString> valColNames;
+        QList<QString> valColNames;
         valColNames<< "Level" << "Marginal" << "Lower Bound" << "Upper Bound" << "Scale";
         QWidgetAction *checkableAction = new QWidgetAction(ui->tbVisibleValCols);
         mVisibleValColWidget = new QWidget();
@@ -440,9 +440,9 @@ TableViewModel *GdxSymbolView::getTvModel() const
     return mTvModel;
 }
 
-QVector<int> GdxSymbolView::listViewDimOrder()
+QList<int> GdxSymbolView::listViewDimOrder()
 {
-    QVector<int> dimOrder;
+    QList<int> dimOrder;
     for (int i=0; i<mSym->columnCount(); i++) {
         int idx = ui->tvListView->horizontalHeader()->logicalIndex(i);
         if (idx<mSym->dim())
@@ -482,9 +482,9 @@ void GdxSymbolView::applyDefaults()
     mRestoreSqZeroes = Settings::settings()->toBool(SettingsKey::skGdxDefaultRestoreSqueezeZeroes);
 }
 
-QVector<bool> GdxSymbolView::showAttributes()
+QList<bool> GdxSymbolView::showAttributes()
 {
-    QVector<bool> showAttributes;
+    QList<bool> showAttributes;
     for (QCheckBox* cb : std::as_const(mShowValColActions))
         showAttributes.append(cb->isChecked());
     return showAttributes;
@@ -559,7 +559,7 @@ void GdxSymbolView::adjustDomainScrollbar()
 {
     if (!ui->tvTableViewFilter->model()) return;
     int colCount = ui->tvTableViewFilter->model()->columnCount();
-    QVector<int> accSecWidth(colCount);
+    QList<int> accSecWidth(colCount);
     int tableWidth = ui->tvTableViewFilter->horizontalHeader()->width();
     int last = 0;
     for (int i=0; i<colCount; ++i) {
@@ -609,7 +609,7 @@ void GdxSymbolView::showListView()
     }
 }
 
-void GdxSymbolView::showTableView(int colDim, const QVector<int> &tvDimOrder)
+void GdxSymbolView::showTableView(int colDim, const QList<int> &tvDimOrder)
 {
     if (!mTvModel)
         initTableViewModel(colDim, tvDimOrder);
@@ -632,7 +632,7 @@ void GdxSymbolView::showTableView(int colDim, const QVector<int> &tvDimOrder)
     }
 }
 
-void GdxSymbolView::initTableViewModel(int colDim, const QVector<int> &tvDimOrder)
+void GdxSymbolView::initTableViewModel(int colDim, const QList<int> &tvDimOrder)
 {
     mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
     connect(mSym, &GdxSymbol::modelReset, this, &GdxSymbolView::updateTvModel);
@@ -701,7 +701,7 @@ void GdxSymbolView::resetValFormat()
 
 void GdxSymbolView::saveTableViewHeaderState(GdxSymbolViewState* symViewState)
 {
-    QVector<int> widths;
+    QList<int> widths;
     for(int col=0; col<ui->tvTableView->horizontalHeader()->count(); col++) {
         if (ui->tvTableView->horizontalHeader()->isSectionHidden(col))
             widths.append(-1);
@@ -713,7 +713,7 @@ void GdxSymbolView::saveTableViewHeaderState(GdxSymbolViewState* symViewState)
 
 void GdxSymbolView::restoreTableViewHeaderState(GdxSymbolViewState* symViewState)
 {
-    QVector<int> widths = symViewState->getTableViewColumnWidths();
+    QList<int> widths = symViewState->getTableViewColumnWidths();
     for(int col=0; col<ui->tvTableView->horizontalHeader()->count(); col++) {
         if (col < widths.size()) {
             if (widths.at(col) != -1)
@@ -818,7 +818,7 @@ bool GdxSymbolView::isTableViewActive() const
     return mTableView;
 }
 
-QVector<QStringList> GdxSymbolView::pendingUncheckedLabels() const
+QList<QStringList> GdxSymbolView::pendingUncheckedLabels() const
 {
     return mPendingUncheckedLabels;
 }
@@ -926,7 +926,7 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
     symViewState->setAutoResizeLV(mAutoResizeLV);
     symViewState->setAutoResizeTV(mAutoResizeTV);
 
-    QVector<bool> showAttributes;
+    QList<bool> showAttributes;
     for (QCheckBox* cb : std::as_const(mShowValColActions))
         showAttributes.append(cb->isChecked());
     symViewState->setShowAttributes(showAttributes);
@@ -943,7 +943,7 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
 void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)
 {
     // save uel filters
-    QVector<QStringList> uncheckedLabels;
+    QList<QStringList> uncheckedLabels;
     for (int i=0; i<mSym->dim(); i++) {
         LabelFilter *lf = mSym->labelFilter(i);
         QStringList labels;
@@ -960,7 +960,7 @@ void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)
     // save value filters
     int colCount = mSym->numericalColumnCount();
 
-    QVector<ValueFilter> valueFilters;
+    QList<ValueFilter> valueFilters;
     ValueFilter vf;
     for (int i=0; i<colCount; i++) {
         ValueFilter vf2 = mSym->valueFilter(i);

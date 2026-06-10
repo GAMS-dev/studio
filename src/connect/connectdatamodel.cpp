@@ -422,7 +422,7 @@ Qt::ItemFlags ConnectDataModel::flags(const QModelIndex &index) const
 
 bool ConnectDataModel::setData(const QModelIndex &idx, const QVariant &value, int role)
 {
-    QVector<int> roles;
+    QList<int> roles;
     switch (role) {
     case Qt::EditRole: {
         roles = { Qt::EditRole };
@@ -1251,7 +1251,7 @@ void ConnectDataModel::reloadConnectDataModel()
     endResetModel();
 }
 
-void ConnectDataModel:: onEditDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void ConnectDataModel:: onEditDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
 {
     const QModelIndex idx = topLeft;
     Q_UNUSED(bottomRight)
@@ -1847,7 +1847,7 @@ void ConnectDataModel::informDataChanged(const QModelIndex& parent)
 
     emit dataChanged(index(0, static_cast<int>(DataItemColumn::MoveDown), parent),
                      index(getItem(parent)->childCount()-1, static_cast<int>(DataItemColumn::ElementID), parent),
-                     QVector<int> { Qt::DisplayRole, Qt::ToolTipRole, Qt::DecorationRole} );
+                     QList<int> { Qt::DisplayRole, Qt::ToolTipRole, Qt::DecorationRole} );
 
 }
 

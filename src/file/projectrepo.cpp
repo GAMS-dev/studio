@@ -725,7 +725,7 @@ MultiCopyCheck ProjectRepo::getCopyPaths(PExProjectNode *project, const QString 
 {
     QDir srcDir = QFileInfo(project->fileName()).path();
     QDir dstDir = QFileInfo(filePath).path();
-    const QVector<PExFileNode*> nodes = project->listFiles();
+    const QList<PExFileNode*> nodes = project->listFiles();
     QStringList srcAll;
     srcAll << project->fileName();
     for (const PExFileNode *node : nodes)
@@ -1025,9 +1025,9 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
     }
 }
 
-QVector<PExFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const
+QList<PExFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const
 {
-    QVector<PExFileNode*> res;
+    QList<PExFileNode*> res;
     QHashIterator<NodeId, PExAbstractNode*> i(mNodes);
     while (i.hasNext()) {
         i.next();
@@ -1075,9 +1075,9 @@ const QList<PExProjectNode *> ProjectRepo::projects() const
     return res;
 }
 
-const QVector<AbstractProcess *> ProjectRepo::listProcesses()
+const QList<AbstractProcess *> ProjectRepo::listProcesses()
 {
-    QVector<AbstractProcess*> res;
+    QList<AbstractProcess*> res;
     QHashIterator<NodeId, PExAbstractNode*> i(mNodes);
     while (i.hasNext()) {
         i.next();
@@ -1092,7 +1092,7 @@ const QVector<AbstractProcess *> ProjectRepo::listProcesses()
 void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     mProxyModel->selectionChanged(selected, deselected);
-    QVector<QModelIndex> groups;
+    QList<QModelIndex> groups;
     for (QModelIndex ind: mProxyModel->popAddProjects()) {
         if (!mTreeView->isExpanded(ind))
             groups << ind;
@@ -1112,7 +1112,7 @@ void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSe
     }
 }
 
-void ProjectRepo::errorTexts(const NodeId &groupId, const QVector<int> &lstLines, QStringList &result)
+void ProjectRepo::errorTexts(const NodeId &groupId, const QList<int> &lstLines, QStringList &result)
 {
     PExProjectNode *project = asProject(groupId);
     if (project)
@@ -1139,7 +1139,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     for (const NodeId &id : knownIds) {
         PExGroupNode *group = asGroup(id);
         if (group && group->type() == NodeType::group) {
-            QVector<PExFileNode*> groupFiles = group->listFiles();
+            QList<PExFileNode*> groupFiles = group->listFiles();
             for (PExFileNode* file: std::as_const(groupFiles)) {
                 files << file->location();
                 addIds << file->id();
@@ -1246,7 +1246,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
 
 void ProjectRepo::reassignFiles(PExProjectNode *project)
 {
-    QVector<PExFileNode *> files = project->listFiles();
+    QList<PExFileNode *> files = project->listFiles();
     FileMeta *runGms = project->mainFile();
     for (PExFileNode *file: std::as_const(files)) {
         addToProject(project, file);
@@ -1337,7 +1337,7 @@ QIcon ProjectRepo::runAnimateIcon(QIcon::Mode mode, int alpha)
 {
     QPair<QIcon::Mode, int> key(mode, alpha);
     if (!mRunIcons.contains(key)) {
-        QVector<QIcon> runIcons;
+        QList<QIcon> runIcons;
         runIcons << Theme::icon(":/img/project-run1", mode, alpha);
         runIcons << Theme::icon(":/img/project-run2", mode, alpha);
         runIcons << Theme::icon(":/img/project-run3", mode, alpha);
@@ -1387,7 +1387,7 @@ bool ProjectRepo::debugMode() const
 
 void ProjectRepo::fileChanged(const FileId &fileId)
 {
-    QVector<PExGroupNode*> groups;
+    QList<PExGroupNode*> groups;
     const auto nodes = fileNodes(fileId);
     for (PExFileNode *node: nodes) {
         PExGroupNode *group = node->parentNode();

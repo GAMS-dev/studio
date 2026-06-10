@@ -177,7 +177,7 @@ bool EnvVarTableModel::setData(const QModelIndex &index, const QVariant &value, 
     if (index.row() > mEnvVarItem.size())
         return false;
 
-    QVector<int> roles;
+    QList<int> roles;
     if (role == Qt::EditRole)   {
         roles = { Qt::EditRole };
         if (index.row() > mEnvVarItem.size())
@@ -287,7 +287,7 @@ QList<EnvVarConfigItem *> EnvVarTableModel::envVarConfigItems()
     return mEnvVarItem;
 }
 
-void EnvVarTableModel::on_updateEnvVarItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void EnvVarTableModel::on_updateEnvVarItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
 {
     QModelIndex idx = topLeft;
     int row = idx.row();

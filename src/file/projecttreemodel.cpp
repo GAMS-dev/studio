@@ -463,7 +463,7 @@ bool ProjectTreeModel::isCurrent(const QModelIndex& ind) const
 void ProjectTreeModel::setCurrent(const QModelIndex& ind)
 {
     if (!isCurrent(ind)) {
-        QVector<QModelIndex> changeList;
+        QList<QModelIndex> changeList;
         QModelIndex mi = asIndex(mCurrent);
         if (mi.isValid() && mi.parent().isValid()) {
             while (mi.parent().parent().isValid())
@@ -565,7 +565,7 @@ void ProjectTreeModel::deselectAll()
     }
 }
 
-QVector<NodeId> ProjectTreeModel::selectedIds() const
+QList<NodeId> ProjectTreeModel::selectedIds() const
 {
     return mSelected;
 }
@@ -583,9 +583,9 @@ void ProjectTreeModel::update(const QModelIndex &ind)
     if (ind.isValid()) emit dataChanged(ind, ind);
 }
 
-QVector<QModelIndex> ProjectTreeModel::gatherChildren(QModelIndex ind)
+QList<QModelIndex> ProjectTreeModel::gatherChildren(QModelIndex ind)
 {
-    QVector<QModelIndex> res;
+    QList<QModelIndex> res;
     for (int row = 0; row < rowCount(ind); ++row) {
         QModelIndex i = index(row, 0, ind);
         PExAbstractNode *aNode = node(i);

@@ -169,7 +169,7 @@ void SolverOptionEditor::toggleCommentOption()
     }
 }
 
-void SolverOptionEditor::on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void SolverOptionEditor::on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
 {
     Q_UNUSED(topLeft)
     Q_UNUSED(bottomRight)

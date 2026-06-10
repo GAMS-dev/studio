@@ -206,9 +206,9 @@ PExProjectNode *PExGroupNode::findProject(const FileId &runId) const
     return nullptr;
 }
 
-const QVector<PExFileNode *> PExGroupNode::listFiles() const
+const QList<PExFileNode *> PExGroupNode::listFiles() const
 {
-    QVector<PExFileNode *> res;
+    QList<PExFileNode *> res;
     for (PExAbstractNode *node: mChildNodes) {
         PExFileNode *fileNode = node->toFile();
         if (fileNode)
@@ -1337,14 +1337,14 @@ bool PExProjectNode::jumpToFirstError(bool focus, PExFileNode* lstNode)
             textMark->jumpToMark(focus);
         }
         // jump to first error in LOG
-        QVector<TextMark*> backRef = textMark->backRefs(logNode()->file()->id());
+        QList<TextMark*> backRef = textMark->backRefs(logNode()->file()->id());
         if (backRef.size()) backRef.at(0)->jumpToMark(false, true);
         return true;
     }
     return false;
 }
 
-void PExProjectNode::errorTexts(const QVector<int> &lstLines, QStringList &result)
+void PExProjectNode::errorTexts(const QList<int> &lstLines, QStringList &result)
 {
     for (int lstLine: lstLines) {
         QString newTip = errorText(lstLine);

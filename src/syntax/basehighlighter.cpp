@@ -270,7 +270,7 @@ void BaseHighlighter::applyFormatChanges()
 
     QTextLayout *layout = mCurrentBlock.layout();
 
-    QVector<QTextLayout::FormatRange> ranges = layout->formats();
+    QList<QTextLayout::FormatRange> ranges = layout->formats();
 
     const int preeditAreaStart = layout->preeditAreaPosition();
     const int preeditAreaLength = layout->preeditAreaText().length();

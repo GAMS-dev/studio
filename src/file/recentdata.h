@@ -50,8 +50,8 @@ private:
 
 private:
     MainWindow *mMainWindow = nullptr;
-    QVector<QWidget*> mEditList;
-    QVector<FileMeta*> mMetaList;
+    QList<QWidget*> mEditList;
+    QList<FileMeta*> mMetaList;
     FileId mEditFileId;
     QString mPath;
     NodeId mLastValidProjectId = 0;

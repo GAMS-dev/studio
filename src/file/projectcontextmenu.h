@@ -38,7 +38,7 @@ class ProjectContextMenu : public QMenu
 
 public:
     ProjectContextMenu();
-    void initialize(const QVector<PExAbstractNode*> &selected, PExProjectNode *focussedProject);
+    void initialize(const QList<PExAbstractNode*> &selected, PExProjectNode *focussedProject);
     void setParent(QWidget *parent);
     static bool allowChange(const QList<PExAbstractNode *> nodes);
 
@@ -61,7 +61,7 @@ signals:
     void selectAll();
     void expandAll();
     void collapseAll();
-    void newFileDialog(QVector<gams::studio::PExProjectNode *> projects, const QString &path = "", const QString& solverName="",
+    void newFileDialog(QList<gams::studio::PExProjectNode *> projects, const QString &path = "", const QString& solverName="",
                        gams::studio::FileKind projectOnly = gams::studio::FileKind::None);
     void openTerminal(const QString& workingDir);
     void openGdxDiffDialog(QString workingDirectory, QString input1, QString input2="");
@@ -100,7 +100,7 @@ private:
     QString getEfiName(PExProjectNode *project) const;
 
 private:
-    QVector<PExAbstractNode*> mNodes;
+    QList<PExAbstractNode*> mNodes;
     QHash<int, QAction*> mActions;
     QStringList mAvailableSolvers;
     QHash<int, QAction*> mSolverOptionActions;

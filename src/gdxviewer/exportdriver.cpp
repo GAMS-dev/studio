@@ -201,7 +201,7 @@ QString ExportDriver::generateProjections(bool applyFilters, bool hiddenAttribut
                 suffix = ".all";
             else {
                 GdxSymbolViewState *symViewState = getSymbolViewState(sym->aliasedSymbol());
-                QVector<bool> attributes;
+                QList<bool> attributes;
                 GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
                 if (symView)
                     attributes = symView->showAttributes();
@@ -454,7 +454,7 @@ QString ExportDriver::generateDomainsNew(GdxSymbol *sym)
     sym = sym->aliasedSymbol();
     if (sym->dim() > 0) {
         GdxSymbolViewState *symViewState = getSymbolViewState(sym);
-        QVector<int> dimOrder;
+        QList<int> dimOrder;
         GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
         if (symView) {
             if (symView->isTableViewActive())

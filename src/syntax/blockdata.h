@@ -48,11 +48,11 @@ struct NestingData
     int impact() const { return mImpact; }
     int leftOpen() const { return mMaxDepth; }
     int rightOpen() const { return mImpact - mMaxDepth; }
-    QVector<ParenthesesPos> parentheses() const { return mParentheses; }
+    QList<ParenthesesPos> parentheses() const { return mParentheses; }
 private:
     short mImpact = 0;
     short mMaxDepth = 0;
-    QVector<ParenthesesPos> mParentheses;
+    QList<ParenthesesPos> mParentheses;
 };
 
 class BlockData : public QTextBlockUserData
@@ -62,7 +62,7 @@ public:
     ~BlockData() override;
     static BlockData *fromTextBlock(const QTextBlock& block);
     QChar charForPos(int relPos);
-    QVector<ParenthesesPos> parentheses() const;
+    QList<ParenthesesPos> parentheses() const;
     void setParentheses(const NestingData &nestingData);
     NestingData &nesting() { return mNestingData; }
     int &foldCount() { return mFoldCount; }

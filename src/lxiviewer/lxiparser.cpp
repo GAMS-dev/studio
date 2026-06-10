@@ -29,8 +29,8 @@ namespace lxiviewer {
 
 LxiTreeModel *LxiParser::parseFile(const QString& lxiFile)
 {
-    QVector<int> lineNrs;
-    QVector<LxiTreeItem*> treeItems;
+    QList<int> lineNrs;
+    QList<LxiTreeItem*> treeItems;
 
     QFile file(lxiFile);
     if(!file.open(QFile::ReadOnly))

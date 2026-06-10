@@ -168,7 +168,7 @@ void ConfigParamEditor::on_reloadGamsUserConfigFile(const QList<ConfigItem *> &i
     setModified(false);
 }
 
-void ConfigParamEditor::on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void ConfigParamEditor::on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
 {
     Q_UNUSED(bottomRight)
     Q_UNUSED(roles)

@@ -46,10 +46,10 @@ TextMark *TextMark::refMark() const
     return mReference;
 }
 
-QVector<TextMark *> TextMark::backRefs(const FileId &fileId) const
+QList<TextMark *> TextMark::backRefs(const FileId &fileId) const
 {
     if (!fileId.isValid()) return mBackRefs;
-    QVector<TextMark *> res;
+    QList<TextMark *> res;
     for (TextMark* mark: mBackRefs) {
         if (mark->fileId() == fileId) res << mark;
     }

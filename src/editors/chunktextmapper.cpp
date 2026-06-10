@@ -368,7 +368,7 @@ QString ChunkTextMapper::lines(int localLineNrFrom, int lineCount) const
     return res;
 }
 
-QString ChunkTextMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const
+QString ChunkTextMapper::lines(int localLineNrFrom, int lineCount, QList<LineFormat> &formats) const
 {
     if (!lineMarkers().isEmpty()) {
         int absTopLine = visibleTopLine();
@@ -726,7 +726,7 @@ void ChunkTextMapper::removeChunk(int chunkNr)
     mChunkMetrics.removeAt(chunkNr);
 
     // shift position, anchor and topline if necessary
-    QVector<CursorPosition*> cps;
+    QList<CursorPosition*> cps;
     if (mPosition.isValid()) cps << &mPosition;
     if (mAnchor.isValid()) cps << &mAnchor;
     if (topLine.isValid()) cps << &topLine;

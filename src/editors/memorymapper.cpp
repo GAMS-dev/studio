@@ -113,9 +113,9 @@ void MemoryMapper::markLastLine()
         chunk->markedRegion.ry() = chunk->lineCount();
 }
 
-QVector<bool> MemoryMapper::markedLines(int localLineNrFrom, int lineCount) const
+QList<bool> MemoryMapper::markedLines(int localLineNrFrom, int lineCount) const
 {
-    QVector<bool> res;
+    QList<bool> res;
     if (!size()) return res;
     res.reserve(lineCount);
     QPair<int,int> interval = QPair<int,int>(localLineNrFrom, lineCount); // <start, size>
@@ -363,7 +363,7 @@ void MemoryMapper::runFinished()
         LineRef ref = logLineToRef(lineNr);
         if (ref.chunk) mMarkers << ref;
     }
-    const QVector<int> tail = mMarksTail.data();
+    const QList<int> tail = mMarksTail.data();
     for (const int &lineNr: tail) {
         LineRef ref = logLineToRef(lineNr);
         if (ref.chunk) mMarkers << ref;
@@ -687,7 +687,7 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount) const
     return ChunkTextMapper::lines(localLineNrFrom, lineCount);
 }
 
-QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const
+QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QList<LineFormat> &formats) const
 {
     formats.reserve(lineCount);
     if (debugMode()) {
@@ -695,7 +695,7 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
     }
     int activationLine;
     QByteArray data = rawLines(localLineNrFrom, lineCount, mUnits.last().firstChunk->nr, activationLine);
-    QVector<bool> markLines = markedLines(localLineNrFrom, lineCount);
+    QList<bool> markLines = markedLines(localLineNrFrom, lineCount);
     if (debugMode()) activationLine *= 2;
 
     QStringList res;

@@ -170,7 +170,7 @@ ProjectContextMenu::ProjectContextMenu()
 
 }
 
-void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, PExProjectNode *focussedProject)
+void ProjectContextMenu::initialize(const QList<PExAbstractNode *> &selected, PExProjectNode *focussedProject)
 {
     // synchronize current and selected
     mNodes.clear();
@@ -380,7 +380,7 @@ void ProjectContextMenu::onCloseDelFile()
 
 void ProjectContextMenu::onAddExisitingFile()
 {
-    QVector<PExProjectNode*> projects;
+    QList<PExProjectNode*> projects;
     QString sourcePath = "";
     for (PExAbstractNode *node: std::as_const(mNodes)) {
         if (sourcePath.isEmpty()) {
@@ -416,7 +416,7 @@ void ProjectContextMenu::onAddExisitingFile()
 
 void ProjectContextMenu::onAddNewFile()
 {
-    QVector<PExProjectNode*> projects;
+    QList<PExProjectNode*> projects;
     QString path = "";
     for (PExAbstractNode *node: std::as_const(mNodes)) {
         if (path.isEmpty()) {
@@ -435,7 +435,7 @@ void ProjectContextMenu::onAddNewFile()
 
 void ProjectContextMenu::onAddNewPfFile()
 {
-    QVector<PExProjectNode*> projects;
+    QList<PExProjectNode*> projects;
     QString path = "";
     for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExProjectNode *project = node->toProject();
@@ -459,7 +459,7 @@ void ProjectContextMenu::onCloseGroup()
     for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExGroupNode *group = node->toGroup();
         if (!group) continue;
-        QVector<PExFileNode*> files = group->listFiles();
+        QList<PExFileNode*> files = group->listFiles();
         for (PExFileNode* file : std::as_const(files)) {
             emit closeFile(file);
         }
@@ -535,7 +535,7 @@ void ProjectContextMenu::onFocusProject()
 
 void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
 {
-    QVector<PExProjectNode*> groups;
+    QList<PExProjectNode*> groups;
     QString path = "";
     for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExProjectNode *project = node->toProject();

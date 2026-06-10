@@ -39,7 +39,7 @@ public:
     void disconnectTimers() override;
     EditorType type() const override;
     int lineCount();
-    void setLineMarked(const QVector<bool> &newLineMarked);
+    void setLineMarked(const QList<bool> &newLineMarked);
     QStringList getEnabledContextActions() override;
 
 signals:
@@ -72,7 +72,7 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     TextLinkType checkLinks(const QPoint &mousePos, bool greedy, QString *fName = nullptr) override;
 //    bool viewportEvent(QEvent *event) override;
-    QVector<int> toolTipLstNumbers(const QPoint &mousePos) override;
+    QList<int> toolTipLstNumbers(const QPoint &mousePos) override;
     void paintEvent(QPaintEvent *e) override;
     QString getToolTipText(const QPoint &pos) override;
 
@@ -82,7 +82,7 @@ private:
 
 private:
     AbstractTextMapper &mMapper;
-    QVector<bool> mLineMarked;
+    QList<bool> mLineMarked;
     Settings *mSettings;
     qint64 mTopByte = 0;
     bool mClickStart = false;

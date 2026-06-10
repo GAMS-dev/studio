@@ -820,7 +820,7 @@ void SearchDialog::jumpToResult(Result r)
         QString name = "-Search: " + ui->termComboBox->currentText();
 
         // find existing search group
-        QVector<PExProjectNode*> projects = mFileHandler->projects();
+        QList<PExProjectNode*> projects = mFileHandler->projects();
         for (PExGroupNode* g : std::as_const(projects)) {
             if (g->name() == name) {
                 mCurrentSearchGroup = g->toProject();

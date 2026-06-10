@@ -79,7 +79,7 @@ public:
     void waitForCountThread();
 
     QString lines(int localLineNrFrom, int lineCount) const override;
-    QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;
+    QString lines(int localLineNrFrom, int lineCount, QList<LineFormat> &formats) const override;
     bool searchText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind) override;
 
     QString selectedText() const override;

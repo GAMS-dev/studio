@@ -2201,7 +2201,7 @@ int CodeEdit::foldStart(int line, bool &folded, QString *closingSymbol, const QS
 {
     int res = -1;
     static QString parentheses("{[(/EMTCPIOFU}])\\emtcpiofu");
-    static QVector<QString> closingSymbols {
+    static QList<QString> closingSymbols {
         "}", "]", ")", "/", "embeddedCode", "embeddedCode", "text", "echo", "put", "externalInput", "externalOutput", "endIf", "fold"
     };
     static int pSplit = int(parentheses.length())/2;
@@ -2210,7 +2210,7 @@ int CodeEdit::foldStart(int line, bool &folded, QString *closingSymbol, const QS
     if (!dat) return -1;
 
     folded = dat->isFolded();
-    QVector<syntax::ParenthesesPos> parList = dat->parentheses();
+    QList<syntax::ParenthesesPos> parList = dat->parentheses();
     int depth = 0;
 //    if (parList.count())
 //        DEB() << "parenthesis " << parList.at(0).character << " at " << parList.at(0).relPos;
@@ -2526,7 +2526,7 @@ PositionPair CodeEdit::matchParentheses(const QTextCursor &cursor, bool all, int
     if (!block.userData()) return PositionPair();
     syntax::BlockData *startDat = syntax::BlockData::fromTextBlock(block);
 //    int state = block.userState();
-    QVector<syntax::ParenthesesPos> parList = startDat->parentheses();
+    QList<syntax::ParenthesesPos> parList = startDat->parentheses();
     int pos = cursor.positionInBlock();
     int start = -1;
     for (int i = int(parList.count())-1; i >= 0; --i) {
@@ -2543,7 +2543,7 @@ PositionPair CodeEdit::matchParentheses(const QTextCursor &cursor, bool all, int
     result.match = result.pos;
     QString parEnter = parentheses.mid(back ? pSplit : 0, pSplit);
     QString parLeave = parentheses.mid(back ? 0 : pSplit, pSplit);
-    QVector<QChar> parStack;
+    QList<QChar> parStack;
     parStack << parLeave.at(ci);
     int startBlockNr = block.blockNumber();
     int pi = start;

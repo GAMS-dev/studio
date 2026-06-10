@@ -270,7 +270,7 @@ MainWindow::MainWindow(QWidget *parent)
         int i = mActFocusProject->actions().at(ui->cbFocusProject->currentIndex())->data().toInt(&ok);
         if (ok && i >= 0)
             project = mProjectRepo.findProject(NodeId(i));
-        mProjectContextMenu.initialize(QVector<PExAbstractNode*>(), project);
+        mProjectContextMenu.initialize(QList<PExAbstractNode*>(), project);
         mProjectContextMenu.setParent(this);
         mProjectContextMenu.exec(ui->cbFocusProject->mapToGlobal(pos));
     });
@@ -784,9 +784,9 @@ void MainWindow::updateProfilerAction()
 
 }
 
-QVector<PExAbstractNode *> MainWindow::selectedNodes(QModelIndex index)
+QList<PExAbstractNode *> MainWindow::selectedNodes(QModelIndex index)
 {
-    QVector<PExAbstractNode*> nodes;
+    QList<PExAbstractNode*> nodes;
     if (!index.isValid()) return nodes;
 
     QModelIndexList list = ui->projectView->selectionModel()->selectedIndexes();
@@ -1358,7 +1358,7 @@ void MainWindow::continueAsyncCall()
 
     } else if (mAsyncCallOptions.value("call").toString().compare("newFileDialog") == 0) {
         const QVariantList pointerValues = mAsyncCallOptions.value("projects").toList();
-        QVector<PExProjectNode*> projects;
+        QList<PExProjectNode*> projects;
         for (const QVariant& val : pointerValues) {
             projects << val.value<PExProjectNode*>();
         }
@@ -1566,7 +1566,7 @@ void MainWindow::gamsProcessStateChanged(PExProjectNode *project)
 void MainWindow::projectContextMenuRequested(const QPoint& pos)
 {
     QModelIndex index = ui->projectView->indexAt(pos);
-    QVector<PExAbstractNode*> nodes = selectedNodes(index);
+    QList<PExAbstractNode*> nodes = selectedNodes(index);
     mProjectContextMenu.initialize(nodes, mProjectRepo.focussedProject());
     mProjectContextMenu.setParent(this);
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
@@ -1828,7 +1828,7 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
     *actions = act;
 }
 
-void MainWindow::newFileDialogPrepare(const QVector<PExProjectNode*> &projects, const QString &inPath, const QString& solverName, FileKind fileKind)
+void MainWindow::newFileDialogPrepare(const QList<PExProjectNode*> &projects, const QString &inPath, const QString& solverName, FileKind fileKind)
 {
     mAsyncCallOptions.clear();
     mAsyncCallOptions.insert("call", "newFileDialog");
@@ -1845,7 +1845,7 @@ void MainWindow::newFileDialogPrepare(const QVector<PExProjectNode*> &projects, 
     ensureWorkspace();
 }
 
-void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const QString &inPath, const QString& solverName, FileKind fileKind)
+void MainWindow::newFileDialog(const QList<PExProjectNode*> &projects, const QString &inPath, const QString& solverName, FileKind fileKind)
 {
     QString path = inPath;
     bool projectOnly = fileKind == FileKind::Gsp;
@@ -1991,7 +1991,7 @@ void MainWindow::on_menuFile_aboutToShow()
 
 void MainWindow::on_actionNew_triggered()
 {
-    QVector<PExProjectNode*> project;
+    QList<PExProjectNode*> project;
     if (Settings::settings()->toBool(skOpenInCurrent) && mRecent.project())
         project << mRecent.project();
     newFileDialogPrepare(project, currentPath(opFile));
@@ -2498,7 +2498,7 @@ FileProcessKind MainWindow::fileDeletedExtern(const FileId &fileId)
     if (file->exists(true)) return FileProcessKind::ignore;
     mTextMarkRepo.removeMarks(fileId, QSet<TextMark::Type>() << TextMark::all);
     if (!file->isOpen()) {
-        const QVector<PExFileNode*> nodes = mProjectRepo.fileNodes(file->id());
+        const QList<PExFileNode*> nodes = mProjectRepo.fileNodes(file->id());
         for (PExFileNode* node: nodes)
             mProjectRepo.closeNode(node);
         removeFromHistory(file->location());
@@ -2556,7 +2556,7 @@ void MainWindow::processFileEvents()
 
     // First process all events that need no user decision. For the others: remember the kind of change
     QSet<FileEventData> scheduledEvents;
-    QMap<FileProcessKind, QVector<FileEventData>> remainEvents;
+    QMap<FileProcessKind, QList<FileEventData>> remainEvents;
     while (true) {
         FileEventData fileEvent;
         { // lock only while accessing mFileEvents
@@ -2587,7 +2587,7 @@ void MainWindow::processFileEvents()
         default: break;
         }
         if (remainKind != FileProcessKind::ignore) {
-            if (!remainEvents.contains(remainKind)) remainEvents.insert(remainKind, QVector<FileEventData>());
+            if (!remainEvents.contains(remainKind)) remainEvents.insert(remainKind, QList<FileEventData>());
             if (!remainEvents[remainKind].contains(fileEvent)) remainEvents[remainKind] << fileEvent;
         }
     }
@@ -3222,10 +3222,10 @@ void MainWindow::historyChanged()
     Settings::settings()->setList(skHistory, joHistory);
 }
 
-bool MainWindow::terminateProcessesConditionally(const QVector<PExProjectNode *> &projects)
+bool MainWindow::terminateProcessesConditionally(const QList<PExProjectNode *> &projects)
 {
     if (projects.isEmpty()) return true;
-    QVector<PExProjectNode *> runningGroups;
+    QList<PExProjectNode *> runningGroups;
     QStringList runningNames;
     int remoteCount = 0;
     int ignoredCount = 0;
@@ -3954,7 +3954,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
     }
 }
 
-bool MainWindow::requestCloseChanged(QVector<FileMeta *> changedFiles)
+bool MainWindow::requestCloseChanged(QList<FileMeta *> changedFiles)
 {
     if (changedFiles.size() <= 0) return true;
 
@@ -4600,7 +4600,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
     }
 
     // cleanup bookmarks
-    const QVector<QString> cleanupKinds {"gdx",  "gsp", "log", "lst", "ls2", "lxi", "ref"};
+    const QList<QString> cleanupKinds {"gdx",  "gsp", "log", "lst", "ls2", "lxi", "ref"};
     markTypes = {TextMark::bookmark};
     for (const QString &kind: cleanupKinds) {
         if (project->hasParameter(kind)) {
@@ -5424,7 +5424,7 @@ void MainWindow::ensureSizeAndInScreen()
     QMargins margins(appGeo.left() - appFGeo.left(), appGeo.top() - appFGeo.top(),
                      appFGeo.right() - appGeo.right(), appFGeo.bottom() - appGeo.bottom());
     QRect screenGeo = QGuiApplication::primaryScreen()->availableVirtualGeometry();
-    QVector<QRect> frames;
+    QList<QRect> frames;
     const auto screens = QGuiApplication::screens();
     for (QScreen *screen : screens) {
         QRect rect = screen->availableGeometry();
@@ -5544,7 +5544,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         }
     } else {
         if (!project) {
-            QVector<PExFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
+            QList<PExFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
             if (!nodes.isEmpty())
                 project = nodes.first()->assignedProject();
             if (!project) {
@@ -5823,10 +5823,10 @@ void MainWindow::closeProject(PExProjectNode* project)
 {
     if (!project) return;
     bool delay = project->comServer();
-    if (!terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
+    if (!terminateProcessesConditionally(QList<PExProjectNode*>() << project))
         return;
-    QVector<FileMeta*> changedFiles;
-    QVector<FileMeta*> openFiles;
+    QList<FileMeta*> changedFiles;
+    QList<FileMeta*> openFiles;
     for (PExFileNode *node: project->listFiles()) {
         if (node->isModified()) changedFiles << node->file();
         if (node->file()->isOpen()) openFiles << node->file();
@@ -5852,7 +5852,7 @@ void MainWindow::closeProject(PExProjectNode* project)
     }
 }
 
-void MainWindow::internalCloseProject(PExProjectNode *project, const QVector<FileMeta*> &openFiles)
+void MainWindow::internalCloseProject(PExProjectNode *project, const QList<FileMeta*> &openFiles)
 {
     for (FileMeta *file: std::as_const(openFiles))
         closeFileEditors(file->id());
@@ -5911,12 +5911,12 @@ void MainWindow::closeNodeConditionally(PExFileNode* node)
 {
     // count nodes to the same file
     PExProjectNode *project = node->assignedProject();
-    if (project && project->mainFile() == node->file() && !terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
+    if (project && project->mainFile() == node->file() && !terminateProcessesConditionally(QList<PExProjectNode*>() << project))
         return;
-    QVector<PExFileNode*> fileNodes = mProjectRepo.fileNodes(node->file()->id());
+    QList<PExFileNode*> fileNodes = mProjectRepo.fileNodes(node->file()->id());
     PExGroupNode *group = node->parentNode();
     // not the last OR not modified OR permitted
-    if (fileNodes.count() > 1 || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
+    if (fileNodes.count() > 1 || !node->isModified() || requestCloseChanged(QList<FileMeta*>() << node->file())) {
         if (fileNodes.count() == 1)
             closeFileEditors(node->file()->id());
         else {
@@ -7272,8 +7272,8 @@ void MainWindow::openGdxDiffFile()
 
     // if possible get the group to which both input files belong
     if (fmInput1 && fmInput2) {
-        QVector<PExFileNode*> nodesInput1 = mProjectRepo.fileNodes(fmInput1->id());
-        QVector<PExFileNode*> nodesInput2 = mProjectRepo.fileNodes(fmInput2->id());
+        QList<PExFileNode*> nodesInput1 = mProjectRepo.fileNodes(fmInput1->id());
+        QList<PExFileNode*> nodesInput2 = mProjectRepo.fileNodes(fmInput2->id());
 
         if (nodesInput1.size() == 1 && nodesInput2.size() == 1) {
             if (nodesInput1.first()->parentNode() == nodesInput2.first()->parentNode())
@@ -7284,7 +7284,7 @@ void MainWindow::openGdxDiffFile()
     if (projectDiff == nullptr) {
         FileMeta *fm = mFileMetaRepo.fileMeta(diffFile);
         if (fm) {
-            QVector<PExFileNode*> v = mProjectRepo.fileNodes(fm->id());
+            QList<PExFileNode*> v = mProjectRepo.fileNodes(fm->id());
             if(v.size() == 1)
                 projectDiff = v.first()->assignedProject();
         }

@@ -77,7 +77,7 @@ private:
     int dragOrientationStart = -1;
     int dragOrientationEnd = -1;
 
-    QVector<int> sectionWidth;
+    QList<int> sectionWidth;
     bool ddEnabled = true;
 };
 

@@ -286,7 +286,7 @@ void FileMetaRepo::setUserGamsTypes(const QStringList &suffix)
         if (!suffix.contains(suf, Qt::CaseInsensitive)) changed << suf;
     }
     FileType::setUserGamsTypes(suffix);
-    QVector<PExProjectNode*> projects;
+    QList<PExProjectNode*> projects;
     QHashIterator<FileId, FileMeta*> i(mFiles);
     while (i.hasNext()) {
         i.next();

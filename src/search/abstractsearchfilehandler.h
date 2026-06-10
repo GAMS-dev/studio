@@ -47,7 +47,7 @@ public:
 
     virtual FileMeta* findFile(QString filepath) = 0;
     virtual PExFileNode *openFile(QString fileName, PExProjectNode *knownProject) = 0;
-    virtual QVector<PExProjectNode*> projects() = 0;
+    virtual QList<PExProjectNode*> projects() = 0;
 };
 
 }

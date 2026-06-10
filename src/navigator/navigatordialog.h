@@ -57,9 +57,9 @@ private:
     void changeEvent(QEvent*) override;
 
     void collectHelpContent(QSet<NavigatorContent> &content);
-    void handleLineNavigation(QVector<NavigatorContent> &content, int lineNr);
+    void handleLineNavigation(QList<NavigatorContent> &content, int lineNr);
     void collectAllFiles(QSet<NavigatorContent> &content);
-    void collectOpenFiles(QVector<NavigatorContent> &content);
+    void collectOpenFiles(QList<NavigatorContent> &content);
     void collectInProject(QSet<NavigatorContent> &content);
     void collectTabs(QSet<NavigatorContent> &content);
     void collectLogs(QSet<NavigatorContent> &content);

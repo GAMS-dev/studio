@@ -135,7 +135,7 @@ int TextViewEdit::scrollMs(int delta)
     return msec;
 }
 
-void TextViewEdit::setLineMarked(const QVector<bool> &newLineMarked)
+void TextViewEdit::setLineMarked(const QList<bool> &newLineMarked)
 {
     mLineMarked = newLineMarked;
 }
@@ -370,9 +370,9 @@ TextLinkType TextViewEdit::checkLinks(const QPoint &mousePos, bool greedy, QStri
 //    return QAbstractScrollArea::viewportEvent(event);
 //}
 
-QVector<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
+QList<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
 {
-    QVector<int> res = CodeEdit::toolTipLstNumbers(mousePos);
+    QList<int> res = CodeEdit::toolTipLstNumbers(mousePos);
     if (res.isEmpty()) {
         QTextCursor cur = cursorForPositionCut(mousePos);
         if (cur.isNull()) return res;

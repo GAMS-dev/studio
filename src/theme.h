@@ -221,7 +221,7 @@ private:
     QHash<QString, QStringList> mIconCodes;
     QHash<QString, QIcon> mIconCache;
     QHash<QString, QByteArray> mDataCache;
-    QVector<SvgEngine*> mEngines;
+    QList<SvgEngine*> mEngines;
 
 };
 

@@ -477,7 +477,7 @@ void GdxViewer::saveState()
 
             // merge pending unchecked labels into uncheck labels
             if (!symView->pendingUncheckedLabels().empty()) {
-                QVector<QStringList> uncheckedLabels = symViewState->uncheckedLabels();
+                QList<QStringList> uncheckedLabels = symViewState->uncheckedLabels();
                 for(int i=0; i<symView->sym()->dim(); i++) {
                     for (const QString &l : symView->pendingUncheckedLabels().at(i)) {
                         if (!uncheckedLabels[i].contains(l))

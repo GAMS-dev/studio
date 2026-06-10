@@ -23,7 +23,7 @@
 #include <QObject>
 #include <QSharedPointer>
 #include <QMap>
-#include <QVector>
+#include <QList>
 
 #include "file/fileevent.h"
 
@@ -46,13 +46,13 @@ public:
 
     FileEventHandler(MainWindow *mainWindow, QObject *parent = nullptr);
 
-    void process(Type type, const QVector<FileEventData> &events);
+    void process(Type type, const QList<FileEventData> &events);
 
 private slots:
     void messageBoxFinished(int result);
 
 private:
-    bool filter(const QVector<FileEventData> &events);
+    bool filter(const QList<FileEventData> &events);
     void process();
     void processChange(int result);
     void processDeletion(int result);
@@ -74,7 +74,7 @@ private:
     MainWindow *mMainWindow;
     QCheckBox *mCheckBox;
     FileChangeDialog *mDialog;
-    QVector<FileEventData> mCurrentEvents;
+    QList<FileEventData> mCurrentEvents;
     QMap<Type, QMap<int, FileEventData>> mQueuedEvents;
     Type mCurrentType = None;
     bool mOpenMessageBox = false;

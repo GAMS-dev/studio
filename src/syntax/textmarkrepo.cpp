@@ -167,7 +167,7 @@ TextMark *TextMarkRepo::findBookmark(const FileId &fileId, int currentLine, bool
 
 void TextMarkRepo::removeBookmarks()
 {
-    QVector<FileId> files = mBookmarkedFiles;
+    QList<FileId> files = mBookmarkedFiles;
     for (const FileId &fileId: files) {
         removeMarks(fileId, QSet<TextMark::Type>() << TextMark::bookmark);
     }
@@ -299,7 +299,7 @@ void TextMarkRepo::shiftMarks(const FileId &fileId, int firstLine, int lineShift
     QSet<int> changedLines;
     changedLines.reserve(marks->size()*2);
     QMutableMultiMapIterator<int, TextMark*> it(*marks);
-    QVector<TextMark*> parked;
+    QList<TextMark*> parked;
     if (lineShift < 0) {
         while (it.hasNext()) {
             it.next();

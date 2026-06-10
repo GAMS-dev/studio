@@ -32,7 +32,7 @@ bool cmpStr(const QPair<QString, QString>& lhs,const QPair<QString, QString>& rh
 }
 
 DictList::DictList(QList<QPair<QString, QString> > list, const QString &prefix)
-    : mEntries(QVector<DictEntry*>(list.size())), mEqualStart(QVector<int>(list.size()))
+    : mEntries(QList<DictEntry*>(list.size())), mEqualStart(QList<int>(list.size()))
 {
     std::sort(list.begin(), list.end(), cmpStr);
     QString prevS;

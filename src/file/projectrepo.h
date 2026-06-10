@@ -136,10 +136,10 @@ public:
     PExFileNode *findOrCreateFileNode(QString location, PExProjectNode *project = nullptr, FileType *knownType = nullptr
             , const QString &explicitName = QString());
     PExFileNode *findOrCreateFileNode(FileMeta* fileMeta, PExProjectNode *project = nullptr, const QString &explicitName = QString());
-    QVector<PExFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
+    QList<PExFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
     const QList<PExProjectNode *> projects(const FileId &fileId) const;
     const QList<PExProjectNode *> projects() const;
-    const QVector<AbstractProcess*> listProcesses();
+    const QList<AbstractProcess*> listProcesses();
     void editorActivated(QWidget *edit, bool select);
     void editProjectName(PExProjectNode *project);
 
@@ -190,7 +190,7 @@ public slots:
     void closeNodeById(const NodeId &nodeId);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 //    void markTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
-    void errorTexts(const NodeId &groupId, const QVector<int> &lstLines, QStringList &result);
+    void errorTexts(const NodeId &groupId, const QList<int> &lstLines, QStringList &result);
     void stepRunAnimation();
     void dropFiles(QModelIndex idx, QStringList files, QList<gams::studio::NodeId> knownIds, Qt::DropAction act,
                    QList<QModelIndex> &newSelection);
@@ -225,9 +225,9 @@ private:
     QHash<NodeId, PExAbstractNode*> mNodes;
     FileMetaRepo* mFileRepo = nullptr;
     TextMarkRepo* mTextMarkRepo = nullptr;
-    QVector<PExProjectNode*> mRunnigGroups;
+    QList<PExProjectNode*> mRunnigGroups;
     QTimer mRunAnimateTimer;
-    QHash<QPair<QIcon::Mode, int>, QVector<QIcon>> mRunIcons;
+    QHash<QPair<QIcon::Mode, int>, QList<QIcon>> mRunIcons;
     int mRunIconCount = 1;
     int mRunAnimateIndex = 0;
     bool mDebugMode = false;

@@ -508,7 +508,7 @@ QStringList ProjectEdit::files(FileKind kind)
     PExProjectNode *project = mSharedData->project();
     if (!project) return res;
 
-    QVector<PExFileNode*> nodes = mSharedData->project()->listFiles();
+    QList<PExFileNode*> nodes = mSharedData->project()->listFiles();
     for (const PExFileNode *node : nodes) {
         if (node->file()->kind() == kind)
             res.append(QDir::toNativeSeparators(node->location()));

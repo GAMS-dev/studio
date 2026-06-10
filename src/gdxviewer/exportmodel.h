@@ -56,7 +56,7 @@ public:
 
 private:
     GdxSymbolTableModel *mGdxSymbolTableModel = nullptr;
-    QVector<bool> mChecked;
+    QList<bool> mChecked;
 };
 
 } // namespace gdxviewer

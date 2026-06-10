@@ -82,9 +82,9 @@ private: // types
             end = (end+1) % dat.size();
             if (len < dat.size()) ++len;
         }
-        QVector<T> data() {
+        QList<T> data() {
             if (end && end != len) { // swap data at split-point
-                QVector<T> left = dat.mid(0, end);
+                QList<T> left = dat.mid(0, end);
                 memmove(&dat[0], &dat[end], size_t(len-end) * sizeof(T));
                 memmove(&dat[len-end], &left[0], size_t(left.length()) * sizeof(T));
                 end = len % dat.size();
@@ -92,7 +92,7 @@ private: // types
             return dat.mid(0, len);
         }
     private:
-        QVector<T> dat;
+        QList<T> dat;
         int end = 0;
         int len = 0;
     };
@@ -109,7 +109,7 @@ public:
     void endRun() override;
     int firstErrorLine();
     QString lines(int localLineNrFrom, int lineCount) const override;
-    QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;
+    QString lines(int localLineNrFrom, int lineCount, QList<LineFormat> &formats) const override;
     int lineCount() const override;
     int knownLineNrs() const override;
     QString findClosestLst(const int &localLine);
@@ -163,18 +163,18 @@ private: // methods
     void newPending(Pending pending);
     QString extractLstRef(LineRef lineRef);
     void markLastLine();
-    QVector<bool> markedLines(int localLineNrFrom, int lineCount) const;
+    QList<bool> markedLines(int localLineNrFrom, int lineCount) const;
 
 private: // members
-    QVector<Chunk*> mChunks;
-    QVector<Unit> mUnits;
-    QVector<QTextCharFormat> mBaseFormat;
+    QList<Chunk*> mChunks;
+    QList<Unit> mUnits;
+    QList<QTextCharFormat> mBaseFormat;
     mutable qint64 mSize = 0;   // this is only a caching value
     int mLineCount = 0;
     LogParser *mLogParser = nullptr;
-    QVector<int> mMarksHead;
+    QList<int> mMarksHead;
     RingBuffer<int> mMarksTail;
-    QVector<LineRef> mMarkers;
+    QList<LineRef> mMarkers;
     int mShrinkLineCount = 0;
     QTimer mRunFinishedTimer;
     int mErrCount = 0;

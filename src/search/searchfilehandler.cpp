@@ -83,7 +83,7 @@ PExFileNode* SearchFileHandler::openFile(QString fileName,  PExProjectNode* know
     return mMain->openFilePath(fileName, knownProject);
 }
 
-QVector<PExProjectNode *> SearchFileHandler::projects()
+QList<PExProjectNode *> SearchFileHandler::projects()
 {
     return mMain->projectRepo()->projects();
 }

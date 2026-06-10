@@ -119,7 +119,7 @@ protected:
     void highlightBlock(const QString &text) override;
 
 private:
-    QVector<HighlightingRule> mHighlightingRules;
+    QList<HighlightingRule> mHighlightingRules;
 };
 
 }

@@ -25,8 +25,8 @@ namespace studio {
 namespace lxiviewer {
 
 LxiTreeModel::LxiTreeModel(LxiTreeItem *root,
-                           const QVector<int> &lineNrs,
-                           const QVector<LxiTreeItem*> &treeItems,
+                           const QList<int> &lineNrs,
+                           const QList<LxiTreeItem*> &treeItems,
                            QObject *parent)
     : QAbstractItemModel(parent)
     , mRootItem(root)
@@ -112,12 +112,12 @@ QVariant LxiTreeModel::data(const QModelIndex &index, int role) const
     return item->text();
 }
 
-QVector<int> LxiTreeModel::lineNrs() const
+QList<int> LxiTreeModel::lineNrs() const
 {
     return mLineNrs;
 }
 
-QVector<LxiTreeItem *> LxiTreeModel::treeItems() const
+QList<LxiTreeItem *> LxiTreeModel::treeItems() const
 {
     return mTreeItems;
 }

@@ -52,7 +52,7 @@ public slots:
 
     QList<ConfigItem *> parameterConfigItems();
 
-    void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles);
 
 protected slots:
     void insertOption() override;
