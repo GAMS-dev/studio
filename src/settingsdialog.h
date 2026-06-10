@@ -22,6 +22,7 @@
 
 #include <QDialog>
 #include <QDate>
+#include "theme.h"
 
 namespace Ui {
 class SettingsDialog;
@@ -45,7 +46,6 @@ class ThemeWidget;
 class SettingsDialog : public QDialog
 {
     Q_OBJECT
-
 public:
     explicit SettingsDialog(MainWindow *parent = nullptr);
     ~SettingsDialog() override;
@@ -133,9 +133,13 @@ private slots:
     void checkForUpdates();
 
 private:
+    enum ThemeWidgetType { twColors, twFont };
+
     void saveSettings();
     void loadSettings();
     void setModifiedStatus(bool status);
+    void initColorGroups(QWidget *box, QList<QList<gams::studio::Theme::ColorSlot> > colorSlots, ThemeWidgetType type,
+                         QList<int> seperators = {});
     void initColorPage();
     void setThemeEditable(bool editable);
     void prependUserLib();

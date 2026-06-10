@@ -939,106 +939,108 @@ void SettingsDialog::miroPathTextChanged(const QString &text)
     }
 }
 
+void SettingsDialog::initColorGroups(QWidget *box, QList<QList<Theme::ColorSlot>> colorSlots,  ThemeWidgetType type,
+                                     QList<int> seperators)
+{
+    QVBoxLayout *vertLay = qobject_cast<QVBoxLayout*>(box->layout());
+    QHBoxLayout *rowLay = nullptr;
+    ThemeWidget *wid = nullptr;
+    int cols = 2;
+    for (int i = 0; i < colorSlots.size(); ++i) {
+        int col = i % cols;
+        int row = i / cols;
+        if (colorSlots.at(i).isEmpty()) {
+            if (rowLay) {
+                QWidget* spacer = new QWidget(this);
+                rowLay->addWidget(spacer, 4);
+                if (col+1 == cols) {
+                    QWidget* spacer = new QWidget(this);
+                    rowLay->addWidget(spacer, 1);
+                }
+            }
+            continue;
+        }
+        Theme::ColorSlot fg   = colorSlots.at(i).at(0);
+        Theme::ColorSlot bg1  = colorSlots.at(i).at(1);
+        if (type == twColors) {
+            Theme::ColorSlot bg2  = colorSlots.at(i).at(2);
+            wid = new ThemeWidget(fg, bg1, bg2, box);
+        } else {
+            wid = new ThemeWidget(colorSlots.at(i), box);
+        }
+        wid->setAlignment(Qt::AlignRight);
+        if (col == 0) {
+            if (seperators.contains(row)) {
+                QFrame* line = new QFrame(box);
+                line->setFrameShape(QFrame::HLine);
+                line->setFrameShadow(QFrame::Sunken);
+                vertLay->addWidget(line, 0);
+            }
+            rowLay = new QHBoxLayout();
+            vertLay->addLayout(rowLay);
+        }
+        if (!rowLay) continue; // to silent clang
+        rowLay->addWidget(wid, 4, Qt::AlignRight | Qt::AlignHCenter);
+        if (col+1 == cols) {
+            QWidget* spacer = new QWidget(this);
+            rowLay->addWidget(spacer, 1);
+        }
+        connect(wid, &ThemeWidget::hintTextChanged, this, &SettingsDialog::hintTextChanged);
+        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
+        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
+        mColorWidgets << wid;
+    }
+    vertLay->addStretch(1);
+    vertLay->activate();
+    box->setMaximumHeight(vertLay->minimumSize().height() * 2);
+}
+
 void SettingsDialog::initColorPage()
 {
     if (!mColorWidgets.isEmpty()) return;
-
-    QWidget *box = nullptr;
-    QGridLayout *grid = nullptr;
-    QVector<QVector<Theme::ColorSlot>> slot2;
-    QStringList names;
-    ThemeWidget *wid = nullptr;
-    int cols;
-    int rows;
+    QVector<QVector<Theme::ColorSlot>> colorSlots;
 
     // SYNTAX colors
-    box = ui->syntaxColors;
-    grid = qobject_cast<QGridLayout*>(box->layout());
-    slot2 = {
-        {Theme::Syntax_declaration, Theme::Syntax_declaration_bg},
-        {Theme::Syntax_assignLabel, Theme::Syntax_assignLabel_bg},
-        {Theme::Syntax_assignValue, Theme::Syntax_assignValue_bg},
-        {Theme::Syntax_dco, Theme::Syntax_dco_bg},
-        {Theme::Syntax_embedded, Theme::Syntax_embedded_bg},
-        {Theme::Syntax_keyword, Theme::Syntax_keyword_bg},
+    colorSlots = {
+        {Theme::Syntax_declaration,  Theme::Syntax_declaration_bg},
+        {Theme::Syntax_identifier,   Theme::Syntax_identifier_bg},
+        {Theme::Syntax_assignLabel,  Theme::Syntax_assignLabel_bg},
+        {Theme::Syntax_description,  Theme::Syntax_description_bg},
+        {Theme::Syntax_assignValue,  Theme::Syntax_assignValue_bg},
+        {Theme::Syntax_tableHeader,  Theme::Syntax_tableHeader_bg},
 
-        {Theme::Syntax_identifier, Theme::Syntax_identifier_bg},
-        {Theme::Syntax_description, Theme::Syntax_description_bg},
-        {Theme::Syntax_tableHeader, Theme::Syntax_tableHeader_bg},
-        {Theme::Syntax_dcoBody, Theme::Syntax_dcoBody_bg},
-        {Theme::Syntax_comment, Theme::Syntax_comment_bg},
+        {Theme::Syntax_dco,          Theme::Syntax_dco_bg},
+        {Theme::Syntax_dcoBody,      Theme::Syntax_dcoBody_bg},
+        {Theme::Syntax_embedded,     Theme::Syntax_embedded_bg},
+        {Theme::Syntax_comment,      Theme::Syntax_comment_bg},
+        {Theme::Syntax_keyword,      Theme::Syntax_keyword_bg},
+        {},
     };
-    cols = 2;
-    rows = ((slot2.count()-1) / cols) + 1;
-    int sep = 3;
-    for (int i = 0; i < slot2.size(); ++i) {
-        if (slot2.at(i).isEmpty()) continue;
-        int row = i % rows;
-        int col = i / rows;
-        wid = new ThemeWidget(slot2.at(i), box);
-        wid->setAlignment(Qt::AlignRight);
-        int effectiveRow = row + (row >= sep ? 2 : 1);
-
-        grid->addWidget(wid, effectiveRow, col, Qt::AlignRight);
-        connect(wid, &ThemeWidget::hintTextChanged, this, &SettingsDialog::hintTextChanged);
-        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
-        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
-        mColorWidgets << wid;
-    }
-    grid->addWidget(ui->syntaxColorLine, sep+1, 0, 1, 2);
-
-    for (int col = 0; col < cols; ++col)
-        grid->setColumnStretch(col, 1);
-    grid->setColumnStretch(cols, 0);
+    initColorGroups(ui->pageSyntax, colorSlots, twFont, {3});
 
     // EDITOR colors
-    box = ui->editorColors;
-    grid = qobject_cast<QGridLayout*>(box->layout());
-    slot2 = {
+    colorSlots = {
         {Theme::Edit_text,                  Theme::Edit_background,             Theme::Edit_logRemoteBk},
-        {Theme::invalid,                    Theme::Edit_currentLineBg,          Theme::invalid},
-        {Theme::invalid,                    Theme::Edit_currentWordBg,          Theme::invalid},
-        {Theme::invalid,                    Theme::Edit_errorBg,                Theme::invalid},
-        {Theme::Edit_findFg,                Theme::Edit_findBg,                 Theme::invalid},
-        {Theme::Edit_searchFg,              Theme::Edit_searchBg,               Theme::invalid},
-        {Theme::Edit_parenthesesValidFg,    Theme::Edit_parenthesesValidBg,     Theme::Edit_parenthesesValidBgBlink},
-        {Theme::Edit_parenthesesInvalidFg,  Theme::Edit_parenthesesInvalidBg,   Theme::Edit_parenthesesInvalidBgBlink},
-
         {Theme::Edit_linenrAreaFg,          Theme::Edit_linenrAreaBg,           Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_currentLineBg,          Theme::invalid},
         {Theme::Edit_linenrAreaMarkFg,      Theme::Edit_linenrAreaMarkBg,       Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_currentWordBg,          Theme::invalid},
         {Theme::invalid,                    Theme::Edit_linenrAreaFoldBg,       Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_errorBg,                Theme::invalid},
         {Theme::Edit_foldLineFg,            Theme::Edit_foldLineBg,             Theme::invalid},
+        {Theme::Edit_findFg,                Theme::Edit_findBg,                 Theme::invalid},
         {Theme::Mark_errorFg,               Theme::invalid,                     Theme::invalid},
+        {Theme::Edit_searchFg,              Theme::Edit_searchBg,               Theme::invalid},
         {Theme::Mark_listingFg,             Theme::invalid,                     Theme::invalid},
+        {Theme::Edit_parenthesesValidFg,    Theme::Edit_parenthesesValidBg,     Theme::Edit_parenthesesValidBgBlink},
         {Theme::Mark_fileFg,                Theme::invalid,                     Theme::invalid},
-
+        {Theme::Edit_parenthesesInvalidFg,  Theme::Edit_parenthesesInvalidBg,   Theme::Edit_parenthesesInvalidBgBlink},
+        {},
     };
-    cols = 2;
-    rows = ((slot2.count()-1) / cols) + 1;
-    for (int i = 0; i < slot2.size(); ++i) {
-        if (slot2.at(i).isEmpty()) continue;
-        Theme::ColorSlot fg = slot2.at(i).at(0);
-        Theme::ColorSlot bg1 = slot2.at(i).count() > 1 ? slot2.at(i).at(1) : Theme::invalid;
-        Theme::ColorSlot bg2 = slot2.at(i).count() > 2 ? slot2.at(i).at(2) : Theme::invalid;
-        int row = i % rows;
-        int col = i / rows;
-        wid = new ThemeWidget(fg, bg1, bg2, box);
-        wid->setAlignment(Qt::AlignRight);
-        grid->addWidget(wid, row+1, col, Qt::AlignRight);
-        connect(wid, &ThemeWidget::hintTextChanged, this, &SettingsDialog::hintTextChanged);
-        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
-        if (fg == Theme::Edit_text)
-            connect(wid, &ThemeWidget::changed, this, &SettingsDialog::editorBaseColorChanged);
-        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
-        mColorWidgets << wid;
-    }
-    for (int col = 0; col < cols; ++col)
-        grid->setColumnStretch(col, 1);
+    initColorGroups(ui->pageEditor, colorSlots, twColors);
 
     // General colors
-    box = ui->generalColors;
-    grid = qobject_cast<QGridLayout*>(box->layout());
-    slot2 = {
+    colorSlots = {
         {Theme::Window_windowText,         Theme::Window_window,          Theme::invalid},
         {Theme::Window_text,               Theme::Window_base,            Theme::Window_alternateBase},
         {Theme::Window_buttonText,         Theme::Window_button,          Theme::invalid},
@@ -1049,29 +1051,7 @@ void SettingsDialog::initColorPage()
         {Theme::Window_placeHolderText, Theme::invalid,            Theme::invalid},
         {Theme::Window_link,            Theme::invalid,            Theme::invalid},
      };
-    cols = 2;
-    rows = ((slot2.count()-1) / cols) + 1;
-    sep = 3;
-    for (int i = 0; i < slot2.size(); ++i) {
-        if (slot2.at(i).isEmpty()) continue;
-        int row = i % rows;
-        int col = i / rows;
-        Theme::ColorSlot fg   = slot2.at(i).at(0);
-        Theme::ColorSlot bg1  = slot2.at(i).at(1);
-        Theme::ColorSlot bg2  = slot2.at(i).at(2);
-        wid = new ThemeWidget(fg, bg1, bg2, box);
-        wid->setAlignment(Qt::AlignRight);
-        int effectiveRow = row + (row >= sep ? 2 : 1);
-
-        grid->addWidget(wid, effectiveRow, col, Qt::AlignRight | Qt::AlignTop);
-        connect(wid, &ThemeWidget::hintTextChanged, this, &SettingsDialog::hintTextChanged);
-        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
-        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
-        mColorWidgets << wid;
-    }
-    grid->addWidget(ui->generalColorLine, sep+1, 0, 1, 2);
-    for (int col = 0; col < cols; ++col)
-        grid->setColumnStretch(col, 1);
+    initColorGroups(ui->pageGeneral, colorSlots, twColors, {3});
 
     // ICON colors
 //    box = ui->groupIconColors;
