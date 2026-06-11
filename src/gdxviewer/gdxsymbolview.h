@@ -87,12 +87,12 @@ public slots:
     void toggleSqueezeDefaults(bool checked);
     void resetSortFilter();
     void showFilter(QPoint p);
-    void freeFilterMenu();
     void autoResizeColumns();
     void autoResizeTableViewColumns(bool force=false);
     void autoResizeListViewColumns();
     void adjustDomainScrollbar();
     void updateTvModel();
+    void updateRecordCount();
 
 protected:
     bool event(QEvent *event) override;

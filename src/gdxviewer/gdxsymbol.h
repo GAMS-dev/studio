@@ -61,6 +61,7 @@ public:
     int dim() const;
     int type() const;
     int recordCount() const;
+    int visibleRecordCount() const;
     QString explText() const;
     bool isLoaded() const;
     bool loadData();

@@ -401,10 +401,8 @@ void GdxViewer::freeSymbols()
     locker.unlock();
 
     for (GdxSymbolView* view : std::as_const(mSymbolViews)) {
-        if(view) {
-            view->freeFilterMenu();
+        if(view)
             delete view;
-        }
     }
     mSymbolViews.clear();
     mIsInitialized = false;

@@ -761,6 +761,14 @@ int GdxSymbol::recordCount() const
     return mRecordCount;
 }
 
+int GdxSymbol::visibleRecordCount() const
+{
+    if (isDataTruncated())
+        return GdxSymbol::MAX_DISPLAY_RECORDS;
+    else
+        return mFilterRecCount;
+}
+
 int GdxSymbol::type() const
 {
     return mType;

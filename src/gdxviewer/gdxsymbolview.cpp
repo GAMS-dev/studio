@@ -197,6 +197,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     connect(ui->tbDomLeft, &QToolButton::clicked, this, &GdxSymbolView::tvFilterScrollLeft);
     connect(ui->tbDomRight, &QToolButton::clicked, this, &GdxSymbolView::tvFilterScrollRight);
+
+    connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::updateRecordCount);
 }
 
 GdxSymbolView::~GdxSymbolView()
@@ -239,11 +241,6 @@ void GdxSymbolView::showFilter(QPoint p)
         d->move(tableView->mapToGlobal(p));
         d->show();
     }
-}
-
-void GdxSymbolView::freeFilterMenu()
-{
-
 }
 
 void GdxSymbolView::toggleSqueezeDefaults(bool checked)
@@ -336,6 +333,10 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
     connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
     connect(mSym, &GdxSymbol::filterChanged, this, &GdxSymbolView::toggleColumnHidden);
+
+    connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::updateRecordCount);
+    connect(mSym, &GdxSymbol::filterChanged, this, &GdxSymbolView::updateRecordCount);
+
     showDefaultView(symViewState);
     ui->tvListView->setModel(mSym);
 
@@ -594,6 +595,11 @@ void GdxSymbolView::updateTvModel()
         mTvModel->setTableViewNoArgs();
     else
         mTvPendingUpdate = true;
+}
+
+void GdxSymbolView::updateRecordCount()
+{
+    ui->laRecordCount->setText(QString::number(mSym->visibleRecordCount()) + "/" + QString::number(mSym->recordCount()));
 }
 
 void GdxSymbolView::showListView()

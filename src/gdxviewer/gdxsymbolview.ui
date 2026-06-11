@@ -384,6 +384,16 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QLabel" name="laRecordCount">
+       <property name="frameShape">
+        <enum>QFrame::Shape::StyledPanel</enum>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
