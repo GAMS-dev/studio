@@ -1048,10 +1048,18 @@ void SettingsDialog::initColorPage()
         {Theme::Window_tooltipText,        Theme::Window_tooltipBase,     Theme::invalid},
         {Theme::Window_labelHighlightText, Theme::Window_labelHighlight,  Theme::invalid},
 
-        {Theme::Window_placeHolderText, Theme::invalid,            Theme::invalid},
-        {Theme::Window_link,            Theme::invalid,            Theme::invalid},
-     };
-    initColorGroups(ui->pageGeneral, colorSlots, twColors, {3});
+        {Theme::Window_placeHolderText,    Theme::invalid,            Theme::invalid},
+        {Theme::Window_link,               Theme::invalid,            Theme::invalid},
+
+        {Theme::Window_disable_windowText,    Theme::Window_disable_window,      Theme::invalid},
+        {Theme::Window_disable_text,          Theme::Window_disable_base,        Theme::Window_disable_alternateBase},
+        {Theme::Window_disable_buttonText,    Theme::Window_disable_button,      Theme::invalid},
+        {Theme::Window_disable_hightlightText,Theme::Window_disable_highlight,   Theme::invalid},
+
+        { Theme::Window_disable_placeholderText, Theme::invalid,                 Theme::invalid},
+        { Theme::Window_disable_link,            Theme::invalid,                 Theme::invalid},
+    };
+    initColorGroups(ui->pageGeneral, colorSlots, twColors, {3, 4, 6});
 
     // ICON colors
 //    box = ui->groupIconColors;
