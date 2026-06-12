@@ -13,6 +13,7 @@
 - [ ] merge release into develop
 - [ ] merge release into master
 - [ ] email to staff about the release
+- [ ] Inform @aalqershi about the new release
 - [ ] proceed with products release MR
 
 /assign me
