@@ -4,6 +4,7 @@ Version 1.25.2 *
 - Pressing ESC now clears the selection in the symbol view of the GDX Viewer.
 - Fixed a bug in the GDX Viewer where large data was hidden instead of being truncated to the maximum display limit.
 - Allow `F` hotkey to switch to full precision in the precision spin box of the GDX Viewer.
+- Added missing disabled states for General Colors Settings.
 
 Version 1.25.1
 ==================
