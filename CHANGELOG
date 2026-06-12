@@ -1,6 +1,7 @@
 Version 1.25.2 *
 ==================
 - Fixed initialization issue that causes a crash.
+- Pressing ESC now clears the selection in the symbol view of the GDX Viewer.
 
 Version 1.25.1
 ==================
