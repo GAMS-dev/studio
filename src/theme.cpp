@@ -125,6 +125,21 @@ void Theme::initSlotTexts()
     mSlotText.insert(Window_highlight,          "Selection background");
     mSlotText.insert(Window_highlightedText,    "Selection");
     mSlotText.insert(Window_link,               "Hyperlink");
+
+    mSlotText.insert(Window_disable_window,        "Disable window background");
+    mSlotText.insert(Window_disable_base,          "Disable text background");
+    mSlotText.insert(Window_disable_button,        "Disable button");
+    mSlotText.insert(Window_disable_alternateBase, "Disable alternateBase");
+
+    mSlotText.insert(Window_disable_windowText,    "Disable window text");
+    mSlotText.insert(Window_disable_text,          "Disable text");
+    mSlotText.insert(Window_disable_buttonText,    "Disable button text");
+
+    mSlotText.insert(Window_disable_highlight,      "Disable highlight");
+    mSlotText.insert(Window_disable_hightlightText, "Disable highlight text");
+
+    mSlotText.insert(Window_disable_placeholderText,"Disable place holder text");
+    mSlotText.insert(Window_disable_link,           "Disable hyperlinks");
 }
 
 void Theme::initDefault()
@@ -264,10 +279,17 @@ void Theme::initDefault()
 
     mColorThemes[sNr].insert(Window_disable_window,          light_white);
     mColorThemes[sNr].insert(Window_disable_base,            light_white);
+    mColorThemes[sNr].insert(Window_disable_button,          light_white);
+    mColorThemes[sNr].insert(Window_disable_alternateBase,   light_white);
+
+    mColorThemes[sNr].insert(Window_disable_windowText,      light_inactiveWhite);
     mColorThemes[sNr].insert(Window_disable_text,            light_inactiveWhite);
-    mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
+    mColorThemes[sNr].insert(Window_disable_buttonText,      light_inactiveWhite);
+
     mColorThemes[sNr].insert(Window_disable_hightlightText,  light_lightGray);
     mColorThemes[sNr].insert(Window_disable_highlight,       light_highlightblue);
+
+    mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
     mColorThemes[sNr].insert(Window_disable_link,            light_gray);
 
     // Add and switch to second color theme - Dark
@@ -382,11 +404,18 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_labelHighlightText,      dark_neutral);
 
     mColorThemes[sNr].insert(Window_disable_window,          dark_base);
-    mColorThemes[sNr].insert(Window_disable_base,            dark_neutral);
+    mColorThemes[sNr].insert(Window_disable_base,            dark_base); //neutral);
+    mColorThemes[sNr].insert(Window_disable_button,          dark_base);
+    mColorThemes[sNr].insert(Window_disable_alternateBase,   dark_base);
+
+    mColorThemes[sNr].insert(Window_disable_windowText,      dark_unobstrusive);
     mColorThemes[sNr].insert(Window_disable_text,            dark_unobstrusive);
-    mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
+    mColorThemes[sNr].insert(Window_disable_buttonText,      dark_unobstrusive);
+
     mColorThemes[sNr].insert(Window_disable_hightlightText,  light_lightGray);
     mColorThemes[sNr].insert(Window_disable_highlight,       light_darkerWhite);
+
+    mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
     mColorThemes[sNr].insert(Window_disable_link,            light_gray);
 
     // Third theme is based on Okabe-Ito Palette, recommened colorblind-safe color pallette
@@ -498,10 +527,17 @@ void Theme::initDefault()
 
     mColorThemes[sNr].insert(Window_disable_window,          light_white);
     mColorThemes[sNr].insert(Window_disable_base,            light_white);
+    mColorThemes[sNr].insert(Window_disable_button,          light_white);
+    mColorThemes[sNr].insert(Window_disable_alternateBase,   light_white);
+
+    mColorThemes[sNr].insert(Window_disable_windowText,      light_inactiveWhite);
     mColorThemes[sNr].insert(Window_disable_text,            light_inactiveWhite);
-    mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
+    mColorThemes[sNr].insert(Window_disable_buttonText,      light_inactiveWhite);
+
     mColorThemes[sNr].insert(Window_disable_hightlightText,  light_lightGray);
     mColorThemes[sNr].insert(Window_disable_highlight,       light_darkerWhite);
+
+    mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
     mColorThemes[sNr].insert(Window_disable_link,            light_gray);
 
     // Dracula Color Theme
@@ -615,10 +651,17 @@ void Theme::initDefault()
 
     mColorThemes[sNr].insert(Window_disable_window,          dark_base);
     mColorThemes[sNr].insert(Window_disable_base,            dark_neutral);
+    mColorThemes[sNr].insert(Window_disable_button,          dark_base);
+    mColorThemes[sNr].insert(Window_disable_alternateBase,   dark_base);
+
+    mColorThemes[sNr].insert(Window_disable_windowText,      dark_unobstrusive);
     mColorThemes[sNr].insert(Window_disable_text,            dark_unobstrusive);
-    mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
+    mColorThemes[sNr].insert(Window_disable_buttonText,      dark_unobstrusive);
+
     mColorThemes[sNr].insert(Window_disable_hightlightText,  light_lightGray);
     mColorThemes[sNr].insert(Window_disable_highlight,       light_darkerWhite);
+
+    mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
     mColorThemes[sNr].insert(Window_disable_link,            light_gray);
 
     // Solarized light Theme
@@ -743,10 +786,17 @@ void Theme::initDefault()
 
     mColorThemes[sNr].insert(Window_disable_window,          light_white);
     mColorThemes[sNr].insert(Window_disable_base,            light_white);
+    mColorThemes[sNr].insert(Window_disable_button,          light_white);
+    mColorThemes[sNr].insert(Window_disable_alternateBase,   light_white);
+
+    mColorThemes[sNr].insert(Window_disable_windowText,      light_inactiveWhite);
     mColorThemes[sNr].insert(Window_disable_text,            light_inactiveWhite);
-    mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
+    mColorThemes[sNr].insert(Window_disable_buttonText,      light_inactiveWhite);
+
     mColorThemes[sNr].insert(Window_disable_hightlightText,  light_lightGray);
     mColorThemes[sNr].insert(Window_disable_highlight,       light_darkerWhite);
+
+    mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
     mColorThemes[sNr].insert(Window_disable_link,            light_gray);
 
     // Solarized dark Theme
@@ -813,12 +863,19 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_labelHighlight,          solarized_cyan);
     mColorThemes[sNr].insert(Window_labelHighlightText,      solarized_base1.lighter(120));
 
-    mColorThemes[sNr].insert(Window_disable_window,          solarized_base03);
-    mColorThemes[sNr].insert(Window_disable_base,            solarized_base03);
-    mColorThemes[sNr].insert(Window_disable_text,            solarized_base01);
-    mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
+    mColorThemes[sNr].insert(Window_disable_window,          solarized_base03.darker(120));
+    mColorThemes[sNr].insert(Window_disable_base,            solarized_base03.darker(120));
+    mColorThemes[sNr].insert(Window_disable_button,          solarized_base03.darker(120));
+    mColorThemes[sNr].insert(Window_disable_alternateBase,   solarized_base03.darker(120));
+
+    mColorThemes[sNr].insert(Window_disable_windowText,      solarized_base01.darker(120));
+    mColorThemes[sNr].insert(Window_disable_text,            solarized_base01.darker(120));
+    mColorThemes[sNr].insert(Window_disable_buttonText,      solarized_base01.darker(120));
+
     mColorThemes[sNr].insert(Window_disable_hightlightText,  light_lightGray);
     mColorThemes[sNr].insert(Window_disable_highlight,       light_darkerWhite);
+
+    mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
     mColorThemes[sNr].insert(Window_disable_link,            light_gray);
 
     mFixedThemeCount = mColorThemes.size();
@@ -907,11 +964,19 @@ void Theme::fillThemeColorPalette(QPalette &palette, bool useBaseBackground, boo
     palette.setColor(QPalette::Link,            Theme::color(Theme::Window_link));
 
     // Muted text to signal un-clickable layout
-    palette.setColor(QPalette::Disabled, QPalette::WindowText, Theme::color(Window_disable_text));
-    palette.setColor(QPalette::Disabled, QPalette::Text,       Theme::color(Window_disable_text));
-    palette.setColor(QPalette::Disabled, QPalette::ButtonText, Theme::color(Window_disable_text));
+    palette.setColor(QPalette::Disabled, QPalette::Window,          Theme::color(Window_disable_window));
+    palette.setColor(QPalette::Disabled, QPalette::Base,            Theme::color(Window_disable_base));
+    palette.setColor(QPalette::Disabled, QPalette::Button,          Theme::color(Window_disable_button));
+    palette.setColor(QPalette::Disabled, QPalette::AlternateBase,   Theme::color(Window_disable_alternateBase));
 
-    // Non-interactive selection colors
+    palette.setColor(QPalette::Disabled, QPalette::WindowText,      Theme::color(Window_disable_windowText));
+    palette.setColor(QPalette::Disabled, QPalette::Text,            Theme::color(Window_disable_text));
+    palette.setColor(QPalette::Disabled, QPalette::ButtonText,      Theme::color(Window_disable_buttonText));
+
+    palette.setColor(QPalette::Disabled, QPalette::Highlight,       Theme::color(Window_disable_highlight));
+    palette.setColor(QPalette::Disabled, QPalette::HighlightedText, Theme::color(Window_disable_hightlightText));
+
+    palette.setColor(QPalette::Disabled, QPalette::PlaceholderText, Theme::color(Window_disable_placeholderText));
     palette.setColor(QPalette::Disabled, QPalette::Link,            Theme::color(Window_disable_link));
 }
 

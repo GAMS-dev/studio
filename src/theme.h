@@ -130,10 +130,17 @@ public:
 
         Window_disable_window,          // disable window
         Window_disable_base,            // disable base, and button
-        Window_disable_text,            // disable text, button text, hightlight text
-        Window_disable_placeholderText, // disable place holder text
+        Window_disable_button,          // disable button
+        Window_disable_alternateBase,   // disable alternateBase
+
+        Window_disable_windowText,      // disable window text
+        Window_disable_text,            // disable text
+        Window_disable_buttonText,      // disable button text
+
         Window_disable_highlight,       // disable highlight
         Window_disable_hightlightText,  // disable highlight text
+
+        Window_disable_placeholderText, // disable place holder text
         Window_disable_link,            // disable hyperlinks
 
         ColorSlotCount
