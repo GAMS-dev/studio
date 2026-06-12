@@ -135,8 +135,8 @@ void Theme::initSlotTexts()
     mSlotText.insert(Window_disable_text,          "Disabled Text");
     mSlotText.insert(Window_disable_buttonText,    "Disabled Button");
 
-    mSlotText.insert(Window_disable_highlight,      "Disabled Highlight");
-    mSlotText.insert(Window_disable_hightlightText, "Disabled Highlight");
+    mSlotText.insert(Window_disable_highlight,      "Disabled Selection");
+    mSlotText.insert(Window_disable_hightlightText, "Disabled Selection");
 
     mSlotText.insert(Window_disable_placeholderText,"Disabled Input");
     mSlotText.insert(Window_disable_link,           "Disabled hyperlink");
