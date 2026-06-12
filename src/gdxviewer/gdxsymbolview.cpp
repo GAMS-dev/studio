@@ -128,6 +128,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     gridLayout->addWidget(lblPrecision,1,0);
     mPrecision = new QSpinBox(this);
     NumericalFormatController::initPrecisionSpinBox(mPrecision);
+    mPrecision->installEventFilter(this);
 
     gridLayout->addWidget(mPrecision,1,1);
 
@@ -837,6 +838,16 @@ void GdxSymbolView::keyPressEvent(QKeyEvent *e)
 
 bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 {
+    // Allow to select Full precision using the F-key
+    if (watched == mPrecision && event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_F) {
+            numerics::DoubleFormatter::Format currentFormat = static_cast<numerics::DoubleFormatter::Format>(mValFormat->currentData().toInt());
+            if (currentFormat != numerics::DoubleFormatter::f)
+                mPrecision->setValue(mPrecision->minimum());
+            return true;
+        }
+    }
     if (event->type() == QEvent::Resize) {
         this->adjustDomainScrollbar();
     }
