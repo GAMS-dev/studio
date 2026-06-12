@@ -1,4 +1,8 @@
-Version 1.25.1 *
+Version 1.25.2 *
+==================
+- Fixed initialization issue that causes a crash.
+
+Version 1.25.1
 ==================
 - Remember the recent filter and tab in the Model Library Explorer during active Studio session.
 - Fixed endless license check loop for some license cases.
