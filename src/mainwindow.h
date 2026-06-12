@@ -601,6 +601,7 @@ private:
     QScopedPointer<support::LicenseFetcher> mLicenseFetcher;
 
     bool mDebugMode = false;
+    bool mThemeReady = false;
     bool mStartedUp = false;
     bool mShutDown = false;
     QStringList mClosedTabs;

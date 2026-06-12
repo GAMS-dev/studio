@@ -516,6 +516,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ViewHelper::changeAppearance();
     connect(Theme::instance(), &Theme::changed, this, &MainWindow::invalidateTheme);
+    mThemeReady = true;
     invalidateTheme(false);
     ViewHelper::updateBaseTheme();
 
@@ -5377,6 +5378,7 @@ void MainWindow::newProcessCall(const QString &text, const QString &call)
 
 void MainWindow::invalidateTheme(bool refreshSyntax)
 {
+    if (!mThemeReady) return;
     qApp->styleHints()->setColorScheme( Theme::isDark() ? Qt::ColorScheme::Dark
                                                         : Qt::ColorScheme::Light );
 
