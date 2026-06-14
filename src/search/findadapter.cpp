@@ -596,7 +596,7 @@ QString WebViewFindAdapter::currentFindSelection(bool &isCurrentWord)
 
 void WebViewFindAdapter::invalidateSelection()
 {
-    findText(QString(), {});
+    mView->findText(QString(), {});
 }
 
 bool WebViewFindAdapter::eventFilter(QObject *watched, QEvent *event)
