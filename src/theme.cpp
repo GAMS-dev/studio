@@ -650,7 +650,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_labelHighlightText,      dark_neutral);
 
     mColorThemes[sNr].insert(Window_disable_window,          dark_base);
-    mColorThemes[sNr].insert(Window_disable_base,            dark_neutral);
+    mColorThemes[sNr].insert(Window_disable_base,            dark_background);
     mColorThemes[sNr].insert(Window_disable_button,          dark_base);
     mColorThemes[sNr].insert(Window_disable_alternateBase,   dark_base);
 
@@ -659,7 +659,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_disable_buttonText,      dark_unobstrusive);
 
     mColorThemes[sNr].insert(Window_disable_hightlightText,  light_lightGray);
-    mColorThemes[sNr].insert(Window_disable_highlight,       light_darkerWhite);
+    mColorThemes[sNr].insert(Window_disable_highlight,       drac_background);
 
     mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
     mColorThemes[sNr].insert(Window_disable_link,            light_gray);
@@ -785,7 +785,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_labelHighlightText,      light_black);
 
     mColorThemes[sNr].insert(Window_disable_window,          solarized_base2.darker(90));
-    mColorThemes[sNr].insert(Window_disable_base,            solarized_base2.darker(90));
+    mColorThemes[sNr].insert(Window_disable_base,            solarized_base2);
     mColorThemes[sNr].insert(Window_disable_button,          solarized_base2.darker(90));
     mColorThemes[sNr].insert(Window_disable_alternateBase,   solarized_base2.darker(90));
 
