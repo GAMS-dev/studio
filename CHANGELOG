@@ -1,4 +1,8 @@
-Version 1.25.2 *
+Version 1.25.3 *
+==================
+- Fixed crash when activating "Find" (Ctrl+F) on "What's New in GAMS". 
+
+Version 1.25.2
 ==================
 - Fixed initialization issue that causes a crash.
 - Pressing ESC now clears the selection in the symbol view of the GDX Viewer.
