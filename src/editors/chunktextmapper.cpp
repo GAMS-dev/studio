@@ -674,8 +674,40 @@ void ChunkTextMapper::setPosToAbsEnd(QTextCursor::MoveMode mode)
     if (!chunkCount()) return;
     Chunk *chunk = getChunk(chunkCount()-1, false);
     int lastLine = chunk->lineCount()-1;
-    int charNr = lastLine > 0 ? chunk->lineBytes.at(lastLine) - chunk->lineBytes.at(lastLine-1) : 0;
-    setPosAbsolute(chunk, lastLine, charNr, mode);
+    int charNr = lastLine > 0 ? chunk->lineBytes.at(lastLine) - chunk->lineBytes.at(lastLine-1) - 1 : 0;
+    setPosAbsolute(chunk, lastLine-1, charNr, mode);
+}
+
+void ChunkTextMapper::jumpToPrevParagraph(QTextCursor::MoveMode mode)
+{
+    int chunkNr = findChunk(visibleTopLine());
+    ChunkMetrics *chunkMetric = chunkMetrics(chunkNr);
+    Chunk *chunk = getChunk(chunkNr);
+    if (chunkNr == 0 || !chunkMetric || !chunk) {
+        setPosToAbsStart(mode);
+        setVisibleTopLine(0);
+        return;
+    }
+    setPosAbsolute(chunk, 0, 0, mode);
+    int line = chunkMetric->startLineNr;
+    line = qMax(0, line - 2);
+    setVisibleTopLine(line);
+}
+
+void ChunkTextMapper::jumpToNextParagraph(QTextCursor::MoveMode mode)
+{
+    int chunkNr = findChunk(visibleTopLine() + mVisibleLineCount - 1) + 1;
+    ChunkMetrics *chunkMetric = chunkMetrics(chunkNr);
+    Chunk *chunk = getChunk(chunkNr);
+    if (chunkNr >= chunkCount() || !chunkMetric || !chunk) {
+        setPosToAbsEnd(mode);
+        setVisibleTopLine(lineCount() - reducedVisibleLineCount());
+        return;
+    }
+    setPosAbsolute(chunk, 0, 0, mode);
+    int line = chunkMetric->startLineNr;
+    line = qMax(0, line - 2);
+    setVisibleTopLine(line);
 }
 
 void ChunkTextMapper::setPosAbsolute(ChunkTextMapper::Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode)

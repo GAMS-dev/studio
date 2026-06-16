@@ -572,13 +572,19 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
     QTextCursor::MoveMode mode = event->modifiers().testFlag(Qt::ShiftModifier) ? QTextCursor::KeepAnchor
                                                                                 : QTextCursor::MoveAnchor;
     if (event == Hotkey::MoveToStartOfDoc) {
-        mMapper->setVisibleTopLine(0);
-        mMapper->setPosToAbsStart(mode);
+        mMapper->jumpToPrevParagraph(mode);
         updatePosAndAnchor();
+    } else if (event == Hotkey::MoveToStartOfBlock) {
+            mMapper->setVisibleTopLine(0);
+            mMapper->setPosToAbsStart(mode);
+            updatePosAndAnchor();
     } else if (event == Hotkey::MoveToStartOfLine && cursorIsValid) {
         mMapper->setPosRelative(pos.y(), 0, mode);
         updatePosAndAnchor();
     } else if (event == Hotkey::MoveToEndOfDoc) {
+        mMapper->jumpToNextParagraph(mode);
+        updatePosAndAnchor();
+    } else if (event == Hotkey::MoveToEndOfBlock) {
         jumpToEnd();
         mMapper->setPosToAbsEnd(mode);
         updatePosAndAnchor();

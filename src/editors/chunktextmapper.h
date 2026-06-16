@@ -138,6 +138,8 @@ public:
     void setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor) override;
     void setPosToAbsStart(QTextCursor::MoveMode mode = QTextCursor::MoveAnchor) override;
     void setPosToAbsEnd(QTextCursor::MoveMode mode = QTextCursor::MoveAnchor) override;
+    void jumpToPrevParagraph(QTextCursor::MoveMode mode = QTextCursor::MoveAnchor) override;
+    void jumpToNextParagraph(QTextCursor::MoveMode mode = QTextCursor::MoveAnchor) override;
     void selectAll() override;
     void clearSelection() override;
     void hideCursor() override;

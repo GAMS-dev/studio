@@ -109,6 +109,8 @@ public:
     virtual void setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor) = 0;
     virtual void setPosToAbsStart(QTextCursor::MoveMode mode = QTextCursor::MoveAnchor) = 0;
     virtual void setPosToAbsEnd(QTextCursor::MoveMode mode = QTextCursor::MoveAnchor) = 0;
+    virtual void jumpToPrevParagraph(QTextCursor::MoveMode mode = QTextCursor::MoveAnchor) = 0;
+    virtual void jumpToNextParagraph(QTextCursor::MoveMode mode = QTextCursor::MoveAnchor) = 0;
     virtual void selectAll() = 0;
     virtual void clearSelection() = 0;
     virtual void hideCursor() = 0;

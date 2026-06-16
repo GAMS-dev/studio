@@ -140,6 +140,16 @@ void Keys::reset()
     *seq << QKeySequence(QKeySequence::MoveToStartOfDocument) << QKeySequence(QKeySequence::SelectStartOfDocument);
     setHotkey(Hotkey::MoveToStartOfDoc, seq);
 
+    seq = new KeySeqList("MoveToEndOfBlock","Move to the end of block");
+    *seq << QKeySequence(QKeySequence::MoveToEndOfBlock) << QKeySequence(QKeySequence::SelectEndOfBlock)
+         << QKeySequence("Alt+End") << QKeySequence("Alt+Shift+End");
+    setHotkey(Hotkey::MoveToEndOfBlock, seq);
+
+    seq = new KeySeqList("MoveToStartOfBlock","Move to the start of block");
+    *seq << QKeySequence(QKeySequence::MoveToStartOfBlock) << QKeySequence(QKeySequence::SelectStartOfBlock)
+         << QKeySequence("Alt+Home") << QKeySequence("Alt+Shift+Home");
+    setHotkey(Hotkey::MoveToStartOfBlock, seq);
+
     seq = new KeySeqList("MoveToEndOfLine","Move to the end of line");
     *seq << QKeySequence(QKeySequence::MoveToEndOfLine) << QKeySequence(QKeySequence::SelectEndOfLine);
 #ifdef __APPLE__

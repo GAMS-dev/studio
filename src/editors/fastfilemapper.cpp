@@ -324,6 +324,16 @@ void FastFileMapper::setPosToAbsEnd(QTextCursor::MoveMode mode)
         mAnchor = mPosition;
 }
 
+void FastFileMapper::jumpToPrevParagraph(QTextCursor::MoveMode mode)
+{
+
+}
+
+void FastFileMapper::jumpToNextParagraph(QTextCursor::MoveMode mode)
+{
+
+}
+
 void FastFileMapper::selectAll()
 {
     mAnchor = QPoint();
