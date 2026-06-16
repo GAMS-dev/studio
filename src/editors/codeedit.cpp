@@ -1278,6 +1278,21 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
     }
 }
 
+void CodeEdit::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    AbstractEdit::mouseDoubleClickEvent(event);
+    QTextCursor cursor = textCursor();
+
+    if (cursor.hasSelection() && cursor.selectionStart() > 0) {
+        if (document()->characterAt(cursor.selectionStart() - 1) == '$') {
+            int end = cursor.selectionEnd();
+            cursor.setPosition(cursor.selectionStart() - 1);
+            cursor.setPosition(end, QTextCursor::KeepAnchor);
+            setTextCursor(cursor);
+        }
+    }
+}
+
 void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 {
     NavigationHistoryLocator::navigationHistory()->stopRecord();
