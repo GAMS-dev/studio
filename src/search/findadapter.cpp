@@ -254,9 +254,16 @@ void EditFindAdapter::continueAsyncFind(const QRegularExpression &rex, QTextDocu
     if (outOfBounds && loop) {
         nextStart = backward ? totalBlocks - 1 : 0;
         loop = false;
-    } else if (outOfBounds || (backward ? (endLine <= mInitialStartPos.y()) : (endLine >= mInitialStartPos.y()))) {
+    } else if (outOfBounds) {
         emitFindDone(false);
         return;
+    } else if (!loop && mInitialStartPos.y() != -1) {
+        bool passedStart = backward ? (nextStart < mInitialStartPos.y())
+                                    : (nextStart > mInitialStartPos.y());
+        if (passedStart) {
+            emitFindDone(false);
+            return;
+        }
     }
 
     QMetaObject::invokeMethod(this, [this, rex, options, nextStart, loop, findId]() {

@@ -48,7 +48,7 @@ namespace studio {
 using namespace search;
 using namespace std::chrono_literals;
 
-const int CodeEdit::CFindBlockSize = 5000;
+const int CodeEdit::CFindBlockSize = 10000;
 
 QHash<ProfilerColumn, QString> CodeEdit::mProfilerHeaderToolTip
     {{pcTime, "Elapsed Time"}, {pcMemory, "Memory Usage"}, {pcRows, "Number of Assignments"}, {pcSteps, "Execution Steps"}};
