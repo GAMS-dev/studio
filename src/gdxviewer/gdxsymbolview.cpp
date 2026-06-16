@@ -356,6 +356,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
             cb->setChecked(true);
             layout->addWidget(cb);
             connect(cb, &QCheckBox::toggled, this, [this]() {toggleColumnHidden();});
+            cb->installEventFilter(this);
             mShowValColActions.append(cb);
         }
         QPushButton *invert = new QPushButton("  Invert Selection  ", mVisibleValColWidget);
@@ -857,6 +858,19 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
                 emit openFile(QDir::fromNativeSeparators(ui->tvListView->currentIndex().data().toString()));
         }
     }
+
+    // Quick select feature for attributes
+    QCheckBox* checkbox = qobject_cast<QCheckBox*>(watched);
+    if (checkbox && mShowValColActions.contains(checkbox) && event->type() == QEvent::MouseButtonRelease) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        if (mouseEvent->button() == Qt::MiddleButton || (mouseEvent->modifiers() & Qt::ControlModifier && mouseEvent->button() == Qt::LeftButton)) {
+            for (QCheckBox* cb : mShowValColActions)
+                cb->setChecked(cb == checkbox);
+            mVisibleValColWidget->window()->close();
+            return true;
+        }
+    }
+
     return QWidget::eventFilter(watched, event);
 }
 
