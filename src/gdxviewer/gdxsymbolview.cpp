@@ -600,6 +600,7 @@ void GdxSymbolView::updateTvModel()
 void GdxSymbolView::updateRecordCount()
 {
     ui->laRecordCount->setText(QString::number(mSym->visibleRecordCount()) + "/" + QString::number(mSym->recordCount()));
+    ui->laRecordCount->setToolTip("Showing " + QString::number(mSym->visibleRecordCount()) + " of " + QString::number(mSym->recordCount()) + " records.");
 }
 
 void GdxSymbolView::showListView()
