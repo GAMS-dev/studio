@@ -903,16 +903,19 @@ QVariantMap Settings::importTheme(const QString &filepath)
 
 void Settings::updateAppearanceAndTheme()
 {
-    int previousFixThemeCount = 2;
-    int offset = Theme::instance()->fixedThemeCount() - previousFixThemeCount;
+    int previousFixThemeCount = Theme::originalFixThemeCount()       + Theme::followOSThemeCount();
+    int fixThemeCount         = Theme::instance()->fixedThemeCount() + Theme::followOSThemeCount();
+    int themeCount            = Theme::instance()->themeCount()      + Theme::followOSThemeCount();
+
+    int offset       = fixThemeCount - previousFixThemeCount;
     int appearance   =  directValue(scUser, "editor", "appearance").toInt();
     int currentTheme =  directValue(scUser, "editor", "currentTheme").toInt();
-    if (appearance < 0 || appearance > Theme::instance()->themeCount()-1) {
+    if (appearance < 0 || appearance > themeCount-1) {
         setValue(skCurrentTheme, QVariant(0));
         setValue(skEdAppearance, QVariant(0));
     } else if (appearance != currentTheme) {
               if (appearance >= previousFixThemeCount) {
-                   int value = (appearance+offset < Theme::instance()->themeCount() ? appearance+offset : 0 );
+                   int value = (appearance+offset < themeCount ? appearance+offset : 0 );
                    setValue(skEdAppearance, QVariant(value));
                    setValue(skCurrentTheme, QVariant(value));
               } else {
