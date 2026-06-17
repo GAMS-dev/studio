@@ -681,6 +681,9 @@ void ChunkTextMapper::setPosToAbsEnd(QTextCursor::MoveMode mode)
 void ChunkTextMapper::jumpToPrevParagraph(QTextCursor::MoveMode mode)
 {
     int chunkNr = findChunk(visibleTopLine());
+    if (mPosition.isValid() && mPosition.localLine > 0) {
+        chunkNr = mPosition.chunkNr;
+    }
     ChunkMetrics *chunkMetric = chunkMetrics(chunkNr);
     Chunk *chunk = getChunk(chunkNr);
     if (chunkNr == 0 || !chunkMetric || !chunk) {
@@ -697,6 +700,9 @@ void ChunkTextMapper::jumpToPrevParagraph(QTextCursor::MoveMode mode)
 void ChunkTextMapper::jumpToNextParagraph(QTextCursor::MoveMode mode)
 {
     int chunkNr = findChunk(visibleTopLine() + mVisibleLineCount - 1) + 1;
+    if (mPosition.isValid()) {
+        chunkNr = mPosition.chunkNr + 1;
+    }
     ChunkMetrics *chunkMetric = chunkMetrics(chunkNr);
     Chunk *chunk = getChunk(chunkNr);
     if (chunkNr >= chunkCount() || !chunkMetric || !chunk) {
