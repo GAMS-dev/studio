@@ -1,5 +1,7 @@
 Version 1.26.0 *
 ==================
+- Added quick select support for GDX attribute checkboxes.
+- Improved quick select responsiveness for GDX filters by transitioning triggers from mouse release to mouse press events.
 - With double-click on a dollar control option in the code editor, the dollar sign is now included.
 
 Version 1.25.3
