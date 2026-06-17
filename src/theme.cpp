@@ -413,7 +413,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Window_disable_buttonText,      dark_unobstrusive);
 
     mColorThemes[sNr].insert(Window_disable_hightlightText,  light_lightGray);
-    mColorThemes[sNr].insert(Window_disable_highlight,       light_darkerWhite);
+    mColorThemes[sNr].insert(Window_disable_highlight,       dark_base); //light_darkerWhite);
 
     mColorThemes[sNr].insert(Window_disable_placeholderText, light_gray);
     mColorThemes[sNr].insert(Window_disable_link,            light_gray);
