@@ -861,7 +861,7 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 
     // Quick select feature for attributes
     QCheckBox* checkbox = qobject_cast<QCheckBox*>(watched);
-    if (checkbox && mShowValColActions.contains(checkbox) && event->type() == QEvent::MouseButtonRelease) {
+    if (checkbox && mShowValColActions.contains(checkbox) && event->type() == QEvent::MouseButtonPress) {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
         if (mouseEvent->button() == Qt::MiddleButton || (mouseEvent->modifiers() & Qt::ControlModifier && mouseEvent->button() == Qt::LeftButton)) {
             for (QCheckBox* cb : mShowValColActions)

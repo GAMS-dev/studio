@@ -35,13 +35,7 @@ void QuickSelectListView::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton && event->modifiers() & Qt::ShiftModifier)
         event->accept();
-    else
-        QListView::mousePressEvent(event);
-}
-
-void QuickSelectListView::mouseReleaseEvent(QMouseEvent *event)
-{
-    if (event->button() == Qt::MiddleButton || (event->button() == Qt::LeftButton && event->modifiers() & Qt::ControlModifier)) {
+    else if (event->button() == Qt::MiddleButton || (event->button() == Qt::LeftButton && event->modifiers() & Qt::ControlModifier)) {
         QModelIndex idx = this->indexAt(event->pos());
         if (idx.isValid()) {
             for(int row=0; row<model()->rowCount(); row++)
@@ -50,7 +44,14 @@ void QuickSelectListView::mouseReleaseEvent(QMouseEvent *event)
             emit quickSelect();
         }
         event->accept();
-    } else if (event->button() == Qt::LeftButton && event->modifiers() & Qt::ShiftModifier) {
+    }
+    else
+        QListView::mousePressEvent(event);
+}
+
+void QuickSelectListView::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && event->modifiers() & Qt::ShiftModifier) {
         QModelIndex idxTo = this->indexAt(event->pos());
         if (idxTo.isValid()) {
             int start = 0;
