@@ -170,9 +170,30 @@ QTextDocument::FindFlags FindAdapter::findFlags(FindOptions options)
 EditFindAdapter::EditFindAdapter(CodeEdit *edit)
     : FindAdapter(edit), mEdit(edit)
 {
+    qRegisterMetaType<FindResult>("FindResult");
+    mWorkerThread = new QThread(this);
+    mWorker = new FindWorker();
+    mWorker->moveToThread(mWorkerThread);
+
+    connect(this, &EditFindAdapter::requestSearch, mWorker, &FindWorker::findText);
+    connect(mWorker, &FindWorker::done, this, &EditFindAdapter::handleNextResult);
+    connect(mWorkerThread, &QThread::finished, mWorker, &QObject::deleteLater);
+
     connect(edit, &CodeEdit::allowReplaceChanged, this, &FindAdapter::allowReplaceChanged);
     connect(edit, &CodeEdit::endFind, this, &FindAdapter::endFind);
     edit->updateExtraSelections();
+    mWorkerThread->start();
+}
+
+EditFindAdapter::~EditFindAdapter()
+{
+    mWorker->activeFindId.store(-1);
+    disconnect(mWorker, &FindWorker::done, this, &EditFindAdapter::handleNextResult);
+    mWorkerThread->quit();
+    if (!mWorkerThread->wait(500)) {
+        mWorkerThread->terminate();
+        mWorkerThread->wait();
+    }
 }
 
 void EditFindAdapter::emitFindDone(bool found)
@@ -181,8 +202,31 @@ void EditFindAdapter::emitFindDone(bool found)
     mEdit->updateFindScrollMarkers(true);
 }
 
-EditFindAdapter::~EditFindAdapter()
-{}
+void EditFindAdapter::handleNextResult(const FindResult &res)
+{
+    if (res.aborted || res.id != mCurrentFindId) return;
+
+    if (res.success) {
+        QTextCursor c(mEdit->document());
+        c.setPosition(res.pos);
+        c.setPosition(res.pos + res.len, QTextCursor::KeepAnchor);
+        mEdit->setTextCursor(c);
+        mEdit->ensureCursorVisible();
+        if (res.wrapped) emit showStatusMessage(tr("Suche am Anfang/Ende fortgesetzt"));
+        emitFindDone(true);
+    } else {
+        emitFindDone(false);
+    }
+}
+
+void EditFindAdapter::updateCache()
+{
+    int rev = mEdit->document()->revision();
+    if (rev != mCachedRevision) {
+        mCachedText = mEdit->document()->toPlainText();
+        mCachedRevision = rev;
+    }
+}
 
 QWidget *EditFindAdapter::widget() const
 {
@@ -213,62 +257,28 @@ bool EditFindAdapter::hasFindTerm()
 void EditFindAdapter::findText(const QRegularExpression &rex, FindOptions options)
 {
     mCurrentFindId = (mCurrentFindId + 1) % CMaxParallelFind;
-    FindAdapter::findText(rex, options);
+    mWorker->activeFindId.store(mCurrentFindId);
+    updateCache();
 
-    QTextCursor cursor = mEdit->textCursor();
-    int newPos = (options.testFlag(foBackwards) == options.testFlag(foContinued))
-                     ? qMin(cursor.position(), cursor.anchor())
-                     : qMax(cursor.position(), cursor.anchor());
-    cursor.setPosition(newPos);
-
-    mInitialStartPos = QPoint(cursor.positionInBlock(), cursor.blockNumber());
-    QTextDocument::FindFlags qtOptions = findFlags(options);
-    mEdit->setFindTerm(rex, qtOptions);
-    continueAsyncFind(rex, qtOptions, mInitialStartPos.y(), options.testFlag(foContinued), true, mCurrentFindId);
-}
-
-void EditFindAdapter::continueAsyncFind(const QRegularExpression &rex, QTextDocument::FindFlags options,
-                                        int startLine, bool continued, bool loop, int findId)
-{
-    if (findId != mCurrentFindId) {
-        emitFindDone(false);
-        return;
-    }
-
-    const bool backward = options.testFlag(QTextDocument::FindBackward);
-    const int totalBlocks = mEdit->document()->blockCount();
-
-    int endLine = backward ? qMax(0, startLine - CodeEdit::CFindBlockSize)
-                           : qMin(totalBlocks - 1, startLine + CodeEdit::CFindBlockSize);
-    if (!loop && mInitialStartPos.y() != -1)
-        endLine = backward ? qMax(endLine, mInitialStartPos.y()) : qMin(endLine, mInitialStartPos.y());
-
-    if (mEdit->findTextInPart(rex, mInitialStartPos, startLine, endLine, options, loop)) {
-        if (!continued)
-            emitFindDone(true);
-        return;
-    }
-
-    int nextStart = backward ? endLine - 1 : endLine + 1;
-    bool outOfBounds = backward ? (nextStart < 0) : (nextStart >= totalBlocks);
-    if (outOfBounds && loop) {
-        nextStart = backward ? totalBlocks - 1 : 0;
-        loop = false;
-    } else if (outOfBounds) {
-        emitFindDone(false);
-        return;
-    } else if (!loop && mInitialStartPos.y() != -1) {
-        bool passedStart = backward ? (nextStart < mInitialStartPos.y())
-                                    : (nextStart > mInitialStartPos.y());
-        if (passedStart) {
-            emitFindDone(false);
-            return;
+    QRegularExpression::PatternOptions patternOptions = rex.patternOptions() | QRegularExpression::UseUnicodePropertiesOption;
+    if (!options.testFlag(foCaseSense))
+         patternOptions |=  QRegularExpression::CaseInsensitiveOption;
+    else patternOptions &= ~QRegularExpression::CaseInsensitiveOption;
+    QRegularExpression finalRex = rex;
+    finalRex.setPatternOptions(patternOptions);
+    if (options.testFlag(foExactMatch)) {
+        QString pattern = finalRex.pattern();
+        if (!pattern.startsWith(QLatin1String("\\b")) && !pattern.endsWith(QLatin1String("\\b"))) {
+            finalRex.setPattern(QStringLiteral("\\b%1\\b").arg(pattern));
         }
     }
-
-    QMetaObject::invokeMethod(this, [this, rex, options, nextStart, loop, findId]() {
-        continueAsyncFind(rex, options, nextStart, false, loop, findId);
-    }, Qt::QueuedConnection);
+    QTextDocument::FindFlags qtOptions = findFlags(options);
+    mEdit->setFindTerm(finalRex, qtOptions);
+    bool backward = options.testFlag(foBackwards);
+    QTextCursor c = mEdit->textCursor();
+    int startPos = options.testFlag(foContinued) ? (backward ? c.selectionStart() - 1 : c.selectionEnd())
+                                                 : c.selectionStart();
+    emit requestSearch(mCachedText, finalRex, qBound(0, startPos, mCachedText.length()), backward, mCurrentFindId);
 }
 
 bool EditFindAdapter::findReplace(const QString &replacement)

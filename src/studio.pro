@@ -252,6 +252,7 @@ SOURCES += \
     search/fileworker.cpp \
     search/findadapter.cpp \
     search/findwidget.cpp \
+    search/findworker.cpp \
     search/result.cpp \
     search/resultitem.cpp \
     search/resultsview.cpp \
@@ -498,6 +499,7 @@ HEADERS += \
     search/fileworker.h \
     search/findadapter.h \
     search/findwidget.h \
+    search/findworker.h \
     search/result.h \
     search/resultitem.h \
     search/resultsview.h \
