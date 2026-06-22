@@ -1,6 +1,7 @@
 Version 1.25.4  *
 ==================
 - Fixed color theme reset on Windows
+- Fixed a bug in the GDX Viewer where saving and restoring value filters for equation and variable attributes incorrectly caused all subsequent filters to mirror the configuration of the first active filter.
 
 Version 1.25.3
 ==================
