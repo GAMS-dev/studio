@@ -35,7 +35,6 @@ namespace studio {
 
 class CodeEdit;
 class TextView;
-class FindResult;
 
 namespace find {
 
