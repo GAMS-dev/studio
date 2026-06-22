@@ -2,6 +2,8 @@ Version 1.25.4  *
 ==================
 - Fixed color theme reset on Windows
 - Fixed a bug in the GDX Viewer where saving and restoring value filters for equation and variable attributes incorrectly caused all subsequent filters to mirror the configuration of the first active filter.
+- Fixed an error with continuous Quick Find (`F3` or `Shift+F3`) to stop responding in large files.
+- Improved performance of `Quick Find`.
 
 Version 1.25.3
 ==================
