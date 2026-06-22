@@ -906,7 +906,7 @@ void MainWindow::initFonts()
     }
     if (settings->toString(skEdFontFamily).isEmpty()) {
         settings->setString(skEdFontFamily, defaultFamily);
-        int size = settings->toInt(skEdFontSize) - 1;
+        int size = settings->toInt(skEdFontSize);
         settings->setInt(skEdFontSize, size);
         DEB() << "Font updated to " << Settings::settings()->toString(skEdFontFamily) << " size " << size;
     }

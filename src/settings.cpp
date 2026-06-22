@@ -378,7 +378,8 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEdAppearance, scUser, {"editor","appearance"}, 0);
     safelyAdd(res, skEdInitFont, scUser, {"editor","initFont"}, true);
     safelyAdd(res, skEdFontFamily, scUser, {"editor","fontFamily"}, "");
-    safelyAdd(res, skEdFontSize, scUser, {"editor","fontSize"}, 8);
+    int defaultFontSize = (QSysInfo::productType() == "osx" || QSysInfo::productType() == "macos") ? 11 : 9;
+    safelyAdd(res, skEdFontSize, scUser, {"editor","fontSize"}, defaultFontSize);
     safelyAdd(res, skEdShowLineNr, scUser, {"editor","showLineNr"}, true);
     safelyAdd(res, skEdTabSize, scUser, {"editor","TabSize"}, 4);
     safelyAdd(res, skEdHighlightBound, scUser, {"editor","HighlightBound"}, 1500);
