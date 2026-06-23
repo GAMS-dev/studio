@@ -191,6 +191,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     ui->tvTableViewFilter->horizontalHeader()->installEventFilter(this);
     ui->tvListView->viewport()->installEventFilter(this);
+    ui->tvListView->installEventFilter(this);
+    ui->tvTableView->installEventFilter(this);
     connect(ui->tvTableViewFilter->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::adjustDomainScrollbar);
 
     connect(ui->tvTableViewFilter->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showFilter);
@@ -884,6 +886,68 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
         }
     }
 
+    // Ctrl+Shift+Home and Ctrl+Shift+End
+    if (event->type() == QEvent::KeyPress) {
+        QTableView* tv = qobject_cast<QTableView*>(watched);
+
+        if (tv && (tv == ui->tvTableView || tv == ui->tvListView) && tv->model()) {
+            QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+            Qt::KeyboardModifiers mods = keyEvent->modifiers();
+
+            if ((mods & Qt::ControlModifier) && (mods & Qt::ShiftModifier)) {
+                int key = keyEvent->key();
+
+                if (key == Qt::Key_End || key == Qt::Key_Home) {
+                    QModelIndex current = tv->currentIndex();
+
+                    if (current.isValid()) {
+                        QHeaderView* header = tv->horizontalHeader();
+                        int currentVisualCol = header->visualIndex(current.column());
+
+                        int targetRow = 0;
+                        int targetVisualCol = 0;
+
+                        if (key == Qt::Key_End) {
+                            targetRow = tv->model()->rowCount() - 1;
+                            targetVisualCol = header->count() - 1;
+                            while (targetVisualCol >= 0 && header->isSectionHidden(header->logicalIndex(targetVisualCol)))
+                                targetVisualCol--;
+                        } else { // Qt::Key_Home
+                            targetRow = 0;
+                            targetVisualCol = 0;
+                            while (targetVisualCol < header->count() && header->isSectionHidden(header->logicalIndex(targetVisualCol)))
+                                targetVisualCol++;
+                        }
+
+                        int targetLogicalCol = header->logicalIndex(targetVisualCol);
+                        QModelIndex targetIndex = tv->model()->index(targetRow, targetLogicalCol);
+
+                        if (targetIndex.isValid()) {
+                            int minRow = qMin(current.row(), targetRow);
+                            int maxRow = qMax(current.row(), targetRow);
+                            int minVisualCol = qMin(currentVisualCol, targetVisualCol);
+                            int maxVisualCol = qMax(currentVisualCol, targetVisualCol);
+
+                            QItemSelection selection;
+
+                            for (int r = minRow; r <= maxRow; ++r) {
+                                for (int vCol = minVisualCol; vCol <= maxVisualCol; ++vCol) {
+                                    int lCol = header->logicalIndex(vCol);
+                                    if (header->isSectionHidden(lCol)) continue;
+                                    QModelIndex cell = tv->model()->index(r, lCol);
+                                    if (cell.isValid())
+                                        selection.select(cell, cell);
+                                }
+                            }
+                            tv->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
+                            tv->selectionModel()->setCurrentIndex(targetIndex, QItemSelectionModel::NoUpdate);
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
     return QWidget::eventFilter(watched, event);
 }
 
