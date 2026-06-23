@@ -326,12 +326,12 @@ void FastFileMapper::setPosToAbsEnd(QTextCursor::MoveMode mode)
 
 void FastFileMapper::jumpToPrevParagraph(QTextCursor::MoveMode mode)
 {
-
+    setPosToAbsStart(mode);
 }
 
 void FastFileMapper::jumpToNextParagraph(QTextCursor::MoveMode mode)
 {
-
+    setPosToAbsEnd(mode);
 }
 
 void FastFileMapper::selectAll()
