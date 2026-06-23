@@ -4,6 +4,7 @@ Version 1.25.4  *
 - Fixed a bug in the GDX Viewer where saving and restoring value filters for equation and variable attributes incorrectly caused all subsequent filters to mirror the configuration of the first active filter.
 - Fixed an error with continuous Quick Find (`F3` or `Shift+F3`) to stop responding in large files.
 - Improved performance of `Quick Find`.
+- Fixed initial default font size and font size ratio between the editor and the table view.
 
 Version 1.25.3
 ==================
