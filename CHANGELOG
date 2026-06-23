@@ -3,6 +3,9 @@ Version 1.26.0  *
 - Added quick select support for GDX attribute checkboxes.
 - Improved quick select responsiveness for GDX filters by transitioning triggers from mouse release to mouse press events.
 - With double-click on a dollar control option in the code editor, the dollar sign is now included.
+- Improved log navigation with keyboard shortcuts:
+   - `Ctrl+Home`/`Ctrl+End` jump to the previous/next start of a run in the log.
+   - `Alt+Home`/`Alt+End` jump to the beginning/end of the log.
 
 Version 1.25.3
 ==================
