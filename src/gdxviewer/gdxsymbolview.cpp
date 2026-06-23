@@ -282,6 +282,7 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
             ui->tvListView->setUpdatesEnabled(true);
         }
     }
+    updateRecordCount();
 }
 
 void GdxSymbolView::resetSortFilter()
@@ -601,7 +602,11 @@ void GdxSymbolView::updateRecordCount()
 {
     ui->laRecordCount->setText(QString::number(mSym->visibleRecordCount()) + "/" + QString::number(mSym->recordCount()));
     QString recStr = (mSym->recordCount() == 1) ? " record" : " records";
-    ui->laRecordCount->setToolTip("Showing " + QString::number(mSym->visibleRecordCount()) + " of " + QString::number(mSym->recordCount()) + recStr + ".");
+    QString toolTip = "Showing " + QString::number(mSym->visibleRecordCount()) + " of " + QString::number(mSym->recordCount()) + recStr;
+    if (this->mSqDefaults->isChecked())
+        toolTip += " (default values squeezed)";
+    toolTip += ".";
+    ui->laRecordCount->setToolTip(toolTip);
 }
 
 void GdxSymbolView::showListView()
