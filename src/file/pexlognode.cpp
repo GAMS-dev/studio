@@ -125,9 +125,9 @@ void PExLogNode::logDone()
                 QDir dir = project->location();
                 path = dir.relativeFilePath(path);
             }
-            message = QString("LOG:%1[FIL:\"%2\",0]").arg(path, fi.filePath());
+            message = QString("LOG:%1[FIL:\"%2\",0]\n").arg(path, fi.filePath());
         } else {
-            message = QString("LOG: no log (logoption=%1)").arg(mLogOption);
+            message = QString("LOG: no log (logoption=%1)\n").arg(mLogOption);
         }
         emit tv->addProcessLog(message.toUtf8());
     }
