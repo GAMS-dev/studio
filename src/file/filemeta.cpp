@@ -705,6 +705,7 @@ const NodeId &FileMeta::projectId() const
 void FileMeta::setProjectId(const NodeId &newProjectId)
 {
     mProjectId = newProjectId;
+    updateMarks();
     if (kind() == FileKind::Gms)
         updateBreakpoints();
 }
