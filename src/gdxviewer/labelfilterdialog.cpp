@@ -24,6 +24,7 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <QTimer>
+#include <settings.h>
 
 
 namespace gams {
@@ -49,6 +50,7 @@ LabelFilterDialog::LabelFilterDialog(GdxSymbol *symbol, int column, LabelFilter 
     connect(mModel, &FilterUelModel::dataChanged, this, &LabelFilterDialog::listDataHasChanged);
     connect(ui.lvLabels, &QuickSelectListView::quickSelect, this, &LabelFilterDialog::apply);
 
+    ui.cbToggleHideUnselected->setChecked(Settings::settings()->toBool(SettingsKey::skGdxHideUnselected));
     ui.lvLabels->setModel(mModel);
     setAttribute(Qt::WA_LayoutUsesWidgetRect);
 
@@ -135,6 +137,7 @@ void LabelFilterDialog::filterLabels()
 
 void LabelFilterDialog::toggleHideUnselected(bool checked)
 {
+    Settings::settings()->setBool(SettingsKey::skGdxHideUnselected, checked);
     if (checked) {
         for(int row=0; row<mModel->rowCount(); row++)
             ui.lvLabels->setRowHidden(row, !mModel->checked()[row]);
