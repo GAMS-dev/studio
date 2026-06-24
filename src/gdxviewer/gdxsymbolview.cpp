@@ -933,7 +933,8 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
                             for (int r = minRow; r <= maxRow; ++r) {
                                 for (int vCol = minVisualCol; vCol <= maxVisualCol; ++vCol) {
                                     int lCol = header->logicalIndex(vCol);
-                                    if (header->isSectionHidden(lCol)) continue;
+                                    if (header->isSectionHidden(lCol))
+                                        continue;
                                     QModelIndex cell = tv->model()->index(r, lCol);
                                     if (cell.isValid())
                                         selection.select(cell, cell);
