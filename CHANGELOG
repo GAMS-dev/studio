@@ -5,6 +5,7 @@ Version 1.25.4  *
 - Fixed an error with continuous Quick Find (`F3` or `Shift+F3`) to stop responding in large files.
 - Improved performance of `Quick Find`.
 - Fixed initial default font size and font size ratio between the editor and the table view.
+- Fixed missing log on a GAMS job with `lo=2`.
 
 Version 1.25.3
 ==================
