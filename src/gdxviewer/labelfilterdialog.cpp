@@ -50,7 +50,6 @@ LabelFilterDialog::LabelFilterDialog(GdxSymbol *symbol, int column, LabelFilter 
     connect(mModel, &FilterUelModel::dataChanged, this, &LabelFilterDialog::listDataHasChanged);
     connect(ui.lvLabels, &QuickSelectListView::quickSelect, this, &LabelFilterDialog::apply);
 
-    ui.cbToggleHideUnselected->setChecked(Settings::settings()->toBool(SettingsKey::skGdxHideUnselected));
     ui.lvLabels->setModel(mModel);
     setAttribute(Qt::WA_LayoutUsesWidgetRect);
 
@@ -59,6 +58,7 @@ LabelFilterDialog::LabelFilterDialog(GdxSymbol *symbol, int column, LabelFilter 
         if (!now || !this->isAncestorOf(now))
             QTimer::singleShot(0, this, &LabelFilterDialog::close);
     });
+    ui.cbToggleHideUnselected->setChecked(Settings::settings()->toBool(SettingsKey::skGdxHideUnselected));
 }
 
 LabelFilterDialog::~LabelFilterDialog()
