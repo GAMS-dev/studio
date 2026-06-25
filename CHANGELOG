@@ -7,6 +7,7 @@ Version 1.25.4  *
 - Fixed initial default font size and font size ratio between the editor and the table view.
 - Fixed missing log on a GAMS job with `lo=2`.
 - File dialogs now use the system's native style instead of the application color theme.
+- Compilation errors in shared files are now isolated to the specific project context that triggered them, preventing markers from appearing in unaffected projects.
 
 Version 1.25.3
 ==================
