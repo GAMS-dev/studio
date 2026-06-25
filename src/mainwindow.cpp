@@ -4841,11 +4841,12 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
             QWidget *edit = wid == ui->mainTabs->parentWidget() ? ui->mainTabs->currentWidget() : mPinView->widget();
             FileMeta *fm = mFileMetaRepo.fileMeta(edit);
             mRecent.setEditor(fm, edit);
-            if (PExProjectNode *project = mRecent.project(false))
+            if (PExProjectNode *project = mRecent.project(false)) {
                 for (PExFileNode *file: project->openedFiles()) {
                     if (file->file()->projectId() != project->id())
                         file->file()->setProjectId(project->id());
                 }
+            }
             updateCanSave(edit);
             if (fm) {
                 fm->editToTop(mRecent.editor());
