@@ -124,6 +124,7 @@ public:
     void setProjectEditFileMeta(FileMeta *prOptMeta);
     void unlinkProjectEditFileMeta();
     QString mainModelName(bool stripped = true) const;
+    QList<PExFileNode*> openedFiles();
 
     QString tooltip() override;
     QString errorText(int lstLine) override;

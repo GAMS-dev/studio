@@ -865,6 +865,16 @@ QString PExProjectNode::mainModelName(bool stripped) const
 
 }
 
+QList<PExFileNode *> PExProjectNode::openedFiles()
+{
+    QList<PExFileNode *> res;
+    for (PExFileNode *file: listFiles()) {
+        if (file->file()->isOpen())
+            res << file;
+    }
+    return res;
+}
+
 QString PExProjectNode::errorText(int lstLine)
 {
     return mErrorTexts.value(lstLine);
