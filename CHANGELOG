@@ -6,6 +6,7 @@ Version 1.25.4  *
 - Improved performance of `Quick Find`.
 - Fixed initial default font size and font size ratio between the editor and the table view.
 - Fixed missing log on a GAMS job with `lo=2`.
+- File dialogs now use the system's native style instead of the application color theme.
 
 Version 1.25.3
 ==================
