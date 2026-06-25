@@ -1378,6 +1378,12 @@ int Theme::readUserTheme(const QVariantMap &tSource)
     return newInd;
 }
 
+int Theme::followOSThemeCount()
+{
+    return (PaletteStyleManager::currentPlatform() == PaletteStyleManager::Windows
+         || PaletteStyleManager::currentPlatform() == PaletteStyleManager::MacOS   ? 1 : 0);
+}
+
 QVariantMap Theme::writeCurrentTheme()
 {
     QVariantMap resData;

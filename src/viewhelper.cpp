@@ -96,19 +96,20 @@ void ViewHelper::changeAppearance(int appearance)
         appearance = Settings::settings()->toInt(skEdAppearance);
     int pickedTheme = appearance;
 
+    if (Theme::followOSThemeCount()) {
+        bool canFollowOS = true; // deactivate follow OS option for linux
+
+        if (canFollowOS && pickedTheme == 0) { // do OS specific things
 #ifdef _WIN64
-    // TODO(JM) "canFollowOS" may be activated for macOS too when we can track this:
-    // MacOSCocoaBridge::isDarkMode()
-
-    bool canFollowOS = true; // deactivate follow OS option for linux
-
-    if (canFollowOS && pickedTheme == 0) { // do OS specific things
-        QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
-        pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
-    } else if (canFollowOS) {
-        pickedTheme--; // deduct "Follow OS" option
-    }
+            QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
+            pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
+#elif defined(__APPLE__)
+            pickedTheme = MacOSCocoaBridge::isDarkMode() ? 1 : 0;
 #endif
+        } else if (canFollowOS) {
+            pickedTheme--; // deduct "Follow OS" option
+        }
+    }
 
     Theme::instance()->setActiveTheme(pickedTheme);
 }

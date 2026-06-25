@@ -185,7 +185,7 @@ public:
     int readUserTheme(const QVariantMap &tSource);
 
     static int originalFixThemeCount() { return 2;  /* Light and Dark theme */ }
-    static int followOSThemeCount()    { return (PaletteStyleManager::currentPlatform()==PaletteStyleManager::Platform::Windows ? 1 : 0);  }
+    static int followOSThemeCount();
 
     static void fillThemeColorPalette(QPalette& palette, bool useBaseBackground=false, bool highlighTransparent=false);
     static void setThemeColorPalette(QWidget *widget,    bool useBaseBackground=false, bool highlighTransparent=false);

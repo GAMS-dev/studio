@@ -77,12 +77,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
         ui->cbThemes->insertItem(i, Theme::instance()->themes().at(i));
     }
     mFixedThemeCount = Theme::instance()->fixedThemeCount();
-#ifdef _WIN64
-    ui->cbThemes->insertItem(0, "Follow Operating System");
-    ++mFixedThemeCount;
-#elif __APPLE__
-//    ui->cbThemes->setVisible(false);
-#endif
+
+    if (Theme::followOSThemeCount()) {
+        ui->cbThemes->insertItem(0, "Follow Operating System");
+        ++mFixedThemeCount;
+    }
 
     mSettings = Settings::settings();
 
@@ -867,9 +866,7 @@ void SettingsDialog::on_btn_import_clicked()
 
     emit editorLineWrappingChanged();
     emit editorFontChanged(mSettings->toInt(skEdFontSize), mSettings->toString(skEdFontFamily));
-#ifndef __APPLE__
     ViewHelper::setAppearance(); // update ui
-#endif
     close();
 }
 
@@ -1153,6 +1150,11 @@ void SettingsDialog::updateWorkspaceList(const QVariantMap &prevWorkspaces)
         return a.workspace < b.workspace;
     });
     mWorkspaceModel->setWorkspaces(data);
+}
+
+bool SettingsDialog::isFollowOS()
+{
+    return Theme::followOSThemeCount() && ui->cbThemes->currentIndex() == 0;
 }
 
 QString SettingsDialog::changeSeparators(const QString &commaSeparatedList, const QString &newSeparator)

@@ -57,7 +57,7 @@ public:
     int engineInitialExpire() const;
     void updateCleanupFilterList(const QVariantMap &prevFilters);
     void updateWorkspaceList(const QVariantMap &prevWorkspaces);
-
+    bool isFollowOS();
     QStringList cleanupWorkspaces(bool dryRun);
 
 protected:
