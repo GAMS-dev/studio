@@ -701,6 +701,16 @@ void GdxSymbolView::toggleView()
     toggleSqueezeDefaults(mSqDefaults->isChecked());
 }
 
+void gams::studio::gdxviewer::GdxSymbolView::updateHeatmap()
+{
+    if (ui->tbHeatmap->isChecked() && ui->tbHeatmap->isEnabled()) {
+
+        ; // setItemDelegate(new CustomBackgroundDelegate(this));
+    } else {
+        ui->tvTableView->setItemDelegate(nullptr);
+    }
+}
+
 void GdxSymbolView::selectAll()
 {
     if (mTableView)
@@ -1235,6 +1245,12 @@ void GdxSymbolView::on_pbHeaderControls_toggled(bool checked)
 {
     emit headerControlsToggled(checked);
 }
+
+void GdxSymbolView::on_tbHeatmap_clicked()
+{
+
+}
+
 
 } // namespace gdxviewer
 } // namespace studio

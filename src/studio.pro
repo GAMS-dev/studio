@@ -155,6 +155,7 @@ SOURCES += \
     gdxviewer/gdxsymbolviewstate.cpp \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/gdxviewerstate.cpp \
+    gdxviewer/heatmapdelegate.cpp \
     gdxviewer/labelfilter.cpp \
     gdxviewer/labelfilterdelegate.cpp \
     gdxviewer/labelfilterdialog.cpp \
@@ -401,6 +402,7 @@ HEADERS += \
     gdxviewer/gdxsymbolviewstate.h \
     gdxviewer/gdxviewer.h \
     gdxviewer/gdxviewerstate.h \
+    gdxviewer/heatmapdelegate.h \
     gdxviewer/labelfilter.h \
     gdxviewer/labelfilterdelegate.h \
     gdxviewer/labelfilterdialog.h \

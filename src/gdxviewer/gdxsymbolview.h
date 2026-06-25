@@ -107,8 +107,8 @@ private slots:
     void onResizeColumnsTV();
     void onSearch(bool backward=false);
     void setTruncatedDataVisible(bool visible);
-
     void on_pbHeaderControls_toggled(bool checked);
+    void on_tbHeatmap_clicked();
 
 private:
     Ui::GdxSymbolView *ui;
@@ -125,6 +125,7 @@ private:
     void initTableViewModel(int colDim, const QList<int> &tvDimOrder);
     void showDefaultView(GdxSymbolViewState* symViewState = nullptr);
     void toggleView();
+    void updateHeatmap();
 
     void selectAll();
     void resetValFormat();
