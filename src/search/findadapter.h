@@ -22,6 +22,7 @@
 
 #include <QWidget>
 #include <QTextDocument>
+#include "findworker.h"
 
 class QTextBrowser;
 
@@ -220,15 +221,28 @@ public:
     QString currentFindSelection(bool &isCurrentWord) override;
     void invalidateSelection() override;
 
+signals:
+    void requestSearch(const QString &txt, const QRegularExpression &rex, int startPos, bool backward, int id);
+    void showStatusMessage(const QString &msg);
+
 protected:
     friend class FindAdapter;
     EditFindAdapter(gams::studio::CodeEdit *edit = nullptr);
     void emitFindDone(bool found) override;
 
+private slots:
+    void handleNextResult(const FindResult &res);
+
+private:
+    void updateCache();
+
 private:
     CodeEdit *mEdit;
-    void continueAsyncFind(const QRegularExpression &rex, QTextDocument::FindFlags options, int startLine,
-                           bool continued, bool loop, int findId);
+    QThread *mWorkerThread;
+    FindWorker *mWorker;
+    int mCachedRevision = -1;
+    QString mCachedText;
+    int mCurrentFindId = 0;
 };
 
 

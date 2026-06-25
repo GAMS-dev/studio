@@ -90,6 +90,7 @@ private:
     QAbstractButton *createButton(const QStringList &iconPaths, const QStringList &toolTips);
     int nextButtonState(QAbstractButton *button, int forceState = -1);
     int buttonState(QAbstractButton *button);
+    QList<int> buttonStates();
     void updateTextMargins();
     QAbstractButton *button(FilterLineEditFlag option);
 
@@ -100,6 +101,7 @@ private:
     QAbstractButton *mRegExButton = nullptr;
     QAbstractButton *mAllColButton = nullptr;
     QRegularExpression mRegExp;
+    QList<int> mButtonStates;
     BoundaryMode mBoundaryMode = bmLineBound;
     bool mCanClear = true;
     bool mNoWildcards = false;

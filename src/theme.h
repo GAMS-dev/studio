@@ -20,6 +20,8 @@
 #ifndef GAMS_STUDIO_THEME_H
 #define GAMS_STUDIO_THEME_H
 
+#include "palettestylemanager.h"
+
 #include <QObject>
 #include <QColor>
 #include <QBrush>
@@ -162,8 +164,8 @@ public:
     ~Theme() override;
     static Theme *instance();
     void initDefault();
-    int fixedThemeCount() { return mFixedThemeCount; }
-    int themeCount()      { return mThemeNames.size(); }
+    int fixedThemeCount() { return mFixedThemeCount;     }
+    int themeCount()      { return mColorThemes.count(); }
     QStringList themes();
     int setActiveTheme(const QString &themeName);
     int setActiveTheme(int theme);
@@ -181,6 +183,9 @@ public:
     QVariantMap writeCurrentTheme();
     void readUserThemes(const QVariantList &sourceThemes);
     int readUserTheme(const QVariantMap &tSource);
+
+    static int originalFixThemeCount() { return 2;  /* Light and Dark theme */ }
+    static int followOSThemeCount()    { return (PaletteStyleManager::currentPlatform()==PaletteStyleManager::Platform::Windows ? 1 : 0);  }
 
     static void fillThemeColorPalette(QPalette& palette, bool useBaseBackground=false, bool highlighTransparent=false);
     static void setThemeColorPalette(QWidget *widget,    bool useBaseBackground=false, bool highlighTransparent=false);

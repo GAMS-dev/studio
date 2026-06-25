@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
 //    qSetMessagePattern("[%{function}:%{line}]  %{message}");
 
     Application app(argc, argv);
+    app.setStyle(QStyleFactory::create(PaletteStyleManager::uniformStyleKey()));
     app.setAttribute(Qt::AA_DontShowIconsInMenus, false);
 
     QSystemSemaphore sem(app.serverName(), 1, QSystemSemaphore::Open);

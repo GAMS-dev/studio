@@ -36,7 +36,7 @@ class LineMarks: public QMultiMap<int, TextMark*>
 {
 public:
     LineMarks();
-    bool hasVisibleMarks() const;
+    bool hasVisibleMarks(NodeId nodeId) const;
     TextMark* firstError(const NodeId &groupId) const {
         if (isEmpty()) return nullptr;
         QList<TextMark*> marks = values(firstKey());

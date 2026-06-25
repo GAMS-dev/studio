@@ -8,6 +8,17 @@ Version 1.26.0  *
    - `Alt+Home`/`Alt+End` jump to the beginning/end of the log.
 - Enhanced the GDX Viewer to display both the total and currently visible record count for a symbol.
 
+Version 1.25.4
+==================
+- Fixed color theme reset on Windows.
+- Fixed a bug in the GDX Viewer where saving and restoring value filters for equation and variable attributes incorrectly caused all subsequent filters to mirror the configuration of the first active filter.
+- Fixed an error with continuous `Quick Find` (`F3` or `Shift+F3`) to stop responding in large files.
+- Improved performance of `Quick Find`.
+- Fixed initial default font size and font size ratio between the editor and the table view.
+- Fixed missing log on a GAMS job with `lo=2`.
+- File dialogs now use the system's native style instead of the application color theme.
+- Compilation errors in shared files are now isolated to the specific project context that triggered them, preventing markers from appearing in unaffected projects.
+
 Version 1.25.3
 ==================
 - Fixed crash when activating "Find" (Ctrl+F) on "What's New in GAMS". 

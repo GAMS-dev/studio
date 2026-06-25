@@ -48,7 +48,7 @@ namespace studio {
 using namespace search;
 using namespace std::chrono_literals;
 
-const int CodeEdit::CFindBlockSize = 5000;
+const int CodeEdit::CFindBlockSize = 10000;
 
 QHash<ProfilerColumn, QString> CodeEdit::mProfilerHeaderToolTip
     {{pcTime, "Elapsed Time"}, {pcMemory, "Memory Usage"}, {pcRows, "Number of Assignments"}, {pcSteps, "Execution Steps"}};
@@ -136,7 +136,7 @@ int CodeEdit::lineNumberAreaWidth()
             space += iconSize();
     }
 
-    if (marks() && marks()->hasVisibleMarks()) {
+    if (marks() && marks()->hasVisibleMarks(projectId())) {
         space += iconSize();
         mIconCols = 1;
     } else {
@@ -1693,8 +1693,10 @@ void CodeEdit::marksChanged(const QSet<int> &dirtyLines)
         while (it != marks()->constEnd()) {
             int key = it.key();
             if (it.value()->type() == TextMark::bookmark)
+                // bookmarks are always valid
                 bookMarks.append(key);
-            else
+            else if (it.value()->groupId() == projectId())
+                // other marks are project dependent
                 errMarks.append(key);
             ++it;
         }
@@ -3010,7 +3012,7 @@ int CodeEdit::foldState(int line, bool &folded, int *start, QString *closingSymb
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
-    bool hasMarks = marks() && marks()->hasVisibleMarks();
+    bool hasMarks = marks() && marks()->hasVisibleMarks(projectId());
     if (hasMarks && mIconCols == 0) {
         QTimer::singleShot(0, this, &CodeEdit::updateViewportSize);
         event->accept();

@@ -82,9 +82,6 @@ QString sdsToString(SysDirSelector sds)
 Application::Application(int& argc, char** argv)
     : QApplication(argc, argv)
 {
-    QApplication::setStyle(QStyleFactory::create(PaletteStyleManager::nativeStyleKey()));
-    QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
-
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
     parseCmdArgs();
     QString userName;

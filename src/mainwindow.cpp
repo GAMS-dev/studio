@@ -737,8 +737,8 @@ void MainWindow::adjustFonts()
     const qreal fontFactor = 0.95;
     const qreal fontFactorStatusbar = 0.85;
     QFont f(ui->menuBar->font());
-    mTableFontSizeDif = f.pointSizeF() - QFontDatabase::systemFont(QFontDatabase::FixedFont).pointSizeF() - 1;
-
+    mTableFontSizeDif = f.pointSizeF() - QFontDatabase::systemFont(QFontDatabase::FixedFont).pointSizeF() -
+                        (QSysInfo::productType() == "osx" || QSysInfo::productType() == "macos") ? 0 : 1;
     f.setPointSizeF(ui->menuBar->font().pointSizeF() * fontFactor);
     ui->centralWidget->setFont(f);
     ui->splitter->setFont(f);
@@ -906,7 +906,7 @@ void MainWindow::initFonts()
     }
     if (settings->toString(skEdFontFamily).isEmpty()) {
         settings->setString(skEdFontFamily, defaultFamily);
-        int size = settings->toInt(skEdFontSize) - 1;
+        int size = settings->toInt(skEdFontSize);
         settings->setInt(skEdFontSize, size);
         DEB() << "Font updated to " << Settings::settings()->toString(skEdFontFamily) << " size " << size;
     }
@@ -4841,6 +4841,12 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
             QWidget *edit = wid == ui->mainTabs->parentWidget() ? ui->mainTabs->currentWidget() : mPinView->widget();
             FileMeta *fm = mFileMetaRepo.fileMeta(edit);
             mRecent.setEditor(fm, edit);
+            if (PExProjectNode *project = mRecent.project(false)) {
+                for (PExFileNode *file: project->openedFiles()) {
+                    if (file->file()->projectId() != project->id())
+                        file->file()->setProjectId(project->id());
+                }
+            }
             updateCanSave(edit);
             if (fm) {
                 fm->editToTop(mRecent.editor());
@@ -5818,7 +5824,6 @@ void MainWindow::focusProject(PExProjectNode *project)
         if (ui->logTabs->widget(i) != edit && ui->logTabs->widget(i) != mSyslog && ui->logTabs->widget(i) != mResultsView)
             ui->logTabs->setTabVisible(i, false);
     }
-
 }
 
 void MainWindow::closeProject(PExProjectNode* project)

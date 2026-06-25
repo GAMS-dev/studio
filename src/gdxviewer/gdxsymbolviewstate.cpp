@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gdxsymbolviewstate.h"
+#include "gdxcc.h"
 #include "logger.h"
 #include <QVariant>
 #include <QLocale>
@@ -277,7 +278,9 @@ void GdxSymbolViewState::write(QVariantMap &map) const
         valFilterStates += valFilterState;
         semicolon = true;
     }
-    map.insert("valueFilterStates", valFilterStates);
+
+    if (mType != GMS_DT_SET)
+        map.insert("valueFilterStates", valFilterStates);
 
     map.insert("listViewHeader", mListViewHeaderState.toBase64());
     map.insert("tableViewFilterHeader", mTableViewFilterHeaderState.toBase64());

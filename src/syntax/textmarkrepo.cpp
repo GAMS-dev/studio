@@ -358,12 +358,13 @@ LineMarks::LineMarks() : QMultiMap<int, TextMark *>()
 {
 }
 
-bool LineMarks::hasVisibleMarks() const
+bool LineMarks::hasVisibleMarks(NodeId nodeId) const
 {
     QMultiMap<int, TextMark*>::const_iterator it;
     for (it = begin() ; it != end() ; ++it) {
-        if ((it.value()->type() == TextMark::link) || (it.value()->type() == TextMark::error)
-                || (it.value()->type() == TextMark::bookmark))
+        bool isThisProject = nodeId == it.value()->groupId();
+        if (it.value()->type() == TextMark::bookmark
+              || ((it.value()->type() == TextMark::link || it.value()->type() == TextMark::error) && isThisProject))
             return true;
     }
     return false;

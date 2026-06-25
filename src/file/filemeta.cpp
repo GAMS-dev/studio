@@ -473,6 +473,9 @@ void FileMeta::initEditorColors()
 {
     for (QWidget *w: std::as_const(mEditors)) {
         Theme::setThemeColorPalette(w, true, false);
+        if (project::ProjectEdit *pe = ViewHelper::toProjectEdit(w)) {
+            pe->updateState();
+        }
         if (reference::ReferenceViewer *rv = ViewHelper::toReferenceViewer(w)) {
             rv->updateStyle();
             continue;
@@ -702,6 +705,7 @@ const NodeId &FileMeta::projectId() const
 void FileMeta::setProjectId(const NodeId &newProjectId)
 {
     mProjectId = newProjectId;
+    updateMarks();
     if (kind() == FileKind::Gms)
         updateBreakpoints();
 }

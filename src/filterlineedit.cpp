@@ -175,11 +175,13 @@ void FilterLineEdit::updateRegExp()
                 filter = "\\b"+text()+"\\b";
         }
     }
-    // TODO(JM) Check if we should use the flag QRegularExpression::UseUnicodePropertiesOption
-    QRegularExpression rex = QRegularExpression(filter, QRegularExpression::CaseInsensitiveOption);
+    QRegularExpression rex = QRegularExpression(filter, QRegularExpression::CaseInsensitiveOption
+                                                      | QRegularExpression::UseUnicodePropertiesOption);
+    rex.patternOptions().testFlag(QRegularExpression::UseUnicodePropertiesOption);
 
-    if (rex.isValid() && rex != mRegExp) {
+    if (rex.isValid() && (rex != mRegExp || mButtonStates != buttonStates())) {
         mRegExp = rex;
+        mButtonStates = buttonStates();
         emit regExpChanged(mRegExp);
     }
 }
@@ -234,6 +236,14 @@ int FilterLineEdit::buttonState(QAbstractButton *button)
     int state = button->property("state").toInt(&ok);
     if (!ok) state = 0;
     return state;
+}
+
+QList<int> FilterLineEdit::buttonStates()
+{
+    QList<int> res;
+    res << buttonState(mExactButton) << buttonState(mRegExButton)
+        << buttonState(mAllColButton) << buttonState(mCaseSenseButton);
+    return res;
 }
 
 void FilterLineEdit::updateTextMargins()

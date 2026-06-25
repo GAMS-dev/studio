@@ -211,7 +211,7 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
                 DEB() << "TextMark " << m->line() << "," << m->column() << " w" << m->size() << " end beyond EOF";
             selection.cursor.setPosition(qMin(block.position() + end, max), QTextCursor::KeepAnchor);
             if (!selection.cursor.hasSelection()) continue;
-            if (m->type() == TextMark::error || m->refType() == TextMark::error) {
+            if (m->groupId() == projectId() && (m->type() == TextMark::error || m->refType() == TextMark::error)) {
                 if (m->refType() == TextMark::error)
                     selection.format.setForeground(m->color());
                 selection.format.setUnderlineColor(toColor(Theme::Normal_Red));
@@ -221,7 +221,7 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
                 }
                 selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
                 selection.format.setAnchorNames(QStringList()<<QString::number(m->line()));
-            } else if (m->type() == TextMark::link) {
+            } else if (m->groupId() == projectId() && m->type() == TextMark::link) {
                 selection.format.setForeground(m->color());
                 selection.format.setUnderlineColor(m->color());
                 selection.format.setUnderlineStyle(QTextCharFormat::SingleUnderline);

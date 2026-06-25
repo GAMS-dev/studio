@@ -1011,13 +1011,8 @@ void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)
     int colCount = mSym->numericalColumnCount();
 
     QList<ValueFilter> valueFilters;
-    ValueFilter vf;
-    for (int i=0; i<colCount; i++) {
-        ValueFilter vf2 = mSym->valueFilter(i);
-        if (mSym->filterActive(mSym->dim()+i))
-            vf = vf2;
-        valueFilters.append(vf);
-    }
+    for (int i=0; i<colCount; i++)
+        valueFilters.append(mSym->valueFilter(i));
     symViewState->setValueFilter(valueFilters);
 }
 

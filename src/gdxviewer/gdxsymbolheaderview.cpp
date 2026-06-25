@@ -139,7 +139,7 @@ bool GdxSymbolHeaderView::pointFilterIconCollision(QPoint p)
     else
         maxIndex = model()->columnCount();
     int index = logicalIndexAt(p);
-    if (index < maxIndex) {
+    if (index < maxIndex && index >= 0) {
         if(p.x() >= mFilterIconX[index] && p.x() <= mFilterIconX[index]+mFilterIconWidth &&
            p.y() >= mFilterIconY[index] && p.y() <= mFilterIconY[index]+mFilterIconWidth)
             return true;

@@ -97,6 +97,7 @@ public:
     bool isModified() const;
     bool save();
     bool eventFilter(QObject *watched, QEvent *event) override;
+    void updateState();
 
 signals:
     void modificationChanged(bool modification);
@@ -125,7 +126,6 @@ private:
     void setSharedData(ProjectData *sharedData);
     bool isValidName(const QString &name);
     void updateEditColor(QLineEdit *edit, const QString &text);
-    void updateState();
     void showDirDialog(const QString &title, QLineEdit *lineEdit, const QString &defaultDir);
     QStringList files(FileKind kind);
     void updateChanged(QComboBox *comboBox, const QStringList &data);
