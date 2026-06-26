@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LABELFILTERPROXYMODEL_H
-#define LABELFILTERPROXYMODEL_H
+#ifndef GAMS_STUDIO_GDXVIEWER_LABELFILTERPROXYMODEL_H
+#define GAMS_STUDIO_GDXVIEWER_LABELFILTERPROXYMODEL_H
 
 #include <QObject>
 #include <QSortFilterProxyModel>
@@ -40,4 +40,4 @@ protected:
 } // namespace studio
 } // namespace gams
 
-#endif // LABELFILTERPROXYMODEL_H
+#endif // GAMS_STUDIO_GDXVIEWER_LABELFILTERPROXYMODEL_H
