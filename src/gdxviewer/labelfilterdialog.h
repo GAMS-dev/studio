@@ -23,6 +23,7 @@
 #include "ui_labelfilterdialog.h"
 #include "filteruelmodel.h"
 #include "labelfilter.h"
+#include "labelfilterproxymodel.h"
 #include <QList>
 #include <QDialog>
 
@@ -52,15 +53,15 @@ private slots:
     void invert();
     void deselectAll();
     void filterLabels();
-    void toggleHideUnselected(bool checked);
-    void listDataHasChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles);
+    void toggleSelectedItemsFirst(bool checked);
 
 private:
     Ui::LabelFilterDialog ui;
-    GdxSymbol* mSymbol;
+    GdxSymbol* mSymbol = nullptr;
     int mColumn;
-    LabelFilter *mLabelFilter;
-    FilterUelModel* mModel;
+    LabelFilter *mLabelFilter = nullptr;
+    FilterUelModel* mModel = nullptr;
+    LabelFilterProxyModel* mProxyModel = nullptr;
 };
 
 

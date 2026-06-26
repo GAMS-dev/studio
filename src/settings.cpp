@@ -417,7 +417,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skGdxDefaultFormat, scUser, {"gdxViewer","gdxDefaultFormat"}, 0);
     safelyAdd(res, skGdxDefaultPrecision, scUser, {"gdxViewer","gdxDefaultPrecision"}, 6);
     safelyAdd(res, skGdxDefaultRestoreSqueezeZeroes, scUser, {"gdxViewer","gdxDefaultRestoreSqueezeZeroes"}, false);
-    safelyAdd(res, skGdxHideUnselected, scUser, {"gdxViewer","gdxHideUnselected"}, false);
+    safelyAdd(res, skGdxSelectedItemsFirst, scUser, {"gdxViewer","gdxSelectedItemsFirst"}, false);
 
     // MIRO settings page
     safelyAdd(res, skMiroInstallPath, scUser, {"miro","installationLocation"}, QString());

@@ -46,11 +46,13 @@ LabelFilterDialog::LabelFilterDialog(GdxSymbol *symbol, int column, LabelFilter 
     connect(ui.pbDeselectAll, &QPushButton::clicked, this, &LabelFilterDialog::deselectAll);
     connect(ui.leSearch, &FilterLineEdit::regExpChanged, this, &LabelFilterDialog::filterLabels);
     connect(ui.pbInvert, &QPushButton::clicked, this, &LabelFilterDialog::invert);
-    connect(ui.cbToggleHideUnselected, &QCheckBox::toggled, this, &LabelFilterDialog::toggleHideUnselected);
-    connect(mModel, &FilterUelModel::dataChanged, this, &LabelFilterDialog::listDataHasChanged);
+    connect(ui.cbToggleSelectedItemsFirst, &QCheckBox::toggled, this, &LabelFilterDialog::toggleSelectedItemsFirst);
     connect(ui.lvLabels, &QuickSelectListView::quickSelect, this, &LabelFilterDialog::apply);
 
-    ui.lvLabels->setModel(mModel);
+    mProxyModel = new LabelFilterProxyModel(this);
+    mProxyModel->setSourceModel(mModel);
+    ui.lvLabels->setModel(mProxyModel);
+    mProxyModel->setDynamicSortFilter(true);
     setAttribute(Qt::WA_LayoutUsesWidgetRect);
 
     setWindowFlags(Qt::Window | Qt::CustomizeWindowHint);
@@ -58,7 +60,7 @@ LabelFilterDialog::LabelFilterDialog(GdxSymbol *symbol, int column, LabelFilter 
         if (!now || !this->isAncestorOf(now))
             QTimer::singleShot(0, this, &LabelFilterDialog::close);
     });
-    ui.cbToggleHideUnselected->setChecked(Settings::settings()->toBool(SettingsKey::skGdxHideUnselected));
+    ui.cbToggleSelectedItemsFirst->setChecked(Settings::settings()->toBool(SettingsKey::skGdxSelectedItemsFirst));
 }
 
 LabelFilterDialog::~LabelFilterDialog()
@@ -135,24 +137,13 @@ void LabelFilterDialog::filterLabels()
     mModel->filterLabels(regExp);
 }
 
-void LabelFilterDialog::toggleHideUnselected(bool checked)
+void LabelFilterDialog::toggleSelectedItemsFirst(bool checked)
 {
-    Settings::settings()->setBool(SettingsKey::skGdxHideUnselected, checked);
-    if (checked) {
-        for(int row=0; row<mModel->rowCount(); row++)
-            ui.lvLabels->setRowHidden(row, !mModel->checked()[row]);
-    }
+    Settings::settings()->setBool(SettingsKey::skGdxSelectedItemsFirst, checked);
+    if (checked)
+        mProxyModel->sort(0, Qt::DescendingOrder);
     else
-        ui.lvLabels->reset();
-}
-
-void LabelFilterDialog::listDataHasChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
-{
-    Q_UNUSED(roles)
-    if (ui.cbToggleHideUnselected->isChecked()) {
-        for(int row=topLeft.row(); row<=bottomRight.row(); row++)
-            ui.lvLabels->setRowHidden(row, !mModel->checked()[row]);
-    }
+        mProxyModel->sort(-1);
 }
 
 } // namespace gdxviewer

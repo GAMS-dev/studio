@@ -162,7 +162,7 @@ enum SettingsKey {
     skGdxDefaultFormat,
     skGdxDefaultPrecision,
     skGdxDefaultRestoreSqueezeZeroes,
-    skGdxHideUnselected,
+    skGdxSelectedItemsFirst,
 
     // MIRO settings page
     skMiroInstallPath,

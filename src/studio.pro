@@ -157,6 +157,7 @@ SOURCES += \
     gdxviewer/gdxviewerstate.cpp \
     gdxviewer/labelfilter.cpp \
     gdxviewer/labelfilterdialog.cpp \
+    gdxviewer/labelfilterproxymodel.cpp \
     gdxviewer/nestedheaderview.cpp \
     gdxviewer/numericalformatcontroller.cpp \
     gdxviewer/quickselectlistview.cpp \
@@ -401,6 +402,7 @@ HEADERS += \
     gdxviewer/gdxviewerstate.h \
     gdxviewer/labelfilter.h \
     gdxviewer/labelfilterdialog.h \
+    gdxviewer/labelfilterproxymodel.h \
     gdxviewer/nestedheaderview.h \
     gdxviewer/numericalformatcontroller.h \
     gdxviewer/quickselectlistview.h \

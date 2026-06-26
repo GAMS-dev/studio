@@ -81,12 +81,12 @@
     </layout>
    </item>
    <item>
-    <widget class="QCheckBox" name="cbToggleHideUnselected">
+    <widget class="QCheckBox" name="cbToggleSelectedItemsFirst">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hiding unselected items can be convenient when dealing with large amounts of labels.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Showing selected items first and unselected items last can be convenient when dealing with large amounts of labels.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
-      <string>Hide unselected items</string>
+      <string>Selected items first</string>
      </property>
     </widget>
    </item>
@@ -143,7 +143,7 @@
   <tabstop>pbSelectAll</tabstop>
   <tabstop>pbInvert</tabstop>
   <tabstop>pbDeselectAll</tabstop>
-  <tabstop>cbToggleHideUnselected</tabstop>
+  <tabstop>cbToggleSelectedItemsFirst</tabstop>
   <tabstop>pbApply</tabstop>
  </tabstops>
  <resources/>
