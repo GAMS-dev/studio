@@ -886,7 +886,14 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
         }
     }
 
-    // Ctrl+Shift+Home and Ctrl+Shift+End
+    // Ctrl+Shift+Home/Up and Ctrl+Shift+End/Down
+#ifdef __APPLE__
+    int KEY_HOME = Qt::Key_Up;
+    int KEY_END = Qt::Key_Down;
+#else
+    int KEY_HOME = Qt::Key_Home;
+    int KEY_END = Qt::Key_End;
+#endif
     if (event->type() == QEvent::KeyPress) {
         QTableView* tv = qobject_cast<QTableView*>(watched);
 
@@ -897,7 +904,7 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
             if ((mods & Qt::ControlModifier) && (mods & Qt::ShiftModifier)) {
                 int key = keyEvent->key();
 
-                if (key == Qt::Key_End || key == Qt::Key_Home) {
+                if (key == KEY_END || key == KEY_HOME) {
                     QModelIndex current = tv->currentIndex();
 
                     if (current.isValid()) {
@@ -907,7 +914,7 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
                         int targetRow = 0;
                         int targetVisualCol = 0;
 
-                        if (key == Qt::Key_End) {
+                        if (key == KEY_END) {
                             targetRow = tv->model()->rowCount() - 1;
                             targetVisualCol = header->count() - 1;
                             while (targetVisualCol >= 0 && header->isSectionHidden(header->logicalIndex(targetVisualCol)))
