@@ -38,9 +38,11 @@ void QuickSelectListView::mousePressEvent(QMouseEvent *event)
     else if (event->button() == Qt::MiddleButton || (event->button() == Qt::LeftButton && event->modifiers() & Qt::ControlModifier)) {
         QModelIndex idx = this->indexAt(event->pos());
         if (idx.isValid()) {
+            QSortFilterProxyModel *proxy = suspendSorting();
             for(int row=0; row<model()->rowCount(); row++)
                 model()->setData(model()->index(row,0), false, Qt::CheckStateRole);
             this->model()->setData(idx, true, Qt::CheckStateRole);
+            resumeSorting(proxy);
             emit quickSelect();
         }
         event->accept();
@@ -54,6 +56,7 @@ void QuickSelectListView::mouseReleaseEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton && event->modifiers() & Qt::ShiftModifier) {
         QModelIndex idxTo = this->indexAt(event->pos());
         if (idxTo.isValid()) {
+            QSortFilterProxyModel *proxy = suspendSorting();
             int start = 0;
             int end = idxTo.row();
             QModelIndexList indexList = this->selectedIndexes();
@@ -67,11 +70,27 @@ void QuickSelectListView::mouseReleaseEvent(QMouseEvent *event)
             bool checked = this->model()->data(idxTo, Qt::CheckStateRole).toBool();
             for (int i = start; i<=end; i++)
                 model()->setData(model()->index(i,0), !checked, Qt::CheckStateRole);
+            resumeSorting(proxy);
         }
     } else
         QListView::mouseReleaseEvent(event);
 }
 
+QSortFilterProxyModel *QuickSelectListView::suspendSorting()
+{
+    QSortFilterProxyModel* proxy = qobject_cast<QSortFilterProxyModel*>(model());
+    if (proxy)
+        proxy->setDynamicSortFilter(false);
+    return proxy;
+}
+
+void QuickSelectListView::resumeSorting(QSortFilterProxyModel *proxy)
+{
+    if (proxy) {
+        proxy->setDynamicSortFilter(true);
+        proxy->invalidate();
+    }
+}
 
 } // namespace gdxviewer
 } // namespace studio

@@ -22,6 +22,7 @@
 
 #include <QListView>
 #include <QObject>
+#include <qsortfilterproxymodel.h>
 
 namespace gams {
 namespace studio {
@@ -41,6 +42,9 @@ protected:
     void mousePressEvent(QMouseEvent * event) override;
     void mouseReleaseEvent(QMouseEvent * event) override;
 
+private:
+    QSortFilterProxyModel* suspendSorting();
+    void resumeSorting(QSortFilterProxyModel* proxy);
 };
 
 } // namespace gdxviewer
