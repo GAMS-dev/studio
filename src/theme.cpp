@@ -897,8 +897,10 @@ int Theme::setActiveTheme(const QString &themeName)
 int Theme::setActiveTheme(int theme)
 {
     if (theme < 0 || theme >= mThemeNames.size()) return -1;
+    bool changed = mActiveTheme != theme;
     mActiveTheme = theme;
-    invalidate();
+    if (changed)
+        invalidate();
     return theme;
 }
 

@@ -114,5 +114,21 @@ void ViewHelper::changeAppearance(int appearance)
     Theme::instance()->setActiveTheme(pickedTheme);
 }
 
+bool ViewHelper::testFollowOS()
+{
+    if (!Theme::followOSThemeCount()) return false;
+    int currentTheme = Settings::settings()->toInt(skEdAppearance);
+    if (currentTheme != 0) return false;
+
+#ifdef _WIN64
+    QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
+    currentTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
+#elif defined(__APPLE__)
+    pickedTheme = MacOSCocoaBridge::isDarkMode() ? 1 : 0;
+#endif
+
+    return Theme::instance()->activeTheme() != currentTheme;
+}
+
 } // namespace studio
 } // namespace gams
