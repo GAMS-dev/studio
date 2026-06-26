@@ -211,6 +211,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->tbDomRight, &QToolButton::clicked, this, &GdxSymbolView::tvFilterScrollRight);
 
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::updateRecordCount);
+    connect(ui->lineEdit, &FilterLineEdit::textChanged, this, [this](const QString &text) { this->onSearch(false); });
 }
 
 GdxSymbolView::~GdxSymbolView()
