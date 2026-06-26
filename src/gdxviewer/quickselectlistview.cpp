@@ -28,7 +28,13 @@ namespace gdxviewer {
 QuickSelectListView::QuickSelectListView(QWidget *parent) :
     QListView(parent)
 {
-    setItemDelegate(new LabelFilterDelegate(this));
+    mDelegate = new LabelFilterDelegate(this);
+    setItemDelegate(mDelegate);
+}
+
+void QuickSelectListView::setControlBackground(bool controlBackground)
+{
+    mDelegate->setControlBackground(controlBackground);
 }
 
 void QuickSelectListView::mousePressEvent(QMouseEvent *event)

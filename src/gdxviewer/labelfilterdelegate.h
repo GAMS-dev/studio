@@ -28,8 +28,10 @@ namespace gdxviewer {
 
 class LabelFilterDelegate : public QStyledItemDelegate
 {
+    bool mControlBackground = false;
 public:
     explicit LabelFilterDelegate(QObject *parent = nullptr);
+    void setControlBackground(bool controlBackground);
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 

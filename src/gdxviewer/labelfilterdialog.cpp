@@ -144,6 +144,7 @@ void LabelFilterDialog::toggleSelectedItemsFirst(bool checked)
         mProxyModel->sort(0, Qt::DescendingOrder);
     else
         mProxyModel->sort(-1);
+    ui.lvLabels->setControlBackground(checked);
 }
 
 } // namespace gdxviewer

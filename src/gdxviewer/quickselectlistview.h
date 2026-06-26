@@ -28,12 +28,15 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
+class LabelFilterDelegate;
+
 class QuickSelectListView : public QListView
 {
     Q_OBJECT
 
 public:
     QuickSelectListView(QWidget *parent = nullptr);
+    void setControlBackground(bool controlBackground);
 
 signals:
     void quickSelect();
@@ -45,6 +48,8 @@ protected:
 private:
     QSortFilterProxyModel* suspendSorting();
     void resumeSorting(QSortFilterProxyModel* proxy);
+
+    LabelFilterDelegate *mDelegate;
 };
 
 } // namespace gdxviewer

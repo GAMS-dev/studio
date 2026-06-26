@@ -28,20 +28,26 @@ LabelFilterDelegate::LabelFilterDelegate(QObject *parent)
         : QStyledItemDelegate{parent}
     {}
 
+void LabelFilterDelegate::setControlBackground(bool controlBackground)
+{
+    mControlBackground = controlBackground;
+}
+
 void LabelFilterDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
-    painter->save();
-    if (index.data(Qt::CheckStateRole).toInt() != Qt::Checked) {
-        painter->fillRect(opt.rect, opt.palette.color(QPalette::AlternateBase));
-    } else {
-        painter->fillRect(opt.rect, opt.palette.color(QPalette::Base));
+    if (mControlBackground) {
+        painter->save();
+        if (index.data(Qt::CheckStateRole).toInt() != Qt::Checked) {
+            painter->fillRect(opt.rect, opt.palette.color(QPalette::AlternateBase));
+        } else {
+            painter->fillRect(opt.rect, opt.palette.color(QPalette::Base));
+        }
+        painter->restore();
+        opt.backgroundBrush = Qt::NoBrush;
     }
-    painter->restore();
-
-    opt.backgroundBrush = Qt::NoBrush;
     QStyledItemDelegate::paint(painter, opt, index);
 }
 
