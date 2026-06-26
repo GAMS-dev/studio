@@ -1237,6 +1237,23 @@ void GdxSymbolView::onSearch(bool backward)
         return;
     QModelIndex idx = tv->currentIndex();
 
+    QVector<bool> matchInCol;
+    if (tv == ui->tvListView) {
+        for (int c=0; c<mSym->dim(); c++) {
+            bool match = false;
+            std::vector<int>* uels = mSym->uelsInColumn().at(c);
+            for (int uel : *uels) {
+                QString label = mSym->gdxSymbolTable()->uel2Label(uel);
+                if (mSearchRegEx.match(label).hasMatch()) {
+                    match = true;
+                    break;
+                }
+            }
+            matchInCol.append(match);
+        }
+    }
+
+
     QMap<int, int> vToL;  // visual index -> logical index
     for (int i=0; i<tv->model()->columnCount(); i++) {
         if (!tv->horizontalHeader()->isSectionHidden(i))
@@ -1290,8 +1307,11 @@ void GdxSymbolView::onSearch(bool backward)
             startCol = visualCol;
             first = false;
         }
-        if (matchAndSelect(row, vToL[visualCol], tv))
-            return;
+        int col = vToL[visualCol];
+        if (matchInCol[col]) {
+            if (matchAndSelect(row, vToL[visualCol], tv))
+                return;
+        }
     }
 }
 
