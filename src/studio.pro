@@ -156,6 +156,7 @@ SOURCES += \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/gdxviewerstate.cpp \
     gdxviewer/labelfilter.cpp \
+    gdxviewer/labelfilterdelegate.cpp \
     gdxviewer/labelfilterdialog.cpp \
     gdxviewer/labelfilterproxymodel.cpp \
     gdxviewer/nestedheaderview.cpp \
@@ -401,6 +402,7 @@ HEADERS += \
     gdxviewer/gdxviewer.h \
     gdxviewer/gdxviewerstate.h \
     gdxviewer/labelfilter.h \
+    gdxviewer/labelfilterdelegate.h \
     gdxviewer/labelfilterdialog.h \
     gdxviewer/labelfilterproxymodel.h \
     gdxviewer/nestedheaderview.h \

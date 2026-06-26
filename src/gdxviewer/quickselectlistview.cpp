@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "labelfilterdialog.h"
 #include "quickselectlistview.h"
+#include "labelfilterdelegate.h"
 #include <QMouseEvent>
 
 namespace gams {
@@ -28,7 +28,7 @@ namespace gdxviewer {
 QuickSelectListView::QuickSelectListView(QWidget *parent) :
     QListView(parent)
 {
-
+    setItemDelegate(new LabelFilterDelegate(this));
 }
 
 void QuickSelectListView::mousePressEvent(QMouseEvent *event)
