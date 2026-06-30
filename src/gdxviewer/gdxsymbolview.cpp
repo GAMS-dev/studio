@@ -477,10 +477,10 @@ void GdxSymbolView::applyDefaults()
     }
 
     mSqZeroes->setChecked(Settings::settings()->toBool(SettingsKey::skGdxDefaultSqueezeZeroes));
-
     mValFormat->setCurrentIndex(Settings::settings()->toInt(SettingsKey::skGdxDefaultFormat));
     mPrecision->setValue(Settings::settings()->toInt(SettingsKey::skGdxDefaultPrecision));
     mRestoreSqZeroes = Settings::settings()->toBool(SettingsKey::skGdxDefaultRestoreSqueezeZeroes);
+    updateNumericalPrecision();
 }
 
 QList<bool> GdxSymbolView::showAttributes()
