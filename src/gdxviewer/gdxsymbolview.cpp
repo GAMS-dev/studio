@@ -1197,43 +1197,64 @@ void GdxSymbolView::enableControls()
 }
 
 bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv, QVector<bool> matchInCol) {
-    bool match = false;
 
     // match in data for list view and table view
     if (mSearchRegEx.match(tv->model()->index(row, col).data().toString()).hasMatch())
-        match = true;
+        return true;
 
     // match in header for table view only
     if (mTableView) {
-        QStringList rowLabels = mTvModel->headerData(row, Qt::Vertical).toStringList();
-        QStringList colLabels = mTvModel->headerData(col, Qt::Horizontal).toStringList();
-
-        // exclude dummy headers and level/equation attributes from search
-        if (mTvModel->needDummyRow())
-            rowLabels.pop_back();
-        if (mTvModel->needDummyColumn())
-            colLabels.pop_back();
-        if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR)
-            colLabels.pop_back();
-
+        bool searchRowLabels = false;
+        bool searchColLabels = false;
         for (int i=mTvModel->tvColDim() - 1; i>=0; i--) {
-            if (!matchInCol[mTvModel->tvDimOrder().at(i)])
-                colLabels.remove(i);
+            if (matchInCol[mTvModel->tvDimOrder().at(i)]) {
+                searchColLabels = true;
+                break;
+            }
         }
         for (int i=mSym->dim() - mTvModel->tvColDim() - 1; i>=0; i--) {
-            if (!matchInCol[mTvModel->tvDimOrder().at(i)])
-                rowLabels.remove(i);
+            if (matchInCol[mTvModel->tvDimOrder().at(i)]) {
+                searchRowLabels = true;
+                break;
+            }
         }
-        QStringList labels = rowLabels + colLabels;
-        for (const QString &s : labels) {
-            if (mSearchRegEx.match(s).hasMatch())
-                match = true;
+        if (!searchRowLabels && !searchColLabels)
+            return false;
+
+        QStringList rowLabels;
+        if (searchRowLabels) {
+            rowLabels = mTvModel->headerData(row, Qt::Vertical).toStringList();
+            for (int i=mSym->dim() - mTvModel->tvColDim() - 1; i>=0; i--) {
+                if (!matchInCol[mTvModel->tvDimOrder().at(i)])
+                    rowLabels.remove(i);
+            }
+            // exclude dummy headers from search
+            if (mTvModel->needDummyRow())
+                rowLabels.pop_back();
+            for (const QString &s : rowLabels) {
+                if (mSearchRegEx.match(s).hasMatch())
+                    return true;
+            }
+        }
+        QStringList colLabels;
+        if (searchColLabels) {
+            QStringList colLabels = mTvModel->headerData(col, Qt::Horizontal).toStringList();
+            for (int i=mTvModel->tvColDim() - 1; i>=0; i--) {
+                if (!matchInCol[mTvModel->tvDimOrder().at(i)])
+                    colLabels.remove(i);
+            }
+            // exclude dummy headers and level/equation attributes from search
+            if (mTvModel->needDummyColumn())
+                colLabels.pop_back();
+            if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR)
+                colLabels.pop_back();
+            for (const QString &s : colLabels) {
+                if (mSearchRegEx.match(s).hasMatch())
+                    return true;
+            }
         }
     }
-
-    if (match)
-        tv->selectionModel()->setCurrentIndex(tv->model()->index(row, col), QItemSelectionModel::SelectCurrent);
-    return match;
+    return false;
 }
 
 void GdxSymbolView::onSearch(bool backward)
@@ -1318,8 +1339,11 @@ void GdxSymbolView::onSearch(bool backward)
             startCol = visualCol;
             first = false;
         }
-        if (matchAndSelect(row, vToL[visualCol], tv, matchInCol))
+        int col = vToL[visualCol];
+        if (matchAndSelect(row, col, tv, matchInCol)) {
+            tv->selectionModel()->setCurrentIndex(tv->model()->index(row, col), QItemSelectionModel::SelectCurrent);
             return;
+        }
     }
 }
 
