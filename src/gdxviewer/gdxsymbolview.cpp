@@ -1254,12 +1254,16 @@ void GdxSymbolView::onSearch(bool backward)
         }
     }
 
-
     QMap<int, int> vToL;  // visual index -> logical index
     for (int i=0; i<tv->model()->columnCount(); i++) {
-        if (!tv->horizontalHeader()->isSectionHidden(i))
+        if (!tv->horizontalHeader()->isSectionHidden(i)) {
+            if (tv == ui->tvListView && i < matchInCol.size() && !matchInCol[i])
+                continue;
             vToL.insert(tv->horizontalHeader()->visualIndex(i), i);
+        }
     }
+    if (vToL.isEmpty())
+        return;
 
     int row = idx.row();
     int visualCol = tv->horizontalHeader()->visualIndex(idx.column());
@@ -1308,11 +1312,8 @@ void GdxSymbolView::onSearch(bool backward)
             startCol = visualCol;
             first = false;
         }
-        int col = vToL[visualCol];
-        if (matchInCol[col]) {
-            if (matchAndSelect(row, vToL[visualCol], tv))
-                return;
-        }
+        if (matchAndSelect(row, vToL[visualCol], tv))
+            return;
     }
 }
 
