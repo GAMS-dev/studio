@@ -1196,7 +1196,7 @@ void GdxSymbolView::enableControls()
     updateHeatmapButton();
 }
 
-bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv) {
+bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv, QVector<bool> matchInCol) {
     bool match = false;
 
     // match in data for list view and table view
@@ -1216,6 +1216,14 @@ bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv) {
         if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR)
             colLabels.pop_back();
 
+        for (int i=mTvModel->tvColDim() - 1; i>=0; i--) {
+            if (!matchInCol[mTvModel->tvDimOrder().at(i)])
+                colLabels.remove(i);
+        }
+        for (int i=mSym->dim() - mTvModel->tvColDim() - 1; i>=0; i--) {
+            if (!matchInCol[mTvModel->tvDimOrder().at(i)])
+                rowLabels.remove(i);
+        }
         QStringList labels = rowLabels + colLabels;
         for (const QString &s : labels) {
             if (mSearchRegEx.match(s).hasMatch())
@@ -1239,19 +1247,17 @@ void GdxSymbolView::onSearch(bool backward)
     QModelIndex idx = tv->currentIndex();
 
     QVector<bool> matchInCol;
-    if (tv == ui->tvListView) {
-        for (int c=0; c<mSym->dim(); c++) {
-            bool match = false;
-            std::vector<int>* uels = mSym->uelsInColumn().at(c);
-            for (int uel : *uels) {
-                QString label = mSym->gdxSymbolTable()->uel2Label(uel);
-                if (mSearchRegEx.match(label).hasMatch()) {
-                    match = true;
-                    break;
-                }
+    for (int c=0; c<mSym->dim(); c++) {
+        bool match = false;
+        std::vector<int>* uels = mSym->uelsInColumn().at(c);
+        for (int uel : *uels) {
+            QString label = mSym->gdxSymbolTable()->uel2Label(uel);
+            if (mSearchRegEx.match(label).hasMatch()) {
+                match = true;
+                break;
             }
-            matchInCol.append(match);
         }
+        matchInCol.append(match);
     }
 
     QMap<int, int> vToL;  // visual index -> logical index
@@ -1312,7 +1318,7 @@ void GdxSymbolView::onSearch(bool backward)
             startCol = visualCol;
             first = false;
         }
-        if (matchAndSelect(row, vToL[visualCol], tv))
+        if (matchAndSelect(row, vToL[visualCol], tv, matchInCol))
             return;
     }
 }

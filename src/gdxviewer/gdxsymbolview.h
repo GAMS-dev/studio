@@ -137,7 +137,7 @@ private:
     void saveTableViewHeaderState(GdxSymbolViewState* symViewState);
     void restoreTableViewHeaderState(GdxSymbolViewState* symViewState);
     QString copySelectionToString(const QString &separator, bool copyLabels = true);
-    bool matchAndSelect(int row, int col, QTableView *tv);
+    bool matchAndSelect(int row, int col, QTableView *tv, QVector<bool> matchInCol);
     void markSearchResults();
 
     QList<QCheckBox *> mShowValColActions;
