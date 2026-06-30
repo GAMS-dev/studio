@@ -930,15 +930,17 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 
                             QItemSelection selection;
 
-                            for (int r = minRow; r <= maxRow; ++r) {
-                                for (int vCol = minVisualCol; vCol <= maxVisualCol; ++vCol) {
-                                    int lCol = header->logicalIndex(vCol);
-                                    if (header->isSectionHidden(lCol))
-                                        continue;
-                                    QModelIndex cell = tv->model()->index(r, lCol);
-                                    if (cell.isValid())
-                                        selection.select(cell, cell);
-                                }
+                            for (int vCol = minVisualCol; vCol <= maxVisualCol; ++vCol) {
+                                int lCol = header->logicalIndex(vCol);
+
+                                if (header->isSectionHidden(lCol))
+                                    continue;
+
+                                QModelIndex topCell = tv->model()->index(minRow, lCol);
+                                QModelIndex bottomCell = tv->model()->index(maxRow, lCol);
+
+                                if (topCell.isValid() && bottomCell.isValid())
+                                    selection.select(topCell, bottomCell);
                             }
                             tv->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
                             tv->selectionModel()->setCurrentIndex(targetIndex, QItemSelectionModel::NoUpdate);
