@@ -7,6 +7,8 @@ Version 1.26.0  *
    - `Ctrl+Home`/`Ctrl+End` jump to the previous/next start of a run in the log.
    - `Alt+Home`/`Alt+End` jump to the beginning/end of the log.
 - Enhanced the GDX Viewer to display both the total and currently visible record count for a symbol.
+- Replaced the "Hide unselected items" filter in the GDX Viewer with a persistent "Selected items first" setting that sorts items by their selection state.
+- Added a distinct background color to unselected items in GDX Viewer label filters to highlight them more effectively.
 
 Version 1.25.4
 ==================
