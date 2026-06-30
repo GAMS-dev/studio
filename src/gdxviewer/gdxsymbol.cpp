@@ -451,6 +451,7 @@ void GdxSymbol::initNumericalBounds()
         mMaxDouble.resize(1);
         mMinDouble[0] = INT_MAX;
         mMaxDouble[0] = INT_MIN;
+        mNumBoundSize = 1;
     } else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR) {
         mMinDouble.resize(GMS_VAL_MAX);
         mMaxDouble.resize(GMS_VAL_MAX);
@@ -458,7 +459,13 @@ void GdxSymbol::initNumericalBounds()
             mMinDouble[i] = INT_MAX;
             mMaxDouble[i] = INT_MIN;
         }
+        mNumBoundSize = GMS_VAL_MAX;
     }
+}
+
+int GdxSymbol::numBoundSize() const
+{
+    return mNumBoundSize;
 }
 
 bool GdxSymbol::isDataTruncated() const

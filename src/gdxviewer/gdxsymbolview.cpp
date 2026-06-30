@@ -32,6 +32,7 @@
 #include "numericalformatcontroller.h"
 #include "valuefilterdialog.h"
 #include "labelfilterdialog.h"
+#include "heatmapdelegate.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
@@ -60,6 +61,9 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->laTruncatedData->setStyleSheet("color:"+toColor(Theme::Normal_Red).name()+";");
 
     mDefaultSymbolView = DefaultSymbolView(Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView));
+    mHeatmapDelegate = new HeatmapDelegate(ui->tvTableView);
+    ui->tvTableView->setItemDelegate(mHeatmapDelegate);
+    ui->tvListView->setItemDelegate(mHeatmapDelegate);
 
     //create context menu
     QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", this, [this]() { copySelectionToClipboard(","); });
@@ -205,6 +209,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
 GdxSymbolView::~GdxSymbolView()
 {
+    delete mHeatmapDelegate;
     if (mTvModel)
         delete mTvModel;
     delete ui;
@@ -300,6 +305,7 @@ void GdxSymbolView::resetSortFilter()
         showListView();
         if (mTvModel) {
             ui->tvTableViewFilter->setModel(nullptr);
+            mHeatmapDelegate->setTableModel(nullptr);
             delete mTvDomainModel;
             mTvDomainModel = nullptr;
             delete mTvModel;
@@ -329,6 +335,7 @@ GdxSymbol *GdxSymbolView::sym() const
 void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, GdxSymbolViewState* symViewState)
 {
     mSym = sym;
+    mHeatmapDelegate->setSymbolModel(mSym);
     mGdxSymbolTable = symbolTable;
     ui->laSymbolName->setText(sym->name());
     ui->laSymbolText->setText(sym->explText());
@@ -594,8 +601,9 @@ void GdxSymbolView::adjustDomainScrollbar()
 
 void GdxSymbolView::updateTvModel()
 {
-    if (mTableView)
+    if (mTableView) {
         mTvModel->setTableViewNoArgs();
+    }
     else
         mTvPendingUpdate = true;
 }
@@ -652,6 +660,7 @@ void GdxSymbolView::showTableView(int colDim, const QList<int> &tvDimOrder)
 void GdxSymbolView::initTableViewModel(int colDim, const QList<int> &tvDimOrder)
 {
     mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
+
     connect(mSym, &GdxSymbol::modelReset, this, &GdxSymbolView::updateTvModel);
     connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::updateTvModel);
 
@@ -663,6 +672,7 @@ void GdxSymbolView::initTableViewModel(int colDim, const QList<int> &tvDimOrder)
 
     mTvDomainModel = new TableViewDomainModel(mTvModel);
     ui->tvTableViewFilter->setModel(mTvDomainModel);
+    mHeatmapDelegate->setTableModel(mTvModel);
 
     ui->tbDomLeft->setIcon(Theme::icon(":/%1/triangle-left"));
     ui->tbDomRight->setIcon(Theme::icon(":/%1/triangle-right"));
@@ -701,7 +711,7 @@ void GdxSymbolView::toggleView()
     toggleSqueezeDefaults(mSqDefaults->isChecked());
 }
 
-void gams::studio::gdxviewer::GdxSymbolView::updateHeatmap()
+void GdxSymbolView::updateHeatmap()
 {
     if (ui->tbHeatmap->isChecked() && ui->tbHeatmap->isEnabled()) {
 
@@ -1119,6 +1129,7 @@ void GdxSymbolView::enableControls()
             ui->tbVisibleValCols->setEnabled(true);
         }
     }
+    mHeatmapDelegate->debugSymbol();
     ui->pbResetSortFilter->setEnabled(true);
     ui->lineEdit->setEnabled(true);
     if (mSym->dim()>1)

@@ -19,15 +19,51 @@
  */
 #include "heatmapdelegate.h"
 #include "theme.h"
+#include "gdxsymbol.h"
+#include "tableviewmodel.h"
+#include "gclgms.h"
+#include "logger.h"
+#include <QTableView>
 #include <QPainter>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-HeatmapDelegate::HeatmapDelegate(QWidget *parent, QAbstractItemModel *model)
-    : QStyledItemDelegate{parent}, mParent(parent), mModel(model)
+HeatmapDelegate::HeatmapDelegate(QTableView *tableView)
+    : QStyledItemDelegate{tableView}, mTableView(tableView)
 {}
+
+void HeatmapDelegate::setTableView(QTableView *tableView)
+{
+    mTableView = tableView;
+}
+
+void HeatmapDelegate::setSymbolModel(GdxSymbol *sym)
+{
+    mSymbol = sym;
+    debugSymbol();
+}
+
+void HeatmapDelegate::debugSymbol()
+{
+    DEB() << "Type: " << mSymbol->type();
+    if (!mSymbol->numBoundSize()) {
+        DEB() << "  - not initialized";
+        return;
+    }
+    if (mSymbol->type() == GMS_DT_PAR)
+        DEB() << "Min/Max: " << mSymbol->minDouble() << " .. " << mSymbol->maxDouble();
+    else if (mSymbol->type() == GMS_DT_EQU || mSymbol->type() == GMS_DT_VAR) {
+        for (int i = 0; i < GMS_VAL_MAX; ++i)
+            DEB() << "Min/Max: [" << i << "] " << mSymbol->minDouble(i) << " .. " << mSymbol->maxDouble(i);
+    }
+}
+
+void HeatmapDelegate::setTableModel(TableViewModel *tvModel)
+{
+    mTvModel = tvModel;
+}
 
 void HeatmapDelegate::setBounds(double min, double max)
 {
@@ -45,11 +81,16 @@ void HeatmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
     QStyledItemDelegate::paint(painter, opt, index);
 
     bool ok;
-    double val = mModel->data(index).toDouble(&ok);
+    double val = index.model()->data(index).toDouble(&ok);
     if (ok) {
+        int mod = mSymbol->numBoundSize();
+        int col = index.model() == mSymbol ? index.column() - mSymbol->dim() : index.column();
+        int numBoundIndex = mod == 1 ? 0 : col % mod;
+        double min = mSymbol->minDouble(numBoundIndex);
+        double div = mSymbol->maxDouble(numBoundIndex) - min;
         painter->save();
         QRect smallerRect = opt.rect.adjusted(1, 1, -1, -1);
-        QColor color = Theme::profileColor(Theme::Window_base, qBound(.0, (val - mMin) / mDiv, 1.));
+        QColor color = Theme::profileColor(Theme::Window_base, qBound(.0, (val - min) / div, 1.));
         painter->fillRect(smallerRect, color);
         painter->restore();
     }

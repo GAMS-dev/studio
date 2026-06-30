@@ -31,6 +31,7 @@ SOURCES += \
     $$SRCPATH/gdxviewer/gdxsymbolviewstate.cpp \
     $$SRCPATH/gdxviewer/gdxviewer.cpp \
     $$SRCPATH/gdxviewer/gdxviewerstate.cpp \
+    $$SRCPATH/gdxviewer/heatmapdelegate.cpp \
     $$SRCPATH/gdxviewer/labelfilterdelegate.cpp \
     $$SRCPATH/gdxviewer/labelfilterproxymodel.cpp \
     $$SRCPATH/gdxviewer/nestedheaderview.cpp \
@@ -79,6 +80,7 @@ HEADERS += \
     $$SRCPATH/gdxviewer/gdxsymbolviewstate.h \
     $$SRCPATH/gdxviewer/gdxviewer.h \
     $$SRCPATH/gdxviewer/gdxviewerstate.h \
+    $$SRCPATH/gdxviewer/heatmapdelegate.h \
     $$SRCPATH/gdxviewer/labelfilterdelegate.h \
     $$SRCPATH/gdxviewer/labelfilterproxymodel.h \
     $$SRCPATH/gdxviewer/numericalformatcontroller.cpp \

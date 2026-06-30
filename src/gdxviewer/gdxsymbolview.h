@@ -42,6 +42,7 @@ class GdxSymbolView;
 
 class GdxSymbol;
 class NestedHeaderView;
+class HeatmapDelegate;
 
 class GdxSymbolView : public QWidget
 {
@@ -143,6 +144,7 @@ private:
     QWidget *mPreferencesWidget = nullptr;
     QWidget *mVisibleValColWidget = nullptr;
     GdxSymbolTableModel* mGdxSymbolTable = nullptr;
+    HeatmapDelegate *mHeatmapDelegate = nullptr;
 
     bool mTableView = false;
     int mTVResizePrecision = 500;

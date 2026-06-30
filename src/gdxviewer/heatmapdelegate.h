@@ -22,22 +22,34 @@
 
 #include <QStyledItemDelegate>
 
+class QTableView;
+
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
+class GdxSymbol;
+class TableViewModel;
+
 class HeatmapDelegate : public QStyledItemDelegate
 {
-    QWidget *mParent = nullptr;
-    QAbstractItemModel *mModel = nullptr;
+    QTableView *mTableView = nullptr;
+    GdxSymbol *mSymbol = nullptr;
+    TableViewModel *mTvModel = nullptr;
     double mMin = .0;
     double mDiv = .0;
 
     Q_OBJECT
 public:
-    explicit HeatmapDelegate(QWidget *parent, QAbstractItemModel *model);
+    explicit HeatmapDelegate(QTableView *tableView);
+    void setTableView(QTableView *tableView);
+    void setSymbolModel(GdxSymbol *sym);
+    void setTableModel(TableViewModel *tvModel);
     void setBounds(double min, double max);
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    void debugSymbol();
+
+private:
 };
 
 } // namespace gdxviewer
