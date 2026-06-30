@@ -1,3 +1,7 @@
+Version 1.25.5  *
+==================
+- Fixed a bug where the GDX Viewer default numerical precision was not applied correctly to the data.
+
 Version 1.25.4
 ==================
 - Fixed color theme reset on Windows.
