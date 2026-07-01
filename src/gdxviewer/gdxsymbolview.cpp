@@ -727,7 +727,7 @@ void GdxSymbolView::updateHeatmap()
 
 void GdxSymbolView::updateHeatmapButton()
 {
-    int count = mSym ? 0 : 1;
+    int count = mSym ? 1 : 0;
     if (mTableView && mSym && (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR)) {
         count = 0;
         for (int i = 0; i < GMS_VAL_MAX; ++i)

@@ -44,21 +44,6 @@ void HeatmapDelegate::setSymbolModel(GdxSymbol *sym)
     mSymbol = sym;
 }
 
-void HeatmapDelegate::debugSymbol()
-{
-    DEB() << "Type: " << mSymbol->type();
-    if (!mSymbol->numBoundSize()) {
-        DEB() << "  - not initialized";
-        return;
-    }
-    if (mSymbol->type() == GMS_DT_PAR)
-        DEB() << "Min/Max: " << mSymbol->minDouble() << " .. " << mSymbol->maxDouble();
-    else if (mSymbol->type() == GMS_DT_EQU || mSymbol->type() == GMS_DT_VAR) {
-        for (int i = 0; i < GMS_VAL_MAX; ++i)
-            DEB() << "Min/Max: [" << i << "] " << mSymbol->minDouble(i) << " .. " << mSymbol->maxDouble(i);
-    }
-}
-
 void HeatmapDelegate::setTableModel(TableViewModel *tvModel)
 {
     mTvModel = tvModel;

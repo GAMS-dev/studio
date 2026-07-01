@@ -48,7 +48,6 @@ public:
     void setActive(bool newActive);
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-    void debugSymbol();
 };
 
 } // namespace gdxviewer
