@@ -532,12 +532,13 @@ void GdxViewer::applySelectedSymbol()
         return;
     QString name = mState->selectedSymbol();
     if (!name.isEmpty()) {
-        mState->setSelectedSymbol("");
         for (int r=0; r<ui->tvSymbols->model()->rowCount(); r++) {
             QModelIndex index = ui->tvSymbols->model()->index(r, 1);
             if (index.data().toString().toLower() == name.toLower()) {
-                if (mState->symbolViewState(name) || mState->selectedSymbolIsAlias())
+                if (mState->symbolViewState(name) || mState->selectedSymbolIsAlias()) {
                     ui->tvSymbols->selectRow(r);
+                    mState->setSelectedSymbol("");
+                }
                 break;
             }
         }
