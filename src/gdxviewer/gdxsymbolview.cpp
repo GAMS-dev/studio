@@ -211,7 +211,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->tbDomRight, &QToolButton::clicked, this, &GdxSymbolView::tvFilterScrollRight);
 
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::updateRecordCount);
-    connect(ui->lineEdit, &FilterLineEdit::textChanged, this, [this](const QString &text) { this->onSearch(false); });
+    connect(ui->lineEdit, &FilterLineEdit::textChanged, this, [this](const QString &text) { this->onSearch(false, true); });
 }
 
 GdxSymbolView::~GdxSymbolView()
@@ -1257,7 +1257,7 @@ bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv, QVector<boo
     return false;
 }
 
-void GdxSymbolView::onSearch(bool backward)
+void GdxSymbolView::onSearch(bool backward, bool startAtCurrent)
 {
     if (mSearchRegEx.pattern().isEmpty())
         return;
@@ -1294,6 +1294,15 @@ void GdxSymbolView::onSearch(bool backward)
 
     int row = idx.row();
     int visualCol = tv->horizontalHeader()->visualIndex(idx.column());
+
+    if (startAtCurrent && idx.isValid() && vToL.contains(visualCol)) {
+        int col = vToL[visualCol];
+        if (matchAndSelect(row, col, tv, matchInCol)) {
+            tv->selectionModel()->setCurrentIndex(tv->model()->index(row, col), QItemSelectionModel::SelectCurrent);
+            return;
+        }
+    }
+
     if (!idx.isValid()) {
         if (backward) {
             row = tv->model()->rowCount();
@@ -1309,11 +1318,11 @@ void GdxSymbolView::onSearch(bool backward)
     while (true) {
         auto iter = vToL.find(visualCol);
         if (backward) {
-             if (iter == vToL.begin()) {
-                 iter = vToL.end();
-                 row--;
-             }
-             --iter;
+            if (iter == vToL.begin()) {
+                iter = vToL.end();
+                row--;
+            }
+            --iter;
         } else {
             ++iter;
             if (iter == vToL.end()) {

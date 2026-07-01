@@ -107,7 +107,7 @@ private slots:
     void tvFilterScrollRight();
     void onResizeColumnsLV();
     void onResizeColumnsTV();
-    void onSearch(bool backward=false);
+    void onSearch(bool backward=false, bool startAtCurrent = false);
     void setTruncatedDataVisible(bool visible);
     void on_pbHeaderControls_toggled(bool checked);
     void on_tbHeatmap_toggled(bool checked);
