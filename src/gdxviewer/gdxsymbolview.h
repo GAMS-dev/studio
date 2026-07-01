@@ -109,7 +109,7 @@ private slots:
     void onSearch(bool backward=false);
     void setTruncatedDataVisible(bool visible);
     void on_pbHeaderControls_toggled(bool checked);
-    void on_tbHeatmap_clicked();
+    void on_tbHeatmap_toggled(bool checked);
 
 private:
     Ui::GdxSymbolView *ui;
@@ -127,6 +127,7 @@ private:
     void showDefaultView(GdxSymbolViewState* symViewState = nullptr);
     void toggleView();
     void updateHeatmap();
+    void updateHeatmapButton();
 
     void selectAll();
     void resetValFormat();
@@ -144,6 +145,8 @@ private:
     QWidget *mPreferencesWidget = nullptr;
     QWidget *mVisibleValColWidget = nullptr;
     GdxSymbolTableModel* mGdxSymbolTable = nullptr;
+    QAbstractItemDelegate *mOriListDelegate = nullptr;
+    QAbstractItemDelegate *mOriTableDelegate = nullptr;
     HeatmapDelegate *mHeatmapDelegate = nullptr;
 
     bool mTableView = false;

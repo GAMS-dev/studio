@@ -42,7 +42,6 @@ void HeatmapDelegate::setTableView(QTableView *tableView)
 void HeatmapDelegate::setSymbolModel(GdxSymbol *sym)
 {
     mSymbol = sym;
-    debugSymbol();
 }
 
 void HeatmapDelegate::debugSymbol()
@@ -65,14 +64,22 @@ void HeatmapDelegate::setTableModel(TableViewModel *tvModel)
     mTvModel = tvModel;
 }
 
-void HeatmapDelegate::setBounds(double min, double max)
+bool HeatmapDelegate::active() const
 {
-    mMin = min;
-    mDiv = max - min;
+    return mActive;
+}
+
+void HeatmapDelegate::setActive(bool newActive)
+{
+    mActive = newActive;
 }
 
 void HeatmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
+    if (!mActive) {
+        QStyledItemDelegate::paint(painter, option, index);
+        return;
+    }
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 

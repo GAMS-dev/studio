@@ -400,10 +400,8 @@ void GdxViewer::freeSymbols()
     gdxClose(mGdx);
     locker.unlock();
 
-    for (GdxSymbolView* view : std::as_const(mSymbolViews)) {
-        if(view)
-            delete view;
-    }
+    for (GdxSymbolView* view : std::as_const(mSymbolViews))
+        delete view;
     mSymbolViews.clear();
     mIsInitialized = false;
 }

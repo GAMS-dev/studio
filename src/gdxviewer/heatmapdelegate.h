@@ -36,8 +36,7 @@ class HeatmapDelegate : public QStyledItemDelegate
     QTableView *mTableView = nullptr;
     GdxSymbol *mSymbol = nullptr;
     TableViewModel *mTvModel = nullptr;
-    double mMin = .0;
-    double mDiv = .0;
+    bool mActive = false;
 
     Q_OBJECT
 public:
@@ -45,11 +44,11 @@ public:
     void setTableView(QTableView *tableView);
     void setSymbolModel(GdxSymbol *sym);
     void setTableModel(TableViewModel *tvModel);
-    void setBounds(double min, double max);
+    bool active() const;
+    void setActive(bool newActive);
+
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
     void debugSymbol();
-
-private:
 };
 
 } // namespace gdxviewer

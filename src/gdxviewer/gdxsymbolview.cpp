@@ -64,6 +64,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mHeatmapDelegate = new HeatmapDelegate(ui->tvTableView);
     ui->tvTableView->setItemDelegate(mHeatmapDelegate);
     ui->tvListView->setItemDelegate(mHeatmapDelegate);
+    updateHeatmapButton();
 
     //create context menu
     QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", this, [this]() { copySelectionToClipboard(","); });
@@ -290,6 +291,7 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
         }
     }
     updateRecordCount();
+    updateHeatmapButton();
 }
 
 void GdxSymbolView::resetSortFilter()
@@ -302,6 +304,7 @@ void GdxSymbolView::resetSortFilter()
             for (int i=0; i<GMS_VAL_MAX; i++)
                 mShowValColActions[i]->setChecked(true);
         }
+        updateHeatmapButton();
         showListView();
         if (mTvModel) {
             ui->tvTableViewFilter->setModel(nullptr);
@@ -382,6 +385,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
     connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
     connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
     connect(mSqZeroes, &QCheckBox::checkStateChanged, this, &GdxSymbolView::updateNumericalPrecision);
+    updateHeatmapButton();
 }
 
 void GdxSymbolView::copySelectionToClipboard(const QString &separator, bool copyLabels)
@@ -493,6 +497,7 @@ void GdxSymbolView::applyDefaults()
     mPrecision->setValue(Settings::settings()->toInt(SettingsKey::skGdxDefaultPrecision));
     mRestoreSqZeroes = Settings::settings()->toBool(SettingsKey::skGdxDefaultRestoreSqueezeZeroes);
     updateNumericalPrecision();
+    updateHeatmapButton();
 }
 
 QList<bool> GdxSymbolView::showAttributes()
@@ -713,11 +718,24 @@ void GdxSymbolView::toggleView()
 
 void GdxSymbolView::updateHeatmap()
 {
-    if (ui->tbHeatmap->isChecked() && ui->tbHeatmap->isEnabled()) {
+    mHeatmapDelegate->setActive(ui->tbHeatmap->isChecked() && ui->tbHeatmap->isEnabled());
+    if (mTableView)
+        ui->tvTableView->viewport()->update();
+    else
+        ui->tvListView->viewport()->update();
+}
 
-        ; // setItemDelegate(new CustomBackgroundDelegate(this));
-    } else {
-        ui->tvTableView->setItemDelegate(nullptr);
+void GdxSymbolView::updateHeatmapButton()
+{
+    int count = mSym ? 0 : 1;
+    if (mTableView && mSym && (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR)) {
+        count = 0;
+        for (int i = 0; i < GMS_VAL_MAX; ++i)
+            if (mShowValColActions.at(i)->isChecked()) ++count;
+    }
+    if (ui->tbHeatmap->isEnabled() != (count == 1)) {
+        ui->tbHeatmap->setEnabled(count == 1);
+        updateHeatmap();
     }
 }
 
@@ -1009,6 +1027,7 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
         for (int i=0; i< GMS_VAL_MAX; i++)
             mShowValColActions.at(i)->setChecked(symViewState->getShowAttributes().at(i));
     }
+    updateHeatmapButton();
 }
 
 void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
@@ -1129,12 +1148,12 @@ void GdxSymbolView::enableControls()
             ui->tbVisibleValCols->setEnabled(true);
         }
     }
-    mHeatmapDelegate->debugSymbol();
     ui->pbResetSortFilter->setEnabled(true);
     ui->lineEdit->setEnabled(true);
     if (mSym->dim()>1)
         ui->pbToggleView->setEnabled(true);
     ui->pbHeaderControls->setEnabled(true);
+    updateHeatmapButton();
 }
 
 bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv) {
@@ -1257,10 +1276,11 @@ void GdxSymbolView::on_pbHeaderControls_toggled(bool checked)
     emit headerControlsToggled(checked);
 }
 
-void GdxSymbolView::on_tbHeatmap_clicked()
+void GdxSymbolView::on_tbHeatmap_toggled(bool checked)
 {
-
+    updateHeatmap();
 }
+
 
 
 } // namespace gdxviewer
