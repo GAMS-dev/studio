@@ -9,6 +9,7 @@ Version 1.26.0  *
 - Enhanced the GDX Viewer to display both the total and currently visible record count for a symbol.
 - Replaced the "Hide unselected items" filter in the GDX Viewer with a persistent "Selected items first" setting that sorts items by their selection state.
 - Added a distinct background color to unselected items in GDX Viewer label filters to highlight them more effectively.
+- Added spreadsheet-style block selection to the GDX Viewer. Using `Ctrl+Shift+Home/End` will expand the selection from the active cell to the boundary limits of the data. On macOS the shortcuts are `Command+Fn+Shift+Left/Right`.
 
 Version 1.25.4
 ==================
