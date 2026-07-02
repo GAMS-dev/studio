@@ -1317,13 +1317,6 @@ void GdxSymbolView::onSearch(bool backward, bool startAtCurrent)
     bool first = true;
     while (true) {
         auto iter = vToL.find(visualCol);
-
-        if (iter == vToL.end()) {
-            iter = vToL.lowerBound(visualCol);
-            if (iter == vToL.end())
-                iter = vToL.begin();
-        }
-
         if (backward) {
             if (iter == vToL.begin()) {
                 iter = vToL.end();
