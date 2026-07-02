@@ -64,6 +64,10 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mHeatmapDelegate = new HeatmapDelegate(ui->tvTableView);
     ui->tvTableView->setItemDelegate(mHeatmapDelegate);
     ui->tvListView->setItemDelegate(mHeatmapDelegate);
+    mHeatmapTooltipBase = ui->tbHeatmap->toolTip();
+    if (mHeatmapTooltipBase.endsWith("</body>"))
+        mHeatmapTooltipBase = mHeatmapTooltipBase.left(mHeatmapTooltipBase.size() - 7);
+    ui->cbHeatmapFilter->setVisible(false);   //TODO(JM) activate when implemented
     updateHeatmapButton();
 
     //create context menu
@@ -716,7 +720,7 @@ void GdxSymbolView::toggleView()
     toggleSqueezeDefaults(mSqDefaults->isChecked());
 }
 
-void GdxSymbolView::updateHeatmap()
+void GdxSymbolView::heatmapChanged()
 {
     bool allowHeatmap = mHeatmapDelegate->symbolCanShowHeatmap();
     mHeatmapDelegate->setActive(ui->tbHeatmap->isChecked() && ui->tbHeatmap->isEnabled() && allowHeatmap);
@@ -735,9 +739,19 @@ void GdxSymbolView::updateHeatmapButton()
         for (int i = 0; i < GMS_VAL_MAX; ++i)
             if (mShowValColActions.at(i)->isChecked()) ++count;
     }
+    if (!mSym)
+        ui->tbHeatmap->setToolTip(mHeatmapTooltipBase + "<br>Disabled: no symbol.</body>");
+    else if(!allowHeatmap)
+        ui->tbHeatmap->setToolTip(mHeatmapTooltipBase + "<br>Disabled: equal values per attribute.</body>");
+    else if(count > 1)
+        ui->tbHeatmap->setToolTip(mHeatmapTooltipBase + "<br>Disabled: Table View with more than one attribute.</body>");
+    else
+        ui->tbHeatmap->setToolTip(mHeatmapTooltipBase + "</body>");
+
     if (ui->tbHeatmap->isEnabled() != (count == 1)) {
         ui->tbHeatmap->setEnabled(count == 1);
-        updateHeatmap();
+        ui->cbHeatmapFilter->setEnabled(count == 1);
+        heatmapChanged();
     }
 }
 
@@ -1282,7 +1296,7 @@ void GdxSymbolView::on_pbHeaderControls_toggled(bool checked)
 
 void GdxSymbolView::on_tbHeatmap_toggled(bool checked)
 {
-    updateHeatmap();
+    heatmapChanged();
 }
 
 

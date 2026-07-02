@@ -44,7 +44,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <property name="spacing">
-      <number>5</number>
+      <number>4</number>
      </property>
      <item>
       <widget class="QPushButton" name="pbToggleView">
@@ -126,23 +126,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="tbHeatmap">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="toolTip">
-        <string>&lt;body style='white-space: nowrap;'&gt;Colorizes the cells according to their values.&lt;br&gt;
-In &lt;b&gt;Table View&lt;/b&gt; deactivated if more than 1 attribute is selected.&lt;/body&gt;</string>
-       </property>
-       <property name="text">
-        <string>Heatmap</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-      </widget>
      </item>
      <item>
       <widget class="QToolButton" name="tbVisibleValCols">
@@ -277,6 +260,12 @@ In &lt;b&gt;Table View&lt;/b&gt; deactivated if more than 1 attribute is selecte
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <property name="spacing">
+      <number>4</number>
+     </property>
+     <property name="rightMargin">
+      <number>6</number>
+     </property>
      <item>
       <widget class="gams::studio::FilterLineEdit" name="lineEdit">
        <property name="enabled">
@@ -364,6 +353,29 @@ In &lt;b&gt;Table View&lt;/b&gt; deactivated if more than 1 attribute is selecte
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="tbHeatmap">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="toolTip">
+        <string>&lt;body style='white-space: nowrap;'&gt;Colorizes the cells according to their values.&lt;/body&gt;</string>
+       </property>
+       <property name="text">
+        <string>Heatmap</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="cbHeatmapFilter">
+       <property name="text">
+        <string>Use Filter</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

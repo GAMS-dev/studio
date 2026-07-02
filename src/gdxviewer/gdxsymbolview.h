@@ -126,7 +126,7 @@ private:
     void initTableViewModel(int colDim, const QList<int> &tvDimOrder);
     void showDefaultView(GdxSymbolViewState* symViewState = nullptr);
     void toggleView();
-    void updateHeatmap();
+    void heatmapChanged();
     void updateHeatmapButton();
 
     void selectAll();
@@ -148,6 +148,7 @@ private:
     QAbstractItemDelegate *mOriListDelegate = nullptr;
     QAbstractItemDelegate *mOriTableDelegate = nullptr;
     HeatmapDelegate *mHeatmapDelegate = nullptr;
+    QString mHeatmapTooltipBase;
 
     bool mTableView = false;
     int mTVResizePrecision = 500;
