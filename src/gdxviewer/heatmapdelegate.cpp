@@ -59,6 +59,14 @@ void HeatmapDelegate::setActive(bool newActive)
     mActive = newActive;
 }
 
+bool equalDouble(double x, double y)
+{
+    static double epsilon = std::numeric_limits<double>::epsilon();
+    if (qAbs(x - y) <= epsilon * 10)
+        return true;
+    return qAbs(x - y) <= epsilon * qMax(qAbs(x), qAbs(y));
+}
+
 void HeatmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     if (!mActive) {
@@ -73,16 +81,22 @@ void HeatmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
     QStyledItemDelegate::paint(painter, opt, index);
 
     bool ok;
-    double val = index.model()->data(index).toDouble(&ok);
-    if (ok) {
-        int mod = mSymbol->numBoundSize();
+    double val = index.model()->data(index, Qt::UserRole).toDouble(&ok);
+    // DEB() << "  " << text << "  " << val;
+    if (val == GMS_SV_UNDEF || val == GMS_SV_NA) ok = false;
+    if (val == GMS_SV_EPS) val = 0;
+    int mod = mSymbol->numBoundSize();
+    if (ok && mod) {
         int col = index.model() == mSymbol ? index.column() - mSymbol->dim() : index.column();
         int numBoundIndex = mod == 1 ? 0 : col % mod;
         double min = mSymbol->minDouble(numBoundIndex);
-        double div = mSymbol->maxDouble(numBoundIndex) - min;
+        double max = mSymbol->maxDouble(numBoundIndex);
+        if (val == GMS_SV_PINF) val = max;
+        if (val == GMS_SV_MINF) val = min;
         painter->save();
         QRect smallerRect = opt.rect.adjusted(1, 1, -1, -1);
-        QColor color = Theme::profileColor(Theme::Window_base, qBound(.0, (val - min) / div, 1.));
+        qreal alpha = equalDouble(min, max) ? .5 : qBound(.0, (val - min) / (max - min), 1.);
+        QColor color = Theme::heatmapColor(Theme::Window_base, alpha);
         painter->fillRect(smallerRect, color);
         painter->restore();
     }

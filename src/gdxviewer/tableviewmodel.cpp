@@ -117,7 +117,7 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (role == Qt::DisplayRole || role == Qt::EditRole) {
+    if (role == Qt::DisplayRole || role == Qt::EditRole || role == Qt::UserRole) {
         QList<uint> keys;
         if (mNeedDummyRow)
             keys = mTvColHeaders[index.column()];
@@ -127,10 +127,15 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
             keys = mTvRowHeaders[index.row()] + mTvColHeaders[index.column()];
         if (mTvKeysToValIdx.contains(keys)) {
             double val = mSym->mValues[size_t(mTvKeysToValIdx[keys])];
-            if (mSym->mType == GMS_DT_SET)
+            if (mSym->mType == GMS_DT_SET) {
+                if (role == Qt::UserRole)
+                    return GMS_SV_UNDEF;
                 return mGdxSymbolTable->getElementText(int(val));
+            }
             if (role == Qt::EditRole)  // copy action
                 return mSym->formatValue(val, true);
+            if (role == Qt::UserRole)  // raw value
+                return val;
             return mSym->formatValue(val);
         }
         return QVariant();

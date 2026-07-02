@@ -161,11 +161,13 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    else if (role == Qt::DisplayRole || role == Qt::EditRole) {
+    else if (role == Qt::DisplayRole || role == Qt::EditRole || role == Qt::UserRole) {
         int row = mRecSortIdx[mRecFilterIdx[index.row()]];
-        if (index.column() < mDim)
+        if (index.column() < mDim) {
+            if (role == Qt::UserRole)
+                return GMS_SV_UNDEF;
             return mGdxSymbolTable->uel2Label(mKeys[row*mDim + index.column()]);
-        else {
+        } else {
             double val = 0.0;
             if (mType <= GMS_DT_PAR) // Set, Parameter
                 val = mValues[row];
@@ -173,8 +175,10 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
                 val = mValues[row*GMS_DT_MAX + (index.column()-mDim)];
             if (mType == GMS_DT_SET)
                 return mGdxSymbolTable->getElementText((int) val);
-            if (role == Qt::EditRole)  // copy action
+            if (role == Qt::EditRole)   // copy action
                 return formatValue(val, true);
+            if (role == Qt::UserRole) // raw value
+                return val;
             return formatValue(val);
         }
     }

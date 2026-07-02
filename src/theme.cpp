@@ -1302,6 +1302,22 @@ QColor Theme::profileColor(ColorSlot baseSlot, qreal alpha)
     return mixColor(baseSlot, mixSlot, shade);
 }
 
+qreal CHeatmapMinAlpha = 0.15;
+qreal CHeatmapMaxAlpha = 0.75;
+qreal CHeatmapLow = 0.33;
+qreal CHeatmapMid = 0.66;
+
+QColor Theme::heatmapColor(ColorSlot baseSlot, qreal alpha)
+{
+    ColorSlot mixSlot = alpha < CHeatmapLow ? Edit_profilingBg1 : alpha < CHeatmapMid ? Edit_profilingBg2 : Edit_profilingBg3;
+    qreal minAlpha = alpha < CHeatmapLow ? CHeatmapMinAlpha : CHeatmapMinAlpha + 0.1;
+    qreal shade = alpha < CHeatmapLow ? alpha / CHeatmapLow
+                  : alpha < CHeatmapMid ? (alpha - CHeatmapLow) / (CHeatmapMid - CHeatmapLow)
+                                        : (alpha - CHeatmapMid) / (1. - CHeatmapMid);
+    shade = minAlpha + shade * (CHeatmapMaxAlpha - minAlpha);
+    return mixColor(baseSlot, mixSlot, shade);
+}
+
 QVariantList Theme::writeUserThemes() const
 {
     QVariantList res;

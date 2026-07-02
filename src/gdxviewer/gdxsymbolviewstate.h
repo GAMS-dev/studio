@@ -98,6 +98,9 @@ public:
     void read(const QVariantMap &map);
     void write(QVariantMap &map) const;
 
+    bool showHeatmap() const;
+    void setShowHeatmap(bool showHeatmap);
+
 private:
     bool mSqDefaults;
     bool mSqTrailingZeroes;
@@ -111,6 +114,8 @@ private:
     int mValFormatIndex;
     int mDim;
     int mType;
+
+    bool mShowHeatmap = false;
 
     QList<bool> mShowAttributes;
 

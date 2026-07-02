@@ -1027,6 +1027,7 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
         for (int i=0; i< GMS_VAL_MAX; i++)
             mShowValColActions.at(i)->setChecked(symViewState->getShowAttributes().at(i));
     }
+    ui->tbHeatmap->setChecked(symViewState->showHeatmap());
     updateHeatmapButton();
 }
 
@@ -1094,6 +1095,7 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
         symViewState->setTableViewFilterHeaderState(ui->tvTableViewFilter->horizontalHeader()->saveState());
         saveTableViewHeaderState(symViewState);
     }
+    symViewState->setShowHeatmap(ui->tbHeatmap->isChecked());
 }
 
 void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)

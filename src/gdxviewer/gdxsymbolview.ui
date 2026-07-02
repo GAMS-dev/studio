@@ -132,6 +132,10 @@
        <property name="enabled">
         <bool>false</bool>
        </property>
+       <property name="toolTip">
+        <string>&lt;body style='white-space: nowrap;'&gt;Colorizes the cells according to their values.&lt;br&gt;
+In &lt;b&gt;Table View&lt;/b&gt; deactivated if more than 1 attribute is selected.&lt;/body&gt;</string>
+       </property>
        <property name="text">
         <string>Heatmap</string>
        </property>

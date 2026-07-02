@@ -231,6 +231,7 @@ void GdxSymbolViewState::write(QVariantMap &map) const
     bools += mTableViewLoaded ? 16 : 0;
     bools += mAutoResizeLV ? 32 : 0;
     bools += mAutoResizeTV ? 64 : 0;
+    bools += mShowHeatmap ? 128 : 0;
     map.insert("boolValues", bools);
 
     QString ints = QString::number(mNumericalPrecision);
@@ -293,6 +294,16 @@ void GdxSymbolViewState::write(QVariantMap &map) const
     map.insert("tableViewColumnWidths", tableViewColumns);
 }
 
+bool GdxSymbolViewState::showHeatmap() const
+{
+    return mShowHeatmap;
+}
+
+void GdxSymbolViewState::setShowHeatmap(bool showHeatmap)
+{
+    mShowHeatmap = showHeatmap;
+}
+
 bool assignIfValidInt(int &var, const QString &intVal)
 {
     bool ok = !intVal.isEmpty();
@@ -320,6 +331,7 @@ void GdxSymbolViewState::read(const QVariantMap &map)
         mTableViewLoaded = bools & 16;
         mAutoResizeLV = bools & 32;
         mAutoResizeTV = bools & 64;
+        mShowHeatmap = bools & 128;
     }
 
     if (map.contains("intValues")) {

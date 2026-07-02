@@ -206,7 +206,7 @@ public:
     static QColor mixColor(ColorSlot baseSlot, ColorSlot mixSlot, qreal alpha);
     static QColor mixColor(QColor baseColor, ColorSlot mixSlot, qreal alpha);
     static QColor profileColor(ColorSlot baseSlot, qreal alpha);
-
+    static QColor heatmapColor(ColorSlot baseSlot, qreal alpha);
     static const QColor CAutoBackground;
 
 signals:
