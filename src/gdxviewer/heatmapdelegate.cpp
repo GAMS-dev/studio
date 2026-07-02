@@ -54,9 +54,9 @@ bool HeatmapDelegate::active() const
     return mActive;
 }
 
-void HeatmapDelegate::setActive(bool newActive)
+void HeatmapDelegate::setActive(bool active)
 {
-    mActive = newActive;
+    mActive = active;
 }
 
 bool equalDouble(double x, double y)
@@ -65,6 +65,16 @@ bool equalDouble(double x, double y)
     if (qAbs(x - y) <= epsilon * 10)
         return true;
     return qAbs(x - y) <= epsilon * qMax(qAbs(x), qAbs(y));
+}
+
+bool HeatmapDelegate::symbolCanShowHeatmap()
+{
+    if (!mSymbol) return false;
+    for (int i = 0; i < mSymbol->numBoundSize(); ++i) {
+        if (!equalDouble(mSymbol->minDouble(i), mSymbol->maxDouble(i)))
+            return true;
+    }
+    return false;
 }
 
 void HeatmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const

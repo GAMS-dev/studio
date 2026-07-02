@@ -45,7 +45,8 @@ public:
     void setSymbolModel(GdxSymbol *sym);
     void setTableModel(TableViewModel *tvModel);
     bool active() const;
-    void setActive(bool newActive);
+    void setActive(bool active);
+    bool symbolCanShowHeatmap();
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };

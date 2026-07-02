@@ -718,7 +718,8 @@ void GdxSymbolView::toggleView()
 
 void GdxSymbolView::updateHeatmap()
 {
-    mHeatmapDelegate->setActive(ui->tbHeatmap->isChecked() && ui->tbHeatmap->isEnabled());
+    bool allowHeatmap = mHeatmapDelegate->symbolCanShowHeatmap();
+    mHeatmapDelegate->setActive(ui->tbHeatmap->isChecked() && ui->tbHeatmap->isEnabled() && allowHeatmap);
     if (mTableView)
         ui->tvTableView->viewport()->update();
     else
@@ -727,8 +728,9 @@ void GdxSymbolView::updateHeatmap()
 
 void GdxSymbolView::updateHeatmapButton()
 {
-    int count = mSym ? 1 : 0;
-    if (mTableView && mSym && (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR)) {
+    bool allowHeatmap = mHeatmapDelegate->symbolCanShowHeatmap();
+    int count = allowHeatmap ? 1 : 0;
+    if (mTableView && count && (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR)) {
         count = 0;
         for (int i = 0; i < GMS_VAL_MAX; ++i)
             if (mShowValColActions.at(i)->isChecked()) ++count;
