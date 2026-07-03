@@ -59,6 +59,16 @@ void HeatmapDelegate::setActive(bool active)
     mActive = active;
 }
 
+bool HeatmapDelegate::useFilterBounds() const
+{
+    return mUseFilterBounds;
+}
+
+void HeatmapDelegate::setUseFilterBounds(bool useFilter)
+{
+    mUseFilterBounds = useFilter;
+}
+
 bool equalDouble(double x, double y)
 {
     static double epsilon = std::numeric_limits<double>::epsilon();
@@ -99,8 +109,9 @@ void HeatmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
     if (ok && mod) {
         int col = index.model() == mSymbol ? index.column() - mSymbol->dim() : index.column();
         int numBoundIndex = mod == 1 ? 0 : col % mod;
-        double min = mSymbol->minDouble(numBoundIndex);
-        double max = mSymbol->maxDouble(numBoundIndex);
+        auto valFilter = mSymbol->valueFilter(numBoundIndex);
+        double min = mUseFilterBounds && valFilter.active ? valFilter.min : mSymbol->minDouble(numBoundIndex);
+        double max = mUseFilterBounds && valFilter.active ? valFilter.max : mSymbol->maxDouble(numBoundIndex);
         if (val == GMS_SV_PINF) val = max;
         if (val == GMS_SV_MINF) val = min;
         painter->save();

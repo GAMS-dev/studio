@@ -67,7 +67,6 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mHeatmapTooltipBase = ui->tbHeatmap->toolTip();
     if (mHeatmapTooltipBase.endsWith("</body>"))
         mHeatmapTooltipBase = mHeatmapTooltipBase.left(mHeatmapTooltipBase.size() - 7);
-    ui->cbHeatmapFilter->setVisible(false);   //TODO(JM) activate when implemented
     updateHeatmapButton();
 
     //create context menu
@@ -724,6 +723,7 @@ void GdxSymbolView::heatmapChanged()
 {
     bool allowHeatmap = mHeatmapDelegate->symbolCanShowHeatmap();
     mHeatmapDelegate->setActive(ui->tbHeatmap->isChecked() && ui->tbHeatmap->isEnabled() && allowHeatmap);
+    mHeatmapDelegate->setUseFilterBounds(ui->cbHeatmapFilter->isChecked());
     if (mTableView)
         ui->tvTableView->viewport()->update();
     else
@@ -1044,6 +1044,7 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
             mShowValColActions.at(i)->setChecked(symViewState->getShowAttributes().at(i));
     }
     ui->tbHeatmap->setChecked(symViewState->showHeatmap());
+    ui->cbHeatmapFilter->setChecked(symViewState->heatmapUseFilter());
     updateHeatmapButton();
 }
 
@@ -1078,6 +1079,7 @@ void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
     }
 
     mSym->filterRows();
+    heatmapChanged();
 }
 
 void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
@@ -1112,6 +1114,7 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
         saveTableViewHeaderState(symViewState);
     }
     symViewState->setShowHeatmap(ui->tbHeatmap->isChecked());
+    symViewState->setHeatmapUseFilter(ui->cbHeatmapFilter->isChecked());
 }
 
 void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)
@@ -1298,6 +1301,12 @@ void GdxSymbolView::on_tbHeatmap_toggled(bool checked)
 {
     heatmapChanged();
 }
+
+void GdxSymbolView::on_cbHeatmapFilter_toggled(bool checked)
+{
+    heatmapChanged();
+}
+
 
 
 

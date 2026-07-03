@@ -224,14 +224,16 @@ void GdxSymbolViewState::setAutoResizeTV(bool newAutoResizeTV)
 
 void GdxSymbolViewState::write(QVariantMap &map) const
 {
-    int bools = mSqDefaults ? 1 : 0;
-    bools += mSqTrailingZeroes ? 2 : 0;
-    bools += mRestoreSqZeroes ? 4 : 0;
-    bools += mTableViewActive ? 8 : 0;
-    bools += mTableViewLoaded ? 16 : 0;
-    bools += mAutoResizeLV ? 32 : 0;
-    bools += mAutoResizeTV ? 64 : 0;
-    bools += mShowHeatmap ? 128 : 0;
+    int bools = mSqDefaults     ? 0x001 : 0;
+    bools += mSqTrailingZeroes  ? 0x002 : 0;
+    bools += mRestoreSqZeroes   ? 0x004 : 0;
+    bools += mTableViewActive   ? 0x008 : 0;
+    bools += mTableViewLoaded   ? 0x010 : 0;
+    bools += mAutoResizeLV      ? 0x020 : 0;
+    bools += mAutoResizeTV      ? 0x040 : 0;
+    bools += mShowHeatmap       ? 0x080 : 0;
+    bools += mHeatmapUseFilter  ? 0x100 : 0;
+
     map.insert("boolValues", bools);
 
     QString ints = QString::number(mNumericalPrecision);
@@ -304,6 +306,16 @@ void GdxSymbolViewState::setShowHeatmap(bool showHeatmap)
     mShowHeatmap = showHeatmap;
 }
 
+bool GdxSymbolViewState::heatmapUseFilter() const
+{
+    return mHeatmapUseFilter;
+}
+
+void GdxSymbolViewState::setHeatmapUseFilter(bool heatmapUseFilter)
+{
+    mHeatmapUseFilter = heatmapUseFilter;
+}
+
 bool assignIfValidInt(int &var, const QString &intVal)
 {
     bool ok = !intVal.isEmpty();
@@ -324,14 +336,15 @@ void GdxSymbolViewState::read(const QVariantMap &map)
 {
     if (map.contains("boolValues")) {
         int bools = map.value("boolValues").toInt();
-        mSqDefaults = bools & 1;
-        mSqTrailingZeroes = bools & 2;
-        mRestoreSqZeroes = bools & 4;
-        mTableViewActive = bools & 8;
-        mTableViewLoaded = bools & 16;
-        mAutoResizeLV = bools & 32;
-        mAutoResizeTV = bools & 64;
-        mShowHeatmap = bools & 128;
+        mSqDefaults       = bools & 0x001;
+        mSqTrailingZeroes = bools & 0x002;
+        mRestoreSqZeroes  = bools & 0x004;
+        mTableViewActive  = bools & 0x008;
+        mTableViewLoaded  = bools & 0x010;
+        mAutoResizeLV     = bools & 0x020;
+        mAutoResizeTV     = bools & 0x040;
+        mShowHeatmap      = bools & 0x080;
+        mHeatmapUseFilter = bools & 0x100;
     }
 
     if (map.contains("intValues")) {

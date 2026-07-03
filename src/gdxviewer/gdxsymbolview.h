@@ -111,6 +111,8 @@ private slots:
     void on_pbHeaderControls_toggled(bool checked);
     void on_tbHeatmap_toggled(bool checked);
 
+    void on_cbHeatmapFilter_toggled(bool checked);
+
 private:
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;

@@ -101,6 +101,9 @@ public:
     bool showHeatmap() const;
     void setShowHeatmap(bool showHeatmap);
 
+    bool heatmapUseFilter() const;
+    void setHeatmapUseFilter(bool heatmapUseFilter);
+
 private:
     bool mSqDefaults;
     bool mSqTrailingZeroes;
@@ -116,6 +119,7 @@ private:
     int mType;
 
     bool mShowHeatmap = false;
+    bool mHeatmapUseFilter = false;
 
     QList<bool> mShowAttributes;
 

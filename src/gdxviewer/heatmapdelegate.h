@@ -37,6 +37,7 @@ class HeatmapDelegate : public QStyledItemDelegate
     GdxSymbol *mSymbol = nullptr;
     TableViewModel *mTvModel = nullptr;
     bool mActive = false;
+    bool mUseFilterBounds = false;
 
     Q_OBJECT
 public:
@@ -46,6 +47,8 @@ public:
     void setTableModel(TableViewModel *tvModel);
     bool active() const;
     void setActive(bool active);
+    bool useFilterBounds() const;
+    void setUseFilterBounds(bool useFilter);
     bool symbolCanShowHeatmap();
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
