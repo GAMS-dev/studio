@@ -5398,6 +5398,7 @@ void MainWindow::invalidateTheme(bool refreshSyntax)
     Theme::setThemeColorPalette(mNavigatorDialog,    true,  false);
     Theme::setThemeColorPalette(mWp,                 false, false);
     Theme::setThemeColorPalette(ui->dockProjectView, true,  true);
+    Theme::setThemeColorPalette(ui->projectFilter,   true,  false);
     Theme::setThemeColorPalette(ui->dockProcessLog,  true,  false);
 
     if (mResultsView)
