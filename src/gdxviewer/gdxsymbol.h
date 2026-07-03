@@ -85,6 +85,7 @@ public:
 
     double minDouble(int valCol=0);
     double maxDouble(int valCol=0);
+    bool allEqual(int valCol=0);
 
     void resetFilters();
     ValueFilter& valueFilter(int valueColumn);
@@ -154,6 +155,7 @@ private:
     std::vector<double> mMinDouble;
     std::vector<double> mMaxDouble;
     int mNumBoundSize = 0;
+    std::vector<bool> mAllEqual;
 
     GdxSymbolTableModel* mGdxSymbolTable = nullptr;
 

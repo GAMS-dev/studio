@@ -102,24 +102,26 @@ void HeatmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
 
     bool ok;
     double val = index.model()->data(index, Qt::UserRole).toDouble(&ok);
-    // DEB() << "  " << text << "  " << val;
     if (val == GMS_SV_UNDEF || val == GMS_SV_NA) ok = false;
     if (val == GMS_SV_EPS) val = 0;
     int mod = mSymbol->numBoundSize();
     if (ok && mod) {
         int col = index.model() == mSymbol ? index.column() - mSymbol->dim() : index.column();
         int numBoundIndex = mod == 1 ? 0 : col % mod;
-        auto valFilter = mSymbol->valueFilter(numBoundIndex);
-        double min = mUseFilterBounds && valFilter.active ? valFilter.min : mSymbol->minDouble(numBoundIndex);
-        double max = mUseFilterBounds && valFilter.active ? valFilter.max : mSymbol->maxDouble(numBoundIndex);
-        if (val == GMS_SV_PINF) val = max;
-        if (val == GMS_SV_MINF) val = min;
-        painter->save();
-        QRect smallerRect = opt.rect.adjusted(1, 1, -1, -1);
-        qreal alpha = equalDouble(min, max) ? .5 : qBound(.0, (val - min) / (max - min), 1.);
-        QColor color = Theme::heatmapColor(Theme::Window_base, alpha);
-        painter->fillRect(smallerRect, color);
-        painter->restore();
+        if (!mSymbol->allEqual(numBoundIndex)) {
+            auto valFilter = mSymbol->valueFilter(numBoundIndex);
+            double min = mUseFilterBounds && valFilter.active ? valFilter.min : mSymbol->minDouble(numBoundIndex);
+            double max = mUseFilterBounds && valFilter.active ? valFilter.max : mSymbol->maxDouble(numBoundIndex);
+            if (val == GMS_SV_PINF) val = max;
+            if (val == GMS_SV_MINF) val = min;
+            qreal alpha = equalDouble(min, max) ? .5 : qBound(.0, (val - min) / (max - min), 1.);
+            QColor color = Theme::heatmapColor(Theme::Window_base, alpha);
+
+            painter->save();
+            QRect smallerRect = opt.rect.adjusted(1, 2, -1, -2);
+            painter->fillRect(smallerRect, color);
+            painter->restore();
+        }
     }
 
     opt.text = text;

@@ -229,6 +229,7 @@ bool GdxSymbol::loadData()
         int dummy;
         int keys[GMS_MAX_INDEX_DIM];
         double values[GMS_VAL_MAX];
+        double valuesFirst[GMS_VAL_MAX];
         if (!gdxDataReadRawStart(mGdx, mNr, &dummy)) {
             char msg[GMS_SSSIZE];
             gdxErrorStr(mGdx, gdxGetLastError(mGdx), msg);
@@ -251,9 +252,15 @@ bool GdxSymbol::loadData()
         size_t keyOffset;
         size_t valOffset;
         int k;
+        bool first = true;
         for(size_t i=mLoadedRecCount; i<mRecordCount; i++) {
             keyOffset = i*mDim;
             gdxDataReadRaw(mGdx, keys, values, &dummy);
+            if (first) {
+                for (int j = 0; j < GMS_VAL_MAX; ++j)
+                    valuesFirst[j] = values[j];
+                first = false;
+            }
 
             for(size_t j=0; j<mDim; j++) {
                 k = keys[j];
@@ -273,6 +280,8 @@ bool GdxSymbol::loadData()
                     mMinDouble[vIdx] = qMin(mMinDouble[vIdx], values[vIdx]);
                     mMaxDouble[vIdx] = qMax(mMaxDouble[vIdx], values[vIdx]);
                 }
+                if (mAllEqual[vIdx])
+                    mAllEqual[vIdx] = (values[vIdx] == valuesFirst[vIdx]);
             }
             mLoadedRecCount++;
             if (mLoadedRecCount == triggerAutoResizeListViewCount || mLoadedRecCount == mRecordCount) {
@@ -453,15 +462,19 @@ void GdxSymbol::initNumericalBounds()
     if(mType == GMS_DT_PAR) {
         mMinDouble.resize(1);
         mMaxDouble.resize(1);
+        mAllEqual.resize(1);
         mMinDouble[0] = INT_MAX;
         mMaxDouble[0] = INT_MIN;
+        mAllEqual[0] = true;
         mNumBoundSize = 1;
     } else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR) {
         mMinDouble.resize(GMS_VAL_MAX);
         mMaxDouble.resize(GMS_VAL_MAX);
+        mAllEqual.resize(GMS_VAL_MAX);
         for (int i=0; i<GMS_VAL_MAX; i++) {
             mMinDouble[i] = INT_MAX;
             mMaxDouble[i] = INT_MIN;
+            mAllEqual[i] = true;
         }
         mNumBoundSize = GMS_VAL_MAX;
     }
@@ -544,6 +557,11 @@ double GdxSymbol::minDouble(int valCol)
 double GdxSymbol::maxDouble(int valCol)
 {
     return mMaxDouble[valCol];
+}
+
+bool GdxSymbol::allEqual(int valCol)
+{
+    return mAllEqual[valCol];
 }
 
 void GdxSymbol::resetFilters()
