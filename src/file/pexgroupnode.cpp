@@ -421,7 +421,26 @@ QString PExProjectNode::resolveHRef(const QString &href, PExFileNode *&node, int
     if (href.length() < 5) return res;
     QString code = href.left(3);
     int iCode = tags.indexOf(code);
-    QStringList parts = href.right(href.length()-4).split(',');
+
+    //    Split by ',' from rear until '"' reached, skip iCode at start
+    QStringList parts;
+    int s = 4;
+    int b = href.length();
+    int a = b - 1;
+    while (a >= s) {
+        if (href.at(a) == ',' || a == s) {
+            if (a == s) --a;
+            if (a < b-1) {
+                parts.prepend(href.mid(a+1, b-a-1));
+                b = a;
+            }
+        } else if (href.at(a) == '"') {
+            parts.prepend(href.mid(s, a+1-s));
+            break;
+        }
+        --a;
+    }
+
     if (iCode >= 0) {
         if (iCode < 2) {
             QString lstFile = parameter(code.at(2) == '2' ? "ls2" : "lst");
