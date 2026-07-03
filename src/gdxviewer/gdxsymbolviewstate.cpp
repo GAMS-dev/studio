@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gdxsymbolviewstate.h"
-#include "gdxcc.h"
+#include "gclgms.h"
 #include "logger.h"
 #include <QVariant>
 #include <QLocale>
@@ -29,17 +29,17 @@ namespace gdxviewer {
 
 GdxSymbolViewState::GdxSymbolViewState()
 {
-
+    mStateFlags = StateFlags(sfAutoResizeLV | sfAutoResizeTV);
 }
 
 bool GdxSymbolViewState::sqTrailingZeroes() const
 {
-    return mSqTrailingZeroes;
+    return mStateFlags.testFlag(sfSqTrailingZeroes);
 }
 
 void GdxSymbolViewState::setSqTrailingZeroes(bool sqTrailingZeroes)
 {
-    mSqTrailingZeroes = sqTrailingZeroes;
+    mStateFlags.setFlag(sfSqTrailingZeroes, sqTrailingZeroes);
 }
 
 int GdxSymbolViewState::dim() const
@@ -64,12 +64,12 @@ void GdxSymbolViewState::setType(int type)
 
 bool GdxSymbolViewState::tableViewActive() const
 {
-    return mTableViewActive;
+    return mStateFlags.testFlag(sfTableViewActive);
 }
 
 void GdxSymbolViewState::setTableViewActive(bool tableViewActive)
 {
-    mTableViewActive = tableViewActive;
+    mStateFlags.setFlag(sfTableViewActive, tableViewActive);
 }
 
 QList<QStringList> GdxSymbolViewState::uncheckedLabels() const
@@ -94,12 +94,12 @@ void GdxSymbolViewState::setNumericalPrecision(int numericalPrecision)
 
 bool GdxSymbolViewState::restoreSqZeroes() const
 {
-    return mRestoreSqZeroes;
+    return mStateFlags.testFlag(sfRestoreSqZeroes);
 }
 
 void GdxSymbolViewState::setRestoreSqZeroes(bool restoreSqZeroes)
 {
-    mRestoreSqZeroes = restoreSqZeroes;
+    mStateFlags.setFlag(sfRestoreSqZeroes, restoreSqZeroes);
 }
 
 int GdxSymbolViewState::valFormatIndex() const
@@ -114,12 +114,12 @@ void GdxSymbolViewState::setValFormatIndex(int valFormatIndex)
 
 bool GdxSymbolViewState::sqDefaults() const
 {
-    return mSqDefaults;
+    return mStateFlags.testFlag(sfSqDefaults);
 }
 
 void GdxSymbolViewState::setSqDefaults(bool sqDefaults)
 {
-    mSqDefaults = sqDefaults;
+    mStateFlags.setFlag(sfSqDefaults, sqDefaults);
 }
 
 QByteArray GdxSymbolViewState::listViewHeaderState() const
@@ -144,12 +144,12 @@ void GdxSymbolViewState::setTableViewFilterHeaderState(const QByteArray &tableVi
 
 bool GdxSymbolViewState::tableViewLoaded() const
 {
-    return mTableViewLoaded;
+    return mStateFlags.testFlag(sfTableViewLoaded);
 }
 
 void GdxSymbolViewState::setTableViewLoaded(bool tableViewLoaded)
 {
-    mTableViewLoaded = tableViewLoaded;
+    mStateFlags.setFlag(sfTableViewLoaded, tableViewLoaded);
 }
 
 int GdxSymbolViewState::tvColDim() const
@@ -204,37 +204,27 @@ void GdxSymbolViewState::setTableViewColumnWidths(const QList<int> &tableViewCol
 
 bool GdxSymbolViewState::autoResizeLV() const
 {
-    return mAutoResizeLV;
+    return mStateFlags.testFlag(sfAutoResizeLV);
 }
 
 void GdxSymbolViewState::setAutoResizeLV(bool newAutoResizeLV)
 {
-    mAutoResizeLV = newAutoResizeLV;
+    mStateFlags.setFlag(sfAutoResizeLV, newAutoResizeLV);
 }
 
 bool GdxSymbolViewState::autoResizeTV() const
 {
-    return mAutoResizeTV;
+    return mStateFlags.testFlag(sfAutoResizeTV);
 }
 
 void GdxSymbolViewState::setAutoResizeTV(bool newAutoResizeTV)
 {
-    mAutoResizeTV = newAutoResizeTV;
+    mStateFlags.setFlag(sfAutoResizeTV, newAutoResizeTV);
 }
 
 void GdxSymbolViewState::write(QVariantMap &map) const
 {
-    int bools = mSqDefaults     ? 0x001 : 0;
-    bools += mSqTrailingZeroes  ? 0x002 : 0;
-    bools += mRestoreSqZeroes   ? 0x004 : 0;
-    bools += mTableViewActive   ? 0x008 : 0;
-    bools += mTableViewLoaded   ? 0x010 : 0;
-    bools += mAutoResizeLV      ? 0x020 : 0;
-    bools += mAutoResizeTV      ? 0x040 : 0;
-    bools += mShowHeatmap       ? 0x080 : 0;
-    bools += mHeatmapUseFilter  ? 0x100 : 0;
-
-    map.insert("boolValues", bools);
+    map.insert("boolValues", mStateFlags.toInt());
 
     QString ints = QString::number(mNumericalPrecision);
     ints += ',' + QString::number(mValFormatIndex);
@@ -298,22 +288,22 @@ void GdxSymbolViewState::write(QVariantMap &map) const
 
 bool GdxSymbolViewState::showHeatmap() const
 {
-    return mShowHeatmap;
+    return mStateFlags.testFlag(sfShowHeatmap);
 }
 
 void GdxSymbolViewState::setShowHeatmap(bool showHeatmap)
 {
-    mShowHeatmap = showHeatmap;
+    mStateFlags.setFlag(sfShowHeatmap, showHeatmap);
 }
 
 bool GdxSymbolViewState::heatmapUseFilter() const
 {
-    return mHeatmapUseFilter;
+    return mStateFlags.testFlag(sfHeatmapUseFilter);
 }
 
 void GdxSymbolViewState::setHeatmapUseFilter(bool heatmapUseFilter)
 {
-    mHeatmapUseFilter = heatmapUseFilter;
+    mStateFlags.setFlag(sfHeatmapUseFilter, heatmapUseFilter);
 }
 
 bool assignIfValidInt(int &var, const QString &intVal)
@@ -334,18 +324,8 @@ bool assignIfValidDouble(double &var, const QString &doubleVal)
 
 void GdxSymbolViewState::read(const QVariantMap &map)
 {
-    if (map.contains("boolValues")) {
-        int bools = map.value("boolValues").toInt();
-        mSqDefaults       = bools & 0x001;
-        mSqTrailingZeroes = bools & 0x002;
-        mRestoreSqZeroes  = bools & 0x004;
-        mTableViewActive  = bools & 0x008;
-        mTableViewLoaded  = bools & 0x010;
-        mAutoResizeLV     = bools & 0x020;
-        mAutoResizeTV     = bools & 0x040;
-        mShowHeatmap      = bools & 0x080;
-        mHeatmapUseFilter = bools & 0x100;
-    }
+    if (map.contains("boolValues"))
+        mStateFlags = StateFlags::fromInt(map.value("boolValues").toInt());
 
     if (map.contains("intValues")) {
         QStringList ints = map.value("intValues").toString().split(',');

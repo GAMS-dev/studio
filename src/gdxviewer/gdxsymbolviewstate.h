@@ -105,21 +105,36 @@ public:
     void setHeatmapUseFilter(bool heatmapUseFilter);
 
 private:
-    bool mSqDefaults;
-    bool mSqTrailingZeroes;
-    bool mRestoreSqZeroes;
-    bool mTableViewActive;
-    bool mTableViewLoaded = false;
+    enum StateFlag {
+        sfSqDefaults        = 0x001,
+        sfSqTrailingZeroes  = 0x002,
+        sfRestoreSqZeroes   = 0x004,
+        sfTableViewActive   = 0x008,
+        sfTableViewLoaded   = 0x010,
+        sfAutoResizeLV      = 0x020,     // true
+        sfAutoResizeTV      = 0x040,     // true
+        sfShowHeatmap       = 0x080,
+        sfHeatmapUseFilter  = 0x100,
+    };
+    Q_DECLARE_FLAGS(StateFlags, StateFlag);
 
-    bool mAutoResizeLV = true;
-    bool mAutoResizeTV = true;
+    StateFlags mStateFlags;
+    // bool mSqDefaults;
+    // bool mSqTrailingZeroes;
+    // bool mRestoreSqZeroes;
+    // bool mTableViewActive;
+    // bool mTableViewLoaded = false;
+
+    // bool mAutoResizeLV = true;
+    // bool mAutoResizeTV = true;
+    // bool mShowHeatmap = false;
+    // bool mHeatmapUseFilter = false;
+
     int mNumericalPrecision;
     int mValFormatIndex;
     int mDim;
     int mType;
 
-    bool mShowHeatmap = false;
-    bool mHeatmapUseFilter = false;
 
     QList<bool> mShowAttributes;
 
