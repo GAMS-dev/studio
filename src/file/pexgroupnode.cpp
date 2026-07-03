@@ -434,7 +434,7 @@ QString PExProjectNode::resolveHRef(const QString &href, PExFileNode *&node, int
                 parts.prepend(href.mid(a+1, b-a-1));
                 b = a;
             }
-        } else if (href.at(a) == '"') {
+        } else if (href.at(a) == '"' || href.at(a) < '0' || href.at(a) > '9') {
             parts.prepend(href.mid(s, a+1-s));
             break;
         }
