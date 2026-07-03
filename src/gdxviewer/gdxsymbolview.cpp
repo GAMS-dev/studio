@@ -1205,48 +1205,46 @@ bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv, QVector<boo
     if (mTableView) {
         bool searchRowLabels = false;
         bool searchColLabels = false;
-        for (int i=mTvModel->tvColDim() - 1; i>=0; i--) {
-            if (matchInCol[mTvModel->tvDimOrder().at(i)]) {
+
+        int rowDimCount = mSym->dim() - mTvModel->tvColDim();
+        for (int i = 0; i < mTvModel->tvColDim(); i++) {
+            if (matchInCol[mTvModel->tvDimOrder().at(rowDimCount + i)]) {
                 searchColLabels = true;
                 break;
             }
         }
-        for (int i=mSym->dim() - mTvModel->tvColDim() - 1; i>=0; i--) {
+        for (int i = 0; i < rowDimCount; i++) {
             if (matchInCol[mTvModel->tvDimOrder().at(i)]) {
                 searchRowLabels = true;
                 break;
             }
         }
+
         if (!searchRowLabels && !searchColLabels)
             return false;
 
-        QStringList rowLabels;
         if (searchRowLabels) {
-            rowLabels = mTvModel->headerData(row, Qt::Vertical).toStringList();
-            for (int i=mSym->dim() - mTvModel->tvColDim() - 1; i>=0; i--) {
-                if (!matchInCol[mTvModel->tvDimOrder().at(i)])
-                    rowLabels.remove(i);
-            }
+            QStringList rowLabels = mTvModel->headerData(row, Qt::Vertical).toStringList();
+
             // exclude dummy headers from search
-            if (mTvModel->needDummyRow())
+            if (mTvModel->needDummyRow() && !rowLabels.isEmpty())
                 rowLabels.pop_back();
+
             for (const QString &s : rowLabels) {
                 if (mSearchRegEx.match(s).hasMatch())
                     return true;
             }
         }
-        QStringList colLabels;
+
         if (searchColLabels) {
             QStringList colLabels = mTvModel->headerData(col, Qt::Horizontal).toStringList();
-            for (int i=mTvModel->tvColDim() - 1; i>=0; i--) {
-                if (!matchInCol[mTvModel->tvDimOrder().at(i)])
-                    colLabels.remove(i);
-            }
+
             // exclude dummy headers and level/equation attributes from search
-            if (mTvModel->needDummyColumn())
+            if (mTvModel->needDummyColumn() && !colLabels.isEmpty())
                 colLabels.pop_back();
-            if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR)
+            if ((mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) && !colLabels.isEmpty())
                 colLabels.pop_back();
+
             for (const QString &s : colLabels) {
                 if (mSearchRegEx.match(s).hasMatch())
                     return true;
