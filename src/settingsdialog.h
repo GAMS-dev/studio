@@ -87,7 +87,7 @@ public slots:
 private slots:
     void setModified();
     void prepareModifyTheme();
-    void themeModified();
+    void themeModified(bool emitThemeChange = false);
     bool setAndCheckUserLib(const QString &path);
     void appearanceIndexChanged(int index);
     void editorBaseColorChanged();
