@@ -124,7 +124,7 @@ bool ViewHelper::testFollowOS()
     QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
     currentTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
 #elif defined(__APPLE__)
-    pickedTheme = MacOSCocoaBridge::isDarkMode() ? 1 : 0;
+    currentTheme = MacOSCocoaBridge::isDarkMode() ? 1 : 0;
 #endif
 
     return Theme::instance()->activeTheme() != currentTheme;
