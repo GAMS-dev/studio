@@ -640,7 +640,6 @@ void SettingsDialog::appearanceIndexChanged(int index)
 {
     ViewHelper::changeAppearance(index);
     setThemeEditable(index >= mFixedThemeCount);
-    emit themeChanged(true);
     QTimer::singleShot(0, this, &SettingsDialog::themeModified);
 }
 
@@ -663,10 +662,11 @@ void SettingsDialog::hintTextChanged(const QString &text)
     ui->laHint->setText(text);
 }
 
-void SettingsDialog::themeModified()
+void SettingsDialog::themeModified(bool emitThemeChange)
 {
     setModified();
-    emit themeChanged(false);
+    if (emitThemeChange)
+        emit themeChanged(true);
     for (ThemeWidget *wid : std::as_const(mColorWidgets)) {
         wid->refresh();
     }
@@ -984,7 +984,9 @@ void SettingsDialog::initColorGroups(QWidget *box, QList<QList<Theme::ColorSlot>
         }
         connect(wid, &ThemeWidget::hintTextChanged, this, &SettingsDialog::hintTextChanged);
         connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
-        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
+        connect(wid, &ThemeWidget::changed, this, [this]() {
+            themeModified(true);
+        });
         mColorWidgets << wid;
     }
     vertLay->addStretch(1);

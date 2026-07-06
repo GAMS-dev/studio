@@ -460,10 +460,8 @@ void FileMeta::updateSyntaxColors(bool refreshSyntax)
     if (mHighlighter) {
         bool changed = mHighlighter->reloadColors() || refreshSyntax;
         if (changed) {
-            for (QWidget *w: std::as_const(mEditors)) {
-                if (ViewHelper::toCodeEdit(w))
-                    mHighlighter->rehighlight();
-            }
+            if (ViewHelper::toCodeEdit(mEditors.first()))
+                mHighlighter->rehighlight();
         }
     }
 

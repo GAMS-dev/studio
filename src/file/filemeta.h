@@ -106,6 +106,7 @@ public:
     void reloadDelayed();
     void setLocation(QString location);
     void updateExtraSelections();
+    void updateSyntaxColors(bool refreshSyntax);
     void clearFindings();
 
     static bool hasExistingFile(const QList<QUrl> &urls);
@@ -165,7 +166,6 @@ private:
     void linkDocument(QTextDocument *doc = nullptr);
     void unlinkAndFreeDocument();
     void refreshType();
-    void updateSyntaxColors(bool refreshSyntax);
     void initEditorColors();
     void updateEditorColors();
     void addEditor(QWidget* edit);

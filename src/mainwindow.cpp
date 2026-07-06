@@ -515,7 +515,9 @@ MainWindow::MainWindow(QWidget *parent)
     app->setStyle( new TooltipProxyStyle( PaletteStyleManager::uniformStyleKey()) );
 
     ViewHelper::changeAppearance();
-    connect(Theme::instance(), &Theme::changed, this, &MainWindow::invalidateTheme);
+    connect(Theme::instance(), &Theme::changed, this, [this](){
+        invalidateTheme(true);
+    });
     mThemeReady = true;
     invalidateTheme(false);
     ViewHelper::updateBaseTheme();
@@ -5416,15 +5418,14 @@ void MainWindow::invalidateTheme(bool refreshSyntax)
         mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, qApp->style()->objectName());
         delete old;
     }
-    repaint();
+    update();
 }
 
 void MainWindow::rehighlightOpenFiles()
 {
     for (const QString &fileName : openedFiles()) {
-        FileMeta *meta = mFileMetaRepo.fileMeta(fileName);
-        if (meta->isOpen() && meta->highlighter())
-            meta->highlighter()->rehighlight();
+        if (FileMeta *meta = mFileMetaRepo.fileMeta(fileName))
+            meta->updateSyntaxColors(true);
     }
 }
 
