@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QStyleOptionTab>
-
+#include <QPainter>
 #include "referencetabstyle.h"
 
 namespace gams {
@@ -39,8 +39,24 @@ QSize ReferenceTabStyle::sizeFromContents(QStyle::ContentsType type, const QStyl
 
 void ReferenceTabStyle::drawControl(QStyle::ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    if (element == CE_TabBarTabLabel) {
-        if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
+    if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
+        if (element == CE_TabBarTabShape && tab->state & QStyle::State_Selected) {
+            painter->save();
+            painter->setRenderHint(QPainter::Antialiasing);
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(tab->palette.highlight());
+            painter->drawRoundedRect(tab->rect, 4.0, 4.0);
+            painter->restore();
+            return;
+        }
+        if (element == CE_TabBarTabLabel) {
+            if (tab->state & QStyle::State_Selected) {
+                painter->save();
+                painter->setPen(tab->palette.highlightedText().color());
+                painter->drawText(tab->rect, Qt::AlignCenter, tab->text);
+                painter->restore();
+                return;
+            }
             QStyleOptionTab opt(*tab);
             opt.shape = QTabBar::RoundedNorth;
             QProxyStyle::drawControl(element, &opt, painter, widget);
