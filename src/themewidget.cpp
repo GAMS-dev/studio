@@ -173,7 +173,10 @@ bool ThemeWidget::eventFilter(QObject *watched, QEvent *event)
         } else if (watched == ui->colorBG1) {
             emit hintTextChanged(ui->name->text() + " - Background Color");
         } else if (watched == ui->colorBG2) {
-            emit hintTextChanged(ui->name->text() + " - Alternate Background Color");
+            if (mSlotBg2 == Theme::Active_Back)
+                emit hintTextChanged(ui->name->text() + " - Alternate Foreground Color");
+            else
+                emit hintTextChanged(ui->name->text() + " - Alternate Background Color");
         } else if (watched == ui->name) {
             emit hintTextChanged(ui->name->text());
         }

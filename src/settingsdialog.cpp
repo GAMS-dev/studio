@@ -640,7 +640,9 @@ void SettingsDialog::appearanceIndexChanged(int index)
 {
     ViewHelper::changeAppearance(index);
     setThemeEditable(index >= mFixedThemeCount);
-    QTimer::singleShot(0, this, &SettingsDialog::themeModified);
+    QTimer::singleShot(0, this, [this]() {
+        themeModified();
+    });
 }
 
 void SettingsDialog::editorBaseColorChanged()
@@ -670,6 +672,7 @@ void SettingsDialog::themeModified(bool emitThemeChange)
     for (ThemeWidget *wid : std::as_const(mColorWidgets)) {
         wid->refresh();
     }
+    Theme::instance()->invalidate();
 }
 
 void SettingsDialog::on_tb_userLibSelect_clicked()
@@ -1040,25 +1043,27 @@ void SettingsDialog::initColorPage()
 
     // General colors
     colorSlots = {
-        {Theme::Window_windowText,         Theme::Window_window,          Theme::invalid},
-        {Theme::Window_text,               Theme::Window_base,            Theme::Window_alternateBase},
-        {Theme::Window_buttonText,         Theme::Window_button,          Theme::invalid},
-        {Theme::Window_highlightedText,    Theme::Window_highlight,       Theme::invalid},
-        {Theme::Window_tooltipText,        Theme::Window_tooltipBase,     Theme::invalid},
-        {Theme::Window_labelHighlightText, Theme::Window_labelHighlight,  Theme::invalid},
+        {Theme::Window_windowText,             Theme::Window_window,            Theme::invalid},
+        {Theme::Window_disable_windowText,     Theme::Window_disable_window,    Theme::invalid},
+        {Theme::Window_text,                   Theme::Window_base,              Theme::Window_alternateBase},
+        {Theme::Window_disable_text,           Theme::Window_disable_base,      Theme::Window_disable_alternateBase},
+        {Theme::Window_buttonText,             Theme::Window_button,            Theme::invalid},
+        {Theme::Window_disable_buttonText,     Theme::Window_disable_button,    Theme::invalid},
+        {Theme::Window_highlightedText,        Theme::Window_highlight,         Theme::invalid},
+        {Theme::Window_disable_hightlightText, Theme::Window_disable_highlight, Theme::invalid},
+        {Theme::Icon_Back,                     Theme::invalid,                  Theme::Active_Back},
+        {Theme::Disable_Back,                  Theme::invalid,                  Theme::invalid},
 
-        {Theme::Window_placeHolderText,    Theme::invalid,            Theme::invalid},
-        {Theme::Window_link,               Theme::invalid,            Theme::invalid},
+        {Theme::Window_placeHolderText,         Theme::invalid,                 Theme::invalid},
+        {Theme::Window_disable_placeholderText, Theme::invalid,                 Theme::invalid},
+        {Theme::Window_link,                    Theme::invalid,                 Theme::invalid},
+        {Theme::Window_disable_link,            Theme::invalid,                 Theme::invalid},
 
-        {Theme::Window_disable_windowText,    Theme::Window_disable_window,      Theme::invalid},
-        {Theme::Window_disable_text,          Theme::Window_disable_base,        Theme::Window_disable_alternateBase},
-        {Theme::Window_disable_buttonText,    Theme::Window_disable_button,      Theme::invalid},
-        {Theme::Window_disable_hightlightText,Theme::Window_disable_highlight,   Theme::invalid},
+        {Theme::Window_tooltipText,            Theme::Window_tooltipBase,       Theme::invalid},
+        {Theme::Window_labelHighlightText,     Theme::Window_labelHighlight,    Theme::invalid},
 
-        { Theme::Window_disable_placeholderText, Theme::invalid,                 Theme::invalid},
-        { Theme::Window_disable_link,            Theme::invalid,                 Theme::invalid},
     };
-    initColorGroups(ui->pageGeneral, colorSlots, twColors, {3, 4, 6});
+    initColorGroups(ui->pageGeneral, colorSlots, twColors, {5, 7});
 
     // ICON colors
 //    box = ui->groupIconColors;
