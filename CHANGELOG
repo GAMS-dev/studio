@@ -1,6 +1,7 @@
 Version 1.25.5  *
 ==================
 - Fixed a bug where the GDX Viewer default numerical precision was not applied correctly to the data.
+- Fixed invisible text selection in the project filter.
 
 Version 1.25.4
 ==================
