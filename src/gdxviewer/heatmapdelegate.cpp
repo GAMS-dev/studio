@@ -118,7 +118,7 @@ void HeatmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
             QColor color = Theme::heatmapColor(Theme::Window_base, alpha);
 
             painter->save();
-            QRect smallerRect = opt.rect.adjusted(1, 2, -1, -2);
+            QRect smallerRect = opt.rect.adjusted(1, 1, -1, -1);
             painter->fillRect(smallerRect, color);
             painter->restore();
         }
