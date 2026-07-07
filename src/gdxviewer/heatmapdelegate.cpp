@@ -119,8 +119,11 @@ void HeatmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
 
             painter->save();
             QRect smallerRect = opt.rect.adjusted(1, 1, -1, -1);
+            if (opt.state & QStyle::State_Selected)
+                color = Theme::mixColor(color, Theme::Window_highlight, .7);
             painter->fillRect(smallerRect, color);
             painter->restore();
+            opt.state &= ~QStyle::State_Selected;
         }
     }
 
