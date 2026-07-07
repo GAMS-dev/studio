@@ -672,7 +672,6 @@ void SettingsDialog::themeModified(bool emitThemeChange)
     for (ThemeWidget *wid : std::as_const(mColorWidgets)) {
         wid->refresh();
     }
-    Theme::instance()->invalidate();
 }
 
 void SettingsDialog::on_tb_userLibSelect_clicked()
@@ -828,9 +827,12 @@ void SettingsDialog::open()
 {
     loadSettings();
     setModifiedStatus(false);
-
+    setWindowOpacity(0.0);  // hide the flicker if dark/light theme differs from OS
     QDialog::open();
-    mSettings->block(); // prevent changes from outside this dialog
+    QTimer::singleShot(0, this, [this]() {
+        setWindowOpacity(1.0);
+    });
+    mSettings->block();     // prevent changes from outside this dialog
 }
 
 SettingsDialog::~SettingsDialog()
