@@ -27,13 +27,13 @@
 #include <QTabWidget>
 #include <QProcess>
 
-#include "common.h"
 #include "reference.h"
 #include "abstractview.h"
 
 namespace Ui {
 class ReferenceViewer;
 }
+class QStandardItemModel;
 
 namespace gams {
 namespace studio {
@@ -46,7 +46,7 @@ enum class ReferenceViewerType {
 };
 
 class Reference;
-class ReferenceTabStyle;
+
 class ReferenceViewer : public AbstractView
 {
     Q_OBJECT
@@ -56,6 +56,7 @@ public:
     ~ReferenceViewer() override;
     void selectSearchField() const;
     void updateStyle();
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 signals:
     void jumpTo(gams::studio::reference::ReferenceItem item);
@@ -64,7 +65,6 @@ signals:
 
 public slots:
     void reloadFile(const QString &encodingName);
-    void on_tabBarClicked(int index);
     void updateView(bool loadStatus, bool pendingReload);
     void updateFileUsedTabText(bool compactView);
     int currentSelectedTab();
@@ -73,12 +73,16 @@ public slots:
 
 protected:
     void keyPressEvent(QKeyEvent *e) override;
+    void setCurrentViewerIndex(int index);
+    void selectStackedIndex(int index);
+    void updateTabs();
 
 private:
     Ui::ReferenceViewer *ui;
     QString mEncodingName;
     QScopedPointer<Reference> mReference;
-    QScopedPointer<ReferenceTabStyle> mRefTabStyle;
+    QModelIndex lastHoverIndex;
+    QStandardItemModel *mNavModel = nullptr;
 };
 
 } // namespace reference

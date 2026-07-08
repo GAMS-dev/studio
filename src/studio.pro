@@ -241,7 +241,6 @@ SOURCES += \
     reference/reference.cpp \
     reference/referencedatatype.cpp \
     reference/referenceitemmodel.cpp \
-    reference/referencetabstyle.cpp \
     reference/referencetreemodel.cpp \
     reference/referenceviewer.cpp \
     reference/sortedfileheaderview.cpp \
@@ -487,7 +486,6 @@ HEADERS += \
     reference/reference.h \
     reference/referencedatatype.h \
     reference/referenceitemmodel.h \
-    reference/referencetabstyle.h \
     reference/referencetreemodel.h \
     reference/referenceviewer.h \
     reference/sortedfileheaderview.h \
