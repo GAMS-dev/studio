@@ -1036,7 +1036,7 @@ bool MainWindow::event(QEvent *event)
         processFileEvents();
     } else if (event->type() == QEvent::ThemeChange) {
         if (mSettingsDialog && mSettingsDialog->isFollowOS())
-            QTimer::singleShot(0, this, [](){ ViewHelper::changeAppearance(); });
+            QTimer::singleShot(0, this, [](){ ViewHelper::changeAppearance(0); });
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
         if (mSettingsDialog && mSettingsDialog->preventThemeChanging())
             mSettingsDialog->delayBaseThemeChange(true);
