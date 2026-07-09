@@ -40,6 +40,7 @@ namespace studio {
 namespace reference {
 
 const int CExtraMargin = 12;
+const qreal CTypeHeightFactor = 1.6;
 
 inline static SymbolReferenceWidget* initViewerType(SymbolReferenceWidget* w) {
     if(w) w->setProperty("ViewerType", int(ReferenceViewerType::Symbol));
@@ -112,7 +113,7 @@ ReferenceViewer::ReferenceViewer(const QString &referenceFile, const QString &en
               << QString("File Used (%1)").arg("...");
     }
     mNavModel = new QStandardItemModel(0, 1, this);
-    int itemHeight = int(ui->listView->fontMetrics().height() * 1.8);
+    int itemHeight = int(ui->listView->fontMetrics().height() * CTypeHeightFactor);
     for (int i = 0; i < items.count(); ++i) {
         QStandardItem *item = new QStandardItem();
         item->setData(items.at(i), Qt::DisplayRole);
@@ -293,7 +294,7 @@ void ReferenceViewer::updateTabs()
 {
     if (!mNavModel) return;
     QFontMetrics fm = ui->listView->fontMetrics();
-    int itemHeight = int(ui->listView->fontMetrics().height() * 1.8);
+    int itemHeight = int(ui->listView->fontMetrics().height() * CTypeHeightFactor);
     int longestItemWidth = 0;
     for (int i = 0; i < mNavModel->rowCount(); ++i) {
         QModelIndex index = mNavModel->index(i, 0);
