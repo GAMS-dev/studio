@@ -520,7 +520,6 @@ MainWindow::MainWindow(QWidget *parent)
     });
     mThemeReady = true;
     invalidateTheme(false);
-    ViewHelper::updateBaseTheme();
 
     initGamsStandardPaths();
     updateRunState();
@@ -725,7 +724,6 @@ void MainWindow::initSettingsDialog()
         updateAndSaveSettings();
         if (mSettingsDialog->hasDelayedBaseThemeChange()) {
             mSettingsDialog->delayBaseThemeChange(false);
-            ViewHelper::updateBaseTheme();
         }
         ui->actionOpenAlternative->setText(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
         ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
@@ -1037,14 +1035,11 @@ bool MainWindow::event(QEvent *event)
     } else if (event->type() == QEvent::WindowActivate) {
         processFileEvents();
     } else if (event->type() == QEvent::ThemeChange) {
-        if (mSettingsDialog && ViewHelper::testFollowOS())
+        if (mSettingsDialog && mSettingsDialog->isFollowOS())
             QTimer::singleShot(0, this, [](){ ViewHelper::changeAppearance(); });
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
-        if (!mSettingsDialog || !mSettingsDialog->preventThemeChanging())
-            ViewHelper::updateBaseTheme();
-        else {
+        if (mSettingsDialog && mSettingsDialog->preventThemeChanging())
             mSettingsDialog->delayBaseThemeChange(true);
-        }
     }
     return QMainWindow::event(event);
 }

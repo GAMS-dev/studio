@@ -65,12 +65,6 @@ void ViewHelper::setModified(QWidget *widget, bool modified)
     }
 }
 
-bool ViewHelper::updateBaseTheme()
-{
-    int currentTheme = Theme::instance()->activeTheme();
-    return currentTheme != Theme::instance()->activeTheme();
-}
-
 ///
 /// \brief ViewHelper::setAppearance sets and saves the appearance
 /// \param appearance

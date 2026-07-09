@@ -23,7 +23,6 @@
 
 #include <QMainWindow>
 #include <QStatusBar>
-#include <logger.h>
 #include <QPainter>
 #include <QPaintEvent>
 #include <QStyle>

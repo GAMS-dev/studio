@@ -25,6 +25,7 @@
 #include <QPainter>
 
 #include "referenceviewer.h"
+#include "logger.h"
 #include "ui_referenceviewer.h"
 #include "filereferencewidget.h"
 #include "symbolreferenceitem.h"
@@ -174,8 +175,6 @@ ReferenceViewer::ReferenceViewer(const QString &referenceFile, const QString &en
     mTabDelegate.reset(new ReferenceTabStyle());
     ui->listView->setItemDelegate(mTabDelegate.data());
     ui->listView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    ui->listView->installEventFilter(this);
-    ui->listView->viewport()->installEventFilter(this);
     setCurrentViewerIndex(0);
     ui->stackedWidget->setEnabled(!problemLoaded);
     allSymbolsRefWidget->initModel();
@@ -231,21 +230,6 @@ bool ReferenceViewer::eventFilter(QObject *watched, QEvent *event)
         }
     } else if (watched == ui->listView && event->type() == QEvent::FontChange) {
         updateTabs();
-    } else if (watched == ui->listView && event->type() == QEvent::Paint) {
-        ui->listView->viewport()->removeEventFilter(this);
-        ui->listView->viewport()->render(ui->listView->viewport());
-        ui->listView->installEventFilter(this);
-
-        QPainter painter(ui->listView->viewport());
-        painter.setPen(qApp->palette().color(QPalette::Mid));
-
-        for (int i = 0; i < mNavModel->rowCount(); ++i) {
-            QRect r = ui->listView->visualRect(mNavModel->index(i, 0));
-            if (r.isValid()) {
-                // Zeichnet eine durchgehende Trennlinie exakt unter die Zeile
-                painter.drawLine(0, r.bottom(), ui->listView->viewport()->width(), r.bottom());
-            }
-        }
     }
     return AbstractView::eventFilter(watched, event);
 }

@@ -235,8 +235,6 @@ public:
         return res;
     }
 
-    static bool updateBaseTheme();
-
     static void setAppearance(int appearance = -1);
     static void changeAppearance(int appearance = -1);
     static bool testFollowOS();

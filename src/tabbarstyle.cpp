@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "tabbarstyle.h"
-#include "logger.h"
 #include "exception.h"
 #include "theme.h"
 #include "viewhelper.h"

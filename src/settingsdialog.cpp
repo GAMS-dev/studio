@@ -245,11 +245,7 @@ void SettingsDialog::loadSettings()
     mSettings->loadFile(Settings::scUser);
     mSettings->loadFile(Settings::scTheme);
     int pickedTheme = mSettings->toInt(skEdAppearance);
-#ifdef _WIN64
-    Theme::instance()->setActiveTheme(--pickedTheme);
-#else
-    Theme::instance()->setActiveTheme(pickedTheme);
-#endif
+    ViewHelper::changeAppearance(pickedTheme);
 
     // general tab page
     ui->txt_workspace->setText(mSettings->toString(skDefaultWorkspace));

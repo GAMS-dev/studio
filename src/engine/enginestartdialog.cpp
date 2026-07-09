@@ -100,7 +100,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->cbPriority->setVisible(false);
     ui->cbPriority->setCurrentIndex(1);
 
-    if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) != 0)
+    if (Theme::instance()->baseTheme(Theme::isDark()))
         ui->laLogo->setPixmap(QPixmap(QString::fromUtf8(":/img/engine-logo-w")));
     support::GamsLicenseInfo gi;
     mLocalGamsVersion = gi.localDistribVersionStringShort().split('.');
