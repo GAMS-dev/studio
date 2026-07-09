@@ -46,6 +46,7 @@ enum class ReferenceViewerType {
 };
 
 class Reference;
+class ReferenceTabStyle;
 
 class ReferenceViewer : public AbstractView
 {
@@ -81,6 +82,7 @@ private:
     Ui::ReferenceViewer *ui;
     QString mEncodingName;
     QScopedPointer<Reference> mReference;
+    QScopedPointer<ReferenceTabStyle> mTabDelegate;
     QModelIndex lastHoverIndex;
     QStandardItemModel *mNavModel = nullptr;
 };

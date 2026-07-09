@@ -22,12 +22,14 @@
 #include <QStackedWidget>
 #include <QWheelEvent>
 #include <QStandardItemModel>
+#include <QPainter>
 
 #include "referenceviewer.h"
 #include "ui_referenceviewer.h"
 #include "filereferencewidget.h"
 #include "symbolreferenceitem.h"
 #include "symbolreferencewidget.h"
+#include "referencetabstyle.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
 #include "theme.h"
@@ -120,16 +122,6 @@ ReferenceViewer::ReferenceViewer(const QString &referenceFile, const QString &en
 
     ui->listView->setModel(mNavModel);
     // ui->comboBox->setModel(mNavModel);   // TODO(JM) prepared for later enhancement
-    connect(ui->listView->selectionModel(), &QItemSelectionModel::currentRowChanged, this, [this](const QModelIndex &current) {
-        ui->stackedWidget->setCurrentIndex(current.row());
-        // ui->comboBox->setCurrentIndex(current.row());  // TODO(JM) prepared for later enhancement
-    });
-
-    // TODO(JM) prepared for later enhancement
-    // connect(ui->comboBox, &QComboBox::currentIndexChanged, this, [this](int index) {
-    //     ui->stackedWidget->setCurrentIndex(index);
-    //     ui->listView->setCurrentIndex(mNavModel->index(index, 0));
-    // });
 
     SymbolReferenceWidget* allSymbolsRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Unknown, this));
     ui->stackedWidget->addWidget(allSymbolsRefWidget);
@@ -179,6 +171,8 @@ ReferenceViewer::ReferenceViewer(const QString &referenceFile, const QString &en
     ui->stackedWidget->addWidget(fileusedRefWidget);
     headers << fileusedRefWidget->headers();
 
+    mTabDelegate.reset(new ReferenceTabStyle());
+    ui->listView->setItemDelegate(mTabDelegate.data());
     ui->listView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->listView->installEventFilter(this);
     ui->listView->viewport()->installEventFilter(this);
@@ -237,6 +231,21 @@ bool ReferenceViewer::eventFilter(QObject *watched, QEvent *event)
         }
     } else if (watched == ui->listView && event->type() == QEvent::FontChange) {
         updateTabs();
+    } else if (watched == ui->listView && event->type() == QEvent::Paint) {
+        ui->listView->viewport()->removeEventFilter(this);
+        ui->listView->viewport()->render(ui->listView->viewport());
+        ui->listView->installEventFilter(this);
+
+        QPainter painter(ui->listView->viewport());
+        painter.setPen(qApp->palette().color(QPalette::Mid));
+
+        for (int i = 0; i < mNavModel->rowCount(); ++i) {
+            QRect r = ui->listView->visualRect(mNavModel->index(i, 0));
+            if (r.isValid()) {
+                // Zeichnet eine durchgehende Trennlinie exakt unter die Zeile
+                painter.drawLine(0, r.bottom(), ui->listView->viewport()->width(), r.bottom());
+            }
+        }
     }
     return AbstractView::eventFilter(watched, event);
 }
