@@ -7,8 +7,8 @@
   - ensure GAMS minor version is GAMS xx.`1`
 - [ ] Test the last build
   - [ ] WEI
+  - [ ] DAC
   - [ ] LEG
-  - [ ] DEG
 - [ ] create TAG for `release` branch
 - [ ] merge release into develop
 - [ ] merge release into master
@@ -17,5 +17,4 @@
 - [ ] proceed with products release MR
 
 /assign me
-/request_review me
 /draft
