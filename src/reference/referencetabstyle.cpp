@@ -17,37 +17,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QStyleOptionTab>
-
 #include "referencetabstyle.h"
+#include <QPainter>
 
 namespace gams {
 namespace studio {
 namespace reference {
 
-ReferenceTabStyle::ReferenceTabStyle(const QString &style)
-    : QProxyStyle(style)
-{ }
-
-QSize ReferenceTabStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const
+void ReferenceTabStyle::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    QSize s = QProxyStyle::sizeFromContents(type, option, size, widget);
-    if (type == QStyle::CT_TabBarTab)
-        s.transpose();
-    return s;
-}
-
-void ReferenceTabStyle::drawControl(QStyle::ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
-{
-    if (element == CE_TabBarTabLabel) {
-        if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
-            QStyleOptionTab opt(*tab);
-            opt.shape = QTabBar::RoundedNorth;
-            QProxyStyle::drawControl(element, &opt, painter, widget);
-            return;
-        }
+    QStyleOptionViewItem opt(option);
+    opt.displayAlignment = Qt::AlignCenter;
+    if (option.state & QStyle::State_MouseOver && option.state & QStyle::State_Enabled) {
+        painter->save();
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(option.palette.brush(QPalette::AlternateBase));
+        painter->drawRect(option.rect);
+        painter->restore();
     }
-    QProxyStyle::drawControl(element, option, painter, widget);
+    QStyledItemDelegate::paint(painter, opt, index);
+    painter->save();
+    painter->setPen(option.palette.color(QPalette::Mid));
+    painter->drawLine(option.rect.left(), option.rect.bottom(), option.rect.right(), option.rect.bottom());
+    painter->restore();
 }
 
 } // namespace reference

@@ -20,22 +20,16 @@
 #ifndef REFERENCETABSTYLE_H
 #define REFERENCETABSTYLE_H
 
-#include <QProxyStyle>
+#include <QStyledItemDelegate>
 
 namespace gams {
 namespace studio {
 namespace reference {
 
-class ReferenceTabStyle : public QProxyStyle
+class ReferenceTabStyle: public QStyledItemDelegate
 {
 public:
-    ReferenceTabStyle(const QString &style);
-
-    virtual QSize sizeFromContents(ContentsType type, const QStyleOption *option,
-                           const QSize &size, const QWidget *widget) const override;
-
-    virtual void drawControl(ControlElement element, const QStyleOption *option,
-                             QPainter *painter, const QWidget *widget) const override;
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
 } // namespace reference

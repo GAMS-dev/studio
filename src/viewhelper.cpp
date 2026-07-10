@@ -65,12 +65,6 @@ void ViewHelper::setModified(QWidget *widget, bool modified)
     }
 }
 
-bool ViewHelper::updateBaseTheme()
-{
-    int currentTheme = Theme::instance()->activeTheme();
-    return currentTheme != Theme::instance()->activeTheme();
-}
-
 ///
 /// \brief ViewHelper::setAppearance sets and saves the appearance
 /// \param appearance
@@ -96,21 +90,38 @@ void ViewHelper::changeAppearance(int appearance)
         appearance = Settings::settings()->toInt(skEdAppearance);
     int pickedTheme = appearance;
 
+    if (Theme::followOSThemeCount()) {
+        bool canFollowOS = true; // deactivate follow OS option for linux
+
+        if (canFollowOS && pickedTheme == 0) { // do OS specific things
 #ifdef _WIN64
-    // TODO(JM) "canFollowOS" may be activated for macOS too when we can track this:
-    // MacOSCocoaBridge::isDarkMode()
-
-    bool canFollowOS = true; // deactivate follow OS option for linux
-
-    if (canFollowOS && pickedTheme == 0) { // do OS specific things
-        QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
-        pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
-    } else if (canFollowOS) {
-        pickedTheme--; // deduct "Follow OS" option
-    }
+            QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
+            pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
+#elif defined(__APPLE__)
+            pickedTheme = MacOSCocoaBridge::isDarkMode() ? 1 : 0;
 #endif
+        } else if (canFollowOS) {
+            pickedTheme--; // deduct "Follow OS" option
+        }
+    }
 
     Theme::instance()->setActiveTheme(pickedTheme);
+}
+
+bool ViewHelper::testFollowOS()
+{
+    if (!Theme::followOSThemeCount()) return false;
+    int currentTheme = Settings::settings()->toInt(skEdAppearance);
+    if (currentTheme != 0) return false;
+
+#ifdef _WIN64
+    QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
+    currentTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
+#elif defined(__APPLE__)
+    currentTheme = MacOSCocoaBridge::isDarkMode() ? 1 : 0;
+#endif
+
+    return Theme::instance()->activeTheme() != currentTheme;
 }
 
 } // namespace studio

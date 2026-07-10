@@ -57,7 +57,7 @@ public:
     int engineInitialExpire() const;
     void updateCleanupFilterList(const QVariantMap &prevFilters);
     void updateWorkspaceList(const QVariantMap &prevWorkspaces);
-
+    bool isFollowOS();
     QStringList cleanupWorkspaces(bool dryRun);
 
 protected:
@@ -87,7 +87,7 @@ public slots:
 private slots:
     void setModified();
     void prepareModifyTheme();
-    void themeModified();
+    void themeModified(bool emitThemeChange = false);
     bool setAndCheckUserLib(const QString &path);
     void appearanceIndexChanged(int index);
     void editorBaseColorChanged();

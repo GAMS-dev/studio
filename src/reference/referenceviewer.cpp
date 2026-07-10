@@ -19,16 +19,18 @@
  */
 #include <QDir>
 #include <QFile>
-#include <QTabBar>
 #include <QStackedWidget>
 #include <QWheelEvent>
+#include <QStandardItemModel>
+#include <QPainter>
 
 #include "referenceviewer.h"
+#include "logger.h"
 #include "ui_referenceviewer.h"
 #include "filereferencewidget.h"
-#include "referencetabstyle.h"
 #include "symbolreferenceitem.h"
 #include "symbolreferencewidget.h"
+#include "referencetabstyle.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
 #include "theme.h"
@@ -36,6 +38,9 @@
 namespace gams {
 namespace studio {
 namespace reference {
+
+const int CExtraMargin = 12;
+const qreal CTypeHeightFactor = 1.6;
 
 inline static SymbolReferenceWidget* initViewerType(SymbolReferenceWidget* w) {
     if(w) w->setProperty("ViewerType", int(ReferenceViewerType::Symbol));
@@ -76,71 +81,123 @@ ReferenceViewer::ReferenceViewer(const QString &referenceFile, const QString &en
                           mReference->state() == Reference::UnsuccessfullyLoaded );
 
     QList<QHeaderView*> headers;
+    while (ui->stackedWidget->count())
+        ui->stackedWidget->removeWidget(ui->stackedWidget->widget(0));
+
+    QStringList items;
+    if (problemLoaded) {
+        items << QString("All Symbols (?)")
+              << QString("Set (?)")
+              << QString("Acronym (?)")
+              << QString("Variable (?)")
+              << QString("Parameter (?)")
+              << QString("Equation (?)")
+              << QString("Model (?)")
+              << QString("File (?)")
+              << QString("Macro (?)")
+              << QString("Function (?)")
+              << QString("Unused (?)")
+              << QString("File Used (?)");
+    } else {
+        items << QString("All Symbols (%1)").arg(mReference->size())
+              << QString("Set (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Set).size())
+              << QString("Acronym (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Acronym).size())
+              << QString("Variable (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Variable).size())
+              << QString("Parameter (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Parameter).size())
+              << QString("Equation (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Equation).size())
+              << QString("Model (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Model).size())
+              << QString("File (%1)").arg(mReference->findReferenceFromType(SymbolDataType::File).size())
+              << QString("Macro (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Macro).size())
+              << QString("Function (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Funct).size())
+              << QString("Unused (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Unused).size())
+              << QString("File Used (%1)").arg("...");
+    }
+    mNavModel = new QStandardItemModel(0, 1, this);
+    int itemHeight = int(ui->listView->fontMetrics().height() * CTypeHeightFactor);
+    for (int i = 0; i < items.count(); ++i) {
+        QStandardItem *item = new QStandardItem();
+        item->setData(items.at(i), Qt::DisplayRole);
+        item->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
+        item->setData(QSize(0, itemHeight), Qt::SizeHintRole);
+        mNavModel->appendRow(item);
+    }
+
+    ui->listView->setModel(mNavModel);
+    // ui->comboBox->setModel(mNavModel);   // TODO(JM) prepared for later enhancement
 
     SymbolReferenceWidget* allSymbolsRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Unknown, this));
-    ui->tabWidget->addTab(allSymbolsRefWidget, QString("All Symbols (%1)").arg( problemLoaded ? "?" : QString::number(mReference->size())) );
+    ui->stackedWidget->addWidget(allSymbolsRefWidget);
     headers << allSymbolsRefWidget->headers();
 
     SymbolReferenceWidget* setRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Set, this));
-    ui->tabWidget->addTab(setRefWidget, QString("Set (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Set).size())) );
+    ui->stackedWidget->addWidget(setRefWidget);
     headers << setRefWidget->headers();
 
     SymbolReferenceWidget* acronymRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Acronym, this));
-    ui->tabWidget->addTab(acronymRefWidget, QString("Acronym (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Acronym).size())) );
+    ui->stackedWidget->addWidget(acronymRefWidget);
     headers << acronymRefWidget->headers();
 
     SymbolReferenceWidget* varRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Variable, this));
-    ui->tabWidget->addTab(varRefWidget, QString("Variable (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Variable).size()) ));
+    ui->stackedWidget->addWidget(varRefWidget);
     headers << varRefWidget->headers();
 
     SymbolReferenceWidget* parRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Parameter, this));
-    ui->tabWidget->addTab(parRefWidget, QString("Parameter (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Parameter).size())) );
+    ui->stackedWidget->addWidget(parRefWidget);
     headers << parRefWidget->headers();
 
     SymbolReferenceWidget* equRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Equation, this));
-    ui->tabWidget->addTab(equRefWidget, QString("Equation (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Equation).size())) );
+    ui->stackedWidget->addWidget(equRefWidget);
     headers << equRefWidget->headers();
 
     SymbolReferenceWidget* modelRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Model, this));
-    ui->tabWidget->addTab(modelRefWidget, QString("Model (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Model).size())) );
+    ui->stackedWidget->addWidget(modelRefWidget);
     headers << modelRefWidget->headers();
 
     SymbolReferenceWidget* fileRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::File, this));
-    ui->tabWidget->addTab(fileRefWidget, QString("File (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::File).size())) );
+    ui->stackedWidget->addWidget(fileRefWidget);
     headers << fileRefWidget->headers();
 
     SymbolReferenceWidget* macroRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Macro, this));
-    ui->tabWidget->addTab(macroRefWidget, QString("Macro (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Macro).size())) );
+    ui->stackedWidget->addWidget(macroRefWidget);
     headers << macroRefWidget->headers();
 
     SymbolReferenceWidget* functRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Funct, this));
-    ui->tabWidget->addTab(functRefWidget, QString("Function (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Funct).size())) );
+    ui->stackedWidget->addWidget(functRefWidget);
     headers << functRefWidget->headers();
 
     SymbolReferenceWidget* unusedRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Unused, this));
-    ui->tabWidget->addTab(unusedRefWidget, QString("Unused (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Unused).size())) );
+    ui->stackedWidget->addWidget(unusedRefWidget);
     headers << unusedRefWidget->headers();
 
     FileReferenceWidget* fileusedRefWidget = initViewerType(new FileReferenceWidget(mReference.data(), this));
-    ui->tabWidget->addTab(fileusedRefWidget, QString("File Used (%1)").arg( problemLoaded ? "?" : "..."));
+    ui->stackedWidget->addWidget(fileusedRefWidget);
     headers << fileusedRefWidget->headers();
 
-    ui->tabWidget->setCurrentIndex(0);
-    ui->tabWidget->setEnabled(!problemLoaded);
+    mTabDelegate.reset(new ReferenceTabStyle());
+    ui->listView->setItemDelegate(mTabDelegate.data());
+    ui->listView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setCurrentViewerIndex(0);
+    ui->stackedWidget->setEnabled(!problemLoaded);
     allSymbolsRefWidget->initModel();
-    setFocusProxy(ui->tabWidget);
+    setFocusProxy(ui->stackedWidget);
+    updateTabs();
 
     for (QHeaderView *header : std::as_const(headers)) {
         headerRegister(header);
     }
 
-    connect(ui->tabWidget, &QTabWidget::tabBarClicked, this, &ReferenceViewer::on_tabBarClicked);
     connect(mReference.data(), &Reference::reloadFiledUsedTabFinished, this, &ReferenceViewer::updateFileUsedTabText);
     connect(mReference.data(), &Reference::loadFinished, this, &ReferenceViewer::updateView);
     if (problemLoaded) {
         // call loadReferenceFile() again every 500 ms
         QTimer::singleShot(500, this, [this](){ mReference->loadReferenceFile(mEncodingName, true); });
     }
+    connect(ui->listView->selectionModel(), &QItemSelectionModel::currentRowChanged, this, [this](const QModelIndex &current) {
+        if (current.isValid()) setCurrentViewerIndex(current.row());
+    });
+
+    // TODO(JM) prepared for later enhancement
+    // connect(ui->comboBox, &QComboBox::currentIndexChanged, this, &ReferenceViewer::setCurrentViewerIndex);
 }
 
 ReferenceViewer::~ReferenceViewer()
@@ -150,21 +207,44 @@ ReferenceViewer::~ReferenceViewer()
 
 void ReferenceViewer::updateStyle()
 {
-    mRefTabStyle.reset(new ReferenceTabStyle(QApplication::style()->objectName()));
-    ui->tabWidget->tabBar()->setStyle(mRefTabStyle.data());
-    Theme::setThemeColorPalette(ui->tabWidget, true, false);
+    Theme::setThemeColorPalette(ui->stackedWidget, true, false);
+    updateTabs();
+}
+
+bool ReferenceViewer::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui->listView->viewport()) {
+        if (event->type() == QEvent::MouseMove || event->type() == QEvent::Leave) {
+            QModelIndex hoveredIndex;
+            if (event->type() == QEvent::MouseMove) {
+                QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+                hoveredIndex = ui->listView->indexAt(mouseEvent->pos());
+
+            }
+            for (int i = 0; i < mNavModel->rowCount(); ++i) {
+                if (QStandardItem *item = mNavModel->item(i, 0)) {
+                    item->setData(hoveredIndex.isValid() && i == hoveredIndex.row()
+                                  ? qApp->palette().brush(QPalette::AlternateBase)
+                                  : QVariant(), Qt::BackgroundRole);
+                }
+            }
+        }
+    } else if (watched == ui->listView && event->type() == QEvent::FontChange) {
+        updateTabs();
+    }
+    return AbstractView::eventFilter(watched, event);
 }
 
 void ReferenceViewer::selectSearchField() const
 {
-    SymbolReferenceWidget* tabWidget = qobject_cast<SymbolReferenceWidget*>(ui->tabWidget->currentWidget());
-    if (tabWidget)
-        tabWidget->selectSearchField();
+    SymbolReferenceWidget* stackedWidget = qobject_cast<SymbolReferenceWidget*>(ui->stackedWidget->currentWidget());
+    if (stackedWidget)
+        stackedWidget->selectSearchField();
 }
 
 void ReferenceViewer::reloadFile(const QString &encodingName)
 {
-    FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(11));
+    FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->stackedWidget->widget(11));
     if (fileUsedWidget) {
         fileUsedWidget->deActivateFilter();
     }
@@ -172,35 +252,78 @@ void ReferenceViewer::reloadFile(const QString &encodingName)
     mReference->loadReferenceFile(mEncodingName, true);
 }
 
-void ReferenceViewer::on_tabBarClicked(int index)
+void ReferenceViewer::setCurrentViewerIndex(int index)
 {
-    SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->tabWidget->widget(index));
+    if (index < 0 || index >= mNavModel->rowCount()) return;
+
+    if (ui->listView->currentIndex().row() != index) {
+        QSignalBlocker blocker(ui->listView->selectionModel());
+        ui->listView->setCurrentIndex(mNavModel->index(index, 0));
+    }
+
+    // if (ui->comboBox->currentIndex() != index) {
+    //     QSignalBlocker blocker(ui->comboBox);
+    //     ui->comboBox->setCurrentIndex(index);
+    // }
+
+    ui->stackedWidget->setCurrentIndex(index);
+    selectStackedIndex(index);
+}
+
+void ReferenceViewer::selectStackedIndex(int index)
+{
+    ui->stackedWidget->setCurrentIndex(index);
+    SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->stackedWidget->widget(index));
     if (refWidget) {
         if (!refWidget->isModelLoaded())
             refWidget->initModel();
         refWidget->setFocus();
     } else {
-        FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(index));
+        FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->stackedWidget->widget(index));
         if (fileUsedWidget) {
             if (!fileUsedWidget->isModelLoaded()) {
-               fileUsedWidget->activateFilter();
-               fileUsedWidget->initModel();
+                fileUsedWidget->activateFilter();
+                fileUsedWidget->initModel();
             }
             fileUsedWidget->setFocus();
         }
     }
 }
 
+void ReferenceViewer::updateTabs()
+{
+    if (!mNavModel) return;
+    QFontMetrics fm = ui->listView->fontMetrics();
+    int itemHeight = int(ui->listView->fontMetrics().height() * CTypeHeightFactor);
+    int longestItemWidth = 0;
+    for (int i = 0; i < mNavModel->rowCount(); ++i) {
+        QModelIndex index = mNavModel->index(i, 0);
+        longestItemWidth = qMax(longestItemWidth, fm.horizontalAdvance(mNavModel->data(index).toString()));
+        bool enabled = !mNavModel->data(index).toString().endsWith("(0)")
+                       && !mNavModel->data(index).toString().endsWith("(?)");
+        QColor textColor = enabled ? qApp->palette().color(QPalette::Active, QPalette::Text)
+                                   : qApp->palette().color(QPalette::Disabled, QPalette::Text);
+        mNavModel->setData(index, textColor, Qt::ForegroundRole);
+        mNavModel->setData(index, QSize(0, itemHeight), Qt::SizeHintRole);
+        Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+        if (!enabled)
+            flags &= ~(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+        mNavModel->setItemData(index, {{Qt::UserRole, QVariant(int(flags))}});
+    }
+    int frameWidth = (ui->listView->frameWidth() + CExtraMargin) * 2;
+    ui->listView->setFixedWidth(longestItemWidth + frameWidth);
+}
+
 void ReferenceViewer::updateView(bool loadStatus, bool pendingReload)
 {
     if (loadStatus && !pendingReload) { // SuccessfullyLoaded and no pending relaad
-        for(int i=0; i<ui->tabWidget->count(); i++) {
-            SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->tabWidget->widget(i));
+        for(int i=0; i<ui->stackedWidget->count(); i++) {
+            SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->stackedWidget->widget(i));
             if (refWidget) {
                 refWidget->initModel(mReference.data());
                 refWidget->resetModel();
             } else {
-                FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(i));
+                FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->stackedWidget->widget(i));
                 if (fileUsedWidget) {
                     fileUsedWidget->activateFilter();
                     fileUsedWidget->initModel(mReference.data());
@@ -209,43 +332,44 @@ void ReferenceViewer::updateView(bool loadStatus, bool pendingReload)
             }
         }
 
-        ui->tabWidget->setToolTip(QString(""));
-        ui->tabWidget->setTabText(0, QString("All Symbols (%1)").arg(mReference->size()));
-        ui->tabWidget->setTabText(1, QString("Set (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Set).size()));
-        ui->tabWidget->setTabText(2, QString("Acronym (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Acronym).size()));
-        ui->tabWidget->setTabText(3, QString("Variable (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Variable).size()));
-        ui->tabWidget->setTabText(4, QString("Parameter (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Parameter).size()));
-        ui->tabWidget->setTabText(5, QString("Equation (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Equation).size()));
-        ui->tabWidget->setTabText(6, QString("Model (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Model).size()));
-        ui->tabWidget->setTabText(7, QString("File (%1)").arg(mReference->findReferenceFromType(SymbolDataType::File).size()));
-        ui->tabWidget->setTabText(8, QString("Macro (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Macro).size()));
-        ui->tabWidget->setTabText(9, QString("Function (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Funct).size()));
-        ui->tabWidget->setTabText(10, QString("Unused (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Unused).size()));
-        FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(11));
+        ui->listView->setToolTip(QString(""));
+        mNavModel->setData(mNavModel->index(0, 0), QString("All Symbols (%1)").arg(mReference->size()));
+        mNavModel->setData(mNavModel->index(1, 0), QString("Set (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Set).size()));
+        mNavModel->setData(mNavModel->index(2, 0), QString("Acronym (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Acronym).size()));
+        mNavModel->setData(mNavModel->index(3, 0), QString("Variable (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Variable).size()));
+        mNavModel->setData(mNavModel->index(4, 0), QString("Parameter (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Parameter).size()));
+        mNavModel->setData(mNavModel->index(5, 0), QString("Equation (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Equation).size()));
+        mNavModel->setData(mNavModel->index(6, 0), QString("Model (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Model).size()));
+        mNavModel->setData(mNavModel->index(7, 0), QString("File (%1)").arg(mReference->findReferenceFromType(SymbolDataType::File).size()));
+        mNavModel->setData(mNavModel->index(8, 0), QString("Macro (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Macro).size()));
+        mNavModel->setData(mNavModel->index(9, 0), QString("Function (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Funct).size()));
+        mNavModel->setData(mNavModel->index(10, 0), QString("Unused (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Unused).size()));
+        FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->stackedWidget->widget(11));
         if (fileUsedWidget)
-            ui->tabWidget->setTabText(11, QString("File Used (%1)").arg(mReference->getNumberOfFileUsed(fileUsedWidget->isViewCompact())));
+            mNavModel->setData(mNavModel->index(11, 0), QString("File Used (%1)").arg(mReference->getNumberOfFileUsed(fileUsedWidget->isViewCompact())));
         else
-            ui->tabWidget->setTabText(11, QString("File Used (...)"));
-        ui->tabWidget->setEnabled(true);
+            mNavModel->setData(mNavModel->index(11, 0), QString("File Used (...)"));
+        ui->stackedWidget->setEnabled(true);
     } else {
         QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
-        ui->tabWidget->setToolTip(QString("<p style='white-space:pre'>Error while loading: %1%2<br>The file content might be corrupted or incorrectly overwritten</p>")
+        ui->stackedWidget->setToolTip(QString("<p style='white-space:pre'>Error while loading: %1%2<br>The file content might be corrupted or incorrectly overwritten</p>")
                                       .arg(mReference->getFileLocation(), errorLine));
-        ui->tabWidget->setTabText(0, QString("All Symbols (?)"));
-        ui->tabWidget->setTabText(1, QString("Set (?)"));
-        ui->tabWidget->setTabText(2, QString("Acronym (?)"));
-        ui->tabWidget->setTabText(3, QString("Variable (?)"));
-        ui->tabWidget->setTabText(4, QString("Parameter (?)"));
-        ui->tabWidget->setTabText(5, QString("Equation (?)"));
-        ui->tabWidget->setTabText(6, QString("Model (?)"));
-        ui->tabWidget->setTabText(7, QString("File (?)"));
-        ui->tabWidget->setTabText(8, QString("Macro (?)"));
-        ui->tabWidget->setTabText(9, QString("Function (?)"));
-        ui->tabWidget->setTabText(10, QString("Unused (?)"));
-        ui->tabWidget->setTabText(11, QString("File Used (?)"));
-        ui->tabWidget->setCurrentIndex(0);
-        ui->tabWidget->setEnabled(false);
+        mNavModel->setData(mNavModel->index(0, 0), QString("All Symbols (?)"));
+        mNavModel->setData(mNavModel->index(1, 0), QString("Set (?)"));
+        mNavModel->setData(mNavModel->index(2, 0), QString("Acronym (?)"));
+        mNavModel->setData(mNavModel->index(3, 0), QString("Variable (?)"));
+        mNavModel->setData(mNavModel->index(4, 0), QString("Parameter (?)"));
+        mNavModel->setData(mNavModel->index(5, 0), QString("Equation (?)"));
+        mNavModel->setData(mNavModel->index(6, 0), QString("Model (?)"));
+        mNavModel->setData(mNavModel->index(7, 0), QString("File (?)"));
+        mNavModel->setData(mNavModel->index(8, 0), QString("Macro (?)"));
+        mNavModel->setData(mNavModel->index(9, 0), QString("Function (?)"));
+        mNavModel->setData(mNavModel->index(10, 0), QString("Unused (?)"));
+        mNavModel->setData(mNavModel->index(11, 0), QString("File Used (?)"));
+        ui->stackedWidget->setCurrentIndex(0);
+        ui->stackedWidget->setEnabled(false);
     }
+    updateTabs();
 
     if (pendingReload) {
         // call loadReferenceFile() again every 500 ms
@@ -266,22 +390,22 @@ void ReferenceViewer::updateView(bool loadStatus, bool pendingReload)
 
 void ReferenceViewer::updateFileUsedTabText(bool compactview)
 {
-    ui->tabWidget->setTabText(11, QString("File Used (%1)").arg(mReference->getNumberOfFileUsed(compactview)));
+    mNavModel->setData(mNavModel->index(11, 0), QString("File Used (%1)").arg(mReference->getNumberOfFileUsed(compactview)));
 }
 
 int ReferenceViewer::currentSelectedTab()
 {
-    return ui->tabWidget->currentIndex();
+    return ui->stackedWidget->currentIndex();
 }
 
 ReferenceSettings ReferenceViewer::saveSettings()
 {
     int tabIndex = currentSelectedTab();
-    SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->tabWidget->widget(tabIndex));
+    SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->stackedWidget->widget(tabIndex));
     if (refWidget) {
         return ReferenceSettings(tabIndex, refWidget->currentReferenceItem(), -1, false);
     } else {
-        FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(tabIndex));
+        FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->stackedWidget->widget(tabIndex));
         if (fileUsedWidget) {
             return ReferenceSettings(tabIndex, fileUsedWidget->referenceItem(fileUsedWidget->currentReferenceId()),
                                      fileUsedWidget->currentReferenceId(), fileUsedWidget->isViewCompact());
@@ -290,15 +414,16 @@ ReferenceSettings ReferenceViewer::saveSettings()
     return ReferenceSettings(tabIndex, ReferenceItem(),  -1, false);
 }
 
+
 void ReferenceViewer::loadSettings(const ReferenceSettings &settings)
 {
-    ui->tabWidget->setCurrentIndex(settings.tabIndex);
-    on_tabBarClicked(ui->tabWidget->currentIndex());
-    SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->tabWidget->widget(settings.tabIndex));
+    ui->stackedWidget->setCurrentIndex(settings.tabIndex);
+    selectStackedIndex(ui->stackedWidget->currentIndex());
+    SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->stackedWidget->widget(settings.tabIndex));
     if (refWidget) {
         refWidget->selectSymbolReference(settings.item);
     } else {
-        FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(settings.tabIndex));
+        FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->stackedWidget->widget(settings.tabIndex));
         if (fileUsedWidget) {
             fileUsedWidget->selectFileReference(settings.id, settings.compactView);
         }
@@ -306,22 +431,23 @@ void ReferenceViewer::loadSettings(const ReferenceSettings &settings)
 }
 
 
+
 void ReferenceViewer::keyPressEvent(QKeyEvent *e)
 {
     switch (e->key()) {
     case Qt::Key_Up:
-        if (ui->tabWidget->currentIndex() > 0) {
-            SymbolReferenceWidget* symRefWidget = toSymbolReferenceWidget( ui->tabWidget->widget( ui->tabWidget->currentIndex()-1 ) );
+        if (ui->stackedWidget->currentIndex() > 0) {
+            SymbolReferenceWidget* symRefWidget = toSymbolReferenceWidget( ui->stackedWidget->widget( ui->stackedWidget->currentIndex()-1 ) );
             if (symRefWidget) {
-                ui->tabWidget->setCurrentWidget( symRefWidget );
-                on_tabBarClicked( ui->tabWidget->currentIndex() );
+                ui->stackedWidget->setCurrentWidget( symRefWidget );
+                selectStackedIndex( ui->stackedWidget->currentIndex() );
                 e->accept();
                 return;
             } else {
-                FileReferenceWidget* fileRefWidget = toFileUsedReferenceWidget( ui->tabWidget->widget( ui->tabWidget->currentIndex()-1 ) );
+                FileReferenceWidget* fileRefWidget = toFileUsedReferenceWidget( ui->stackedWidget->widget( ui->stackedWidget->currentIndex()-1 ) );
                 if (fileRefWidget) {
-                    ui->tabWidget->setCurrentWidget( fileRefWidget );
-                    on_tabBarClicked( ui->tabWidget->currentIndex() );
+                    ui->stackedWidget->setCurrentWidget( fileRefWidget );
+                    selectStackedIndex( ui->stackedWidget->currentIndex() );
                     e->accept();
                     return;
                 }
@@ -329,18 +455,18 @@ void ReferenceViewer::keyPressEvent(QKeyEvent *e)
         }
         break;
     case Qt::Key_Down: {
-        if (ui->tabWidget->currentIndex() < ui->tabWidget->count()) {
-            SymbolReferenceWidget* symRefWidget = toSymbolReferenceWidget( ui->tabWidget->widget( ui->tabWidget->currentIndex()+1 ) );
+        if (ui->stackedWidget->currentIndex() < ui->stackedWidget->count()) {
+            SymbolReferenceWidget* symRefWidget = toSymbolReferenceWidget( ui->stackedWidget->widget( ui->stackedWidget->currentIndex()+1 ) );
             if (symRefWidget) {
-                ui->tabWidget->setCurrentWidget( symRefWidget );
-                on_tabBarClicked( ui->tabWidget->currentIndex() );
+                ui->stackedWidget->setCurrentWidget( symRefWidget );
+                selectStackedIndex( ui->stackedWidget->currentIndex() );
                 e->accept();
                 return;
             } else {
-                FileReferenceWidget* fileRefWidget = toFileUsedReferenceWidget( ui->tabWidget->widget( ui->tabWidget->currentIndex()+1 ) );
+                FileReferenceWidget* fileRefWidget = toFileUsedReferenceWidget( ui->stackedWidget->widget( ui->stackedWidget->currentIndex()+1 ) );
                 if (fileRefWidget) {
-                    ui->tabWidget->setCurrentWidget( fileRefWidget );
-                    on_tabBarClicked( ui->tabWidget->currentIndex() );
+                    ui->stackedWidget->setCurrentWidget( fileRefWidget );
+                    selectStackedIndex( ui->stackedWidget->currentIndex() );
                     e->accept();
                     return;
                 }
@@ -351,6 +477,7 @@ void ReferenceViewer::keyPressEvent(QKeyEvent *e)
     }
     QWidget::keyPressEvent(e);
 }
+
 
 } // namespace reference
 } // namespace studio

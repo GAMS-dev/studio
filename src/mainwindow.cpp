@@ -515,10 +515,11 @@ MainWindow::MainWindow(QWidget *parent)
     app->setStyle( new TooltipProxyStyle( PaletteStyleManager::uniformStyleKey()) );
 
     ViewHelper::changeAppearance();
-    connect(Theme::instance(), &Theme::changed, this, &MainWindow::invalidateTheme);
+    connect(Theme::instance(), &Theme::changed, this, [this](){
+        invalidateTheme(true);
+    });
     mThemeReady = true;
     invalidateTheme(false);
-    ViewHelper::updateBaseTheme();
 
     initGamsStandardPaths();
     updateRunState();
@@ -723,7 +724,6 @@ void MainWindow::initSettingsDialog()
         updateAndSaveSettings();
         if (mSettingsDialog->hasDelayedBaseThemeChange()) {
             mSettingsDialog->delayBaseThemeChange(false);
-            ViewHelper::updateBaseTheme();
         }
         ui->actionOpenAlternative->setText(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
         ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
@@ -1034,12 +1034,12 @@ bool MainWindow::event(QEvent *event)
         popDockSizes();
     } else if (event->type() == QEvent::WindowActivate) {
         processFileEvents();
+    } else if (event->type() == QEvent::ThemeChange) {
+        if (mSettingsDialog && mSettingsDialog->isFollowOS())
+            QTimer::singleShot(0, this, [](){ ViewHelper::changeAppearance(0); });
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
-        if (!mSettingsDialog || !mSettingsDialog->preventThemeChanging())
-            ViewHelper::updateBaseTheme();
-        else {
+        if (mSettingsDialog && mSettingsDialog->preventThemeChanging())
             mSettingsDialog->delayBaseThemeChange(true);
-        }
     }
     return QMainWindow::event(event);
 }
@@ -5398,6 +5398,7 @@ void MainWindow::invalidateTheme(bool refreshSyntax)
     Theme::setThemeColorPalette(mNavigatorDialog,    true,  false);
     Theme::setThemeColorPalette(mWp,                 false, false);
     Theme::setThemeColorPalette(ui->dockProjectView, true,  true);
+    Theme::setThemeColorPalette(ui->projectFilter,   true,  false);
     Theme::setThemeColorPalette(ui->dockProcessLog,  true,  false);
 
     if (mResultsView)
@@ -5412,15 +5413,14 @@ void MainWindow::invalidateTheme(bool refreshSyntax)
         mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, qApp->style()->objectName());
         delete old;
     }
-    repaint();
+    update();
 }
 
 void MainWindow::rehighlightOpenFiles()
 {
     for (const QString &fileName : openedFiles()) {
-        FileMeta *meta = mFileMetaRepo.fileMeta(fileName);
-        if (meta->isOpen() && meta->highlighter())
-            meta->highlighter()->rehighlight();
+        if (FileMeta *meta = mFileMetaRepo.fileMeta(fileName))
+            meta->updateSyntaxColors(true);
     }
 }
 

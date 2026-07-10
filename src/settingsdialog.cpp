@@ -77,12 +77,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
         ui->cbThemes->insertItem(i, Theme::instance()->themes().at(i));
     }
     mFixedThemeCount = Theme::instance()->fixedThemeCount();
-#ifdef _WIN64
-    ui->cbThemes->insertItem(0, "Follow Operating System");
-    ++mFixedThemeCount;
-#elif __APPLE__
-//    ui->cbThemes->setVisible(false);
-#endif
+
+    if (Theme::followOSThemeCount()) {
+        ui->cbThemes->insertItem(0, "Follow Operating System");
+        ++mFixedThemeCount;
+    }
 
     mSettings = Settings::settings();
 
@@ -246,11 +245,7 @@ void SettingsDialog::loadSettings()
     mSettings->loadFile(Settings::scUser);
     mSettings->loadFile(Settings::scTheme);
     int pickedTheme = mSettings->toInt(skEdAppearance);
-#ifdef _WIN64
-    Theme::instance()->setActiveTheme(--pickedTheme);
-#else
-    Theme::instance()->setActiveTheme(pickedTheme);
-#endif
+    ViewHelper::changeAppearance(pickedTheme);
 
     // general tab page
     ui->txt_workspace->setText(mSettings->toString(skDefaultWorkspace));
@@ -641,8 +636,9 @@ void SettingsDialog::appearanceIndexChanged(int index)
 {
     ViewHelper::changeAppearance(index);
     setThemeEditable(index >= mFixedThemeCount);
-    emit themeChanged(true);
-    QTimer::singleShot(0, this, &SettingsDialog::themeModified);
+    QTimer::singleShot(0, this, [this]() {
+        themeModified();
+    });
 }
 
 void SettingsDialog::editorBaseColorChanged()
@@ -664,10 +660,11 @@ void SettingsDialog::hintTextChanged(const QString &text)
     ui->laHint->setText(text);
 }
 
-void SettingsDialog::themeModified()
+void SettingsDialog::themeModified(bool emitThemeChange)
 {
     setModified();
-    emit themeChanged(false);
+    if (emitThemeChange)
+        emit themeChanged(true);
     for (ThemeWidget *wid : std::as_const(mColorWidgets)) {
         wid->refresh();
     }
@@ -826,9 +823,12 @@ void SettingsDialog::open()
 {
     loadSettings();
     setModifiedStatus(false);
-
+    setWindowOpacity(0.0);  // hide the flicker if dark/light theme differs from OS
     QDialog::open();
-    mSettings->block(); // prevent changes from outside this dialog
+    QTimer::singleShot(0, this, [this]() {
+        setWindowOpacity(1.0);
+    });
+    mSettings->block();     // prevent changes from outside this dialog
 }
 
 SettingsDialog::~SettingsDialog()
@@ -867,9 +867,7 @@ void SettingsDialog::on_btn_import_clicked()
 
     emit editorLineWrappingChanged();
     emit editorFontChanged(mSettings->toInt(skEdFontSize), mSettings->toString(skEdFontFamily));
-#ifndef __APPLE__
     ViewHelper::setAppearance(); // update ui
-#endif
     close();
 }
 
@@ -987,7 +985,9 @@ void SettingsDialog::initColorGroups(QWidget *box, QList<QList<Theme::ColorSlot>
         }
         connect(wid, &ThemeWidget::hintTextChanged, this, &SettingsDialog::hintTextChanged);
         connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
-        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
+        connect(wid, &ThemeWidget::changed, this, [this]() {
+            themeModified(true);
+        });
         mColorWidgets << wid;
     }
     vertLay->addStretch(1);
@@ -1041,25 +1041,27 @@ void SettingsDialog::initColorPage()
 
     // General colors
     colorSlots = {
-        {Theme::Window_windowText,         Theme::Window_window,          Theme::invalid},
-        {Theme::Window_text,               Theme::Window_base,            Theme::Window_alternateBase},
-        {Theme::Window_buttonText,         Theme::Window_button,          Theme::invalid},
-        {Theme::Window_highlightedText,    Theme::Window_highlight,       Theme::invalid},
-        {Theme::Window_tooltipText,        Theme::Window_tooltipBase,     Theme::invalid},
-        {Theme::Window_labelHighlightText, Theme::Window_labelHighlight,  Theme::invalid},
+        {Theme::Window_windowText,             Theme::Window_window,            Theme::invalid},
+        {Theme::Window_disable_windowText,     Theme::Window_disable_window,    Theme::invalid},
+        {Theme::Window_text,                   Theme::Window_base,              Theme::Window_alternateBase},
+        {Theme::Window_disable_text,           Theme::Window_disable_base,      Theme::Window_disable_alternateBase},
+        {Theme::Window_buttonText,             Theme::Window_button,            Theme::invalid},
+        {Theme::Window_disable_buttonText,     Theme::Window_disable_button,    Theme::invalid},
+        {Theme::Window_highlightedText,        Theme::Window_highlight,         Theme::invalid},
+        {Theme::Window_disable_hightlightText, Theme::Window_disable_highlight, Theme::invalid},
+        {Theme::Icon_Back,                     Theme::invalid,                  Theme::Active_Back},
+        {Theme::Disable_Back,                  Theme::invalid,                  Theme::invalid},
 
-        {Theme::Window_placeHolderText,    Theme::invalid,            Theme::invalid},
-        {Theme::Window_link,               Theme::invalid,            Theme::invalid},
+        {Theme::Window_placeHolderText,         Theme::invalid,                 Theme::invalid},
+        {Theme::Window_disable_placeholderText, Theme::invalid,                 Theme::invalid},
+        {Theme::Window_link,                    Theme::invalid,                 Theme::invalid},
+        {Theme::Window_disable_link,            Theme::invalid,                 Theme::invalid},
 
-        {Theme::Window_disable_windowText,    Theme::Window_disable_window,      Theme::invalid},
-        {Theme::Window_disable_text,          Theme::Window_disable_base,        Theme::Window_disable_alternateBase},
-        {Theme::Window_disable_buttonText,    Theme::Window_disable_button,      Theme::invalid},
-        {Theme::Window_disable_hightlightText,Theme::Window_disable_highlight,   Theme::invalid},
+        {Theme::Window_tooltipText,            Theme::Window_tooltipBase,       Theme::invalid},
+        {Theme::Window_labelHighlightText,     Theme::Window_labelHighlight,    Theme::invalid},
 
-        { Theme::Window_disable_placeholderText, Theme::invalid,                 Theme::invalid},
-        { Theme::Window_disable_link,            Theme::invalid,                 Theme::invalid},
     };
-    initColorGroups(ui->pageGeneral, colorSlots, twColors, {3, 4, 6});
+    initColorGroups(ui->pageGeneral, colorSlots, twColors, {5, 7});
 
     // ICON colors
 //    box = ui->groupIconColors;
@@ -1153,6 +1155,11 @@ void SettingsDialog::updateWorkspaceList(const QVariantMap &prevWorkspaces)
         return a.workspace < b.workspace;
     });
     mWorkspaceModel->setWorkspaces(data);
+}
+
+bool SettingsDialog::isFollowOS()
+{
+    return Theme::followOSThemeCount() && ui->cbThemes->currentIndex() == 0;
 }
 
 QString SettingsDialog::changeSeparators(const QString &commaSeparatedList, const QString &newSeparator)

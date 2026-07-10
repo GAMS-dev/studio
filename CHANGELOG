@@ -11,6 +11,13 @@ Version 1.26.0  *
 - Added a distinct background color to unselected items in GDX Viewer label filters to highlight them more effectively.
 - Added spreadsheet-style block selection to the GDX Viewer. Using `Ctrl+Shift+Home/End` will expand the selection from the active cell to the boundary limits of the data. On macOS the shortcuts are `Command+Fn+Shift+Left/Right`.
 
+Version 1.25.5
+==================
+- Fixed a bug where the GDX Viewer default numerical precision was not applied correctly to the data.
+- Fixed invisible text selection in the project filter.
+- Fix broken log and $include links when the file path contained a comma.
+- Fixed broken "Follow OS Theme" in Settings > Colors for Windows and added support for macOS.
+
 Version 1.25.4
 ==================
 - Fixed color theme reset on Windows.

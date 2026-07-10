@@ -18,9 +18,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "theme.h"
-#include <QHash>
 #include "svgengine.h"
 
+#include <QHash>
 #include <QMetaEnum>
 #include <QFile>
 #include <QJsonObject>
@@ -81,9 +81,11 @@ void Theme::initSlotTexts()
     mSlotText.insert(Mark_listingFg,            "Listing marker");
     mSlotText.insert(Mark_fileFg,               "File marker");
 
-    mSlotText.insert(Icon_Gray,                 "Icon pen");
-    mSlotText.insert(Icon_Back,                 "Icon brush");
-    mSlotText.insert(Icon_Paper,                "Icon paper");
+    mSlotText.insert(Icon_Gray,                 "Icon Pen");
+    mSlotText.insert(Icon_Back,                 "Icon Base");
+    mSlotText.insert(Icon_Paper,                "Icon Paper");
+    mSlotText.insert(Disable_Gray,              "Disabled Icon Pen");
+    mSlotText.insert(Disable_Back,              "Disabled Icon Base");
 
     mSlotText.insert(Syntax_formula,            "Formula");
     mSlotText.insert(Syntax_comment,            "Comment");
@@ -120,7 +122,7 @@ void Theme::initSlotTexts()
     mSlotText.insert(Window_labelHighlightText, "Label");
     mSlotText.insert(Window_text,               "Text");
     mSlotText.insert(Window_button,             "Button background");
-    mSlotText.insert(Window_buttonText,         "Button");
+    mSlotText.insert(Window_buttonText,         "Button Text");
     mSlotText.insert(Window_placeHolderText,    "Input");
     mSlotText.insert(Window_highlight,          "Selection background");
     mSlotText.insert(Window_highlightedText,    "Selection");
@@ -133,7 +135,7 @@ void Theme::initSlotTexts()
 
     mSlotText.insert(Window_disable_windowText,    "Disabled Window");
     mSlotText.insert(Window_disable_text,          "Disabled Text");
-    mSlotText.insert(Window_disable_buttonText,    "Disabled Button");
+    mSlotText.insert(Window_disable_buttonText,    "Disabled Button Text");
 
     mSlotText.insert(Window_disable_highlight,      "Disabled Selection");
     mSlotText.insert(Window_disable_hightlightText, "Disabled Selection");
@@ -897,8 +899,10 @@ int Theme::setActiveTheme(const QString &themeName)
 int Theme::setActiveTheme(int theme)
 {
     if (theme < 0 || theme >= mThemeNames.size()) return -1;
+    bool changed = mActiveTheme != theme;
     mActiveTheme = theme;
-    invalidate();
+    if (changed)
+        invalidate();
     return theme;
 }
 
@@ -1376,6 +1380,12 @@ int Theme::readUserTheme(const QVariantMap &tSource)
     }
     mColorThemes.replace(newInd, currentTheme);
     return newInd;
+}
+
+int Theme::followOSThemeCount()
+{
+    return (PaletteStyleManager::currentPlatform() == PaletteStyleManager::Windows
+         || PaletteStyleManager::currentPlatform() == PaletteStyleManager::MacOS   ? 1 : 0);
 }
 
 QVariantMap Theme::writeCurrentTheme()
