@@ -3,7 +3,7 @@ Version 1.25.5  *
 - Fixed a bug where the GDX Viewer default numerical precision was not applied correctly to the data.
 - Fixed invisible text selection in the project filter.
 - Fix broken log and $include links when the file path contained a comma.
-- Fixed "Follow OS Theme" in Settings > Colors for Windows and macOS.
+- Fixed broken "Follow OS Theme" in Settings > Colors for Windows and added support for macOS.
 
 Version 1.25.4
 ==================
