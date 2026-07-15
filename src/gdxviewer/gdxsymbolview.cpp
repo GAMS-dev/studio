@@ -1195,7 +1195,7 @@ void GdxSymbolView::enableControls()
     updateHeatmapButton();
 }
 
-bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv, QVector<bool> matchInCol) {
+bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv, QVector<bool> matchInDim) {
 
     // match in data for list view and table view
     if (mSearchRegEx.match(tv->model()->index(row, col).data().toString()).hasMatch())
@@ -1208,13 +1208,13 @@ bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv, QVector<boo
 
         int rowDimCount = mSym->dim() - mTvModel->tvColDim();
         for (int i = 0; i < mTvModel->tvColDim(); i++) {
-            if (matchInCol[mTvModel->tvDimOrder().at(rowDimCount + i)]) {
+            if (matchInDim[mTvModel->tvDimOrder().at(rowDimCount + i)]) {
                 searchColLabels = true;
                 break;
             }
         }
         for (int i = 0; i < rowDimCount; i++) {
-            if (matchInCol[mTvModel->tvDimOrder().at(i)]) {
+            if (matchInDim[mTvModel->tvDimOrder().at(i)]) {
                 searchRowLabels = true;
                 break;
             }
@@ -1264,24 +1264,23 @@ void GdxSymbolView::onSearch(bool backward)
         return;
     QModelIndex idx = tv->currentIndex();
 
-    QVector<bool> matchInCol;
-    for (int c=0; c<mSym->dim(); c++) {
+    QVector<bool> matchInDim;
+    for (int d=0; d<mSym->dim(); d++) {
         bool match = false;
-        std::vector<int>* uels = mSym->uelsInColumn().at(c);
-        for (int uel : *uels) {
+        for (int uel : *mSym->uelsInColumn().at(d)) {
             QString label = mSym->gdxSymbolTable()->uel2Label(uel);
             if (mSearchRegEx.match(label).hasMatch()) {
                 match = true;
                 break;
             }
         }
-        matchInCol.append(match);
+        matchInDim.append(match);
     }
 
     QMap<int, int> vToL;  // visual index -> logical index
     for (int i=0; i<tv->model()->columnCount(); i++) {
         if (!tv->horizontalHeader()->isSectionHidden(i)) {
-            if (tv == ui->tvListView && i < matchInCol.size() && !matchInCol[i])
+            if (tv == ui->tvListView && i < mSym->dim() && !matchInDim[i])
                 continue;
             vToL.insert(tv->horizontalHeader()->visualIndex(i), i);
         }
@@ -1337,7 +1336,7 @@ void GdxSymbolView::onSearch(bool backward)
             first = false;
         }
         int col = vToL[visualCol];
-        if (matchAndSelect(row, col, tv, matchInCol)) {
+        if (matchAndSelect(row, col, tv, matchInDim)) {
             tv->selectionModel()->setCurrentIndex(tv->model()->index(row, col), QItemSelectionModel::SelectCurrent);
             return;
         }
