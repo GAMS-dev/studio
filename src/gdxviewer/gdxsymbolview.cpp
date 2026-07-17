@@ -1279,8 +1279,11 @@ void GdxSymbolView::onSearch(bool backward)
 
     QMap<int, int> vToL;  // visual index -> logical index
     for (int i=0; i<tv->model()->columnCount(); i++) {
-        if (!tv->horizontalHeader()->isSectionHidden(i))
+        if (!tv->horizontalHeader()->isSectionHidden(i)) {
+            if (tv == ui->tvListView && i < mSym->dim() && !matchInDim[i])
+                continue;
             vToL.insert(tv->horizontalHeader()->visualIndex(i), i);
+        }
     }
     if (vToL.isEmpty())
         return;
