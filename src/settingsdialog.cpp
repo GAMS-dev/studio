@@ -41,6 +41,8 @@
 namespace gams {
 namespace studio {
 
+const float CColorDistScale = 1.9;
+
 SettingsDialog::SettingsDialog(MainWindow *parent)
     : QDialog(parent)
     , ui(new Ui::SettingsDialog)
@@ -992,7 +994,7 @@ void SettingsDialog::initColorGroups(QWidget *box, QList<QList<Theme::ColorSlot>
     }
     vertLay->addStretch(1);
     vertLay->activate();
-    box->setMaximumHeight(vertLay->minimumSize().height() * 2);
+    box->setMaximumHeight(vertLay->minimumSize().height() * CColorDistScale);
 }
 
 void SettingsDialog::initColorPage()
@@ -1036,8 +1038,10 @@ void SettingsDialog::initColorPage()
         {Theme::Mark_fileFg,                Theme::invalid,                     Theme::invalid},
         {Theme::Edit_parenthesesInvalidFg,  Theme::Edit_parenthesesInvalidBg,   Theme::Edit_parenthesesInvalidBgBlink},
         {},
+        {Theme::invalid,                    Theme::Edit_heatmapLowBg,           Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_heatmapHighBg,          Theme::invalid},
     };
-    initColorGroups(ui->pageEditor, colorSlots, twColors);
+    initColorGroups(ui->pageEditor, colorSlots, twColors, {8});
 
     // General colors
     colorSlots = {

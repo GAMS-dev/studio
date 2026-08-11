@@ -68,15 +68,17 @@ void Theme::initSlotTexts()
     mSlotText.insert(Edit_findFg,               "Find matches");
     mSlotText.insert(Edit_searchFg,             "Search result");
     mSlotText.insert(Edit_foldLineBg,           "Fold lines marker");
+    mSlotText.insert(Edit_foldLineFg,           "Folded lines marker");
     mSlotText.insert(Edit_parenthesesValidFg,   "Matching parentheses");
     mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
     mSlotText.insert(Edit_linenrAreaFg,         "Line number");
     mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line number");
-    mSlotText.insert(Edit_profilingBg1,          "Profiling tone low");
-    mSlotText.insert(Edit_profilingBg2,          "Profiling tone medium");
-    mSlotText.insert(Edit_profilingBg3,          "Profiling tone high");
-    mSlotText.insert(Edit_foldLineFg,           "Folded lines marker");
     mSlotText.insert(Edit_linenrAreaFoldBg,     "Fold marker");
+    mSlotText.insert(Edit_profilingBg1,         "Profiling tone low");
+    mSlotText.insert(Edit_profilingBg2,         "Profiling tone medium");
+    mSlotText.insert(Edit_profilingBg3,         "Profiling tone high");
+    mSlotText.insert(Edit_heatmapLowBg,         "Heatmap tone low");
+    mSlotText.insert(Edit_heatmapHighBg,        "Heatmap tone high");
     mSlotText.insert(Mark_errorFg,              "Error marker");
     mSlotText.insert(Mark_listingFg,            "Listing marker");
     mSlotText.insert(Mark_fileFg,               "File marker");
@@ -172,20 +174,20 @@ void Theme::initDefault()
     QColor light_lightGray    (128, 128, 128);
 
     QColor light_highlightblue(160, 210, 238);
-    QColor light_selectBlue   (0, 120, 215);
-    QColor light_linkBlue     (0, 102, 204);
+    QColor light_selectBlue   (  0, 120, 215);
+    QColor light_linkBlue     (  0, 102, 204);
 
-    QColor profile_green      (55,235, 20);
-    QColor profile_yellow     (255,205,  0);
-    QColor profile_red        (255, 55, 20);
+    QColor profile_green      ( 55, 235,  20);
+    QColor profile_yellow     (255, 205,   0);
+    QColor profile_red        (255,  55,  20);
 
-    QColor light_red          (187,0,0);
-    QColor light_green        (52,134,25);
-    QColor light_blue         (34,102,170);
-    QColor light_yellow       (236,140,20);
+    QColor light_red          (187,   0,   0);
+    QColor light_green        ( 52, 134,  25);
+    QColor light_blue         ( 34, 102, 170);
+    QColor light_yellow       (236, 140,  20);
     QColor light_lightYellow  (255, 250, 170);
 
-    QColor gams_orange        (243,150,25);
+    QColor gams_orange        (243, 150,  25);
     QColor buttery_yellow     (255, 240, 200);
 
     mColorThemes[sNr].clear();
@@ -211,11 +213,13 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_linenrAreaBg,              light_darkWhite);
     mColorThemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(225,255,235));
     mColorThemes[sNr].insert(Edit_linenrAreaFoldBg,          QColor(135,195,255));
+    mColorThemes[sNr].insert(Edit_linenrAreaFg,              light_gray);
+    mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          light_black);
     mColorThemes[sNr].insert(Edit_profilingBg1,              profile_green);
     mColorThemes[sNr].insert(Edit_profilingBg2,              profile_yellow);
     mColorThemes[sNr].insert(Edit_profilingBg3,              profile_red);
-    mColorThemes[sNr].insert(Edit_linenrAreaFg,              light_gray);
-    mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          light_black);
+    mColorThemes[sNr].insert(Edit_heatmapLowBg,              profile_green);
+    mColorThemes[sNr].insert(Edit_heatmapHighBg,             profile_red);
     mColorThemes[sNr].insert(Edit_logRemoteBk,               light_lightYellow);
 
     mColorThemes[sNr].insert(Mark_errorFg,                   QColor(Qt::darkRed));
@@ -343,6 +347,8 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_profilingBg1,              profile_green);
     mColorThemes[sNr].insert(Edit_profilingBg2,              profile_yellow);
     mColorThemes[sNr].insert(Edit_profilingBg3,              profile_red);
+    mColorThemes[sNr].insert(Edit_heatmapLowBg,              profile_green);
+    mColorThemes[sNr].insert(Edit_heatmapHighBg,             profile_red);
     mColorThemes[sNr].insert(Edit_logRemoteBk,               dark_linebg);
 
     mColorThemes[sNr].insert(Mark_errorFg,                   QColor(180,60,60));
@@ -462,6 +468,8 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_profilingBg1,              profile_green);
     mColorThemes[sNr].insert(Edit_profilingBg2,              profile_yellow);
     mColorThemes[sNr].insert(Edit_profilingBg3,              profile_red);
+    mColorThemes[sNr].insert(Edit_heatmapLowBg,              profile_green);
+    mColorThemes[sNr].insert(Edit_heatmapHighBg,             profile_red);
     mColorThemes[sNr].insert(Edit_linenrAreaFg,              light_lightGray);
     mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::black));
     mColorThemes[sNr].insert(Edit_logRemoteBk,               light_lightYellow);
@@ -721,6 +729,8 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_profilingBg1,              solarized_green);
     mColorThemes[sNr].insert(Edit_profilingBg2,              solarized_yellow);
     mColorThemes[sNr].insert(Edit_profilingBg3,              solarized_red);
+    mColorThemes[sNr].insert(Edit_heatmapLowBg,              solarized_green);
+    mColorThemes[sNr].insert(Edit_heatmapHighBg,             solarized_red);
     mColorThemes[sNr].insert(Edit_linenrAreaFg,              solarized_base1);
     mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          solarized_base01);
     mColorThemes[sNr].insert(Edit_logRemoteBk,               solarized_linebg);
@@ -830,6 +840,8 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_profilingBg1,              solarized_green);
     mColorThemes[sNr].insert(Edit_profilingBg2,              solarized_yellow);
     mColorThemes[sNr].insert(Edit_profilingBg3,              solarized_red);
+    mColorThemes[sNr].insert(Edit_heatmapLowBg,              solarized_green);
+    mColorThemes[sNr].insert(Edit_heatmapHighBg,             solarized_red);
     mColorThemes[sNr].insert(Edit_linenrAreaFg,              solarized_base1);
     mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          solarized_base03);
     mColorThemes[sNr].insert(Edit_logRemoteBk,               solarized_cyan.darker(190));
@@ -1308,7 +1320,7 @@ qreal CHeatmapLow = 0.5;
 
 QColor Theme::heatmapColor(ColorSlot baseSlot, qreal alpha)
 {
-    ColorSlot mixSlot = alpha <= CHeatmapLow ? Edit_profilingBg1 : Edit_profilingBg3;
+    ColorSlot mixSlot = alpha <= CHeatmapLow ? Edit_heatmapLowBg : Edit_heatmapHighBg;
     qreal minAlpha = alpha <= CHeatmapLow ? CHeatmapMinAlpha : CHeatmapMinAlpha;
     qreal shade = alpha <= CHeatmapLow ? (CHeatmapLow - alpha) / CHeatmapLow
                   : (alpha - CHeatmapLow) / (1. - CHeatmapLow);

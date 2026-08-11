@@ -1299,11 +1299,13 @@ void GdxSymbolView::on_pbHeaderControls_toggled(bool checked)
 
 void GdxSymbolView::on_tbHeatmap_toggled(bool checked)
 {
+    Q_UNUSED(checked)
     heatmapChanged();
 }
 
 void GdxSymbolView::on_cbHeatmapFilter_toggled(bool checked)
 {
+    Q_UNUSED(checked)
     heatmapChanged();
 }
 

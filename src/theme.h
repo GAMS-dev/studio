@@ -66,6 +66,8 @@ public:
         Edit_profilingBg1,
         Edit_profilingBg2,
         Edit_profilingBg3,
+        Edit_heatmapLowBg,
+        Edit_heatmapHighBg,
         Edit_logRemoteBk,
 
         Mark_errorFg,

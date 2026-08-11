@@ -279,7 +279,7 @@ void TableViewModel::initTableView(int nrColDim, QList<int> dimOrder)
                 colHeader.push_back(uint(valIdx));
 
                 QList<uint> keys = rowHeader + colHeader;
-                mTvKeysToValIdx[keys] = r*GMS_VAL_MAX + valIdx;
+                mTvKeysToValIdx[keys] = int(r)*GMS_VAL_MAX + valIdx;
 
                 if (rowHeader != lastRowHeader) {
                     if (!seenRowHeaders.contains(rowHeader)) {
@@ -298,7 +298,7 @@ void TableViewModel::initTableView(int nrColDim, QList<int> dimOrder)
             }
         } else {
             QList<uint> keys = rowHeader + colHeader;
-            mTvKeysToValIdx[keys] = r;
+            mTvKeysToValIdx[keys] = int(r);
 
             if (rowHeader != lastRowHeader) {
                 if (!seenRowHeaders.contains(rowHeader)) {
