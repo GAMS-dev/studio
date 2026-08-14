@@ -1028,6 +1028,7 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     mRestoreSqZeroes = symViewState->restoreSqZeroes();
     mPrecision->setValue(symViewState->numericalPrecision());
     mValFormat->setCurrentIndex(symViewState->valFormatIndex());
+    setHeatedAttribute(symViewState->heatedAttribute());
 
     if (mAutoResizeLV)
         autoResizeListViewColumns();
@@ -1099,6 +1100,7 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
     symViewState->setRestoreSqZeroes(mRestoreSqZeroes);
     symViewState->setNumericalPrecision(mPrecision->value());
     symViewState->setValFormatIndex(mValFormat->currentIndex());
+    symViewState->setHeatedAttrib(mHeatedAttribute);
 
     symViewState->setDim(mSym->dim());
     symViewState->setType(mSym->type());

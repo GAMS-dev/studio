@@ -231,6 +231,7 @@ void GdxSymbolViewState::write(QVariantMap &map) const
     ints += ',' + QString::number(mDim);
     ints += ',' + QString::number(mType);
     ints += ',' + QString::number(mTvColDim);
+    ints += ',' + QString::number(mHeatedAttrib);
     map.insert("intValues", ints);
 
     QString showAttr;
@@ -306,6 +307,16 @@ void GdxSymbolViewState::setHeatmapUseFilter(bool heatmapUseFilter)
     mStateFlags.setFlag(sfHeatmapUseFilter, heatmapUseFilter);
 }
 
+int GdxSymbolViewState::heatedAttribute() const
+{
+    return mHeatedAttrib;
+}
+
+void GdxSymbolViewState::setHeatedAttrib(int newHeatedAttrib)
+{
+    mHeatedAttrib = newHeatedAttrib;
+}
+
 bool assignIfValidInt(int &var, const QString &intVal)
 {
     bool ok = !intVal.isEmpty();
@@ -329,12 +340,13 @@ void GdxSymbolViewState::read(const QVariantMap &map)
 
     if (map.contains("intValues")) {
         QStringList ints = map.value("intValues").toString().split(',');
-        bool ok = ints.size() == 5;
+        bool ok = ints.size() > 4;
         ok = ok && assignIfValidInt(mNumericalPrecision, ints.at(0));
         ok = ok && assignIfValidInt(mValFormatIndex, ints.at(1));
         ok = ok && assignIfValidInt(mDim, ints.at(2));
         ok = ok && assignIfValidInt(mType, ints.at(3));
         ok = ok && assignIfValidInt(mTvColDim, ints.at(4));
+        ok = ok && assignIfValidInt(mHeatedAttrib, ints.size() > 5 ? ints.at(5): "0");
         if (!ok)
             DEB() << "Error restoring GDX symbol view: invalid value";
     }

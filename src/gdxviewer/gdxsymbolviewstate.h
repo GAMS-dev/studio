@@ -104,6 +104,9 @@ public:
     bool heatmapUseFilter() const;
     void setHeatmapUseFilter(bool heatmapUseFilter);
 
+    int heatedAttribute() const;
+    void setHeatedAttrib(int newHeatedAttrib);
+
 private:
     enum StateFlag {
         sfSqDefaults        = 0x001,
@@ -134,7 +137,7 @@ private:
     int mValFormatIndex;
     int mDim;
     int mType;
-
+    int mHeatedAttrib = 0;
 
     QList<bool> mShowAttributes;
 

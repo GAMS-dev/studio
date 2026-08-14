@@ -78,7 +78,6 @@ public:
 
     void setSymInfo(QString symName, QString text);
     void setHeaderControlsVisible(bool visible);
-
     void setHeatedAttribute(int heatedAttribute);
 
 signals:

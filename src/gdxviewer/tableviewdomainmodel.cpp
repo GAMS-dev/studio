@@ -58,7 +58,8 @@ QVariant TableViewDomainModel::headerData(int section, Qt::Orientation orientati
         return description;
     }
     if (role == Qt::BackgroundRole) {
-        if (section >= mTvModel->dim() && section == mHeatedAttribute + mTvModel->dim())
+        if (section >= mTvModel->dim() && section == mHeatedAttribute + mTvModel->dim() &&
+            (mTvModel->type() == GMS_DT_VAR || mTvModel->type() == GMS_DT_EQU))
             return Theme::color(Theme::Window_highlight);
     }
     return QVariant();
