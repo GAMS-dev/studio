@@ -71,6 +71,8 @@ public:
 
     GdxSymbol *sym() const;
 
+    void setHeatedAttribute(int heatedAttribute);
+
 public slots:
     void scrollHTriggered();
     void scrollVTriggered();
@@ -95,6 +97,7 @@ private:
     QHash<QList<uint>, int> mTvKeysToValIdx;
 
     QList<bool> mDefaultColumnTableView;
+    int mHeatedAttribute = 0;
 
     bool mNeedDummyRow = false;
     bool mNeedDummyColumn = false;

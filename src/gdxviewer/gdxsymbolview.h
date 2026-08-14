@@ -79,6 +79,8 @@ public:
     void setSymInfo(QString symName, QString text);
     void setHeaderControlsVisible(bool visible);
 
+    void setHeatedAttribute(int heatedAttribute);
+
 signals:
     void openFile(const QString &filename);
     void headerControlsToggled(bool checked);
@@ -157,6 +159,7 @@ private:
     int mTVResizeColNr = 100;
     bool mRestoreSqZeroes = false;
     numerics::DoubleFormatter::Format mDefaultValFormat = numerics::DoubleFormatter::g;
+    int mHeatedAttribute = 0;
 
     int mTvFilterSection=0;
     int mTvFilterSectionMax=0;

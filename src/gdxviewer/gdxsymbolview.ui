@@ -372,6 +372,9 @@
      </item>
      <item>
       <widget class="QCheckBox" name="cbHeatmapFilter">
+       <property name="toolTip">
+        <string>Use the min/max values from filter</string>
+       </property>
        <property name="text">
         <string>Use Filter</string>
        </property>

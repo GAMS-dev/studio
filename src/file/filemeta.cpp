@@ -784,7 +784,7 @@ void FileMeta::deleteEditor(QWidget *edit)
         gdx->saveDelete();
     else
         edit->deleteLater();
-    DEB() << "Deleted 1/" << (mEditors.size() + 1) << " editors of " << mLocation;
+    DEB() << "Deleted 1/" << (mEditors.size() + 1) << " editors of " << QDir::toNativeSeparators(mLocation);
 }
 
 bool FileMeta::hasEditor(QWidget * const &edit) const

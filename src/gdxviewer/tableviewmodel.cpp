@@ -134,8 +134,13 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
             }
             if (role == Qt::EditRole)  // copy action
                 return mSym->formatValue(val, true);
-            if (role == Qt::UserRole)  // raw value
+            if (role == Qt::UserRole) { // raw value
+                if (mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
+                    if (mTvColHeaders[index.column()].last() != mHeatedAttribute)
+                        return GMS_SV_UNDEF;
+                }
                 return val;
+            }
             return mSym->formatValue(val);
         }
         return QVariant();
@@ -238,7 +243,7 @@ void TableViewModel::scrollVTriggered()
 void TableViewModel::initTableView(int nrColDim, QList<int> dimOrder)
 {
     if (dimOrder.isEmpty()) {
-        for(int i=0; i<mSym->mDim; i++)
+        for (int i=0; i<mSym->mDim; i++)
             dimOrder << i;
     }
 
@@ -320,17 +325,20 @@ void TableViewModel::initTableView(int nrColDim, QList<int> dimOrder)
     std::stable_sort(mTvRowHeaders.begin(), mTvRowHeaders.end());
     std::stable_sort(mTvColHeaders.begin(), mTvColHeaders.end());
 
-    if (mTvRowHeaders.isEmpty())
-        mNeedDummyRow = true;
-    else
-        mNeedDummyRow = false;
-    if (mTvColHeaders.isEmpty())
-        mNeedDummyColumn = true;
-    else
-        mNeedDummyColumn = false;
+    mNeedDummyRow = mTvRowHeaders.isEmpty();
+    mNeedDummyColumn = mTvColHeaders.isEmpty();
 
     calcDefaultColumnsTableView();
     calcLabelsInRows();
+}
+
+void TableViewModel::setHeatedAttribute(int heatedAttribute)
+{
+    if (mHeatedAttribute != heatedAttribute) {
+        int oldAttrib = mHeatedAttribute;
+        mHeatedAttribute = heatedAttribute;
+        emit headerDataChanged(Qt::Horizontal, qMin(oldAttrib, heatedAttribute), qMax(oldAttrib, heatedAttribute));
+    }
 }
 
 GdxSymbol *TableViewModel::sym() const
@@ -395,8 +403,7 @@ bool TableViewModel::isAllDefault(int valColIdx)
 {
     if(type() == GMS_DT_VAR || type() == GMS_DT_EQU)
         return mDefaultColumnTableView[valColIdx];
-    else
-        return false;
+    return false;
 }
 
 } // namespace gdxviewer

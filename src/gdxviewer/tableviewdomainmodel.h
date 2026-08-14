@@ -45,10 +45,12 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
     TableViewModel *tvModel() const;
-
+    int heatedAttribute() const;
+    void setHeatedAttribute(int heatedAttribute);
 
 private:
     TableViewModel* mTvModel;
+    int mHeatedAttribute = 0;
 };
 
 } // namespace gdxviewer

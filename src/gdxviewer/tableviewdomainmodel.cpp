@@ -19,6 +19,7 @@
  */
 
 #include "tableviewdomainmodel.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -56,6 +57,10 @@ QVariant TableViewDomainModel::headerData(int section, Qt::Orientation orientati
         description += "</body></html>";
         return description;
     }
+    if (role == Qt::BackgroundRole) {
+        if (section >= mTvModel->dim() && section == mHeatedAttribute + mTvModel->dim())
+            return Theme::color(Theme::Window_highlight);
+    }
     return QVariant();
 }
 
@@ -88,6 +93,20 @@ QVariant TableViewDomainModel::data(const QModelIndex &index, int role) const
 TableViewModel *TableViewDomainModel::tvModel() const
 {
     return mTvModel;
+}
+
+int TableViewDomainModel::heatedAttribute() const
+{
+    return mHeatedAttribute;
+}
+
+void TableViewDomainModel::setHeatedAttribute(int heatedAttribute)
+{
+    if (mHeatedAttribute != heatedAttribute) {
+        int oldAttrib = mHeatedAttribute;
+        mHeatedAttribute = heatedAttribute;
+        emit headerDataChanged(Qt::Horizontal, qMin(oldAttrib, heatedAttribute), qMax(oldAttrib, heatedAttribute));
+    }
 }
 
 } // namespace gdxviewer

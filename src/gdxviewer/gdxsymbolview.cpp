@@ -198,6 +198,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableViewFilter->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 
     ui->tvTableViewFilter->horizontalHeader()->installEventFilter(this);
+    ui->tvTableViewFilter->horizontalHeader()->viewport()->installEventFilter(this);
     ui->tvListView->viewport()->installEventFilter(this);
     ui->tvListView->installEventFilter(this);
     ui->tvTableView->installEventFilter(this);
@@ -724,6 +725,13 @@ void GdxSymbolView::heatmapChanged()
     bool allowHeatmap = mHeatmapDelegate->symbolCanShowHeatmap();
     mHeatmapDelegate->setActive(ui->tbHeatmap->isChecked() && ui->tbHeatmap->isEnabled() && allowHeatmap);
     mHeatmapDelegate->setUseFilterBounds(ui->cbHeatmapFilter->isChecked());
+
+    if (mTvModel && mTvDomainModel) {
+        int heatedAttribute = mHeatmapDelegate->active() ? mHeatedAttribute : -1;
+        mTvModel->setHeatedAttribute(heatedAttribute);
+        mTvDomainModel->setHeatedAttribute(heatedAttribute);
+    }
+
     if (mTableView)
         ui->tvTableView->viewport()->update();
     else
@@ -733,24 +741,16 @@ void GdxSymbolView::heatmapChanged()
 void GdxSymbolView::updateHeatmapButton()
 {
     bool allowHeatmap = mHeatmapDelegate->symbolCanShowHeatmap();
-    int count = allowHeatmap ? 1 : 0;
-    if (mTableView && count && (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR)) {
-        count = 0;
-        for (int i = 0; i < GMS_VAL_MAX; ++i)
-            if (mShowValColActions.at(i)->isChecked()) ++count;
-    }
     if (!mSym)
         ui->tbHeatmap->setToolTip(mHeatmapTooltipBase + "<br>Disabled: no symbol.</body>");
     else if(!allowHeatmap)
         ui->tbHeatmap->setToolTip(mHeatmapTooltipBase + "<br>Disabled: equal values per attribute.</body>");
-    else if(count > 1)
-        ui->tbHeatmap->setToolTip(mHeatmapTooltipBase + "<br>Disabled: Table View with more than one attribute.</body>");
     else
         ui->tbHeatmap->setToolTip(mHeatmapTooltipBase + "</body>");
 
-    if (ui->tbHeatmap->isEnabled() != (count == 1)) {
-        ui->tbHeatmap->setEnabled(count == 1);
-        ui->cbHeatmapFilter->setEnabled(count == 1);
+    if (ui->tbHeatmap->isEnabled() != allowHeatmap) {
+        ui->tbHeatmap->setEnabled(allowHeatmap);
+        ui->cbHeatmapFilter->setEnabled(allowHeatmap);
         heatmapChanged();
     }
 }
@@ -926,6 +926,14 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
             if (ui->tvListView->currentIndex().data().toString().endsWith(".gdx", Qt::CaseInsensitive))
                 emit openFile(QDir::fromNativeSeparators(ui->tvListView->currentIndex().data().toString()));
         }
+    }
+
+    if (event->type() == QEvent::MouseButtonRelease && mHeatmapDelegate->active()
+        && watched == ui->tvTableViewFilter->horizontalHeader()->viewport()) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        int section = ui->tvTableViewFilter->horizontalHeader()->logicalIndexAt(mouseEvent->pos());
+        if (section >= mSym->dim())
+            setHeatedAttribute(section - mSym->dim());
     }
 
     // Quick select feature for attributes
@@ -1290,6 +1298,12 @@ void GdxSymbolView::markSearchResults()
         ui->tvTableView->setUpdatesEnabled(true);
     } else
         ui->tvListView->viewport()->update();
+}
+
+void GdxSymbolView::setHeatedAttribute(int heatedAttribute)
+{
+    mHeatedAttribute = heatedAttribute;
+    heatmapChanged();
 }
 
 void GdxSymbolView::on_pbHeaderControls_toggled(bool checked)
