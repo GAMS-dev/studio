@@ -136,7 +136,8 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
                 return mSym->formatValue(val, true);
             if (role == Qt::UserRole) { // raw value
                 if (mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
-                    if (mTvColHeaders[index.column()].last() != mHeatedAttribute)
+                    int mask = 1 << mTvColHeaders[index.column()].last();
+                    if ((mask & mHeatedAttributes) == 0)
                         return GMS_SV_UNDEF;
                 }
                 return val;
@@ -332,11 +333,11 @@ void TableViewModel::initTableView(int nrColDim, QList<int> dimOrder)
     calcLabelsInRows();
 }
 
-void TableViewModel::setHeatedAttribute(int heatedAttribute)
+void TableViewModel::setHeatedAttributes(int heatedAttribute)
 {
-    if (mHeatedAttribute != heatedAttribute) {
-        int oldAttrib = mHeatedAttribute;
-        mHeatedAttribute = heatedAttribute;
+    if (mHeatedAttributes != heatedAttribute) {
+        int oldAttrib = mHeatedAttributes;
+        mHeatedAttributes = heatedAttribute;
         emit headerDataChanged(Qt::Horizontal, qMin(oldAttrib, heatedAttribute), qMax(oldAttrib, heatedAttribute));
     }
 }

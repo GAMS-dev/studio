@@ -58,7 +58,8 @@ QVariant TableViewDomainModel::headerData(int section, Qt::Orientation orientati
         return description;
     }
     if (role == Qt::BackgroundRole) {
-        if (section >= mTvModel->dim() && section == mHeatedAttribute + mTvModel->dim() &&
+        int mask = 1 << (section - mTvModel->dim());
+        if (section >= mTvModel->dim() && (mask & mHeatedAttributes) &&
             (mTvModel->type() == GMS_DT_VAR || mTvModel->type() == GMS_DT_EQU))
             return Theme::color(Theme::Window_highlight);
     }
@@ -96,17 +97,12 @@ TableViewModel *TableViewDomainModel::tvModel() const
     return mTvModel;
 }
 
-int TableViewDomainModel::heatedAttribute() const
+void TableViewDomainModel::setHeatedAttributes(int heatedAttributes)
 {
-    return mHeatedAttribute;
-}
-
-void TableViewDomainModel::setHeatedAttribute(int heatedAttribute)
-{
-    if (mHeatedAttribute != heatedAttribute) {
-        int oldAttrib = mHeatedAttribute;
-        mHeatedAttribute = heatedAttribute;
-        emit headerDataChanged(Qt::Horizontal, qMin(oldAttrib, heatedAttribute), qMax(oldAttrib, heatedAttribute));
+    if (mHeatedAttributes != heatedAttributes) {
+        int oldAttrib = mHeatedAttributes;
+        mHeatedAttributes = heatedAttributes;
+        emit headerDataChanged(Qt::Horizontal, qMin(oldAttrib, heatedAttributes), qMax(oldAttrib, heatedAttributes));
     }
 }
 

@@ -1321,7 +1321,7 @@ qreal CHeatmapLow = 0.5;
 QColor Theme::heatmapColor(ColorSlot baseSlot, qreal alpha)
 {
     ColorSlot mixSlot = alpha <= CHeatmapLow ? Edit_heatmapLowBg : Edit_heatmapHighBg;
-    qreal minAlpha = alpha <= CHeatmapLow ? CHeatmapMinAlpha : CHeatmapMinAlpha;
+    qreal minAlpha = CHeatmapMinAlpha; // alpha <= CHeatmapLow ? CHeatmapMinAlpha : CHeatmapMinAlpha;
     qreal shade = alpha <= CHeatmapLow ? (CHeatmapLow - alpha) / CHeatmapLow
                   : (alpha - CHeatmapLow) / (1. - CHeatmapLow);
     shade = minAlpha + shade * (CHeatmapMaxAlpha - minAlpha);

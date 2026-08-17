@@ -994,7 +994,7 @@ void SettingsDialog::initColorGroups(QWidget *box, QList<QList<Theme::ColorSlot>
     }
     vertLay->addStretch(1);
     vertLay->activate();
-    box->setMaximumHeight(vertLay->minimumSize().height() * CColorDistScale);
+    box->setMaximumHeight(qRound(float(vertLay->minimumSize().height()) * CColorDistScale));
 }
 
 void SettingsDialog::initColorPage()

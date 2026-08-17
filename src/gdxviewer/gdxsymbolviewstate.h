@@ -104,8 +104,8 @@ public:
     bool heatmapUseFilter() const;
     void setHeatmapUseFilter(bool heatmapUseFilter);
 
-    int heatedAttribute() const;
-    void setHeatedAttrib(int newHeatedAttrib);
+    int heatedAttributes() const;
+    void setHeatedAttributes(int newHeatedAttrib);
 
 private:
     enum StateFlag {
@@ -137,7 +137,7 @@ private:
     int mValFormatIndex;
     int mDim;
     int mType;
-    int mHeatedAttrib = 0;
+    int mHeatedAttributes = 1;
 
     QList<bool> mShowAttributes;
 

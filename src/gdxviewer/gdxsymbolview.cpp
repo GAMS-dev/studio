@@ -68,6 +68,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     if (mHeatmapTooltipBase.endsWith("</body>"))
         mHeatmapTooltipBase = mHeatmapTooltipBase.left(mHeatmapTooltipBase.size() - 7);
     updateHeatmapButton();
+    heatmapChanged();
 
     //create context menu
     QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", this, [this]() { copySelectionToClipboard(","); });
@@ -308,6 +309,8 @@ void GdxSymbolView::resetSortFilter()
             for (int i=0; i<GMS_VAL_MAX; i++)
                 mShowValColActions[i]->setChecked(true);
         }
+        ui->cbHeatmapFilter->setChecked(false);
+        ui->tbHeatmap->setChecked(false);
         updateHeatmapButton();
         showListView();
         if (mTvModel) {
@@ -727,9 +730,9 @@ void GdxSymbolView::heatmapChanged()
     mHeatmapDelegate->setUseFilterBounds(ui->cbHeatmapFilter->isChecked());
 
     if (mTvModel && mTvDomainModel) {
-        int heatedAttribute = mHeatmapDelegate->active() ? mHeatedAttribute : -1;
-        mTvModel->setHeatedAttribute(heatedAttribute);
-        mTvDomainModel->setHeatedAttribute(heatedAttribute);
+        int heatedAttribute = mHeatmapDelegate->active() ? mHeatedAttributes : 0;
+        mTvModel->setHeatedAttributes(heatedAttribute);
+        mTvDomainModel->setHeatedAttributes(heatedAttribute);
     }
 
     if (mTableView)
@@ -932,8 +935,12 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
         && watched == ui->tvTableViewFilter->horizontalHeader()->viewport()) {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
         int section = ui->tvTableViewFilter->horizontalHeader()->logicalIndexAt(mouseEvent->pos());
-        if (section >= mSym->dim())
-            setHeatedAttribute(section - mSym->dim());
+        if (section >= mSym->dim()) {
+            int heatMask = mouseEvent->modifiers().testFlag(Qt::ControlModifier) ? mHeatedAttributes : 0;
+            heatMask ^= (1 << (section - mSym->dim()));
+            if (!heatMask) heatMask = mHeatedAttributes;
+            setHeatedAttributes(heatMask);
+        }
     }
 
     // Quick select feature for attributes
@@ -1028,7 +1035,7 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     mRestoreSqZeroes = symViewState->restoreSqZeroes();
     mPrecision->setValue(symViewState->numericalPrecision());
     mValFormat->setCurrentIndex(symViewState->valFormatIndex());
-    setHeatedAttribute(symViewState->heatedAttribute());
+    setHeatedAttributes(symViewState->heatedAttributes());
 
     if (mAutoResizeLV)
         autoResizeListViewColumns();
@@ -1100,7 +1107,7 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
     symViewState->setRestoreSqZeroes(mRestoreSqZeroes);
     symViewState->setNumericalPrecision(mPrecision->value());
     symViewState->setValFormatIndex(mValFormat->currentIndex());
-    symViewState->setHeatedAttrib(mHeatedAttribute);
+    symViewState->setHeatedAttributes(mHeatedAttributes);
 
     symViewState->setDim(mSym->dim());
     symViewState->setType(mSym->type());
@@ -1302,9 +1309,9 @@ void GdxSymbolView::markSearchResults()
         ui->tvListView->viewport()->update();
 }
 
-void GdxSymbolView::setHeatedAttribute(int heatedAttribute)
+void GdxSymbolView::setHeatedAttributes(int heatedAttributes)
 {
-    mHeatedAttribute = heatedAttribute;
+    mHeatedAttributes = heatedAttributes;
     heatmapChanged();
 }
 
