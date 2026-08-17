@@ -89,47 +89,44 @@ bool HeatmapDelegate::symbolCanShowHeatmap()
 
 void HeatmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    if (!mActive) {
-        QStyledItemDelegate::paint(painter, option, index);
-        return;
-    }
-    QStyleOptionViewItem opt = option;
-    initStyleOption(&opt, index);
+    if (mActive) {
+        bool ok;
+        double val = index.model()->data(index, Qt::UserRole).toDouble(&ok);
+        if (val == GMS_SV_UNDEF || val == GMS_SV_NA) ok = false;
+        if (val == GMS_SV_EPS) val = 0;
+        int mod = mSymbol->numBoundSize();
+        if (ok && mod) {
+            int col = index.model() == mSymbol ? index.column() - mSymbol->dim() : index.column();
+            int numBoundIndex = mod == 1 ? 0 : col % mod;
+            if (!mSymbol->allEqual(numBoundIndex)) {
+                QStyleOptionViewItem opt = option;
+                initStyleOption(&opt, index);
+                QString text = opt.text;
+                opt.text = "";
+                QStyledItemDelegate::paint(painter, opt, index);
+                auto valFilter = mSymbol->valueFilter(numBoundIndex);
+                double min = mUseFilterBounds && valFilter.active ? valFilter.min : mSymbol->minDouble(numBoundIndex);
+                double max = mUseFilterBounds && valFilter.active ? valFilter.max : mSymbol->maxDouble(numBoundIndex);
+                if (val == GMS_SV_PINF) val = max;
+                if (val == GMS_SV_MINF) val = min;
+                qreal alpha = equalDouble(min, max) ? .5 : qBound(.0, (val - min) / (max - min), 1.);
+                QColor color = Theme::heatmapColor(Theme::Window_base, alpha);
 
-    QString text = opt.text;
-    opt.text = "";
-    QStyledItemDelegate::paint(painter, opt, index);
-
-    bool ok;
-    double val = index.model()->data(index, Qt::UserRole).toDouble(&ok);
-    if (val == GMS_SV_UNDEF || val == GMS_SV_NA) ok = false;
-    if (val == GMS_SV_EPS) val = 0;
-    int mod = mSymbol->numBoundSize();
-    if (ok && mod) {
-        int col = index.model() == mSymbol ? index.column() - mSymbol->dim() : index.column();
-        int numBoundIndex = mod == 1 ? 0 : col % mod;
-        if (!mSymbol->allEqual(numBoundIndex)) {
-            auto valFilter = mSymbol->valueFilter(numBoundIndex);
-            double min = mUseFilterBounds && valFilter.active ? valFilter.min : mSymbol->minDouble(numBoundIndex);
-            double max = mUseFilterBounds && valFilter.active ? valFilter.max : mSymbol->maxDouble(numBoundIndex);
-            if (val == GMS_SV_PINF) val = max;
-            if (val == GMS_SV_MINF) val = min;
-            qreal alpha = equalDouble(min, max) ? .5 : qBound(.0, (val - min) / (max - min), 1.);
-            QColor color = Theme::heatmapColor(Theme::Window_base, alpha);
-
-            painter->save();
-            QRect smallerRect = opt.rect.adjusted(1, 1, -1, -1);
-            if (opt.state & QStyle::State_Selected)
-                color = Theme::mixColor(color, Theme::Window_highlight, .7);
-            painter->fillRect(smallerRect, color);
-            painter->restore();
-            opt.state &= ~QStyle::State_Selected;
+                painter->save();
+                QRect smallerRect = opt.rect.adjusted(1, 1, -1, -1);
+                if (opt.state & QStyle::State_Selected)
+                    color = Theme::mixColor(color, Theme::Window_highlight, .7);
+                painter->fillRect(smallerRect, color);
+                painter->restore();
+                opt.state &= ~QStyle::State_Selected;
+                opt.text = text;
+                opt.backgroundBrush = Qt::NoBrush;
+                QStyledItemDelegate::paint(painter, opt, index);
+                return;
+            }
         }
     }
-
-    opt.text = text;
-    opt.backgroundBrush = Qt::NoBrush;
-    QStyledItemDelegate::paint(painter, opt, index);
+    QStyledItemDelegate::paint(painter, option, index);
 }
 
 } // namespace gdxviewer
