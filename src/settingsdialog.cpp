@@ -1001,6 +1001,7 @@ void SettingsDialog::initColorPage()
 {
     if (!mColorWidgets.isEmpty()) return;
     QList<QList<Theme::ColorSlot>> colorSlots;
+    ui->toolBox->setCurrentIndex(0);
 
     // SYNTAX colors
     colorSlots = {
@@ -1038,8 +1039,6 @@ void SettingsDialog::initColorPage()
         {Theme::Mark_fileFg,                Theme::invalid,                     Theme::invalid},
         {Theme::Edit_parenthesesInvalidFg,  Theme::Edit_parenthesesInvalidBg,   Theme::Edit_parenthesesInvalidBgBlink},
         {},
-        {Theme::invalid,                    Theme::Edit_heatmapLowBg,           Theme::invalid},
-        {Theme::invalid,                    Theme::Edit_heatmapHighBg,          Theme::invalid},
     };
     initColorGroups(ui->pageEditor, colorSlots, twColors, {8});
 
@@ -1066,6 +1065,18 @@ void SettingsDialog::initColorPage()
 
     };
     initColorGroups(ui->pageGeneral, colorSlots, twColors, {5, 7});
+
+    // GRADIENT colors
+    colorSlots = {
+        {Theme::invalid,                    Theme::Edit_profilingBg3,           Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_heatmapHighBg,          Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_profilingBg2,           Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_heatmapLowBg,           Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_profilingBg1,           Theme::invalid},
+        {},
+    };
+    initColorGroups(ui->pageGradient, colorSlots, twColors);
+
 
     // ICON colors
 //    box = ui->groupIconColors;

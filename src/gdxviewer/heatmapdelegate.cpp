@@ -80,8 +80,9 @@ bool equalDouble(double x, double y)
 bool HeatmapDelegate::symbolCanShowHeatmap()
 {
     if (!mSymbol) return false;
-    for (int i = 0; i < mSymbol->numBoundSize(); ++i) {
-        if (!equalDouble(mSymbol->minDouble(i), mSymbol->maxDouble(i)))
+    for (int i = 0; i < mSymbol->numericalColumnCount(); ++i) {
+        if ((mUseFilterBounds && !equalDouble(mSymbol->minDouble(i), mSymbol->maxDouble(i))) ||
+            (!mUseFilterBounds && !mSymbol->allEqual(i)))
             return true;
     }
     return false;
@@ -94,7 +95,7 @@ void HeatmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
         double val = index.model()->data(index, Qt::UserRole).toDouble(&ok);
         if (val == GMS_SV_UNDEF || val == GMS_SV_NA) ok = false;
         if (val == GMS_SV_EPS) val = 0;
-        int mod = mSymbol->numBoundSize();
+        int mod = mSymbol->numericalColumnCount();
         if (ok && mod) {
             int col = index.model() == mSymbol ? index.column() - mSymbol->dim() : index.column();
             int numBoundIndex = mod == 1 ? 0 : col % mod;
@@ -107,9 +108,9 @@ void HeatmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
                 auto valFilter = mSymbol->valueFilter(numBoundIndex);
                 double min = mUseFilterBounds && valFilter.active ? valFilter.min : mSymbol->minDouble(numBoundIndex);
                 double max = mUseFilterBounds && valFilter.active ? valFilter.max : mSymbol->maxDouble(numBoundIndex);
-                if (val == GMS_SV_PINF) val = max;
-                if (val == GMS_SV_MINF) val = min;
                 qreal alpha = equalDouble(min, max) ? .5 : qBound(.0, (val - min) / (max - min), 1.);
+                if (val == GMS_SV_PINF) alpha = 1.;
+                if (val == GMS_SV_MINF) alpha = .0;
                 QColor color = Theme::heatmapColor(Theme::Window_base, alpha);
 
                 painter->save();

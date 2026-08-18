@@ -114,8 +114,6 @@ public:
 
     bool isDataTruncated() const;
 
-    int numBoundSize() const;
-
 signals:
     void loadFinished();
     void loadPaused();
@@ -154,7 +152,6 @@ private:
 
     std::vector<double> mMinDouble;
     std::vector<double> mMaxDouble;
-    int mNumBoundSize = 0;
     std::vector<bool> mAllEqual;
 
     GdxSymbolTableModel* mGdxSymbolTable = nullptr;

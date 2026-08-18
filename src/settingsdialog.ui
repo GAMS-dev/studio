@@ -1228,7 +1228,7 @@
        <item>
         <widget class="QToolBox" name="toolBox">
          <property name="currentIndex">
-          <number>2</number>
+          <number>3</number>
          </property>
          <property name="tabSpacing">
           <number>4</number>
@@ -1238,8 +1238,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>30</height>
+            <width>693</width>
+            <height>415</height>
            </rect>
           </property>
           <attribute name="label">
@@ -1296,11 +1296,30 @@
             <x>0</x>
             <y>0</y>
             <width>693</width>
-            <height>443</height>
+            <height>415</height>
            </rect>
           </property>
           <attribute name="label">
            <string>Editor colors</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayoutEc">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="pageGradient">
+          <attribute name="label">
+           <string>Gradient colors</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayoutEc">
            <property name="leftMargin">

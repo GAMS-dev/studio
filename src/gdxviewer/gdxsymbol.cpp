@@ -466,7 +466,6 @@ void GdxSymbol::initNumericalBounds()
         mMinDouble[0] = INT_MAX;
         mMaxDouble[0] = INT_MIN;
         mAllEqual[0] = true;
-        mNumBoundSize = 1;
     } else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR) {
         mMinDouble.resize(GMS_VAL_MAX);
         mMaxDouble.resize(GMS_VAL_MAX);
@@ -476,13 +475,7 @@ void GdxSymbol::initNumericalBounds()
             mMaxDouble[i] = INT_MIN;
             mAllEqual[i] = true;
         }
-        mNumBoundSize = GMS_VAL_MAX;
     }
-}
-
-int GdxSymbol::numBoundSize() const
-{
-    return mNumBoundSize;
 }
 
 bool GdxSymbol::isDataTruncated() const
@@ -561,7 +554,9 @@ double GdxSymbol::maxDouble(int valCol)
 
 bool GdxSymbol::allEqual(int valCol)
 {
-    return mAllEqual[valCol];
+    if (mAllEqual.size() > valCol)
+        return mAllEqual[valCol];
+    return true;
 }
 
 void GdxSymbol::resetFilters()
