@@ -685,6 +685,7 @@ void GdxSymbolView::initTableViewModel(int colDim, const QList<int> &tvDimOrder)
     mTvDomainModel = new TableViewDomainModel(mTvModel);
     ui->tvTableViewFilter->setModel(mTvDomainModel);
     mHeatmapDelegate->setTableModel(mTvModel);
+    heatmapChanged();
 
     ui->tbDomLeft->setIcon(Theme::icon(":/%1/triangle-left"));
     ui->tbDomRight->setIcon(Theme::icon(":/%1/triangle-right"));
