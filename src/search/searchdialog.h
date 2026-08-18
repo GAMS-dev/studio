@@ -50,7 +50,7 @@ public:
     void clearResultsView();
     void autofillSearchDialog();
     Search* search();
-    void clearSearch();
+    void clearSearch(bool clearTerm = false);
 
     ///
     /// \brief jumpToResult jumps to a search result identified by an index.

@@ -4101,7 +4101,6 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
             }
         }
 
-
         // search widget
         if (mSearchDialog->isHidden()) {
             if (mSearchDialog->search()->isSearching())

@@ -414,7 +414,8 @@ void SearchDialog::changeScope(int scope)
 
 }
 
-void SearchDialog::findNextPrev(bool backwards) {
+void SearchDialog::findNextPrev(bool backwards)
+{
     if (!checkSearchTerm())
         return;
     insertHistory();
@@ -426,7 +427,7 @@ void SearchDialog::on_btn_clear_clicked()
     if (mSearch.hasSearchSelection()) {
         clearSelection();
     } else {
-        clearSearch();
+        clearSearch(true);
     }
     setSearchSelectionActive(false);
     mSearch.invalidateCache();
@@ -569,10 +570,11 @@ void SearchDialog::setSearchSelectionActive(bool active)
     updateClearButton();
 }
 
-void SearchDialog::clearSearch()
+void SearchDialog::clearSearch(bool clearTerm)
 {
     mSuppressParameterChangedEvent = true;
-    ui->termComboBox->clearEditText();
+    if (clearTerm)
+        ui->termComboBox->clearEditText();
     ui->replaceEdit->clear();
     mSuppressParameterChangedEvent = false;
     mSearch.reset();
