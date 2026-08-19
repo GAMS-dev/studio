@@ -131,7 +131,7 @@ signals:
     void jobCreated(const QString &token);
 
 public slots:
-    void setPollSlow(bool pollSlow);
+    void setBackgroundPoll(bool isBackground);
 
 protected slots:
     void completed(int exitCode) override;
@@ -159,6 +159,7 @@ private slots:
     void reVersionIntern(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
 
 private:
+    bool checkNetworkErrorType(int errorType, int httpCode);
     AuthManager *authManager();
     void setProcState(ProcState newState);
     QStringList compileParameters() const;
@@ -204,7 +205,9 @@ private:
     ProcState mProcState;
     QTimer mPollTimer;
     int mPollCounter = 0;
-    bool mPollSlow = false;
+    int mPollSlowSteps = 10;
+    bool mIsBackground = false;
+    int mPollErrors = 0;
     AbstractGamsProcess *mSubProc = nullptr;
 
     enum JobStatusEnum {jsInvalid, jsDone, jsRunning, jsWaiting, jsUnknownJob, jsBadPassword};

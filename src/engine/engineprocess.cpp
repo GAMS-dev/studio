@@ -40,6 +40,9 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &EngineProcess::compileCompleted);
 
     mManager = new EngineManager(this);
+    mManager->setCanProceedCallback([this](int errorType, int httpCode)->bool {
+        return this->checkNetworkErrorType(errorType, httpCode);
+    });
     // mManager->reListProvider is connected in AuthManager
     connect(mManager, &EngineManager::reLoginWithOIDC, this, [this](const QString &token) {
         DEB() << "Logged in with OIDC - new JWToken: " << token;
@@ -83,6 +86,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     });
     connect(mManager, &EngineManager::reGetUsernameError, this, &EngineProcess::authorizeError);
     connect(mManager, &EngineManager::reGetInvitees, this, &EngineProcess::reGetInvitees);
+
 
     setIgnoreSslErrorsCurrentUrl(false);
     mPollTimer.setInterval(1000);
@@ -336,6 +340,20 @@ void EngineProcess::reVersionIntern(const QString &engineVersion, const QString 
     Q_UNUSED(engineVersion)
     mInKubernetes = isInKubernetes;
     mGamsVersion = gamsVersion;
+}
+
+bool EngineProcess::checkNetworkErrorType(int errorType, int httpCode)
+{
+    if (httpCode == 429 || errorType == QNetworkReply::ProtocolUnknownError) {
+        mPollTimer.setInterval(mPollTimer.interval() + 1000);
+        DEB() << "NetworkError: " << errorType << " (HTTP:" << httpCode << ")  - poll interval set to " << mPollTimer.interval()/1000;
+        if (mPollSlowSteps > 4) mPollSlowSteps -= 2;
+        if (++mPollErrors > 4)
+            return true;
+        return false;
+    }
+    mPollErrors = 0;
+    return true;
 }
 
 AuthManager *EngineProcess::authManager()
@@ -804,16 +822,22 @@ void EngineProcess::reAuthorize(const QString &token)
 
 void EngineProcess::pollStatus()
 {
-    if (!mPollSlow || mPollCounter == 0) {
+    if (!mIsBackground || mPollCounter == 0) {
         if (mProcState == Proc3Queued || mProcState > Proc4Monitor) {
             mManager->getJobStatus();
         } else if (mProcState > Proc3Queued) {
-            mManager->getJobStatus();
-            mManager->getLog();
+            if (mIsBackground) {
+                mManager->getJobStatus();
+                mManager->getLog();
+            } else if (mPollCounter % 2) {
+                mManager->getJobStatus();
+            } else {
+                mManager->getLog();
+            }
         }
     }
     mPollTimer.start();
-    mPollCounter = (mPollCounter+1) % 10;
+    mPollCounter = (mPollCounter+1) % mPollSlowSteps;
 }
 
 void EngineProcess::setProcState(ProcState newState)
@@ -1194,9 +1218,9 @@ void EngineProcess::abortRequests()
     mManager->abortRequests();
 }
 
-void EngineProcess::setPollSlow(bool pollSlow)
+void EngineProcess::setBackgroundPoll(bool isBackground)
 {
-    mPollSlow = pollSlow;
+    mIsBackground = isBackground;
 }
 
 } // namespace engine

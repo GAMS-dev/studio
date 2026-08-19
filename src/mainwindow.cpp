@@ -2410,7 +2410,7 @@ void MainWindow::tabBarClicked(int index)
                 engine::EngineProcess *engine = qobject_cast<engine::EngineProcess*>(project->process());
                 if (!engine) continue;
                 if (!project->logNode() || !project->logNode()->file()) continue;
-                engine->setPollSlow(!project->logNode()->file()->editors().contains(tabs->currentWidget()));
+                engine->setBackgroundPoll(!project->logNode()->file()->editors().contains(tabs->currentWidget()));
             }
         }
     }

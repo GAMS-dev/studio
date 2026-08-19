@@ -73,6 +73,8 @@ public:
     Q_ENUM(StatusCode)
 
 public:
+    using CanProceedCallback = std::function<bool(int errorType, int httpResponse)>;
+
     EngineManager(QObject *parent = nullptr);
     ~EngineManager() override;
     static void startupInit();
@@ -86,6 +88,7 @@ public:
     void setJobToken(const QString &token);
     void abortRequests();
     void cleanup();
+    void setCanProceedCallback(CanProceedCallback callback);
 
     void listProvider(const QString &name);
     void fetchOAuth2Token(const QString &name, const QString &deviceCode);
@@ -157,6 +160,7 @@ private:
     QString getJsonMessageIfFound(const QString &text);
 
 private:
+    CanProceedCallback mCanProceedCallback;
     OpenAPI::OAIAuthApi *mAuthApi;
     OpenAPI::OAIDefaultApi *mDefaultApi;
     OpenAPI::OAIJobsApi *mJobsApi;
