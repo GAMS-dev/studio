@@ -360,7 +360,7 @@
         <bool>false</bool>
        </property>
        <property name="toolTip">
-        <string>&lt;body style='white-space: nowrap;'&gt;Colorizes numerical cells according to their values.&lt;/body&gt;</string>
+        <string>&lt;body style='white-space: nowrap;'&gt;Colorizes numerical cells according to their values&lt;/body&gt;</string>
        </property>
        <property name="text">
         <string>Heatmap</string>
