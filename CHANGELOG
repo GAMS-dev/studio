@@ -11,6 +11,7 @@ Version 1.26.0  *
 - Added a distinct background color to unselected items in GDX Viewer label filters to highlight them more effectively.
 - Added spreadsheet-style block selection to the GDX Viewer. Using `Ctrl+Shift+Home/End` will expand the selection from the active cell to the boundary limits of the data. On macOS the shortcuts are `Command+Fn+Shift+Left/Right`.
 - Added a heatmap facility to the GDX Viewer.
+- `ESC` unmarks the current matches without clearing the complex search term, so Search Forward(F4)/Backward(Shift+F4) continue to work as expected.
 
 Version 1.25.5
 ==================
