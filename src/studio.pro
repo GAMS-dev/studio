@@ -103,6 +103,7 @@ SOURCES += \
     encoding.cpp \
     encodingsdialog.cpp \
     engine/authmanager.cpp \
+    engine/comboboxremovedelegate.cpp \
     engine/efieditor.cpp \
     engine/enginemanager.cpp \
     engine/engineprocess.cpp \
@@ -352,6 +353,7 @@ HEADERS += \
     encoding.h \
     encodingsdialog.h \
     engine/authmanager.h \
+    engine/comboboxremovedelegate.h \
     engine/efieditor.h \
     engine/enginemanager.h \
     engine/engineprocess.h \

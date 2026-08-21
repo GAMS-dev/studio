@@ -23,6 +23,8 @@
 #include "logger.h"
 #include "engineprocess.h"
 #include "theme.h"
+#include "comboboxremovedelegate.h"
+
 #include <QPushButton>
 #include <QEvent>
 #include <QUrl>
@@ -49,9 +51,11 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QFont f = ui->laWarn->font();
     f.setBold(true);
     ui->laWarn->setFont(f);
+    ui->cbSelector->setItemDelegate(new ComboboxRemoveDelegate(ui->cbSelector));
 
     QPalette palette = qApp->palette();
     Theme::fillThemeColorPalette(palette, true, false);
+    ui->cbSelector->setPalette(palette);
     ui->cbLoginMethod->setPalette(palette);
     ui->edUrl->setPalette(palette);
     ui->edUser->setPalette(palette);
@@ -147,7 +151,6 @@ void EngineStartDialog::setResume(bool resume)
         mProc->listProvider();
         return;
     }
-
 }
 
 void EngineStartDialog::start()
@@ -208,30 +211,45 @@ bool EngineStartDialog::isCertAccepted()
     return ui->cbAcceptCert->isChecked();
 }
 
-void EngineStartDialog::initData(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken, const QString &ssoName,
-                                 int authExpireMinutes, bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx)
+void EngineStartDialog::init(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken,
+                                 const QString &ssoName, int authExpireMinutes, bool selfCert, const QString &_nSpace,
+                                 const QString &_userInst, bool _forceGdx, const QVariantList recent)
 {
-    mUrl = cleanUrl(_url);
+    for (const QVariant &item : recent)
+        insertSelector(item.toHash(), false);
+    insertSelector(mUrl, authMethod, _user.trimmed(), _userToken.trimmed(), ssoName.trimmed(), authExpireMinutes,
+                   selfCert, _nSpace.trimmed(), _userInst, _forceGdx);
+    initData(0);
+}
+
+void EngineStartDialog::initData(int selectorIndex)
+{
+    QVariantHash data = ui->cbSelector->itemData(selectorIndex).toHash();
+    mUrl = cleanUrl(data.value("page").toString());
     ui->edUrl->setText(mUrl);
     ui->nUrl->setText(mUrl);
-    mAuthIndex = authMethod;
-    ui->cbLoginMethod->setCurrentIndex(qMin(authMethod, 2));
-    ui->stackLoginInput->setCurrentIndex(qMin(authMethod, 2));
-    if (mProc && authMethod == 0) mProc->initUsername(_user.trimmed());
-    if (mProc && authMethod == 1) mProc->setAuthToken(_userToken.trimmed());
-    if (mProc && authMethod == 2) {
-        ui->edSsoName->setText(ssoName.trimmed());
+    bool ok;
+    mAuthIndex = data.value("authMethod").toInt(&ok);
+    if (!ok) mAuthIndex = 0;
+    ui->cbLoginMethod->setCurrentIndex(qMin(mAuthIndex, 2));
+    ui->stackLoginInput->setCurrentIndex(qMin(mAuthIndex, 2));
+    QString user = data.value("user").toString().trimmed();
+    if (mProc && mAuthIndex == 0) mProc->initUsername(user);
+    if (mProc && mAuthIndex == 1) mProc->setAuthToken(data.value("userToken").toString().trimmed());
+    if (mProc && mAuthIndex == 2) {
+        ui->edSsoName->setText(data.value("ssoName").toString().trimmed());
     }
-    ui->edUser->setText(_user.trimmed());
-    ui->nUser->setText(_user.trimmed());
-    if (selfCert) {
+    ui->edUser->setText(user);
+    ui->nUser->setText(user);
+    if (data.value("selfCert").toBool()) {
         ui->cbAcceptCert->setVisible(true);
         ui->cbAcceptCert->setChecked(true);
     }
-    mAuthExpireMinutes = authExpireMinutes;
-    ui->cbNamespace->addItem(_nSpace.trimmed());
-    mLastValidInstance = _userInst;
-    ui->cbForceGdx->setChecked(_forceGdx);
+    mAuthExpireMinutes = data.value("authExpire").toInt(&ok);
+    if (!ok) mAuthExpireMinutes = 22*60; // default: slightly less than a day
+    ui->cbNamespace->addItem(data.value("namespace").toString().trimmed());
+    mLastValidInstance = data.value("userInstance").toString();
+    ui->cbForceGdx->setChecked(data.value("forceGdx").toBool());
 }
 
 bool EngineStartDialog::isAlways()
@@ -355,6 +373,65 @@ void EngineStartDialog::showEvent(QShowEvent *event)
     setFixedSize(size());
     if (isHidden)
         ui->cbAcceptCert->setVisible(false);
+}
+
+QString EngineStartDialog::generateSelectorName(const QVariantHash &data)
+{
+    QUrl url(data.value("page").toString());
+    QString res = url.adjusted(QUrl::RemoveFilename).url();
+    bool ok;
+    int authMethod = data.value("authMethod").toInt(&ok);
+    if (!ok) authMethod = 0;
+    if (authMethod == 0) {
+        QString user = data.value("user").toString();
+        if (user.isEmpty())
+            res += " with username";
+        else
+            res += " as " + user;
+    } else if (authMethod == 1) {
+        res += " with token";
+    } else {
+        QString ssoName = data.value("ssoName").toString();
+        if (ssoName.isEmpty())
+            res += " via single-sign-on";
+        else
+            res += " via " + ssoName;
+    }
+    return res;
+}
+
+void EngineStartDialog::insertSelector(const QString &_url, const int authMethod, const QString &_user,
+                                       const QString &_userToken, const QString &ssoName, int authExpireMinutes,
+                                       bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx)
+{
+    QVariantHash hash;
+    hash.insert("page", _url);
+    hash.insert("authMethod", authMethod);
+    hash.insert("user", _user);
+    hash.insert("userToken", _userToken);
+    hash.insert("ssoName", ssoName);
+    hash.insert("authExpire", authExpireMinutes);
+    hash.insert("isSelfCert", selfCert);
+    hash.insert("namespace", _nSpace);
+    hash.insert("userInstance", _userInst);
+    hash.insert("forceGdx", _forceGdx);
+    insertSelector(hash, true);
+}
+
+void EngineStartDialog::insertSelector(const QVariantHash &data, bool atStart)
+{
+    QString selName = generateSelectorName(data);
+    int i = ui->cbSelector->findText(selName);
+    if (i >= 0) ui->cbSelector->removeItem(i);
+
+    if (atStart) ui->cbSelector->insertItem(0, selName, data);
+    else         ui->cbSelector->addItem(selName, data);
+}
+
+void EngineStartDialog::on_cbSelector_activated(int index)
+{
+    if (index >= 0)
+        initData(index);
 }
 
 void EngineStartDialog::showLogin()
@@ -1172,6 +1249,7 @@ void EngineStartDialog::on_sbInstSize_valueChanged(int value)
         ui->cbInstActivate->setChecked(value > 0);
     updatePoolControls();
 }
+
 
 
 } // namespace engine

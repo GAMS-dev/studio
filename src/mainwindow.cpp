@@ -5145,7 +5145,7 @@ void MainWindow::initEngineStartDialog(bool resume)
 
     // prepare dialog
     engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
-    dialog->initData(Settings::settings()->toString(SettingsKey::skEngineUrl),
+    dialog->init(Settings::settings()->toString(SettingsKey::skEngineUrl),
                      Settings::settings()->toInt(SettingsKey::skEngineAuthMethod),
                      Settings::settings()->toString(SettingsKey::skEngineUser),
                      Settings::settings()->toString(SettingsKey::skEngineUserToken),
@@ -5154,7 +5154,8 @@ void MainWindow::initEngineStartDialog(bool resume)
                      Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert),
                      Settings::settings()->toString(SettingsKey::skEngineNamespace),
                      Settings::settings()->toString(SettingsKey::skEngineUserInstance),
-                     Settings::settings()->toBool(SettingsKey::skEngineForceGdx));
+                     Settings::settings()->toBool(SettingsKey::skEngineForceGdx),
+                     Settings::settings()->toList(SettingsKey::skEngineRecent));
     dialog->setJobTag(mEngineJobTag);
 
     connect(dialog, &engine::EngineStartDialog::storeInstanceSelection, dialog, [dialog]() {

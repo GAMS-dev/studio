@@ -453,6 +453,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEngineNamespace, scSys, {"engine","namespace"}, "");
     safelyAdd(res, skEngineUserInstance, scSys, {"engine","userInstance"}, "");
     safelyAdd(res, skEngineForceGdx, scSys, {"engine","forceGdx"}, true);
+    safelyAdd(res, skEngineRecent, scSys, {"engine","recent"}, QJsonArray());
 
     // syntax color settings
     safelyAdd(res, skUserThemes, scTheme, {"theme"}, QJsonArray());

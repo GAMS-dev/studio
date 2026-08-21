@@ -198,6 +198,7 @@ enum SettingsKey {
     skEngineNamespace,
     skEngineUserInstance,
     skEngineForceGdx,
+    skEngineRecent,
 
     // user model library directory
     skUserModelLibraryDir,

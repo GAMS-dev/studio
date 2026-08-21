@@ -67,8 +67,9 @@ public:
     EngineProcess *process() const;
     void setAcceptCert();
     bool isCertAccepted();
-    void initData(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken, const QString &ssoName,
-                  int authExpireMinutes, bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx);
+    void init(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken,
+              const QString &ssoName, int authExpireMinutes, bool selfCert, const QString &_nSpace,
+              const QString &_userInst, bool _forceGdx, const QVariantList recent);
     bool isAlways();
     QString url() const;
     QString nSpace() const;
@@ -97,6 +98,12 @@ protected:
     void closeEvent(QCloseEvent *event) override;
     void showEvent(QShowEvent *event) override;
 
+    void initData(int selectorIndex);
+    QString generateSelectorName(const QVariantHash &data);
+    void insertSelector(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken,
+                          const QString &ssoName, int authExpireMinutes, bool selfCert, const QString &_nSpace,
+                          const QString &_userInst, bool _forceGdx);
+    void insertSelector(const QVariantHash &data, bool atStart = true);
     void showLogin();
     void showConnect();
     void showSubmit();
@@ -115,6 +122,7 @@ protected:
     void updatePoolControls(bool adaptCheckBox = false, bool adaptSize = false);
 
 private slots:
+    void on_cbSelector_activated(int index);
     void urlEdited(const QString &text);
     void updateLoginStates();
     void updateSubmitStates();
@@ -153,6 +161,7 @@ private slots:
     void on_cbInstActivate_clicked();
     void on_sbInstSize_valueChanged(int value);
     void on_cbInstance_activated(int index);
+
 
 private:
     Ui::EngineStartDialog *ui;
