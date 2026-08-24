@@ -32,6 +32,7 @@
 # 2. DEFINE ENVIRONMENT BASE JOBS (Contains your actual scripts)
 # =========================================================================
 
+# --- MACOS x86 (deg) ---
 .base-build-deg:
   stage: build
   tags: [macos]
@@ -52,6 +53,7 @@
     paths: [build/*]
 
 
+# --- MACOS ARM64 (dac) ---
 .base-build-dac:
   stage: build
   tags: [macos-arm64]
@@ -72,6 +74,7 @@
     paths: [build/*]
 
 
+# --- LINUX (leg) ---
 .base-build-leg:
   stage: build
   tags: [linux]
@@ -94,6 +97,7 @@
     paths: [build/*]
 
 
+# --- WINDOWS (wei) ---
 .base-build-wei:
   stage: build
   tags: [windows]
