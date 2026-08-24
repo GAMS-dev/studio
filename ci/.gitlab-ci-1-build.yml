@@ -1,5 +1,38 @@
-# --- MACOS x86 ---
-build-deg:
+# =========================================================================
+# 1. DEFINE LIFECYCLE TEMPLATES (Controls execution and artifact expiration)
+# =========================================================================
+
+.rules-gold-release:
+  artifacts:
+    expire_in: never
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
+
+.rules-other-tags:
+  artifacts:
+    expire_in: 1 year
+  rules:
+    # Exclude gold release tags so they don't double-trigger
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
+      when: never
+    # Match any other tag pattern
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/'
+
+.rules-branches:
+  artifacts:
+    expire_in: 48 hours
+  rules:
+    # Exclude all tags completely
+    - if: '$CI_COMMIT_TAG'
+      when: never
+    - when: on_success
+
+
+# =========================================================================
+# 2. DEFINE ENVIRONMENT BASE JOBS (Contains your actual scripts)
+# =========================================================================
+
+.base-build-deg:
   stage: build
   tags: [macos]
   needs: [fetch-ci-scripts, quality-gate]
@@ -17,27 +50,9 @@ build-deg:
   artifacts:
     name: studio-deg
     paths: [build/*]
-    expire_in: $EXPIRY
-  parallel:
-    matrix:
-      - TYPE: gold
-        EXPIRY: never
-      - TYPE: tags
-        EXPIRY: 1 year
-      - TYPE: branches
-        EXPIRY: 48 hours
-  rules:
-    - if: '$TYPE == "gold" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
-    - if: '$TYPE == "tags" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
-      when: never
-    - if: '$TYPE == "tags" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/'
-    - if: '$TYPE == "branches" && $CI_COMMIT_TAG'
-      when: never
-    - if: '$TYPE == "branches"'
-      when: on_success
 
-# --- MACOS ARM64 ---
-build-dac:
+
+.base-build-dac:
   stage: build
   tags: [macos-arm64]
   needs: [fetch-ci-scripts, quality-gate]
@@ -55,33 +70,15 @@ build-dac:
   artifacts:
     name: studio-dac
     paths: [build/*]
-    expire_in: $EXPIRY
-  parallel:
-    matrix:
-      - TYPE: gold
-        EXPIRY: never
-      - TYPE: tags
-        EXPIRY: 1 year
-      - TYPE: branches
-        EXPIRY: 48 hours
-  rules:
-    - if: '$TYPE == "gold" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
-    - if: '$TYPE == "tags" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
-      when: never
-    - if: '$TYPE == "tags" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/'
-    - if: '$TYPE == "branches" && $CI_COMMIT_TAG'
-      when: never
-    - if: '$TYPE == "branches"'
-      when: on_success
 
-# --- LINUX ---
-build-leg:
+
+.base-build-leg:
   stage: build
   tags: [linux]
   needs: [fetch-ci-scripts, quality-gate]
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-${QT_IMAGE_VERSION}:latest
-    entrypoint: [""]
+    entrypoint: [""]   # prevent startup.sh
   variables:
     DOLLAR_GAMS: $$$$GAMS_DISTRIB
   script:
@@ -95,27 +92,9 @@ build-leg:
   artifacts:
     name: studio-leg
     paths: [build/*]
-    expire_in: $EXPIRY
-  parallel:
-    matrix:
-      - TYPE: gold
-        EXPIRY: never
-      - TYPE: tags
-        EXPIRY: 1 year
-      - TYPE: branches
-        EXPIRY: 48 hours
-  rules:
-    - if: '$TYPE == "gold" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
-    - if: '$TYPE == "tags" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
-      when: never
-    - if: '$TYPE == "tags" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/'
-    - if: '$TYPE == "branches" && $CI_COMMIT_TAG'
-      when: never
-    - if: '$TYPE == "branches"'
-      when: on_success
 
-# --- WINDOWS ---
-build-wei:
+
+.base-build-wei:
   stage: build
   tags: [windows]
   needs: [fetch-ci-scripts, quality-gate]
@@ -146,21 +125,51 @@ build-wei:
   artifacts:
     name: studio-wei
     paths: [build/*]
-    expire_in: $EXPIRY
-  parallel:
-    matrix:
-      - TYPE: gold
-        EXPIRY: never
-      - TYPE: tags
-        EXPIRY: 1 year
-      - TYPE: branches
-        EXPIRY: 48 hours
-  rules:
-    - if: '$TYPE == "gold" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
-    - if: '$TYPE == "tags" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
-      when: never
-    - if: '$TYPE == "tags" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/'
-    - if: '$TYPE == "branches" && $CI_COMMIT_TAG'
-      when: never
-    - if: '$TYPE == "branches"'
-      when: on_success
+
+
+# =========================================================================
+# 3. GENERATE TARGET JOBS (Combines platforms with the target rules)
+# =========================================================================
+
+# --- MACOS x86 (deg) ---
+build-deg-gold:
+  extends: [.base-build-deg, .rules-gold-release]
+
+build-deg-tags:
+  extends: [.base-build-deg, .rules-other-tags]
+
+build-deg:
+  extends: [.base-build-deg, .rules-branches]
+
+
+# --- MACOS ARM64 (dac) ---
+build-dac-gold:
+  extends: [.base-build-dac, .rules-gold-release]
+
+build-dac-tags:
+  extends: [.base-build-dac, .rules-other-tags]
+
+build-dac:
+  extends: [.base-build-dac, .rules-branches]
+
+
+# --- LINUX (leg) ---
+build-leg-gold:
+  extends: [.base-build-leg, .rules-gold-release]
+
+build-leg-tags:
+  extends: [.base-build-leg, .rules-other-tags]
+
+build-leg:
+  extends: [.base-build-leg, .rules-branches]
+
+
+# --- WINDOWS (wei) ---
+build-wei-gold:
+  extends: [.base-build-wei, .rules-gold-release]
+
+build-wei-tags:
+  extends: [.base-build-wei, .rules-other-tags]
+
+build-wei:
+  extends: [.base-build-wei, .rules-branches]

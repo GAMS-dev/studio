@@ -1,7 +1,14 @@
 test-deg:
   stage: test
   tags: [macos]
-  needs: [fetch-ci-scripts, build-deg]
+  needs: 
+    - job: fetch-ci-scripts
+    - job: build-deg
+      optional: true
+    - job: build-deg-tags
+      optional: true
+    - job: build-deg-gold
+      optional: true
   variables:
     qtpath: /opt/Qt/${QT_VERSION}/bin
   script:
@@ -29,7 +36,14 @@ test-deg:
 test-dac:
   stage: test
   tags: [macos-arm64]
-  needs: [fetch-ci-scripts, build-dac]
+  needs: 
+    - job: fetch-ci-scripts
+    - job: build-dac
+      optional: true
+    - job: build-dac-tags
+      optional: true
+    - job: build-dac-gold
+      optional: true
   variables:
     qtpath: /opt/Qt/${QT_VERSION}/bin
   script:
@@ -60,7 +74,14 @@ test-leg:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
-  needs: [fetch-ci-scripts, build-leg]
+  needs: 
+    - job: fetch-ci-scripts
+    - job: build-leg
+      optional: true
+    - job: build-leg-tags
+      optional: true
+    - job: build-leg-gold
+      optional: true
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-leg]
@@ -89,7 +110,14 @@ test-wei:
   allow_failure: true
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-${QT_IMAGE_VERSION}:latest
-  needs: [fetch-ci-scripts, build-wei]
+  needs: 
+    - job: fetch-ci-scripts
+    - job: build-wei
+      optional: true
+    - job: build-wei-tags
+      optional: true
+    - job: build-wei-gold
+      optional: true
   script:
     - $env:Path = "C:\Miniconda\Library\bin;C:\Miniconda\DLLs;" + $env:Path
     - $env:Path = "C:\Qt\Tools\icu\bin64;" + $env:PATH

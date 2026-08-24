@@ -3,7 +3,13 @@ pack-deg:
   tags: [macos]
   variables:
     qtpath: /opt/Qt/${QT_VERSION}/bin
-  needs: [build-deg]
+  needs:
+    - job: build-deg
+      optional: true
+    - job: build-deg-tags
+      optional: true
+    - job: build-deg-gold
+      optional: true
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
@@ -72,7 +78,13 @@ pack-dac:
   tags: [macos-arm64]
   variables:
     qtpath: /opt/Qt/${QT_VERSION}/bin
-  needs: [build-dac]
+  needs: 
+    - job: build-dac
+      optional: true
+    - job: build-dac-tags
+      optional: true
+    - job: build-dac-gold
+      optional: true
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
@@ -142,7 +154,13 @@ pack-leg:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
-  needs: [build-leg]
+  needs: 
+    - job: build-leg
+      optional: true
+    - job: build-leg-tags
+      optional: true
+    - job: build-leg-gold
+      optional: true
   script:
   # create folder structure
   - mkdir -p appdir/usr/bin
@@ -180,7 +198,13 @@ pack-wei:
   tags: [windows]
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-${QT_IMAGE_VERSION}:latest
-  needs: [build-wei]
+  needs: 
+    - job: build-wei
+      optional: true
+    - job: build-wei-tags
+      optional: true
+    - job: build-wei-gold
+      optional: true
   variables:
     vcinsdir: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC
     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat
