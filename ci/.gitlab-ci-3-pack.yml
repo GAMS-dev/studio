@@ -1,5 +1,20 @@
 # =========================================================================
-# 1. DEFINE LIFECYCLE TEMPLATES (Controls artifact expiration)
+# 1. SINGLE CLEANUP JOB - stoping the environment deletes the artifacts
+# =========================================================================
+stop_all_platforms:
+  stage: cleanup
+  environment:
+    name: mr-cleanup/$CI_COMMIT_REF_SLUG
+    action: stop
+  script:
+    - echo "MR closed or merged. Deleting all platform artifacts..."
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+
+
+# =========================================================================
+# 2. DEFINE LIFECYCLE TEMPLATES (Controls artifact expiration)
 # =========================================================================
 
 .rules-gold-release:
@@ -29,7 +44,7 @@
 
 
 # =========================================================================
-# 2. DEFINE ENVIRONMENT BASE JOBS (Contains your actual scripts)
+# 3. DEFINE ENVIRONMENT BASE JOBS (Contains your actual scripts)
 # =========================================================================
 
 .base-pack-deg:
@@ -263,7 +278,7 @@
 
 
 # =========================================================================
-# 3. GENERATE TARGET JOBS (Combines platforms with the target rules)
+# 4. GENERATE TARGET JOBS (Combines platforms with the target rules)
 # =========================================================================
 
 # --- MACOS x86 (deg) ---
@@ -308,18 +323,3 @@ pack-wei-tags:
 
 pack-wei:
   extends: [.base-pack-wei, .rules-branches]
-
-
-# =========================================================================
-# 4. SINGLE CLEANUP JOB - stoping the environment deletes the artifacts
-# =========================================================================
-stop_all_platforms:
-  stage: cleanup
-  environment:
-    name: mr-cleanup/$CI_COMMIT_REF_SLUG
-    action: stop
-  script:
-    - echo "MR closed or merged. Deleting all platform artifacts..."
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: manual
