@@ -95,6 +95,9 @@
         echo "Stapling failed"
         exit 1
       fi
+  environment:
+    name: mr-cleanup/$CI_COMMIT_REF_SLUG
+    on_stop: stop_all_platforms
   artifacts:
     name: "GAMS_Studio-deg-x86_64"
     paths: ['GAMS_Studio-deg-x86_64.dmg']
@@ -163,6 +166,9 @@
         echo "Stapling failed"
         exit 1
       fi
+  environment:
+    name: mr-cleanup/$CI_COMMIT_REF_SLUG
+    on_stop: stop_all_platforms
   artifacts:
     name: "GAMS_Studio-dac-arm_64"
     paths: ['GAMS_Studio-dac-arm_64.dmg']
@@ -201,6 +207,9 @@
   - linuxdeploy-plugin-appimage-x86_64.AppImage --appdir=appdir
   # rename the AppImage... for MR artifact exposure
   - mv GAMS_Studio-${LINUXDEPLOY_OUTPUT_VERSION}-x86_64.AppImage GAMS_Studio-leg-x86_64.AppImage
+  environment:
+    name: mr-cleanup/$CI_COMMIT_REF_SLUG
+    on_stop: stop_all_platforms
   artifacts:
     name: "GAMS_Studio-leg-x86_64"
     paths: ['GAMS_Studio-leg-x86_64.AppImage']
@@ -244,6 +253,9 @@
     # zip studio directory... for MR artifact exposure
     - cd ..
     - Compress-Archive -Path studio -DestinationPath GAMS_Studio-wei-x86_64.zip
+  environment:
+    name: mr-cleanup/$CI_COMMIT_REF_SLUG
+    on_stop: stop_all_platforms
   artifacts:
     name: "GAMS_Studio-wei-x86_64"
     paths: ['GAMS_Studio-wei-x86_64.zip']
@@ -296,3 +308,18 @@ pack-wei-tags:
 
 pack-wei:
   extends: [.base-pack-wei, .rules-branches]
+
+
+# =========================================================================
+# 4. SINGLE CLEANUP JOB - stoping the environment deletes the artifacts
+# =========================================================================
+stop_all_platforms:
+  stage: cleanup
+  environment:
+    name: mr-cleanup/$CI_COMMIT_REF_SLUG
+    action: stop
+  script:
+    - echo "MR closed or merged. Deleting all platform artifacts..."
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
