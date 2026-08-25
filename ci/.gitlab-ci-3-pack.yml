@@ -1,6 +1,7 @@
 # =========================================================================
 # 1. SINGLE JOB - stoping the environment deletes the artifacts
 # =========================================================================
+
 stop_all_platforms:
   stage: .post
   environment:
