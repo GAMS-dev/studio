@@ -105,7 +105,7 @@
   tags: [macos-arm64]
   variables:
     qtpath: /opt/Qt/${QT_VERSION}/bin
-  needs: [build-dac
+  needs: [build-dac]
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
