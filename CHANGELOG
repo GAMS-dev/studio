@@ -19,6 +19,7 @@ Version 1.25.5
 - Fixed invisible text selection in the project filter.
 - Fix broken log and $include links when the file path contained a comma.
 - Fixed broken "Follow OS Theme" in Settings > Colors for Windows and added support for macOS.
+- Upgrade to Qt 6.11.2
 
 Version 1.25.4
 ==================
