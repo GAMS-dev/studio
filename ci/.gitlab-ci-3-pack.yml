@@ -1,15 +1,43 @@
-pack-deg:
+# =========================================================================
+# 1. DEFINE LIFECYCLE TEMPLATES (Controls artifact expiration)
+# =========================================================================
+
+.rules-gold-release:
+  artifacts:
+    expire_in: never
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
+
+.rules-other-tags:
+  artifacts:
+    expire_in: 1 year
+  rules:
+    # Exclude gold release tags so they don't double-trigger
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
+      when: never
+    # Match any other tag pattern
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/'
+
+.rules-branches:
+  artifacts:
+    expire_in: 48 hours
+  rules:
+    # Exclude all tags completely
+    - if: '$CI_COMMIT_TAG'
+      when: never
+    - when: on_success
+
+
+# =========================================================================
+# 2. DEFINE ENVIRONMENT BASE JOBS (Contains your actual scripts)
+# =========================================================================
+
+.base-pack-deg:
   stage: pack
   tags: [macos]
   variables:
     qtpath: /opt/Qt/${QT_VERSION}/bin
-  needs:
-    - job: build-deg
-      optional: true
-    - job: build-deg-tags
-      optional: true
-    - job: build-deg-gold
-      optional: true
+  needs: [build-deg]
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
@@ -71,20 +99,13 @@ pack-deg:
     name: "GAMS_Studio-deg-x86_64"
     paths: ['GAMS_Studio-deg-x86_64.dmg']
     expose_as: 'GAMS_Studio-deg-x86_64'
-    expire_in: 1 days
 
-pack-dac:
+.base-pack-dac:
   stage: pack
   tags: [macos-arm64]
   variables:
     qtpath: /opt/Qt/${QT_VERSION}/bin
-  needs: 
-    - job: build-dac
-      optional: true
-    - job: build-dac-tags
-      optional: true
-    - job: build-dac-gold
-      optional: true
+  needs: [build-dac
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
@@ -146,21 +167,14 @@ pack-dac:
     name: "GAMS_Studio-dac-arm_64"
     paths: ['GAMS_Studio-dac-arm_64.dmg']
     expose_as: 'GAMS_Studio-dac-arm_64'
-    expire_in: 1 days
 
-pack-leg:
+.base-pack-leg:
   stage: pack
   tags: [linux]
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
-  needs: 
-    - job: build-leg
-      optional: true
-    - job: build-leg-tags
-      optional: true
-    - job: build-leg-gold
-      optional: true
+  needs: [build-leg]
   script:
   # create folder structure
   - mkdir -p appdir/usr/bin
@@ -191,20 +205,13 @@ pack-leg:
     name: "GAMS_Studio-leg-x86_64"
     paths: ['GAMS_Studio-leg-x86_64.AppImage']
     expose_as: 'GAMS_Studio-leg-x86_64'
-    expire_in: 1 days
 
-pack-wei:
+.base-pack-wei:
   stage: pack
   tags: [windows]
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-${QT_IMAGE_VERSION}:latest
-  needs: 
-    - job: build-wei
-      optional: true
-    - job: build-wei-tags
-      optional: true
-    - job: build-wei-gold
-      optional: true
+  needs: [build-wei]
   variables:
     vcinsdir: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC
     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat
@@ -241,4 +248,51 @@ pack-wei:
     name: "GAMS_Studio-wei-x86_64"
     paths: ['GAMS_Studio-wei-x86_64.zip']
     expose_as: 'GAMS_Studio-wei-x86_64'
-    expire_in: 1 days
+
+
+# =========================================================================
+# 3. GENERATE TARGET JOBS (Combines platforms with the target rules)
+# =========================================================================
+
+# --- MACOS x86 (deg) ---
+pack-deg-gold:
+  extends: [.base-pack-deg, .rules-gold-release]
+
+pack-deg-tags:
+  extends: [.base-pack-deg, .rules-other-tags]
+
+pack-deg:
+  extends: [.base-pack-deg, .rules-branches]
+
+
+# --- MACOS ARM64 (dac) ---
+pack-dac-gold:
+  extends: [.base-pack-dac, .rules-gold-release]
+
+pack-dac-tags:
+  extends: [.base-pack-dac, .rules-other-tags]
+
+pack-dac:
+  extends: [.base-pack-dac, .rules-branches]
+
+
+# --- LINUX (leg) ---
+pack-leg-gold:
+  extends: [.base-pack-leg, .rules-gold-release]
+
+pack-leg-tags:
+  extends: [.base-pack-leg, .rules-other-tags]
+
+pack-leg:
+  extends: [.base-pack-leg, .rules-branches]
+
+
+# --- WINDOWS (wei) ---
+pack-wei-gold:
+  extends: [.base-pack-wei, .rules-gold-release]
+
+pack-wei-tags:
+  extends: [.base-pack-wei, .rules-other-tags]
+
+pack-wei:
+  extends: [.base-pack-wei, .rules-branches]

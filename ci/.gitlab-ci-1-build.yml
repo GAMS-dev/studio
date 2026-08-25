@@ -1,39 +1,4 @@
-# =========================================================================
-# 1. DEFINE LIFECYCLE TEMPLATES (Controls execution and artifact expiration)
-# =========================================================================
-
-.rules-gold-release:
-  artifacts:
-    expire_in: never
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
-
-.rules-other-tags:
-  artifacts:
-    expire_in: 1 year
-  rules:
-    # Exclude gold release tags so they don't double-trigger
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
-      when: never
-    # Match any other tag pattern
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/'
-
-.rules-branches:
-  artifacts:
-    expire_in: 48 hours
-  rules:
-    # Exclude all tags completely
-    - if: '$CI_COMMIT_TAG'
-      when: never
-    - when: on_success
-
-
-# =========================================================================
-# 2. DEFINE ENVIRONMENT BASE JOBS (Contains your actual scripts)
-# =========================================================================
-
-# --- MACOS x86 (deg) ---
-.base-build-deg:
+build-deg:
   stage: build
   tags: [macos]
   needs: [fetch-ci-scripts, quality-gate]
@@ -50,11 +15,10 @@
     - qmake ../gams-studio.pro CONFIG+=release && make -j4
   artifacts:
     name: studio-deg
+    expire_in: 2 hours
     paths: [build/*]
 
-
-# --- MACOS ARM64 (dac) ---
-.base-build-dac:
+build-dac:
   stage: build
   tags: [macos-arm64]
   needs: [fetch-ci-scripts, quality-gate]
@@ -71,11 +35,10 @@
     - qmake ../gams-studio.pro CONFIG+=release && make -j4
   artifacts:
     name: studio-dac
+    expire_in: 2 hours
     paths: [build/*]
 
-
-# --- LINUX (leg) ---
-.base-build-leg:
+build-leg:
   stage: build
   tags: [linux]
   needs: [fetch-ci-scripts, quality-gate]
@@ -94,11 +57,10 @@
     - qmake ../gams-studio.pro CONFIG+=release && make -j4
   artifacts:
     name: studio-leg
+    expire_in: 2 hours
     paths: [build/*]
 
-
-# --- WINDOWS (wei) ---
-.base-build-wei:
+build-wei:
   stage: build
   tags: [windows]
   needs: [fetch-ci-scripts, quality-gate]
@@ -128,52 +90,5 @@
     - nmake.exe
   artifacts:
     name: studio-wei
+    expire_in: 2 hours
     paths: [build/*]
-
-
-# =========================================================================
-# 3. GENERATE TARGET JOBS (Combines platforms with the target rules)
-# =========================================================================
-
-# --- MACOS x86 (deg) ---
-build-deg-gold:
-  extends: [.base-build-deg, .rules-gold-release]
-
-build-deg-tags:
-  extends: [.base-build-deg, .rules-other-tags]
-
-build-deg:
-  extends: [.base-build-deg, .rules-branches]
-
-
-# --- MACOS ARM64 (dac) ---
-build-dac-gold:
-  extends: [.base-build-dac, .rules-gold-release]
-
-build-dac-tags:
-  extends: [.base-build-dac, .rules-other-tags]
-
-build-dac:
-  extends: [.base-build-dac, .rules-branches]
-
-
-# --- LINUX (leg) ---
-build-leg-gold:
-  extends: [.base-build-leg, .rules-gold-release]
-
-build-leg-tags:
-  extends: [.base-build-leg, .rules-other-tags]
-
-build-leg:
-  extends: [.base-build-leg, .rules-branches]
-
-
-# --- WINDOWS (wei) ---
-build-wei-gold:
-  extends: [.base-build-wei, .rules-gold-release]
-
-build-wei-tags:
-  extends: [.base-build-wei, .rules-other-tags]
-
-build-wei:
-  extends: [.base-build-wei, .rules-branches]
