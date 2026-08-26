@@ -1,4 +1,48 @@
-pack-deg:
+# =========================================================================
+# 1. SINGLE JOB - stoping the environment deletes the artifacts
+# =========================================================================
+
+stop_all_platforms:
+  stage: .post
+  allow_failure: true
+  environment:
+    name: mr-cleanup/$CI_COMMIT_REF_SLUG
+    action: stop
+  script:
+    - echo "MR closed or merged. Deleting all platform artifacts..."
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: manual
+
+
+# =========================================================================
+# 2. DEFINE LIFECYCLE TEMPLATES (Controls artifact expiration)
+# =========================================================================
+
+.rules-tags:
+  artifacts:
+    expire_in: 6 months
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/'
+
+.rules-branches:
+  artifacts:
+    expire_in: 1 week
+  rules:
+    # Exclude all tags completely
+    - if: '$CI_COMMIT_TAG'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+
+
+# =========================================================================
+# 3. DEFINE ENVIRONMENT BASE JOBS FOR PACK
+# =========================================================================
+
+.base-pack-deg:
   stage: pack
   tags: [macos]
   variables:
@@ -37,7 +81,9 @@ pack-deg:
     - cd ${WORKSPACE}
     # leave pipeline if it is not a Release, Release Tag or RC build
     - |+
-      if [[ ! ${CI_COMMIT_REF_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-release$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-rc$ ]]; then
+      if [ "$FORCE_NOTARIZATION" = "1" ]; then
+        echo "Notarization forced via manual variable trigger!"
+      elif [[ ! ${CI_COMMIT_REF_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-release$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-rc$ ]]; then
         echo "Notarization skipped!" > upload.log
         echo "Notarization skipped!" > report.xml
         cat upload.log
@@ -61,13 +107,15 @@ pack-deg:
         echo "Stapling failed"
         exit 1
       fi
+  environment:
+    name: mr-cleanup/$CI_COMMIT_REF_SLUG
+    on_stop: stop_all_platforms
   artifacts:
     name: "GAMS_Studio-deg-x86_64"
     paths: ['GAMS_Studio-deg-x86_64.dmg']
     expose_as: 'GAMS_Studio-deg-x86_64'
-    expire_in: 1 days
 
-pack-dac:
+.base-pack-dac:
   stage: pack
   tags: [macos-arm64]
   variables:
@@ -106,7 +154,9 @@ pack-dac:
     - cd ${WORKSPACE}
     # leave pipeline if it is not a Release, Release Tag or RC build
     - |+
-      if [[ ! ${CI_COMMIT_REF_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-release$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-rc$ ]]; then
+      if [ "$FORCE_NOTARIZATION" = "1" ]; then
+        echo "Notarization forced via manual variable trigger!"
+      elif [[ ! ${CI_COMMIT_REF_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-release$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-rc$ ]]; then
         echo "Notarization skipped!" > upload.log
         echo "Notarization skipped!" > report.xml
         cat upload.log
@@ -130,13 +180,15 @@ pack-dac:
         echo "Stapling failed"
         exit 1
       fi
+  environment:
+    name: mr-cleanup/$CI_COMMIT_REF_SLUG
+    on_stop: stop_all_platforms
   artifacts:
     name: "GAMS_Studio-dac-arm_64"
     paths: ['GAMS_Studio-dac-arm_64.dmg']
     expose_as: 'GAMS_Studio-dac-arm_64'
-    expire_in: 1 days
 
-pack-leg:
+.base-pack-leg:
   stage: pack
   tags: [linux]
   image:
@@ -169,13 +221,15 @@ pack-leg:
   - linuxdeploy-plugin-appimage-x86_64.AppImage --appdir=appdir
   # rename the AppImage... for MR artifact exposure
   - mv GAMS_Studio-${LINUXDEPLOY_OUTPUT_VERSION}-x86_64.AppImage GAMS_Studio-leg-x86_64.AppImage
+  environment:
+    name: mr-cleanup/$CI_COMMIT_REF_SLUG
+    on_stop: stop_all_platforms
   artifacts:
     name: "GAMS_Studio-leg-x86_64"
     paths: ['GAMS_Studio-leg-x86_64.AppImage']
     expose_as: 'GAMS_Studio-leg-x86_64'
-    expire_in: 1 days
 
-pack-wei:
+.base-pack-wei:
   stage: pack
   tags: [windows]
   image:
@@ -203,7 +257,7 @@ pack-wei:
     - cp ../CHANGELOG "resources/Changelog"
     # sign and verify studio
     - |
-      if ($env:CI_COMMIT_REF_NAME -match '^(v\d+\.\d+\.\d+.*|release.*|develop)$') {
+      if ($env:FORCE_NOTARIZATION -eq "1" -or $env:CI_COMMIT_REF_NAME -match '^(v\d+\.\d+\.\d+.*|release.*|develop)$') {
         Write-Host "Build trigger detected ($env:CI_COMMIT_REF_NAME) - Signing studio.exe"
         & signtool sign /v /fd SHA256 /tr http://timestamp.acs.microsoft.com -td SHA256 -dlib $env:LOCALAPPDATA/Microsoft/MicrosoftArtifactSigningClientTools/Azure.CodeSigning.Dlib.dll -dmdf $env:SIGNTOOL_METADATA_JSON studio.exe
         & signtool verify /v /pa studio.exe
@@ -213,8 +267,46 @@ pack-wei:
     # zip studio directory... for MR artifact exposure
     - cd ..
     - Compress-Archive -Path studio -DestinationPath GAMS_Studio-wei-x86_64.zip
+  environment:
+    name: mr-cleanup/$CI_COMMIT_REF_SLUG
+    on_stop: stop_all_platforms
   artifacts:
     name: "GAMS_Studio-wei-x86_64"
     paths: ['GAMS_Studio-wei-x86_64.zip']
     expose_as: 'GAMS_Studio-wei-x86_64'
-    expire_in: 1 days
+
+
+# =========================================================================
+# 4. GENERATE TARGET JOBS (Combines platforms with the target rules)
+# =========================================================================
+
+# --- MACOS x86 (deg) ---
+pack-deg-tags:
+  extends: [.base-pack-deg, .rules-tags]
+
+pack-deg:
+  extends: [.base-pack-deg, .rules-branches]
+
+
+# --- MACOS ARM64 (dac) ---
+pack-dac-tags:
+  extends: [.base-pack-dac, .rules-tags]
+
+pack-dac:
+  extends: [.base-pack-dac, .rules-branches]
+
+
+# --- LINUX (leg) ---
+pack-leg-tags:
+  extends: [.base-pack-leg, .rules-tags]
+
+pack-leg:
+  extends: [.base-pack-leg, .rules-branches]
+
+
+# --- WINDOWS (wei) ---
+pack-wei-tags:
+  extends: [.base-pack-wei, .rules-tags]
+
+pack-wei:
+  extends: [.base-pack-wei, .rules-branches]

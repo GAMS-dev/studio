@@ -20,11 +20,22 @@ include:
   - 'ci/.gitlab-ci-5-analyze.yml'
   - template: Security/Secret-Detection.gitlab-ci.yml
 
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never # Prevents duplicate branch pipelines when an MR is open
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_TAG
+
 variables:
   extends: .shared-variables
   GAMS_CONTAINER_REGISTRY:
       value: registry.gams.com/devel
       description: "URL to the GAMS container registry"
+  FORCE_NOTARIZATION:
+      value: 0
+      description: "Set to '1' to force Apple/Window notarization on branches that normally skip it."
   PF_CUSTOM_BRANCH:
       value: 0
       description: "Name of custom branch, or X.Y.Z for published distribution, or 0 if version is specified in text file with lines GAMS_DISTRIB_MAJOR=X, GAMS_DISTRIB_MINOR=Y, GAMS_DISTRIB_GOLD=Z"
