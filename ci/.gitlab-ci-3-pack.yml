@@ -21,23 +21,13 @@ stop_all_platforms:
 
 .rules-gold-release:
   artifacts:
-    expire_in: never
+    expire_in: 6 months
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
-
-.rules-other-tags:
-  artifacts:
-    expire_in: 1 year
-  rules:
-    # Exclude gold release tags so they don't double-trigger
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.1(-.*)?$/'
-      when: never
-    # Match any other tag pattern
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/'
 
 .rules-branches:
   artifacts:
-    expire_in: 48 hours
+    expire_in: 1 week
   rules:
     # Exclude all tags completely
     - if: '$CI_COMMIT_TAG'
@@ -91,7 +81,9 @@ stop_all_platforms:
     - cd ${WORKSPACE}
     # leave pipeline if it is not a Release, Release Tag or RC build
     - |+
-      if [[ ! ${CI_COMMIT_REF_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-release$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-rc$ ]]; then
+      if [ "$FORCE_NOTARIZATION" = "1" ]; then
+        echo "Notarization forced via manual variable trigger!"
+      elif [[ ! ${CI_COMMIT_REF_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-release$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-rc$ ]]; then
         echo "Notarization skipped!" > upload.log
         echo "Notarization skipped!" > report.xml
         cat upload.log
@@ -162,7 +154,9 @@ stop_all_platforms:
     - cd ${WORKSPACE}
     # leave pipeline if it is not a Release, Release Tag or RC build
     - |+
-      if [[ ! ${CI_COMMIT_REF_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-release$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-rc$ ]]; then
+      if [ "$FORCE_NOTARIZATION" = "1" ]; then
+        echo "Notarization forced via manual variable trigger!"
+      elif [[ ! ${CI_COMMIT_REF_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-release$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-rc$ ]]; then
         echo "Notarization skipped!" > upload.log
         echo "Notarization skipped!" > report.xml
         cat upload.log
@@ -263,7 +257,7 @@ stop_all_platforms:
     - cp ../CHANGELOG "resources/Changelog"
     # sign and verify studio
     - |
-      if ($env:CI_COMMIT_REF_NAME -match '^(v\d+\.\d+\.\d+.*|release.*|develop)$') {
+      if ($env:FORCE_NOTARIZATION -eq "1" -or $env:CI_COMMIT_REF_NAME -match '^(v\d+\.\d+\.\d+.*|release.*|develop)$') {
         Write-Host "Build trigger detected ($env:CI_COMMIT_REF_NAME) - Signing studio.exe"
         & signtool sign /v /fd SHA256 /tr http://timestamp.acs.microsoft.com -td SHA256 -dlib $env:LOCALAPPDATA/Microsoft/MicrosoftArtifactSigningClientTools/Azure.CodeSigning.Dlib.dll -dmdf $env:SIGNTOOL_METADATA_JSON studio.exe
         & signtool verify /v /pa studio.exe
