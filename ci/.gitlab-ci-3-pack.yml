@@ -4,6 +4,7 @@
 
 stop_all_platforms:
   stage: .post
+  allow_failure: true
   environment:
     name: mr-cleanup/$CI_COMMIT_REF_SLUG
     action: stop
