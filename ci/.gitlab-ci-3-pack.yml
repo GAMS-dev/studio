@@ -19,7 +19,7 @@ stop_all_platforms:
 # 2. DEFINE LIFECYCLE TEMPLATES (Controls artifact expiration)
 # =========================================================================
 
-.rules-gold-release:
+.rules-tags:
   artifacts:
     expire_in: 6 months
   rules:
@@ -281,44 +281,32 @@ stop_all_platforms:
 # =========================================================================
 
 # --- MACOS x86 (deg) ---
-pack-deg-gold:
-  extends: [.base-pack-deg, .rules-gold-release]
-
 pack-deg-tags:
-  extends: [.base-pack-deg, .rules-other-tags]
+  extends: [.base-pack-deg, .rules-tags]
 
 pack-deg:
   extends: [.base-pack-deg, .rules-branches]
 
 
 # --- MACOS ARM64 (dac) ---
-pack-dac-gold:
-  extends: [.base-pack-dac, .rules-gold-release]
-
 pack-dac-tags:
-  extends: [.base-pack-dac, .rules-other-tags]
+  extends: [.base-pack-dac, .rules-tags]
 
 pack-dac:
   extends: [.base-pack-dac, .rules-branches]
 
 
 # --- LINUX (leg) ---
-pack-leg-gold:
-  extends: [.base-pack-leg, .rules-gold-release]
-
 pack-leg-tags:
-  extends: [.base-pack-leg, .rules-other-tags]
+  extends: [.base-pack-leg, .rules-tags]
 
 pack-leg:
   extends: [.base-pack-leg, .rules-branches]
 
 
 # --- WINDOWS (wei) ---
-pack-wei-gold:
-  extends: [.base-pack-wei, .rules-gold-release]
-
 pack-wei-tags:
-  extends: [.base-pack-wei, .rules-other-tags]
+  extends: [.base-pack-wei, .rules-tags]
 
 pack-wei:
   extends: [.base-pack-wei, .rules-branches]
