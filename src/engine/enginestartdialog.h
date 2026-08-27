@@ -120,6 +120,7 @@ protected:
     void updateUrlEdit();
     bool openInBrowser(const QString &text);
     void updatePoolControls(bool adaptCheckBox = false, bool adaptSize = false);
+    void updateSelector();
 
 private slots:
     void on_cbSelector_activated(int index);
@@ -198,7 +199,6 @@ private:
     int mAuthIndex = 0;
 
     static const QString CUnavailable;
-
 };
 
 } // namespace engine

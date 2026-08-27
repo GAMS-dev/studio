@@ -33,12 +33,7 @@ public:
     explicit ComboboxRemoveDelegate(QComboBox *parent = nullptr);
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-
-protected:
-    bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override;
-
-private:
-    QComboBox *mComboBox = nullptr;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 };
 
 } // namespace studio

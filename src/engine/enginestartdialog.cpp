@@ -32,6 +32,7 @@
 #include <QSslSocket>
 #include <QClipboard>
 #include <QDesktopServices>
+#include <QListView>
 
 using namespace std::chrono_literals;
 
@@ -51,7 +52,13 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QFont f = ui->laWarn->font();
     f.setBold(true);
     ui->laWarn->setFont(f);
-    ui->cbSelector->setItemDelegate(new ComboboxRemoveDelegate(ui->cbSelector));
+    QListView* listView = new QListView(ui->cbSelector);
+    ComboboxRemoveDelegate *delegate = new ComboboxRemoveDelegate(ui->cbSelector);
+    listView->setItemDelegate(delegate);
+    listView->setMouseTracking(true);
+    listView->viewport()->installEventFilter(delegate);
+    ui->cbSelector->setView(listView);
+    ui->cbSelector->installEventFilter(this);
 
     QPalette palette = qApp->palette();
     Theme::fillThemeColorPalette(palette, true, false);
@@ -60,7 +67,6 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->edUrl->setPalette(palette);
     ui->edUser->setPalette(palette);
     ui->edPassword->setPalette(palette);
-    ui->edSsoName->setPalette(palette);
     ui->edJobTag->setPalette(palette);
     ui->edSsoName->setPalette(palette);
     ui->cbNamespace->setPalette(palette);
@@ -127,10 +133,12 @@ EngineStartDialog::~EngineStartDialog()
 void EngineStartDialog::authorizeChanged(const QString &authToken)
 {
     Q_UNUSED(authToken)
-    if (mProc->authToken().isEmpty())
+    if (mProc->authToken().isEmpty()) {
         showLogin();
-    else
+    } else {
         mProc->listJobs();
+        updateSelector();
+    }
 }
 
 void EngineStartDialog::setHiddenMode(bool preferHidden)
@@ -217,7 +225,7 @@ void EngineStartDialog::init(const QString &_url, const int authMethod, const QS
 {
     for (const QVariant &item : recent)
         insertSelector(item.toHash(), false);
-    insertSelector(mUrl, authMethod, _user.trimmed(), _userToken.trimmed(), ssoName.trimmed(), authExpireMinutes,
+    insertSelector(_url, authMethod, _user.trimmed(), _userToken.trimmed(), ssoName.trimmed(), authExpireMinutes,
                    selfCert, _nSpace.trimmed(), _userInst, _forceGdx);
     initData(0);
 }
@@ -231,14 +239,12 @@ void EngineStartDialog::initData(int selectorIndex)
     bool ok;
     mAuthIndex = data.value("authMethod").toInt(&ok);
     if (!ok) mAuthIndex = 0;
-    ui->cbLoginMethod->setCurrentIndex(qMin(mAuthIndex, 2));
-    ui->stackLoginInput->setCurrentIndex(qMin(mAuthIndex, 2));
+    ui->cbLoginMethod->setCurrentIndex(qMin(mAuthIndex, ui->cbLoginMethod->count()));
     QString user = data.value("user").toString().trimmed();
     if (mProc && mAuthIndex == 0) mProc->initUsername(user);
     if (mProc && mAuthIndex == 1) mProc->setAuthToken(data.value("userToken").toString().trimmed());
-    if (mProc && mAuthIndex == 2) {
+    if (mProc && mAuthIndex >= 2)
         ui->edSsoName->setText(data.value("ssoName").toString().trimmed());
-    }
     ui->edUser->setText(user);
     ui->nUser->setText(user);
     if (data.value("selfCert").toBool()) {
@@ -250,6 +256,13 @@ void EngineStartDialog::initData(int selectorIndex)
     ui->cbNamespace->addItem(data.value("namespace").toString().trimmed());
     mLastValidInstance = data.value("userInstance").toString();
     ui->cbForceGdx->setChecked(data.value("forceGdx").toBool());
+}
+
+void EngineStartDialog::updateSelector()
+{
+    insertSelector(mUrl, mAuthIndex, ui->edUser->text(), mProc->authToken(), ui->edSsoName->text(),
+                   mAuthExpireMinutes, ui->cbAcceptCert->isChecked(), ui->cbNamespace->currentText(),
+                   mLastValidInstance, ui->cbForceGdx->isChecked());
 }
 
 bool EngineStartDialog::isAlways()
@@ -336,10 +349,19 @@ void EngineStartDialog::setJobTag(const QString &jobTag)
 
 bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
 {
-    if (watched == ui->edUrl && event->type() == QEvent::FocusOut)
+    if (watched == ui->edUrl && event->type() == QEvent::FocusOut) {
         updateUrlEdit();
-    if (watched == ui->laSsoLink && event->type() == QEvent::MouseButtonRelease)
+    } else if (watched == ui->laSsoLink && event->type() == QEvent::MouseButtonRelease) {
         openInBrowser(ui->laSsoLink->text());
+    } else if (watched == ui->cbSelector && event->type() == QEvent::ShowToParent) {
+        QWidget* container = ui->cbSelector->view()->parentWidget();
+        if (container) {
+            int buttonWidth = 24;
+            int newWidth = ui->cbSelector->width() - buttonWidth;
+            container->setFixedWidth(newWidth);
+        }
+    }
+
     return QDialog::eventFilter(watched, event);
 }
 
@@ -1119,7 +1141,10 @@ void EngineStartDialog::on_cbLoginMethod_currentIndexChanged(int index)
         ui->stackLoginInput->setCurrentIndex(2);
         ui->laSso->setVisible(ui->cbLoginMethod->currentIndex() == 2);
         ui->edSsoName->setVisible(ui->cbLoginMethod->currentIndex() == 2);
-
+        if (ui->cbLoginMethod->currentIndex() > 2) {
+            const QHash<QString, QVariant> provider = ui->cbLoginMethod->currentData().toHash();
+            ui->edSsoName->setText(provider.value("name").toString());
+        }
         setCanLogin(ui->cbLoginMethod->currentIndex() > 2 || !ui->edSsoName->text().isEmpty());
     }
     if (!mValidUrl.isEmpty())
