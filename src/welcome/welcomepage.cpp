@@ -361,7 +361,7 @@ bool WelcomePage::event(QEvent *event)
 
         ui->label_whats_new->setPalette(p);
         ui->label_changelog->setPalette(p);
-        ui->label_gamsworld->setPalette(p);
+        ui->label_gamsforum->setPalette(p);
         ui->label_contact->setPalette(p);
     }
 #ifdef QWEBENGINE
@@ -438,9 +438,9 @@ void WelcomePage::setupIcons()
     ui->label_changelog->setIndent(30);
     ui->label_changelog->setIconSize(size);
     ui->label_changelog->setIcon(Theme::icon(":/%1/scroll"));
-    ui->label_gamsworld->setIndent(30);
-    ui->label_gamsworld->setIconSize(size);
-    ui->label_gamsworld->setIcon(Theme::icon(":/img/gams-w"));
+    ui->label_gamsforum->setIndent(30);
+    ui->label_gamsforum->setIconSize(size);
+    ui->label_gamsforum->setIcon(Theme::icon(":/img/gams-w"));
     ui->label_contact->setIndent(30);
     ui->label_contact->setIconSize(size);
     ui->label_contact->setIcon(Theme::icon(":/%1/envelope"));
