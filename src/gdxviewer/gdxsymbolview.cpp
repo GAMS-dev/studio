@@ -1213,10 +1213,20 @@ bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv, QVector<boo
                 break;
             }
         }
-        for (int i = 0; i < rowDimCount; i++) {
-            if (matchInDim[mTvModel->tvDimOrder().at(i)]) {
-                searchRowLabels = true;
-                break;
+
+        int firstVisVisualIdx = 0;
+        while (firstVisVisualIdx < tv->horizontalHeader()->count() &&
+               tv->horizontalHeader()->isSectionHidden(tv->horizontalHeader()->logicalIndex(firstVisVisualIdx))) {
+            firstVisVisualIdx++;
+        }
+
+        // Only search row labels when evaluating the first visible column of the row
+        if (tv->horizontalHeader()->visualIndex(col) == firstVisVisualIdx) {
+            for (int i = 0; i < rowDimCount; i++) {
+                if (matchInDim[mTvModel->tvDimOrder().at(i)]) {
+                    searchRowLabels = true;
+                    break;
+                }
             }
         }
 
