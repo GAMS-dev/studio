@@ -41,7 +41,7 @@ public:
     bool addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &contLines);
 
     bool hasLinesMap();
-    int continuousLine(const QString &filename, int fileLine) const;
+    QList<int> continuousLine(const QString &filename, int fileLine) const;
     QString filename(int contLine) const;
     int fileLine(int contLine) const;
 
@@ -60,10 +60,12 @@ private:
     void adjustBreakpoint(const QString &filename, int &fileLine);
 
 private:
+    typedef QMultiMap<int, int> SortedIntMultiMap;
+
     QStringList mFiles;
     QMap<int, QString> mLastCln4File;
     QMap<int, int> mCln2Line;
-    QMap<QString, SortedIntMap> mFileLine2Cln;
+    QMap<QString, SortedIntMultiMap> mFileLine2Cln;
 
     QMap<QString, SortedIntMap> mActiveBp;
     QMap<QString, SortedIntMap> mAimedBp;

@@ -45,7 +45,7 @@ bool ContinuousLineData::addLinesMap(const QString &filename, const QList<int> &
     if (mLastCln4File.isEmpty() || mLastCln4File.last() != filename)
         mLastCln4File.insert(contLines.last(), filename);
 
-    QMap<int, int> revMap = mFileLine2Cln.value(filename);
+    SortedIntMultiMap revMap = mFileLine2Cln.value(filename);
     for (int i = 0; i < fileLines.size(); ++i) {
         mCln2Line.insert(contLines.at(i), fileLines.at(i));
         revMap.insert(fileLines.at(i), contLines.at(i));
@@ -59,9 +59,9 @@ bool ContinuousLineData::hasLinesMap()
     return !mFileLine2Cln.isEmpty();
 }
 
-int ContinuousLineData::continuousLine(const QString &filename, int fileLine) const
+QList<int> ContinuousLineData::continuousLine(const QString &filename, int fileLine) const
 {
-    return mFileLine2Cln.value(filename).value(fileLine, -1);
+    return mFileLine2Cln.value(filename).values(fileLine);
 }
 
 QString ContinuousLineData::filename(int contLine) const
@@ -105,19 +105,18 @@ void ContinuousLineData::adjustBreakpoints()
 
 void ContinuousLineData::adjustBreakpoint(const QString &filename, int &fileLine)
 {
-    const QMap<int, int> map = mFileLine2Cln.value(filename);
+    const QMultiMap<int, int> map = mFileLine2Cln.value(filename);
     if (map.isEmpty()) {
         fileLine = -1;
         return;
     }
-
     const auto iter = map.lowerBound(fileLine);
     fileLine = (iter == map.constEnd()) ? map.lastKey() : iter.key();
 }
 
 int ContinuousLineData::addBreakpoint(const QString &filename, int fileLine, bool isRunning)
 {
-    const QMap<int, int> map = mFileLine2Cln.value(filename);
+    const QMultiMap<int, int> map = mFileLine2Cln.value(filename);
     int resLine = fileLine;
     if (!map.isEmpty() && isRunning) {
         const auto iter = map.lowerBound(fileLine);
@@ -214,9 +213,7 @@ QList<int> ContinuousLineData::bpContinuousLines() const
     while (itFile != mActiveBp.constEnd()) {
         auto itLine = itFile.value().constBegin();
         while (itLine != itFile.value().constEnd()) {
-            int contLine = continuousLine(itFile.key(), itLine.key());
-            if (contLine >= 0)
-                res << contLine;
+            res << continuousLine(itFile.key(), itLine.key());
             ++itLine;
         }
         ++itFile;

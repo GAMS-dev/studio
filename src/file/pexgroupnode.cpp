@@ -991,9 +991,9 @@ void PExProjectNode::addBreakpoint(const QString &filename, int line)
     int resLine = mContLineData->addBreakpoint(filename, line, isRunning);
 
     if (mComServer) {
-        int contLine = mContLineData->continuousLine(filename, resLine);
-        if (contLine >= 0)
-            mComServer->addBreakpoint(contLine);
+        for (int line : mContLineData->continuousLine(filename, resLine)) {
+            mComServer->addBreakpoint(line);
+        }
     }
 }
 
@@ -1002,9 +1002,9 @@ void PExProjectNode::delBreakpoint(const QString &filename, int line)
     mContLineData->delBreakpoint(filename, line);
 
     if (mComServer) {
-        int contLine = mContLineData->continuousLine(filename, line);
-        if (contLine >= 0)
-            mComServer->delBreakpoint(contLine);
+        for (int line : mContLineData->continuousLine(filename, line)) {
+            mComServer->delBreakpoint(line);
+        }
     }
 }
 

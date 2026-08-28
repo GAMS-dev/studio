@@ -3,7 +3,7 @@ QT += core widgets gui svg concurrent network printsupport
 TARGET = studio
 TEMPLATE = app
 DESTDIR = bin
-CONFIG += c++17
+CONFIG += c++20
 
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)

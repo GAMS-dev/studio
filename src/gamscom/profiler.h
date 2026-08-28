@@ -85,7 +85,7 @@ public:
     void setContinuousLineData(ContinuousLineData *contLines);
     void add(int contLine, const QString &statement, qreal timeSec, size_t memory, size_t rows);
     void getSums(qreal &timeSec, size_t &rows, size_t &steps);
-    int continuousLine(QString filename, int localLine);
+    QList<int> continuousLine(QString filename, int localLine);
 
     void getUnits(QStringList &timeUnits, QStringList &memUnits);
     void getCurrentUnits(int &timeUnit, int &memUnit);
@@ -93,7 +93,7 @@ public:
     void addIncludes(const QList<IncludeLine *> lines);
 
     void getProfile(int contLine, qreal &timeSec, size_t &memory, size_t &rows, size_t &steps);
-    void getProfileText(int contLine, QStringList &profileData);
+    void getProfileText(QList<int> contLine, QStringList &profileData);
 
     void getMaxCompoundValues(qreal &timeSec, size_t &memory, size_t &rows, size_t &steps);
     QList<QPair<int, qreal> > maxTime() const;
@@ -104,10 +104,11 @@ public:
     static const QStringList CAggStatements;
 
 private:
+    typedef QMultiMap<int, QPair<int, int>> IntMultiPairMap;
     ContinuousLineData *mContLines = nullptr;
 
     QMap<int, QMap<QString, ProfileData>> mProfileData;
-    QMap<QString, QMap<int, QPair<int, int>> > mFileLine2Cln; // filename, localLine [contLine, contLineEnd]
+    QMap<QString, IntMultiPairMap > mFileLine2Cln; // filename, localLine [contLine, contLineEnd]
     QList<QPair<int, ProfileData>> mMaxSingleTime;
     QList<QPair<int, ProfileData>> mMaxSingleSteps;
     QString mMainFile;
