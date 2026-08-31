@@ -622,9 +622,11 @@ void GdxSymbolView::updateTvModel()
 
 void GdxSymbolView::updateRecordCount()
 {
-    ui->laRecordCount->setText(QString::number(mSym->visibleRecordCount()) + "/" + QString::number(mSym->recordCount()));
+    QString current = QString("%L1").arg(mSym->visibleRecordCount());
+    QString total = QString("%L1").arg(mSym->recordCount());
+    ui->laRecordCount->setText(current + "/" + total);
     QString recStr = (mSym->recordCount() == 1) ? " record" : " records";
-    QString toolTip = "Showing " + QString::number(mSym->visibleRecordCount()) + " of " + QString::number(mSym->recordCount()) + recStr;
+    QString toolTip = "Showing " + current + " of " + total + recStr;
     if (this->mSqDefaults->isChecked())
         toolTip += " (default values squeezed)";
     toolTip += ".";
