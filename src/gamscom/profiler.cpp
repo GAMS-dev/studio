@@ -130,7 +130,7 @@ void Profiler::add(int contLine, const QString &statement, qreal timeSec, size_t
     while (fit != mFileLine2Cln.constEnd()) {
         IntMultiPairMap::ConstIterator cit = fit->constBegin();
         while (cit != fit->constEnd()) {
-            if (contLine > cit->first && contLine < cit->second) {
+            if (contLine > cit->first && contLine <= cit->second) {
                 if (!mProfileData.contains(cit->first)) {
                     QMap<QString, ProfileData> map;
                     mProfileData.insert(cit->first, map);
@@ -176,8 +176,6 @@ QList<int> Profiler::continuousLine(QString filename, int localLine)
     QList<int> res = {};
     if (mContLines) res = mContLines->continuousLine(filename, localLine);
 
-    // TODO(JM) Check if there's special handling necessary
-//    if (res < 0) res = mFileLine2Cln.value(filename).value(localLine, {-1,-1}).first;
     if (res.isEmpty()) res = mapFirst(mFileLine2Cln.value(filename).values(localLine));
     if (res.isEmpty()) res = mapFirst(mFileLine2Cln.value(filename).values(localLine));
     if (res.isEmpty() && localLine == 1 && filename.compare(mMainFile) == 0) res << 1;
@@ -223,7 +221,6 @@ void Profiler::getProfile(int contLine, qreal &timeSec, size_t &memory, size_t &
 
 void Profiler::getProfileText(QList<int> contLines, QStringList &profileData)
 {
-    // TODO(JM) check if this should be summarized
     for (int contLine : contLines) {
         if (mProfileData.contains(contLine)) {
             int rows = 0;
