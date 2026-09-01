@@ -173,7 +173,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
         mSearchRegEx = regExp;
         ui->pbSearchPrev->setEnabled(!mSearchRegEx.pattern().isEmpty());
         ui->pbSearchForw->setEnabled(!mSearchRegEx.pattern().isEmpty());
-        markSearchResults();
+        resetSearchResults();
     });
 
     connect(ui->lineEdit, &QLineEdit::returnPressed, ui->pbSearchForw, &QPushButton::click);
@@ -1271,6 +1271,8 @@ void GdxSymbolView::onSearch(bool backward)
     if (mSearchRegEx.pattern().isEmpty())
         return;
 
+    markSearchResults();
+
     QTableView *tv = mTableView ? ui->tvTableView : ui->tvListView;
     if (tv->model()->rowCount() == 0)
         return;
@@ -1363,6 +1365,17 @@ void GdxSymbolView::setTruncatedDataVisible(bool visible)
 void GdxSymbolView::markSearchResults()
 {
     mSym->setSearchRegEx(mSearchRegEx);
+    refreshSearchHighlight();
+}
+
+void GdxSymbolView::resetSearchResults()
+{
+    mSym->setSearchRegEx(QRegularExpression());
+    refreshSearchHighlight();
+}
+
+void GdxSymbolView::refreshSearchHighlight()
+{
     if (mTableView) {
         ui->tvTableView->setUpdatesEnabled(false);
         ui->tvTableView->setUpdatesEnabled(true);

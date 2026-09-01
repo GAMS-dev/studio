@@ -139,6 +139,8 @@ private:
     QString copySelectionToString(const QString &separator, bool copyLabels = true);
     bool matchAndSelect(int row, int col, QTableView *tv, QVector<bool> matchInDim);
     void markSearchResults();
+    void resetSearchResults();
+    void refreshSearchHighlight();
 
     QList<QCheckBox *> mShowValColActions;
     QCheckBox* mSqDefaults = nullptr;
