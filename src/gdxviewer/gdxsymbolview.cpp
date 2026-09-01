@@ -1278,7 +1278,7 @@ void GdxSymbolView::onSearch(bool backward)
         return;
     QModelIndex idx = tv->currentIndex();
 
-    QVector<bool> matchInDim;
+    QList<bool> matchInDim;
     for (int d=0; d<mSym->dim(); d++) {
         bool match = false;
         for (int uel : *mSym->uelsInColumn().at(d)) {
