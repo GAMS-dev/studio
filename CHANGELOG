@@ -12,6 +12,9 @@ Version 1.26.0  *
 - Added spreadsheet-style block selection to the GDX Viewer. Using `Ctrl+Shift+Home/End` will expand the selection from the active cell to the boundary limits of the data. On macOS the shortcuts are `Command+Fn+Shift+Left/Right`.
 - Added a heatmap facility to the GDX Viewer.
 - `ESC` unmarks the current matches without clearing the complex search term, so Search Forward(F4)/Backward(Shift+F4) continue to work as expected.
+- Increased performance of the GDX Viewer search facility.
+- Restricted GDX Viewer row label search matches in Table View to the first column per row.
+- Highlighting of search results in the GDX Viewer is now delayed until the search is initiated.
 
 Version 1.25.5
 ==================
