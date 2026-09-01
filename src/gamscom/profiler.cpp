@@ -166,7 +166,7 @@ void Profiler::getSums(qreal &timeSec, size_t &rows, size_t &steps)
 QList<int> mapFirst(const QList<QPair<int,int>> &pairs)
 {
     QList<int> res;
-    for (const QPair pair : pairs)
+    for (const QPair<int,int> pair : pairs)
         res << pair.first;
     return res;
 }
