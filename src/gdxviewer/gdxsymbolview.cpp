@@ -1197,7 +1197,7 @@ void GdxSymbolView::enableControls()
     updateHeatmapButton();
 }
 
-bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv, QVector<bool> matchInDim) {
+bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv, QList<bool> matchInDim) {
 
     // match in data for list view and table view
     if (mSearchRegEx.match(tv->model()->index(row, col).data().toString()).hasMatch())
