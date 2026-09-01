@@ -1,11 +1,16 @@
-Version 1.25.5  *
+Version 1.25.6  *
+==================
+- Upgrade to Qt 6.11.2
+- Fixed lost Studio connection to Engine job on too many requests resulting in 429 error.
+- Fixed debugger not stopping at the first breakpoint in files with multiple includes.
+- Fixed incorrect profiler values when multiple files are included.
+
+Version 1.25.5
 ==================
 - Fixed a bug where the GDX Viewer default numerical precision was not applied correctly to the data.
 - Fixed invisible text selection in the project filter.
 - Fix broken log and $include links when the file path contained a comma.
 - Fixed broken "Follow OS Theme" in Settings > Colors for Windows and added support for macOS.
-- Upgrade to Qt 6.11.2
-- Fixed lost Studio connection to Engine job on too many requests resulting in 429 error.
 
 Version 1.25.4
 ==================
