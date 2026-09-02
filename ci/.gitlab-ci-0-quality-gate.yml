@@ -5,4 +5,5 @@ quality-gate:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/analyzer-${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
   script:
+    - git config --global http.version HTTP/1.1
     - SKIP=end-of-file-fixer pre-commit run -a
