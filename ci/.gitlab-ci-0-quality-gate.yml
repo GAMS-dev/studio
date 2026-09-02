@@ -6,5 +6,5 @@ quality-gate:
     entrypoint: [""]   # prevent startup.sh
   script:
     - git config --global http.version HTTP/1.1
-    - git config --global http.postBuffer 524288000
-    - GIT_TERMINAL_PROMPT=0 SKIP=end-of-file-fixer pre-commit run -a
+#    - git config --global http.postBuffer 524288000
+    - SKIP=end-of-file-fixer pre-commit run -a
