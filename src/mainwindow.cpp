@@ -5179,6 +5179,7 @@ void MainWindow::initEngineStartDialog(bool resume)
             Settings::settings()->setString(SettingsKey::skEngineUserToken, mEngineAuthToken);
         else
             Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
+        Settings::settings()->setList(SettingsKey::skEngineRecent, dialog->recent());
         updateAndSaveSettings();
     });
 
@@ -5200,6 +5201,7 @@ void MainWindow::initEngineStartDialog(bool resume)
                 Settings::settings()->setString(SettingsKey::skEngineUserToken, mEngineAuthToken);
             else
                 Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
+            Settings::settings()->setList(SettingsKey::skEngineRecent, dialog->recent());
             updateAndSaveSettings();
         }
     });

@@ -83,6 +83,7 @@ public:
     int authMethod();
     QString jobTag();
     void setJobTag(const QString &jobTag);
+    QVariantList recent();
 
 signals:
     void submit(bool start);
@@ -162,7 +163,6 @@ private slots:
     void on_cbInstActivate_clicked();
     void on_sbInstSize_valueChanged(int value);
     void on_cbInstance_activated(int index);
-
 
 private:
     Ui::EngineStartDialog *ui;

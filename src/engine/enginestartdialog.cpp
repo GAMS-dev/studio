@@ -263,6 +263,8 @@ void EngineStartDialog::updateSelector()
     insertSelector(mUrl, mAuthIndex, ui->edUser->text(), mProc->authToken(), ui->edSsoName->text(),
                    mAuthExpireMinutes, ui->cbAcceptCert->isChecked(), ui->cbNamespace->currentText(),
                    mLastValidInstance, ui->cbForceGdx->isChecked());
+    if (!mUrl.isEmpty())
+        ui->cbSelector->setCurrentIndex(0);
 }
 
 bool EngineStartDialog::isAlways()
@@ -347,6 +349,15 @@ void EngineStartDialog::setJobTag(const QString &jobTag)
     ui->edJobTag->setText(jobTag);
 }
 
+QVariantList EngineStartDialog::recent()
+{
+    QVariantList res;
+    for (int i = 1; i < ui->cbSelector->count() - 1; ++i) {
+        res << ui->cbSelector->itemData(i);
+    }
+    return res;
+}
+
 bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == ui->edUrl && event->type() == QEvent::FocusOut) {
@@ -399,8 +410,10 @@ void EngineStartDialog::showEvent(QShowEvent *event)
 
 QString EngineStartDialog::generateSelectorName(const QVariantHash &data)
 {
+    if (data.isEmpty()) return QString("-clear-");
     QUrl url(data.value("page").toString());
-    QString res = url.adjusted(QUrl::RemoveFilename).url();
+    QString res = url.adjusted(QUrl::RemovePort | QUrl::NormalizePathSegments).url();
+    if (res.endsWith('/')) res.removeLast();
     bool ok;
     int authMethod = data.value("authMethod").toInt(&ok);
     if (!ok) authMethod = 0;
@@ -427,6 +440,7 @@ void EngineStartDialog::insertSelector(const QString &_url, const int authMethod
                                        bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx)
 {
     QVariantHash hash;
+    insertSelector(hash);
     hash.insert("page", _url);
     hash.insert("authMethod", authMethod);
     hash.insert("user", _user);
@@ -444,16 +458,21 @@ void EngineStartDialog::insertSelector(const QVariantHash &data, bool atStart)
 {
     QString selName = generateSelectorName(data);
     int i = ui->cbSelector->findText(selName);
-    if (i >= 0) ui->cbSelector->removeItem(i);
+    if (i >= 0)
+        ui->cbSelector->removeItem(i);
 
-    if (atStart) ui->cbSelector->insertItem(0, selName, data);
-    else         ui->cbSelector->addItem(selName, data);
+    if (atStart && !data.isEmpty())
+        ui->cbSelector->insertItem(0, selName, data);
+    else
+        ui->cbSelector->addItem(selName, data);
 }
 
 void EngineStartDialog::on_cbSelector_activated(int index)
 {
-    if (index >= 0)
+    if (index >= 0) {
         initData(index);
+        start();
+    }
 }
 
 void EngineStartDialog::showLogin()
