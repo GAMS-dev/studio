@@ -11,16 +11,16 @@ clean_previous_mr_artifacts:
   before_script:
     - apk add --no-cache curl
   script:
-    - echo "Check old pipelines for this MR ($CI_MERGE_REQUEST_IID)..."
-    - PIPELINES=$(curl --fail --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/pipelines" | grep -o '"id":[0-9]*' | grep -o '[0-9]*' || true)
     - |
+      echo "Checking previous pipelines for MR $CI_MERGE_REQUEST_IID..."
+      PIPELINES=$(curl --fail -s --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/pipelines" | grep -o '"id":[0-9]*' | grep -o '[0-9]*' || true)
       if [ -z "$PIPELINES" ]; then
         echo "No old pipelines found."
       else
         for PREV_PID in $PIPELINES; do
           if [ "$PREV_PID" != "$CI_PIPELINE_ID" ]; then
             echo "Deleting artifacts from old pipeline #$PREV_PID..."
-            curl --request DELETE --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines/$PREV_PID/artifacts"
+            curl -s --request DELETE --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines/$PREV_PID/artifacts"
           fi
         done
       fi
