@@ -1,3 +1,30 @@
+# =============================================================================
+# 1. Cleanup outdated artifacts for Merge Requests
+#    - Ensure in https://git.gams.com/devel/studio/-/settings/ci_cd
+#      to turn off Artifacts: Keep artifacts from most recent successful jobs
+# =============================================================================
+clean_previous_mr_artifacts:
+  stage: .pre
+  tags: [linux]
+  dependencies: []
+  script:
+    - echo "Check old pipelines for this MR ($CI_MERGE_REQUEST_IID)..."
+    # 1. Get all pipelines of this MR (except the currently running one)
+    # 2. Request DELETE to the artifact-API for each old pipeline
+    - |
+      PIPELINES=$(curl --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/pipelines" | grep -o '"id":[0-9]*' | grep -o '[0-9]*')
+      for PREV_PID in $PIPELINES; do
+        if [ "$PREV_PID" != "$CI_PIPELINE_ID" ]; then
+          echo "  - Remove artifacts from outdated pipeline #$PREV_PID"
+          curl --request DELETE --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines/$PREV_PID/artifacts"
+        fi
+      done
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"' # Only in MR-Context
+
+# =============================================================================
+# 2. Process pre-commit
+# =============================================================================
 quality-gate:
   stage: quality
   tags: [linux]
