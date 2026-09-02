@@ -126,11 +126,11 @@ void Profiler::add(int contLine, const QString &statement, qreal timeSec, size_t
     if (rows > mMaxRows) mMaxRows = rows;
 
     // Update includeLines
-    QMap<QString, QMap<int, QPair<int, int>>>::ConstIterator fit = mFileLine2Cln.constBegin();
+    QMap<QString, IntMultiPairMap>::ConstIterator fit = mFileLine2Cln.constBegin();
     while (fit != mFileLine2Cln.constEnd()) {
-        QMap<int, QPair<int, int>>::ConstIterator cit = fit->constBegin();
+        IntMultiPairMap::ConstIterator cit = fit->constBegin();
         while (cit != fit->constEnd()) {
-            if (contLine > cit->first && contLine < cit->second) {
+            if (contLine > cit->first && contLine <= cit->second) {
                 if (!mProfileData.contains(cit->first)) {
                     QMap<QString, ProfileData> map;
                     mProfileData.insert(cit->first, map);
@@ -163,12 +163,22 @@ void Profiler::getSums(qreal &timeSec, size_t &rows, size_t &steps)
     steps = mSumSteps;
 }
 
-int Profiler::continuousLine(QString filename, int localLine)
+QList<int> mapFirst(const QList<QPair<int,int>> &pairs)
 {
-    int res = -1;
+    QList<int> res;
+    for (const QPair<int,int> pair : pairs)
+        res << pair.first;
+    return res;
+}
+
+QList<int> Profiler::continuousLine(QString filename, int localLine)
+{
+    QList<int> res = {};
     if (mContLines) res = mContLines->continuousLine(filename, localLine);
-    if (res < 0) res = mFileLine2Cln.value(filename).value(localLine, {-1,-1}).first;
-    if (res < 0 && localLine == 1 && filename.compare(mMainFile) == 0) res = 1;
+
+    if (res.isEmpty()) res = mapFirst(mFileLine2Cln.value(filename).values(localLine));
+    if (res.isEmpty()) res = mapFirst(mFileLine2Cln.value(filename).values(localLine));
+    if (res.isEmpty() && localLine == 1 && filename.compare(mMainFile) == 0) res << 1;
     return res;
 }
 
@@ -201,68 +211,72 @@ void Profiler::getProfile(int contLine, qreal &timeSec, size_t &memory, size_t &
         const QMap<QString, ProfileData> &map = mProfileData[contLine];
         if (map.contains("")) {
             const ProfileData &prf = map[""];
-            timeSec = prf.timeInSec;
-            memory = prf.memoryMax;
-            rows = prf.rowsMax;
-            steps = prf.steps;
+            timeSec += prf.timeInSec;
+            memory += prf.memoryMax;
+            rows += prf.rowsMax;
+            steps += prf.steps;
         }
     }
 }
 
-void Profiler::getProfileText(int contLine, QStringList &profileData)
+void Profiler::getProfileText(QList<int> contLines, QStringList &profileData)
 {
-    if (mProfileData.contains(contLine)) {
-        QMap<QString, ProfileData>::ConstIterator it = mProfileData[contLine].constBegin();
-        QString sum;
-        int rows = 0;
-        while(it != mProfileData[contLine].constEnd()) {
+    for (int contLine : contLines) {
+        if (mProfileData.contains(contLine)) {
+            int rows = 0;
+            QMap<QString, ProfileData>::ConstIterator it = mProfileData[contLine].constBegin();
+            QString sum;
+            while(it != mProfileData[contLine].constEnd()) {
 
-            QString row;
-            if (it.key().isEmpty())
-                sum = QString("<tr><td align='right';>SUM: </td><td align='right';> %1 </td><td>(%2%) </td>"
-                              "<td align='right';> %3 </td><td></td><td align='right';> %4 ↻</td><td>(%5%) </td></tr>")
-                          .arg(EditorHelper::formatTime(it.value().timeInSec))
-                          .arg(qreal(it.value().timeInSec)*100 / mSumTimeInSec,0,'f',1)
-                          .arg(EditorHelper::formatMemory(it.value().memoryMax))
-                          .arg(it.value().steps)
-                          .arg(qreal(it.value().steps)*100 / qreal(mSumSteps),0,'f',1);
-            else if (it.key().compare("File SUM") == 0) {
-                row = QString("<tr><td align='right';>File SUM: </td><td align='right';> %1 </td><td>(%2%) </td>"
-                              "<td align='right';> %3 </td><td></td><td align='right';> %4 ↻</td><td>(%5%) </td></tr>")
-                          .arg(EditorHelper::formatTime(it.value().timeInSec))
-                          .arg(qreal(it.value().timeInSec)*100 / mSumTimeInSec,0,'f',1)
-                          .arg(EditorHelper::formatMemory(it.value().memoryMax))
-                          .arg(it.value().steps)
-                          .arg(qreal(it.value().steps)*100 / qreal(mSumSteps),0,'f',1);
-                profileData.append(row);
-            } else {
-                QString sTime = it.value().timeInSecMin == it.value().timeInSecMax
-                                    ? EditorHelper::formatTime(it.value().timeInSecMin)
-                                    : QString("%1 - %2").arg(EditorHelper::formatTime(it.value().timeInSecMin),
-                                                             EditorHelper::formatTime(it.value().timeInSecMax));
-                QString sMem = it.value().memoryMin == it.value().memoryMax
-                                    ? EditorHelper::formatMemory(it.value().memoryMin)
-                                    : QString("%1 - %2").arg(EditorHelper::formatMemory(it.value().memoryMin),
-                                                             EditorHelper::formatMemory(it.value().memoryMax));
-                QString sRows;
-                if (it.value().rowsMax > 0)
-                    sRows = "[" + (it.value().rowsMin == it.value().rowsMax
-                                    ? QString::number(it.value().rowsMin)
-                                    : QString("%1 - %2").arg(it.value().rowsMin).arg(it.value().rowsMax)) + "]";
+                QString row;
+                if (it.key().isEmpty())
+                    sum = QString("<tr><td align='right';>SUM: </td><td align='right';> %1 </td><td>(%2%) </td>"
+                                  "<td align='right';> %3 </td><td></td><td align='right';> %4 ↻</td><td>(%5%) </td></tr>")
+                              .arg(EditorHelper::formatTime(it.value().timeInSec))
+                              .arg(qreal(it.value().timeInSec)*100 / mSumTimeInSec,0,'f',1)
+                              .arg(EditorHelper::formatMemory(it.value().memoryMax))
+                              .arg(it.value().steps)
+                              .arg(qreal(it.value().steps)*100 / qreal(mSumSteps),0,'f',1);
+                else if (it.key().compare("File SUM") == 0) {
+                    row = QString("<tr><td align='right';>File SUM: </td><td align='right';> %1 </td><td>(%2%) </td>"
+                                  "<td align='right';> %3 </td><td></td><td align='right';> %4 ↻</td><td>(%5%) </td></tr>")
+                              .arg(EditorHelper::formatTime(it.value().timeInSec))
+                              .arg(qreal(it.value().timeInSec)*100 / mSumTimeInSec,0,'f',1)
+                              .arg(EditorHelper::formatMemory(it.value().memoryMax))
+                              .arg(it.value().steps)
+                              .arg(qreal(it.value().steps)*100 / qreal(mSumSteps),0,'f',1);
+                    profileData.append(row);
+                } else {
+                    QString sTime = it.value().timeInSecMin == it.value().timeInSecMax
+                                        ? EditorHelper::formatTime(it.value().timeInSecMin)
+                                        : QString("%1 - %2").arg(EditorHelper::formatTime(it.value().timeInSecMin),
+                                                                 EditorHelper::formatTime(it.value().timeInSecMax));
+                    QString sMem = it.value().memoryMin == it.value().memoryMax
+                                       ? EditorHelper::formatMemory(it.value().memoryMin)
+                                       : QString("%1 - %2").arg(EditorHelper::formatMemory(it.value().memoryMin),
+                                                                EditorHelper::formatMemory(it.value().memoryMax));
+                    QString sRows;
+                    if (it.value().rowsMax > 0)
+                        sRows = "[" + (it.value().rowsMin == it.value().rowsMax
+                                           ? QString::number(it.value().rowsMin)
+                                           : QString("%1 - %2").arg(it.value().rowsMin).arg(it.value().rowsMax)) + "]";
 
-                row = QString("<tr><td>%1 </td><td align='right'> %2 </td><td align='right'>(%3%) </td>"
-                              "<td align='right'> %4 </td><td align='right'> %7 </td>"
-                              "<td align='right'> %5 ↻</td><td align='right'>(%6%) </td></tr>")
-                          .arg(it.key(), sTime).arg(qreal(it.value().timeInSec)*100 / mSumTimeInSec,0,'f',1)
-                          .arg(sMem).arg(it.value().steps).arg(qreal(it.value().steps)*100 / qreal(mSumSteps),0,'f',1)
-                          .arg(sRows);
-                profileData.append(row);
-                ++rows;
+                    row = QString("<tr><td>%1 </td><td align='right'> %2 </td><td align='right'>(%3%) </td>"
+                                  "<td align='right'> %4 </td><td align='right'> %7 </td>"
+                                  "<td align='right'> %5 ↻</td><td align='right'>(%6%) </td></tr>")
+                              .arg(it.key(), sTime).arg(qreal(it.value().timeInSec)*100 / mSumTimeInSec,0,'f',1)
+                              .arg(sMem).arg(it.value().steps).arg(qreal(it.value().steps)*100 / qreal(mSumSteps),0,'f',1)
+                              .arg(sRows);
+                    profileData.append(row);
+                    ++rows;
+                }
+                ++it;
             }
-            ++it;
+            if (rows > 1)
+                profileData.append(sum);
         }
-        if (rows > 1)
-            profileData.append(sum);
+    }
+    if (!profileData.isEmpty()) {
         profileData.prepend("<body><table style='white-space:nowrap;'>");
         profileData << "</table></body>";
     }
@@ -271,11 +285,9 @@ void Profiler::getProfileText(int contLine, QStringList &profileData)
 void Profiler::addIncludes(const QList<IncludeLine *> lines)
 {
     for (const IncludeLine *line : lines) {
-        if (!mFileLine2Cln.contains(line->parentFile)) {
-            QMap<int, QPair<int, int>> val;
-            mFileLine2Cln.insert(line->parentFile, val);
-        }
-        QMap<int, QPair<int, int>> &val = mFileLine2Cln[line->parentFile];
+        if (!mFileLine2Cln.contains(line->parentFile))
+            mFileLine2Cln.insert(line->parentFile, IntMultiPairMap());
+        IntMultiPairMap &val = mFileLine2Cln[line->parentFile];
         val.insert(line->line, QPair<int,int>(line->contLine, line->outerContLine));
     }
 }

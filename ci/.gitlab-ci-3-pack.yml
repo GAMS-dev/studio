@@ -257,7 +257,7 @@ stop_all_platforms:
     - cp ../CHANGELOG "resources/Changelog"
     # sign and verify studio
     - |
-      if ($env:FORCE_NOTARIZATION -eq "1" -or $env:CI_COMMIT_REF_NAME -match '^(v\d+\.\d+\.\d+.*|release.*|develop)$') {
+      if ($env:FORCE_NOTARIZATION -eq "1" -or $env:CI_COMMIT_REF_NAME -match '^(v\d+\.\d+\.\d+.*|\d+\.\d+.*-release|develop)$') {
         Write-Host "Build trigger detected ($env:CI_COMMIT_REF_NAME) - Signing studio.exe"
         & signtool sign /v /fd SHA256 /tr http://timestamp.acs.microsoft.com -td SHA256 -dlib $env:LOCALAPPDATA/Microsoft/MicrosoftArtifactSigningClientTools/Azure.CodeSigning.Dlib.dll -dmdf $env:SIGNTOOL_METADATA_JSON studio.exe
         & signtool verify /v /pa studio.exe

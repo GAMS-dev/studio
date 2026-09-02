@@ -122,6 +122,8 @@ void Server::stopAndDelete()
     if (isListening())
         mServer->close();
     mServer->deleteLater();
+    qDeleteAll(mIncludes);
+    mIncludes.clear();
 }
 
 void Server::newConnection()

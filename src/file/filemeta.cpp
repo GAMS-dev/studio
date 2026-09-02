@@ -1529,20 +1529,21 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
             connect(codeEdit, &CodeEdit::getProfileShort, this, [this](int line, qreal &timeSec, size_t &memory, size_t &rows, size_t &steps) {
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
                 if (!pro || !pro->profiler()) return;
-                int contLine = pro->contLineData()->continuousLine(mLocation, line);
-                if (contLine < 0)
-                    contLine = pro->profiler()->continuousLine(mLocation, line);
-                if (contLine > 0) {
-                    pro->profiler()->getProfile(contLine, timeSec, memory, rows, steps);
+                timeSec = .0;
+                memory = 0;
+                rows = 0;
+                steps = 0;
+                QList<int> contLines = pro->contLineData()->continuousLine(mLocation, line);
+                if (contLines.isEmpty()) {
+                    contLines << pro->profiler()->continuousLine(mLocation, line);
                 }
+                for (int line : contLines)
+                    pro->profiler()->getProfile(line, timeSec, memory, rows, steps);
             });
             connect(codeEdit, &CodeEdit::getProfileLong, this, [this](int line, QStringList &profileData) {
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
                 if (!pro || !pro->profiler()) return;
-                int contLine = pro->profiler()->continuousLine(mLocation, line);
-                if (contLine > 0) {
-                    pro->profiler()->getProfileText(contLine, profileData);
-                }
+                pro->profiler()->getProfileText(pro->profiler()->continuousLine(mLocation, line), profileData);
             });
             codeEdit->setHasProfiler(project->doProfile() && project->isProfilerVisible());
             connect(codeEdit, &CodeEdit::getProfilerMaxCompoundValues, this, &FileMeta::getProfilerMaxCompoundValues);
