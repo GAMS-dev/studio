@@ -1,4 +1,4 @@
-Version 1.25.6  *
+Version 1.25.6
 ==================
 - Upgrade to Qt 6.11.2
 - Fixed lost Studio connection to Engine job on too many requests resulting in 429 error.
