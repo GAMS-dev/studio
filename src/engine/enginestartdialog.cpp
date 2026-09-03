@@ -244,13 +244,13 @@ void EngineStartDialog::initData(int selectorIndex)
     ui->edUrl->setText(mUrl);
     ui->nUrl->setText(mUrl);
     bool ok;
-    mAuthIndex = data.value("authMethod").toInt(&ok);
-    if (!ok) mAuthIndex = 0;
-    ui->cbLoginMethod->setCurrentIndex(qMin(mAuthIndex, ui->cbLoginMethod->count()));
+    mAuthMethod = data.value("authMethod").toInt(&ok);
+    if (!ok) mAuthMethod = 0;
+    ui->cbLoginMethod->setCurrentIndex(qMin(mAuthMethod, ui->cbLoginMethod->count()));
     QString user = data.value("user").toString().trimmed();
-    if (mProc && mAuthIndex == 0) mProc->initUsername(user);
-    if (mProc && mAuthIndex == 1) mProc->setAuthToken(data.value("userToken").toString().trimmed());
-    if (mProc && mAuthIndex >= 2)
+    if (mProc && mAuthMethod == 0) mProc->initUsername(user);
+    if (mProc && mAuthMethod == 1) mProc->setAuthToken(data.value("userToken").toString().trimmed());
+    if (mProc && mAuthMethod >= 2)
         ui->edSsoName->setText(data.value("ssoName").toString().trimmed());
     ui->edUser->setText(user);
     ui->nUser->setText(user);
@@ -270,7 +270,7 @@ void EngineStartDialog::initData(int selectorIndex)
 
 void EngineStartDialog::updateSelector()
 {
-    insertSelector(mUrl, mAuthIndex, ui->edUser->text(), mProc->authToken(), ui->edSsoName->text(),
+    insertSelector(mUrl, mAuthMethod, ui->edUser->text(), mProc->authToken(), ui->edSsoName->text(),
                    mAuthExpireMinutes, ui->cbAcceptCert->isChecked(), ui->cbNamespace->currentText(),
                    mLastValidInstance, ui->cbForceGdx->isChecked());
     if (!mUrl.isEmpty()) {
@@ -349,7 +349,7 @@ void EngineStartDialog::setEngineVersion(const QString &version)
 
 int EngineStartDialog::authMethod()
 {
-    return qBound(0, ui->cbLoginMethod->currentIndex(), ui->cbLoginMethod->count()-1);
+    return qMax(0, mAuthMethod);
 }
 
 QString EngineStartDialog::jobTag()
@@ -604,7 +604,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     ui->bAlways->setEnabled(false);
 
     if (inLogin() && button == ui->bOk) {
-        switch (authMethod()) {
+        switch (mAuthMethod) {
         case 0:
             mProc->authorize(user(), ui->edPassword->text(), mAuthExpireMinutes);
             break;
@@ -663,10 +663,10 @@ void EngineStartDialog::setCanLogin(bool value)
 {
     value = value && !ui->edUrl->text().isEmpty()
             && (!mProc->authToken().isEmpty() ||
-                  (authMethod()==0 && !user().isEmpty() && (!ui->edPassword->text().isEmpty()))
-               || (authMethod()==1 && !ui->edToken->document()->toPlainText().isEmpty())
-               || (authMethod()==2 && !ui->edSsoName->text().isEmpty())
-               || (authMethod() > 2))
+                  (mAuthMethod==0 && !user().isEmpty() && (!ui->edPassword->text().isEmpty()))
+               || (mAuthMethod==1 && !ui->edToken->document()->toPlainText().isEmpty())
+               || (mAuthMethod==2 && !ui->edSsoName->text().isEmpty())
+               || (mAuthMethod > 2))
             && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
     if (value != ui->bOk->isEnabled()) {
         ui->bOk->setEnabled(value);
@@ -740,7 +740,7 @@ void EngineStartDialog::reListJobsError(const QString &error)
     DEB() << "ERROR: " << error;
     if (!inLogin()) {
         showLogin();
-    } else if (authMethod() == 1) {
+    } else if (mAuthMethod == 1) {
         ui->laWarn->setText("Invalid access token");
         ui->edToken->setFocus();
     }
@@ -849,8 +849,8 @@ void EngineStartDialog::reListProvider(const QList<QHash<QString, QVariant> > &a
     }
     while (ui->cbLoginMethod->count() > cbIndex)
         ui->cbLoginMethod->removeItem(cbIndex);
-    if (mAuthIndex >= 0 && ui->cbLoginMethod->currentIndex() != mAuthIndex && ui->cbLoginMethod->count() > mAuthIndex) {
-        ui->cbLoginMethod->setCurrentIndex(mAuthIndex);
+    if (mAuthMethod >= 0 && ui->cbLoginMethod->currentIndex() != mAuthMethod && ui->cbLoginMethod->count() > mAuthMethod) {
+        ui->cbLoginMethod->setCurrentIndex(mAuthMethod);
     }
 }
 

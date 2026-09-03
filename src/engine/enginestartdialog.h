@@ -196,7 +196,7 @@ private:
     QString mEngineVersion;
     QString mGamsVersion;
     int mAuthExpireMinutes = 60*2;
-    int mAuthIndex = 0;
+    int mAuthMethod = 0;
 
     static const QString CUnavailable;
 };
