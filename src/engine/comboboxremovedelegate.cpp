@@ -24,6 +24,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <QListView>
+#include <QToolTip>
 
 namespace gams {
 namespace studio {
@@ -36,6 +37,7 @@ void ComboboxRemoveDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 {
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
+    bool isEmpty = index.model()->data(index, Qt::UserRole).toHash().isEmpty();
     painter->save();
 
     QRect r = opt.rect;
@@ -48,15 +50,16 @@ void ComboboxRemoveDelegate::paint(QPainter *painter, const QStyleOptionViewItem
     painter->drawText(r.adjusted(5, 0, 0, 0), opt.displayAlignment, text);
 
     QRect btnRect(opt.rect.right() - btnWidth, opt.rect.top(), btnWidth, opt.rect.height());
-    int padding = 2;
+    int padding = 4;
     QRect iconRect = btnRect.adjusted(padding, padding, -padding, -padding);
     QIcon::Mode mode = QIcon::Normal;
     if (opt.state & QStyle::State_MouseOver) {
         QPoint mousePos = opt.widget->mapFromGlobal(QCursor::pos());
-        if (btnRect.contains(mousePos))
+        if (btnRect.contains(mousePos) && !isEmpty)
             mode = QIcon::Active;
     }
-    Theme::icon(":/solid/delete-all").paint(painter, iconRect, Qt::AlignCenter, mode);
+    if (!isEmpty)
+        Theme::icon(":/solid/delete-all").paint(painter, iconRect, Qt::AlignCenter, mode);
 
     painter->restore();
 }
@@ -71,27 +74,39 @@ QSize ComboboxRemoveDelegate::sizeHint(const QStyleOptionViewItem &option, const
 
 bool ComboboxRemoveDelegate::eventFilter(QObject *watched, QEvent *event)
 {
-    if (event->type() == QEvent::MouseMove || event->type() == QEvent::MouseButtonPress) {
-        if (QWidget* viewport = qobject_cast<QWidget*>(watched)) {
-            if (QListView* listView = qobject_cast<QListView*>(viewport->parentWidget())) {
-                QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-                QModelIndex index = listView->indexAt(mouseEvent->pos());
-                if (index.isValid()) {
-                    QRect itemRect = listView->visualRect(index);
+    if (event->type() == QEvent::MouseMove
+        || event->type() == QEvent::MouseButtonPress
+        || event->type() == QEvent::ToolTip) {
+        auto* viewport = qobject_cast<QWidget*>(watched);
+        auto* listView = viewport ? qobject_cast<QListView*>(viewport->parentWidget()) : nullptr;
 
-                    if (event->type() == QEvent::MouseButtonPress && mouseEvent->button() == Qt::LeftButton) {
-                        int btnWidth = 24;
-                        QRect btnRect(itemRect.right() - btnWidth, itemRect.top(), btnWidth, itemRect.height());
-                        if (btnRect.contains(mouseEvent->pos())) {
-                            if (QAbstractItemModel* model = listView->model()) {
-                                model->removeRow(index.row());
-                                viewport->update();
-                                return true;
-                            }
-                        }
-                    }
-                    viewport->update(itemRect);
+        if (listView) {
+            QPoint pos = static_cast<QHelpEvent*>(event)->pos();
+            QModelIndex index = listView->indexAt(pos);
+
+            if (index.isValid()) {
+                bool isEmpty = index.model()->data(index, Qt::UserRole).toHash().isEmpty();
+                QRect itemRect = listView->visualRect(index);
+                QRect btnRect(itemRect.right() - 24, itemRect.top(), 24, itemRect.height());
+                bool inBtn = btnRect.contains(pos) && !isEmpty;
+
+                if (event->type() == QEvent::ToolTip) {
+                    inBtn ? QToolTip::showText(static_cast<QHelpEvent*>(event)->globalPos(), tr("Delete entry"), viewport)
+                          : QToolTip::hideText();
+                    return true;
                 }
+                if (!inBtn)
+                    QToolTip::hideText();
+
+                if (event->type() == QEvent::MouseButtonPress && inBtn
+                    && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton) {
+                    if (auto* model = listView->model()) {
+                        model->removeRow(index.row());
+                        viewport->update();
+                        return true;
+                    }
+                }
+                viewport->update(itemRect);
             }
         }
     }

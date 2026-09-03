@@ -138,6 +138,7 @@ void EngineStartDialog::authorizeChanged(const QString &authToken)
     } else {
         mProc->listJobs();
         updateSelector();
+        ui->widSelector->setVisible(false);
     }
 }
 
@@ -223,11 +224,17 @@ void EngineStartDialog::init(const QString &_url, const int authMethod, const QS
                                  const QString &ssoName, int authExpireMinutes, bool selfCert, const QString &_nSpace,
                                  const QString &_userInst, bool _forceGdx, const QVariantList recent)
 {
+    QVariantHash hash;
+    insertSelector(hash, false);
     for (const QVariant &item : recent)
         insertSelector(item.toHash(), false);
-    insertSelector(_url, authMethod, _user.trimmed(), _userToken.trimmed(), ssoName.trimmed(), authExpireMinutes,
-                   selfCert, _nSpace.trimmed(), _userInst, _forceGdx);
-    initData(0);
+    if (_url.isEmpty()) {
+        initData(0);
+    } else {
+        insertSelector(_url, authMethod, _user.trimmed(), _userToken.trimmed(), ssoName.trimmed(), authExpireMinutes,
+                       selfCert, _nSpace.trimmed(), _userInst, _forceGdx);
+        initData(0);
+    }
 }
 
 void EngineStartDialog::initData(int selectorIndex)
@@ -256,6 +263,9 @@ void EngineStartDialog::initData(int selectorIndex)
     ui->cbNamespace->addItem(data.value("namespace").toString().trimmed());
     mLastValidInstance = data.value("userInstance").toString();
     ui->cbForceGdx->setChecked(data.value("forceGdx").toBool());
+    ui->cbSelector->blockSignals(true);
+    ui->cbSelector->setCurrentIndex(selectorIndex);
+    ui->cbSelector->blockSignals(false);
 }
 
 void EngineStartDialog::updateSelector()
@@ -263,8 +273,11 @@ void EngineStartDialog::updateSelector()
     insertSelector(mUrl, mAuthIndex, ui->edUser->text(), mProc->authToken(), ui->edSsoName->text(),
                    mAuthExpireMinutes, ui->cbAcceptCert->isChecked(), ui->cbNamespace->currentText(),
                    mLastValidInstance, ui->cbForceGdx->isChecked());
-    if (!mUrl.isEmpty())
+    if (!mUrl.isEmpty()) {
+        ui->cbSelector->blockSignals(true);
         ui->cbSelector->setCurrentIndex(0);
+        ui->cbSelector->blockSignals(false);
+    }
 }
 
 bool EngineStartDialog::isAlways()
@@ -440,7 +453,6 @@ void EngineStartDialog::insertSelector(const QString &_url, const int authMethod
                                        bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx)
 {
     QVariantHash hash;
-    insertSelector(hash);
     hash.insert("page", _url);
     hash.insert("authMethod", authMethod);
     hash.insert("user", _user);
@@ -461,10 +473,12 @@ void EngineStartDialog::insertSelector(const QVariantHash &data, bool atStart)
     if (i >= 0)
         ui->cbSelector->removeItem(i);
 
-    if (atStart && !data.isEmpty())
+    if (data.isEmpty() || ui->cbSelector->count() == 0)
+        ui->cbSelector->addItem(selName, data);
+    else if (atStart && !data.isEmpty())
         ui->cbSelector->insertItem(0, selName, data);
     else
-        ui->cbSelector->addItem(selName, data);
+        ui->cbSelector->insertItem(ui->cbSelector->count()-1, selName, data);
 }
 
 void EngineStartDialog::on_cbSelector_activated(int index)
@@ -477,6 +491,7 @@ void EngineStartDialog::on_cbSelector_activated(int index)
 
 void EngineStartDialog::showLogin()
 {
+    ui->widSelector->setVisible(true);
     ui->stackedWidget->setCurrentIndex(0);
     ui->bAlways->setVisible(false);
     setWindowTitle("GAMS Engine Login");
@@ -836,7 +851,6 @@ void EngineStartDialog::reListProvider(const QList<QHash<QString, QVariant> > &a
         ui->cbLoginMethod->removeItem(cbIndex);
     if (mAuthIndex >= 0 && ui->cbLoginMethod->currentIndex() != mAuthIndex && ui->cbLoginMethod->count() > mAuthIndex) {
         ui->cbLoginMethod->setCurrentIndex(mAuthIndex);
-        mAuthIndex = -1;
     }
 }
 
