@@ -1,7 +1,5 @@
 # =============================================================================
 # 1. DEFINE LIFECYCLE TEMPLATES (Controls artifact expiration)
-#    - Ensure in https://git.gams.com/devel/studio/-/settings/ci_cd
-#      to turn off Artifacts: Keep artifacts from most recent successful jobs
 # =============================================================================
 
 .rules-tags:
@@ -12,9 +10,8 @@
 
 .rules-branches:
   artifacts:
-    expire_in: 1 month
+    expire_in: 2 days
   rules:
-    # Exclude all tags completely
     - if: '$CI_COMMIT_TAG'
       when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
