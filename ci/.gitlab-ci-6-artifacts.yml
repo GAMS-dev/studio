@@ -39,11 +39,11 @@ clean_old_artifacts_on_success:
     - apk add --no-cache curl
   script:
     - |
-      echo "Pipeline succeeded. Cleaning up old artifacts for MR $CI_MERGE_REQUEST_IID..."
-      PIPELINES=$(curl --fail -s --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/pipelines" | grep -o '"id":[0-9]*' | grep -o '[0-9]*' || true)
+      echo "Pipeline succeeded. Searching for previous pipelines on branch: $CI_COMMIT_REF_NAME..."
+      PIPELINES=$(curl --fail -s --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines?ref=$CI_COMMIT_REF_NAME" | grep -o '"id":[0-9]*' | grep -o '[0-9]*' || true)
       
       if [ -z "$PIPELINES" ]; then
-        echo "No old pipelines found."
+        echo "No pipelines found for this branch."
       else
         for OLD_PID in $PIPELINES; do
           if [ "$OLD_PID" != "$CI_PIPELINE_ID" ]; then
@@ -57,6 +57,6 @@ clean_old_artifacts_on_success:
   rules:
     - if: '$CI_COMMIT_TAG'
       when: never
-    # Automatically runs on MRs only if everything else succeeded
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    # Runs on any branch/MR change, as long as the previous stages passed
+    - if: '$CI_COMMIT_BRANCH || $CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
