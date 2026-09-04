@@ -1,31 +1,5 @@
 # =============================================================================
-# 1. SINGLE JOB - stoping the environment deletes the artifacts
-# =============================================================================
-
-stop_all_platforms:
-  stage: .post
-  allow_failure: true
-  tags: [linux]
-  image: alpine:latest
-  dependencies: []  # avoids downloading before deletion
-  environment:
-    name: mr-cleanup/$CI_COMMIT_REF_SLUG
-    action: stop
-  before_script:
-    - apk add --no-cache curl
-  script:
-    - echo "MR closed or merged. Deleting all platform artifacts..."
-    - |
-      curl --request DELETE \
-        --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" \
-        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines/$CI_PIPELINE_ID/artifacts"
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: manual
-
-
-# =============================================================================
-# 2. DEFINE LIFECYCLE TEMPLATES (Controls artifact expiration)
+# 1. DEFINE LIFECYCLE TEMPLATES (Controls artifact expiration)
 #    - Ensure in https://git.gams.com/devel/studio/-/settings/ci_cd
 #      to turn off Artifacts: Keep artifacts from most recent successful jobs
 # =============================================================================
@@ -50,7 +24,7 @@ stop_all_platforms:
 
 
 # =============================================================================
-# 3. DEFINE ENVIRONMENT BASE JOBS FOR PACK
+# 2. DEFINE ENVIRONMENT BASE JOBS FOR PACK
 # =============================================================================
 
 .base-pack-deg:
@@ -288,7 +262,7 @@ stop_all_platforms:
 
 
 # =============================================================================
-# 4. GENERATE TARGET JOBS (Combines platforms with the target rules)
+# 3. GENERATE TARGET JOBS (Combines platforms with the target rules)
 # =============================================================================
 
 # --- MACOS x86 (deg) ---
