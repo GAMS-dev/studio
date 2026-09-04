@@ -73,33 +73,41 @@ diagnose_mr_pipelines:
   dependencies: []
   before_script:
     - apk add --no-cache curl python3  # We use Python for strict URL encoding and JSON parsing
-  script:
+    script:
     - |
       echo "=== DIAGNOSE START ==="
-      echo "Current Pipeline ID: $CI_PIPELINE_ID"
-      echo "Current Branch: $CI_COMMIT_REF_NAME"
+      echo "Project ID: $CI_PROJECT_ID"
+      echo "API URL: $CI_API_V4_URL"
       
-      # 1. URL-encode the branch name safely (handles slashes like feature/abc)
-      ENCODED_BRANCH=$(python3 -c "import urllib.parse; print(urllib.parse.quote_plus('$CI_COMMIT_REF_NAME'))")
-      echo "Encoded Branch Name: $ENCODED_BRANCH"
+      # 1. Test token validity using a lightweight endpoint (projects)
+      echo "Testing API connection and token validity..."
+      HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID")
+      echo "API Response Status Code: $HTTP_STATUS"
       
-      # 2. Query all pipelines for this specific branch
-      echo "Querying GitLab API for branch pipelines..."
-      RESPONSE=$(curl --fail -s --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines?ref=$ENCODED_BRANCH")
-      
-      # 3. Extract IDs using a robust Python snippet instead of fragile grep
-      PIPELINES=$(echo "$RESPONSE" | python3 -c "import sys, json; print(' '.join([str(p['id']) for p in json.load(sys.stdin)]))" || true)
-      
-      echo "Found Pipeline IDs for this branch: $PIPELINES"
-      
-      # 4. Validation Guard: If the string is empty, fail the build immediately
-      if [ -z "$PIPELINES" ]; then
-        echo "ERROR: No pipelines found for branch '$CI_COMMIT_REF_NAME' via API."
-        echo "Possible reasons: Invalid ARTIFACT_CLEANUP_TOKEN, wrong permissions, or API scope missing."
+      if [ "$HTTP_STATUS" != "200" ]; then
+        echo "❌ ERROR: Token authentication failed with status code $HTTP_STATUS."
+        if [ "$HTTP_STATUS" == "401" ] || [ "$HTTP_STATUS" == "403" ]; then
+          echo "👉 Please verify that ARTIFACT_CLEANUP_TOKEN is valid, not expired, and has the 'api' scope enabled."
+        elif [ "$HTTP_STATUS" == "404" ]; then
+          echo "👉 Project ID not found. Ensure the runner can reach $CI_API_V4_URL."
+        fi
         exit 1
       fi
       
-      echo "Success: Found pipelines. Proceeding with the build..."
+      # 2. Safely run the actual pipeline query
+      echo "Token is valid. Querying GitLab API for branch pipelines..."
+      RESPONSE=$(curl -s --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines?ref=$CI_COMMIT_REF_NAME")
+      
+      # 3. Extract and display IDs
+      PIPELINES=$(echo "$RESPONSE" | python3 -c "import sys, json; print(' '.join([str(p['id']) for p in json.load(sys.stdin)]))" || true)
+      echo "Found Pipeline IDs for this branch: $PIPELINES"
+      
+      if [ -z "$PIPELINES" ]; then
+        echo "❌ ERROR: No pipelines found or API returned malformed data."
+        exit 1
+      fi
+      
+      echo "✅ Success! Proceeding with the build..."
       echo "=== DIAGNOSE END ==="
   rules:
     - if: '$CI_COMMIT_TAG'
