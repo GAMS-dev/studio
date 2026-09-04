@@ -17,7 +17,7 @@ stop_all_platforms:
     - echo "MR closed or merged. Deleting all platform artifacts..."
     - |
       curl --request DELETE \
-        --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" \
+        --header "PRIVATE-TOKEN: $GITLAB_CI_UPDATE_TOKEN" \
         "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines/$CI_PIPELINE_ID/artifacts"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -40,7 +40,7 @@ clean_old_artifacts_on_success:
   script:
     - |
       echo "Pipeline succeeded. Searching for previous pipelines on branch: $CI_COMMIT_REF_NAME..."
-      PIPELINES=$(curl --fail -s --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines?ref=$CI_COMMIT_REF_NAME" | grep -o '"id":[0-9]*' | grep -o '[0-9]*' || true)
+      PIPELINES=$(curl --fail -s --header "PRIVATE-TOKEN: $GITLAB_CI_UPDATE_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines?ref=$CI_COMMIT_REF_NAME" | grep -o '"id":[0-9]*' | grep -o '[0-9]*' || true)
       
       if [ -z "$PIPELINES" ]; then
         echo "No pipelines found for this branch."
@@ -48,7 +48,7 @@ clean_old_artifacts_on_success:
         for OLD_PID in $PIPELINES; do
           if [ "$OLD_PID" != "$CI_PIPELINE_ID" ]; then
             echo "Deleting outdated artifacts from previous pipeline #$OLD_PID..."
-            curl -s --request DELETE --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines/$OLD_PID/artifacts"
+            curl -s --request DELETE --header "PRIVATE-TOKEN: $GITLAB_CI_UPDATE_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines/$OLD_PID/artifacts"
           else
             echo "Skipping current pipeline #$OLD_PID (new artifacts are kept safe)."
           fi
@@ -81,13 +81,13 @@ diagnose_mr_pipelines:
       
       # 1. Test token validity using a lightweight endpoint (projects)
       echo "Testing API connection and token validity..."
-      HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID")
+      HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --header "PRIVATE-TOKEN: $GITLAB_CI_UPDATE_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID")
       echo "API Response Status Code: $HTTP_STATUS"
       
       if [ "$HTTP_STATUS" != "200" ]; then
         echo "ERROR: Token authentication failed with status code $HTTP_STATUS."
         if [ "$HTTP_STATUS" == "401" ] || [ "$HTTP_STATUS" == "403" ]; then
-          echo "  - Please verify that ARTIFACT_CLEANUP_TOKEN is valid, not expired, and has the 'api' scope enabled."
+          echo "  - Please verify that GITLAB_CI_UPDATE_TOKEN is valid, not expired, and has the 'api' scope enabled."
         elif [ "$HTTP_STATUS" == "404" ]; then
           echo "  - Project ID not found. Ensure the runner can reach $CI_API_V4_URL."
         fi
@@ -96,7 +96,7 @@ diagnose_mr_pipelines:
       
       # 2. Safely run the actual pipeline query
       echo "Token is valid. Querying GitLab API for branch pipelines..."
-      RESPONSE=$(curl -s --header "PRIVATE-TOKEN: $ARTIFACT_CLEANUP_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines?ref=$CI_COMMIT_REF_NAME")
+      RESPONSE=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_CI_UPDATE_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines?ref=$CI_COMMIT_REF_NAME")
       
       # 3. Extract and display IDs
       PIPELINES=$(echo "$RESPONSE" | python3 -c "import sys, json; print(' '.join([str(p['id']) for p in json.load(sys.stdin)]))" || true)
