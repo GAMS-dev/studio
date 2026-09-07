@@ -280,10 +280,11 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbClear_clicked()
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::diffDone()
 {
-    if (mDiffGdxViewer)
+    if (mDiffGdxViewer && mDiffFm) {
+        bool changed = mDiffFm->refreshMetaData();
         mDiffGdxViewer->setHasChanged(true);
-    if (mDiffFm)
-        mDiffFm->reload();
+        mDiffGdxViewer->reload(mDiffFm->encoding(), changed);
+    }
     setControlsEnabled(true);
     if (!mWasCanceled) {
         mWasCanceled = false;
