@@ -472,7 +472,8 @@ void GdxViewer::saveState()
 
     mState->setHeaderControlsVisible(mHeaderControlsVisible);
     for (GdxSymbolView* symView : std::as_const(mSymbolViews)) {
-        if (symView && symView->sym()->isLoaded()) {
+        // stateInitialized() avoids saving a view before its restored/default state was applied
+        if (symView && symView->sym()->isLoaded() && symView->stateInitialized()) {
             GdxSymbolViewState* symViewState = mState->addSymbolViewState(symView->sym()->name());
             symView->saveState(symViewState);
 
@@ -517,7 +518,7 @@ void GdxViewer::applySymbolState(GdxSymbol *sym)
 {
     QString name = sym->name();
     GdxSymbolView* symView = symbolViewByName(name);
-    if (symView) {
+    if (symView && !symView->stateInitialized()) {
         if (mState && mState->symbolViewState(name)) {
             GdxSymbolViewState* symViewState = mState->symbolViewState(name);
             symView->applyState(symViewState);

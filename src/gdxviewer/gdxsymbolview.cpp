@@ -481,6 +481,12 @@ void GdxSymbolView::applyDefaults()
     mPrecision->setValue(Settings::settings()->toInt(SettingsKey::skGdxDefaultPrecision));
     mRestoreSqZeroes = Settings::settings()->toBool(SettingsKey::skGdxDefaultRestoreSqueezeZeroes);
     updateNumericalPrecision();
+    mStateInitialized = true;
+}
+
+bool GdxSymbolView::stateInitialized() const
+{
+    return mStateInitialized;
 }
 
 QList<bool> GdxSymbolView::showAttributes()
@@ -895,6 +901,7 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
         for (int i=0; i< GMS_VAL_MAX; i++)
             mShowValColActions.at(i)->setChecked(symViewState->getShowAttributes().at(i));
     }
+    mStateInitialized = true;
 }
 
 void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
