@@ -3299,11 +3299,9 @@ void MainWindow::updateAndSaveSettings()
     if (mShutDown) return;
     Settings *settings = Settings::settings();
 
-    QScreen *screen = window()->screen();
-    QSize scrDiff = screen->availableSize() - frameSize();
-    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
+    if (!isMaximized() && !isFullScreen()) {
         settings->setSize(skWinSize, size());
-        settings->setPoint(skWinPos, geometry().topLeft());
+        settings->setPoint(skWinPos, frameGeometry().topLeft());
     }
     settings->setByteArray(skWinState, saveState());
     settings->setBool(skWinMaximized, isMaximized() || (mMaximizedBeforeFullScreen && isFullScreen()));
@@ -3412,9 +3410,9 @@ void MainWindow::restoreFromSettings()
 
     mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
     if (settings->toBool(skWinFullScreen)) {
-        setWindowState(windowState() ^ Qt::WindowFullScreen);
+        setWindowState(windowState() | Qt::WindowFullScreen);
     } else if (mMaximizedBeforeFullScreen) {
-        setWindowState(windowState() ^ Qt::WindowMaximized);
+        setWindowState(windowState() | Qt::WindowMaximized);
     }
     ui->actionFull_Screen->setChecked(settings->toBool(skWinFullScreen));
     restoreState(settings->toByteArray(skWinState));
@@ -5426,30 +5424,45 @@ void MainWindow::rehighlightOpenFiles()
 
 void MainWindow::ensureSizeAndInScreen()
 {
+    if (isMaximized() || isFullScreen()) return;
+
     QRect appGeo = geometry();
     appGeo.setSize(mWindowSize);
     QRect appFGeo = frameGeometry();
-    QMargins margins(appGeo.left() - appFGeo.left(), appGeo.top() - appFGeo.top(),
-                     appFGeo.right() - appGeo.right(), appFGeo.bottom() - appGeo.bottom());
-    QRect screenGeo = QGuiApplication::primaryScreen()->availableVirtualGeometry();
-    QList<QRect> frames;
+    QMargins margins(appGeo.left()    - appFGeo.left(),
+                     appGeo.top()     - appFGeo.top(),
+                     appFGeo.right()  - appGeo.right(),
+                     appFGeo.bottom() - appGeo.bottom());
+    if (margins.top() == 0) {
+        const qreal dpr = screen() ? screen()->devicePixelRatio() : 1.0;
+        margins.setTop(qRound(40 * dpr));
+    }
+
+    const qint64 appArea = appGeo.width() * appGeo.height();
+
+    QRect  bestScreen;
+    qint64 bestArea = 0;
     const auto screens = QGuiApplication::screens();
     for (QScreen *screen : screens) {
         QRect rect = screen->availableGeometry();
         QRect sect = rect.intersected(appGeo);
-        if (100*sect.height()*sect.width() / (appGeo.height()*appGeo.width()) > 3)
-            frames << rect;
+        qint64 sectArea = sect.width() * sect.height();
+        if (appArea > 0 && sectArea * 100 / appArea > 3 && sectArea > bestArea) {
+            bestArea   = sectArea;
+            bestScreen = rect;
+        }
     }
-    if (frames.size() == 1)
-        screenGeo = frames.at(0);
+
+    QRect screenGeo = bestScreen.isValid() ? bestScreen : QGuiApplication::primaryScreen()->availableGeometry();
     screenGeo -= margins;
 
-    if (appGeo.width() > screenGeo.width()) appGeo.setWidth(screenGeo.width());
+    if (appGeo.width()  > screenGeo.width())  appGeo.setWidth(screenGeo.width());
     if (appGeo.height() > screenGeo.height()) appGeo.setHeight(screenGeo.height());
-    if (appGeo.x() < screenGeo.x()) appGeo.moveLeft(screenGeo.x());
-    if (appGeo.y() < screenGeo.y()) appGeo.moveTop(screenGeo.y());
-    if (appGeo.right() > screenGeo.right()) appGeo.moveLeft(screenGeo.right()-appGeo.width());
-    if (appGeo.bottom() > screenGeo.bottom()) appGeo.moveTop(screenGeo.bottom()-appGeo.height());
+    if (appGeo.x()      < screenGeo.x())      appGeo.moveLeft(screenGeo.x());
+    if (appGeo.y()      < screenGeo.y())      appGeo.moveTop(screenGeo.y());
+    if (appGeo.right()  > screenGeo.right())  appGeo.moveLeft(screenGeo.right() - appGeo.width());
+    if (appGeo.bottom() > screenGeo.bottom()) appGeo.moveTop(screenGeo.bottom() - appGeo.height());
+
     if (appGeo != geometry()) setGeometry(appGeo);
 }
 
