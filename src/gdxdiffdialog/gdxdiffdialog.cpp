@@ -92,11 +92,7 @@ QStringList GdxDiffDialog::gdxDiffParamters()
     return args;
 }
 
-} // namespace gdxdiffdialog
-} // namespace studio
-} // namespace gams
-
-void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbInput1_clicked()
+void GdxDiffDialog::on_pbInput1_clicked()
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Choose GDX File...",
                                                             mRecentPath,
@@ -107,7 +103,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbInput1_clicked()
     }
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbInput2_clicked()
+void GdxDiffDialog::on_pbInput2_clicked()
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Choose GDX File...",
                                                             mRecentPath,
@@ -118,7 +114,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbInput2_clicked()
     }
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbDiff_clicked()
+void GdxDiffDialog::on_pbDiff_clicked()
 {
     QString filePath = QFileDialog::getSaveFileName(this, "Choose GDX File...",
                                                             QDir::cleanPath(mRecentPath +
@@ -132,13 +128,13 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbDiff_clicked()
     }
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbCancel_clicked()
+void GdxDiffDialog::on_pbCancel_clicked()
 {
     cancelProcess();
     reject();
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
+void GdxDiffDialog::on_pbOK_clicked()
 {
     mWasCanceled = false;
     mLastInput1 = ui->leInput1->text().trimmed();
@@ -211,7 +207,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     mProc->execute();
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbFieldOnly_toggled(bool checked)
+void GdxDiffDialog::on_cbFieldOnly_toggled(bool checked)
 {
     if(checked) {
         // uncheck diff only
@@ -222,21 +218,21 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbFieldOnly_toggled(bool che
     }
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbDiffOnly_toggled(bool checked)
+void GdxDiffDialog::on_cbDiffOnly_toggled(bool checked)
 {
     if(checked)
         // uncheck field only
         ui->cbFieldOnly->setChecked(false);
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbFieldToCompare_currentIndexChanged(int index)
+void GdxDiffDialog::on_cbFieldToCompare_currentIndexChanged(int index)
 {
     // uncheck the fild only check box if "All" is selected
     if (index==0)
         ui->cbFieldOnly->setChecked(false);
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::setRecentPath(const QString &recentPath)
+void GdxDiffDialog::setRecentPath(const QString &recentPath)
 {
     mRecentPath = recentPath;
     if (QFileInfo(ui->leInput1->text()).isFile())
@@ -246,17 +242,17 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::setRecentPath(const QString &re
     prepopulateDiff();
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::setInput1(const QString &filePath)
+void GdxDiffDialog::setInput1(const QString &filePath)
 {
     ui->leInput1->setText(QDir::toNativeSeparators(filePath));
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::setInput2(const QString &filePath)
+void GdxDiffDialog::setInput2(const QString &filePath)
 {
     ui->leInput2->setText(QDir::toNativeSeparators(filePath));
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::reset()
+void GdxDiffDialog::reset()
 {
     ui->leInput1->clear();
     ui->leInput2->clear();
@@ -273,12 +269,12 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::reset()
     prepopulateDiff();
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbClear_clicked()
+void GdxDiffDialog::on_pbClear_clicked()
 {
     reset();
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::diffDone()
+void GdxDiffDialog::diffDone()
 {
     if (mDiffGdxViewer && mDiffFm) {
         bool changed = mDiffFm->refreshMetaData();
@@ -301,7 +297,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::diffDone()
     }
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::setControlsEnabled(bool enabled)
+void GdxDiffDialog::setControlsEnabled(bool enabled)
 {
     ui->pbOK->setEnabled(enabled);
     ui->pbClear->setEnabled(enabled);
@@ -319,7 +315,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::setControlsEnabled(bool enabled
     ui->cbFieldToCompare->setEnabled(enabled);
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::cancelProcess(int waitMSec)
+void GdxDiffDialog::cancelProcess(int waitMSec)
 {
     if (mProc->state() != QProcess::NotRunning) {
         mWasCanceled = true;
@@ -327,13 +323,13 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::cancelProcess(int waitMSec)
     }
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::closeEvent(QCloseEvent *e)
+void GdxDiffDialog::closeEvent(QCloseEvent *e)
 {
     Q_UNUSED(e)
     on_pbCancel_clicked();
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::keyPressEvent(QKeyEvent *e)
+void GdxDiffDialog::keyPressEvent(QKeyEvent *e)
 {
     if (e->key() == Hotkey::OpenHelp) {
 #ifdef QWEBENGINE
@@ -349,22 +345,22 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::keyPressEvent(QKeyEvent *e)
     QDialog::keyPressEvent(e);
 }
 
-QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput2() const
+QString  GdxDiffDialog::lastInput2() const
 {
     return QDir::cleanPath(mLastInput2);
 }
 
-QString gams::studio::gdxdiffdialog::GdxDiffDialog::input1() const
+QString GdxDiffDialog::input1() const
 {
     return ui->leInput1->text();
 }
 
-QString gams::studio::gdxdiffdialog::GdxDiffDialog::input2() const
+QString GdxDiffDialog::input2() const
 {
     return ui->leInput2->text();
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::prepopulateDiff()
+void GdxDiffDialog::prepopulateDiff()
 {
     if (mPrepopulateDiff) {
         if (QFileInfo(ui->leInput1->text()).isFile()) {
@@ -377,12 +373,16 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::prepopulateDiff()
     }
 }
 
-QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput1() const
+QString  GdxDiffDialog::lastInput1() const
 {
     return QDir::cleanPath(mLastInput1);
 }
 
-QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastDiffFile() const
+QString  GdxDiffDialog::lastDiffFile() const
 {
     return QDir::cleanPath(mLastDiffFile);
 }
+
+} // namespace gdxdiffdialog
+} // namespace studio
+} // namespace gams
