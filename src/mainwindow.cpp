@@ -964,6 +964,10 @@ void MainWindow::initNavigator()
 void MainWindow::updateCanSave(QWidget* current)
 {
     bool activateSave = (current && current != mWp);
+    if (FileMeta *meta = mFileMetaRepo.fileMeta(current)) {
+        if (meta->isReadOnly() || meta->encodingError())
+            activateSave = false;
+    }
     ui->actionSave->setEnabled(activateSave);
     ui->actionSave_As->setEnabled(activateSave);
 }
@@ -2053,9 +2057,9 @@ void MainWindow::on_actionSave_triggered()
     FileMeta* fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
     if (!fm) return;
 
-    if (fm->isModified() && !fm->isReadOnly())
+    if (fm->isModified() && !fm->isReadOnly() && !fm->encodingError())
         fm->save();
-    else if (fm->isReadOnly())
+    else if (fm->isReadOnly() || fm->encodingError())
         on_actionSave_As_triggered();
 
 }
@@ -2302,6 +2306,7 @@ void MainWindow::codecReload(QAction *action)
             if (project)
                 mRecent.project()->setNeedSave();
             updateMenuToEncoding(fm->encoding());
+            updateCanSave(focusWidget());
             updateStatusFile();
         }
         updateAndSaveSettings();
@@ -2350,7 +2355,7 @@ void MainWindow::activeMainTabChanged(int index)
         bool canEncode = true;
         bool canWrite = true;
         if (AbstractEdit* edit = ViewHelper::toAbstractEdit(editWidget)) {
-            canEncode = !edit->isReadOnly();
+            canEncode = !node->file()->isReadOnly();
             canWrite = !edit->isReadOnly();
         } else if (ViewHelper::toTextView(editWidget)) {
             canWrite = false;
@@ -5638,8 +5643,7 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         connect(tv, &TextView::continueSearchPressed, this, &MainWindow::continueSearch);
     }
     if (ViewHelper::toCodeEdit(edit)) {
-        AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
-        if (!ae->isReadOnly()) {
+        if (!fileMeta->isReadOnly()) {
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
             connect(fileMeta, &FileMeta::modifiedChanged, this, &MainWindow::fileModifiedChanged, Qt::UniqueConnection);
             connect(fileMeta, &FileMeta::getProfilerMaxCompoundValues, this, [this]

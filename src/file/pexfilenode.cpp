@@ -19,14 +19,9 @@
  */
 #include "pexfilenode.h"
 #include "pexgroupnode.h"
-#include "projectrepo.h"
 #include "exception.h"
-#include "syntax/textmarkrepo.h"
 #include "filemeta.h"
 #include "fileicon.h"
-#include "viewhelper.h"
-#include "editors/codeedit.h"
-#include "logger.h"
 #include <QScrollBar>
 #include <QToolTip>
 #include <QDir>
