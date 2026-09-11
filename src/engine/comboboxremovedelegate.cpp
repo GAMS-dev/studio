@@ -19,7 +19,6 @@
  */
 #include "comboboxremovedelegate.h"
 #include "theme.h"
-#include "logger.h"
 
 #include <QPainter>
 #include <QMouseEvent>
@@ -76,12 +75,14 @@ bool ComboboxRemoveDelegate::eventFilter(QObject *watched, QEvent *event)
 {
     if (event->type() == QEvent::MouseMove
         || event->type() == QEvent::MouseButtonPress
+        || event->type() == QEvent::MouseButtonRelease
         || event->type() == QEvent::ToolTip) {
         auto* viewport = qobject_cast<QWidget*>(watched);
         auto* listView = viewport ? qobject_cast<QListView*>(viewport->parentWidget()) : nullptr;
 
         if (listView) {
-            QPoint pos = static_cast<QHelpEvent*>(event)->pos();
+            QPoint pos = event->type() == QEvent::ToolTip ? static_cast<QHelpEvent*>(event)->pos()
+                                                          : static_cast<QMouseEvent*>(event)->pos();
             QModelIndex index = listView->indexAt(pos);
 
             if (index.isValid()) {
@@ -98,11 +99,14 @@ bool ComboboxRemoveDelegate::eventFilter(QObject *watched, QEvent *event)
                 if (!inBtn)
                     QToolTip::hideText();
 
-                if (event->type() == QEvent::MouseButtonPress && inBtn
-                    && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton) {
-                    if (auto* model = listView->model()) {
-                        model->removeRow(index.row());
-                        viewport->update();
+                if (inBtn && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton) {
+                    if (event->type() == QEvent::MouseButtonRelease)
+                        return true;
+                    else if (event->type() == QEvent::MouseButtonPress) {
+                        if (auto* model = listView->model()) {
+                            model->removeRow(index.row());
+                            listView->setCurrentIndex(listView->model()->index(0, 0));
+                        }
                         return true;
                     }
                 }

@@ -423,7 +423,7 @@ void EngineStartDialog::showEvent(QShowEvent *event)
 
 QString EngineStartDialog::generateSelectorName(const QVariantHash &data)
 {
-    if (data.isEmpty()) return QString("-clear-");
+    if (data.isEmpty()) return QString("-new-");
     QUrl url(data.value("page").toString());
     QString res = url.adjusted(QUrl::RemovePort | QUrl::NormalizePathSegments).url();
     if (res.endsWith('/')) res.removeLast();

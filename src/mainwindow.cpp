@@ -5205,6 +5205,10 @@ void MainWindow::initEngineStartDialog(bool resume)
             updateAndSaveSettings();
         }
     });
+    connect(dialog, &engine::EngineStartDialog::rejected, this, [this, dialog]() {
+        Settings::settings()->setList(SettingsKey::skEngineRecent, dialog->recent());
+        updateAndSaveSettings();
+    });
     if (resume) {
         auto coOk = std::make_shared<QMetaObject::Connection>();
         *coOk = connect(proc, &engine::EngineProcess::reGetUsername, this, [this, coOk]() {
