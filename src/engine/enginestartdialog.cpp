@@ -797,7 +797,8 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
                 showConnect();
             mProc->getUsername();
         }
-        emit engineUrlValidated(mValidUrl);
+        if (!mValidUrl.isEmpty())
+            emit engineUrlValidated(mValidUrl);
     }
 }
 
