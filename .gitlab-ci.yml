@@ -6,7 +6,6 @@ stages:
   - pack
   - deploy
   - analyze
-  - cleanup
 
 include:
   - project: 'devel/ciscripts'
