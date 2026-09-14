@@ -18,7 +18,6 @@ include:
   - 'ci/.gitlab-ci-3-pack.yml'
   - 'ci/.gitlab-ci-4-deploy.yml'
   - 'ci/.gitlab-ci-5-analyze.yml'
-  - 'ci/.gitlab-ci-6-artifacts.yml'
   - template: Security/Secret-Detection.gitlab-ci.yml
 
 workflow:
