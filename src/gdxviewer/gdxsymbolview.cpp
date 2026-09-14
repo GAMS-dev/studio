@@ -709,7 +709,7 @@ void GdxSymbolView::showDefaultView(GdxSymbolViewState* symViewState)
         else
             showListView();
     } else {
-        if (mSym->dim() > 1 && DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView)) {
+        if (mSym->dim() >= 1 && DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView)) {
             showTableView();
         }
         else
@@ -1191,7 +1191,7 @@ void GdxSymbolView::enableControls()
     }
     ui->pbResetSortFilter->setEnabled(true);
     ui->lineEdit->setEnabled(true);
-    if (mSym->dim()>1)
+    if (mSym->dim()>=1)
         ui->pbToggleView->setEnabled(true);
     ui->pbHeaderControls->setEnabled(true);
     updateHeatmapButton();

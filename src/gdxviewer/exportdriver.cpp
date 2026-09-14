@@ -165,9 +165,9 @@ QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFi
             tableViewActive = true;
             columnDimension = symViewState->tvColDim();
         }
-        else if (!symView && !symViewState && sym->dim() > 1 && GdxSymbolView::DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView)) {
+        else if (!symView && !symViewState && sym->dim() >= 1 && GdxSymbolView::DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView)) {
             tableViewActive = true;
-            columnDimension = 1;
+            columnDimension = sym->dim() > 1 ? 1 : 0;
         }
         if ((sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)) {
             if (!mNoAttributes.contains(sym->name()))

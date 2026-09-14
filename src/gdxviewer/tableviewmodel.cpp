@@ -28,7 +28,7 @@ namespace gdxviewer {
 TableViewModel::TableViewModel(GdxSymbol* sym, GdxSymbolTableModel* gdxSymbolTable, QObject *parent)
     : QAbstractTableModel(parent), mSym(sym), mGdxSymbolTable(gdxSymbolTable)
 {
-    mTvColDim = 1;
+    mTvColDim = mSym->mDim > 1 ? 1 : 0;
     mTvDimOrder.reserve(mSym->mDim);
     for (int i = 0; i < mSym->mDim; ++i)
         mTvDimOrder << i;
