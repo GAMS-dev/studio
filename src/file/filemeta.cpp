@@ -936,10 +936,13 @@ void FileMeta::load(QString encoding, bool init)
             if (mHighlighter) mHighlighter->resume();
             setEditPositions(edPos);
             mLoading = false;
-            if (!msg.isEmpty())
-                SysLogLocator::systemLog()->append("Encoding " + encoding + " couldn't decode all characters", LogMsgType::Info);
+            if (!msg.isEmpty()) {
+                SysLogLocator::systemLog()->append("Encoding '" + encoding + "' couldn't decode all characters."
+                                                   + " Set read-only mode for " + mLocation, LogMsgType::Error);
+            }
         } else {
-            SysLogLocator::systemLog()->append("Invalid encoding " + encoding, LogMsgType::Info);
+            SysLogLocator::systemLog()->append("Invalid encoding '" + encoding + "' Set read-only mode for " + mLocation
+                                               , LogMsgType::Error);
             mEncodingError = true;
         }
         file.close();
