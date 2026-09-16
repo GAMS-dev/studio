@@ -10,6 +10,7 @@ HEADERS +=                                      \
     syntaxsimulator.h                           \
     testcompleter.h                             \
     $$SRCPATH/editors/codecompleter.h           \
+    $$SRCPATH/editors/snippetcontrol.h          \
     $$SRCPATH/editors/sysloglocator.h           \
     $$SRCPATH/editors/defaultsystemlogger.h     \
     $$SRCPATH/syntax/syntaxformats.h            \
@@ -23,6 +24,7 @@ SOURCES +=                                      \
     syntaxsimulator.cpp                         \
     testcompleter.cpp                           \
     $$SRCPATH/editors/codecompleter.cpp         \
+    $$SRCPATH/editors/snippetcontrol.cpp        \
     $$SRCPATH/editors/sysloglocator.cpp         \
     $$SRCPATH/editors/defaultsystemlogger.cpp   \
     $$SRCPATH/syntax/syntaxformats.cpp          \

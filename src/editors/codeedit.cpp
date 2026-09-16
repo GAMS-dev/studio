@@ -502,6 +502,14 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         }
     }
 
+    if (mSnippetControl.isActive()) {
+        if (mSnippetControl.handleKey(e)) {
+            e->accept();
+            return;
+        }
+        // mSnippetControl.deactivate();
+    }
+
     if (mCompleter && mCompleter->isVisible()) {
         QSet<int> completerKeys;
         completerKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
@@ -2261,6 +2269,9 @@ void CodeEdit::jumpTo(int line, int column)
 void CodeEdit::setCompleter(CodeCompleter *completer)
 {
     mCompleter = completer;
+    if (mCompleter) {
+        mSnippetControl.load(mCompleter->snippets());
+    }
 }
 
 void CodeEdit::clearSearchSelection()

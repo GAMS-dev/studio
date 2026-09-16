@@ -21,6 +21,7 @@
 #define GAMS_STUDIO_SYNTAX_CODECOMPLETER_H
 
 #include "syntax/syntaxcommon.h"
+#include "snippetcontrol.h"
 
 #include <QListView>
 #include <QAbstractListModel>
@@ -31,6 +32,8 @@
 
 namespace gams {
 namespace studio {
+
+struct Snippet;
 
 enum CodeCompleterCasing {
     caseCamel,
@@ -75,6 +78,8 @@ enum CodeCompleterType {
 
     ccSufName   = 0x01000000, // temporary suffix name
 
+    ccSnippet   = 0x02000000, // code snippet
+
     cc_Start    = 0x00007FE1, // all starting keywords
 
     cc_All      = 0x7FFFFFFF
@@ -101,6 +106,7 @@ private:
 public:
     CodeCompleterModel(QObject *parent = nullptr);
     ~CodeCompleterModel() override {}
+    void setSnippets(const QList<Snippet> &snippets);
     void setCasing(CodeCompleterCasing casing);
     CodeCompleterCasing casing() { return mCasing; }
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -150,6 +156,9 @@ public:
     void setCodeEdit(QPlainTextEdit *edit);
     QPlainTextEdit* codeEdit() { return mEdit; }
     void updateFilter(int posInBlock = -1, QString line = QString());
+    void loadSnippets(const QString &snippetFile);
+    const QList<Snippet> &snippets() const { return mSnippets; }
+    void setSnippetControl(SnippetControl *control) { mSnippetControl = control; }
     void updateDynamicData(const QStringList &symbols);
     int rowCount();
     void ShowIfData();
@@ -190,6 +199,8 @@ private:
     QPlainTextEdit *mEdit;
     CodeCompleterModel *mModel;
     FilterCompleterModel *mFilterModel;
+    SnippetControl *mSnippetControl = nullptr;
+    QList<Snippet> mSnippets;
     QString mFilterText;
     QString mPreferredText;
     int mSuppressOpen = 0;

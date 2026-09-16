@@ -94,6 +94,7 @@ SOURCES += \
     editors/navigationhistory.cpp \
     editors/navigationhistorylocator.cpp \
     editors/scrollmarks.cpp \
+    editors/snippetcontrol.cpp \
     editors/sysloglocator.cpp \
     editors/systemlogedit.cpp \
     editors/textview.cpp \
@@ -340,6 +341,7 @@ HEADERS += \
     editors/navigationhistory.h \
     editors/navigationhistorylocator.h \
     editors/scrollmarks.h \
+    editors/snippetcontrol.h \
     editors/sysloglocator.h \
     editors/systemlogedit.h \
     editors/textview.h \

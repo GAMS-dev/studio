@@ -18,19 +18,23 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "codecompleter.h"
-//#include "editors/codeedit.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "syntaxdata.h"
 #include "syntax/syntaxformats.h"
 #include "logger.h"
 #include "exception.h"
+#include "viewhelper.h"
 
 #include <QPlainTextEdit>
 #include <QSortFilterProxyModel>
 #include <QGuiApplication>
 #include <QScreen>
 #include <QAction>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 // uncomment this to generate elements for testcompleter
 // #define COMPLETER_DEBUG
@@ -44,6 +48,37 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
 {
     mCasing = caseCamel;
     initData();
+}
+
+void CodeCompleterModel::setSnippets(const QList<Snippet> &snippets)
+{
+    if (snippets.isEmpty()) return;
+
+    beginResetModel();
+    if (mTempDataStart >= 0 && mTempDataStart < mData.size()) {
+        mData = mData.mid(0, mTempDataStart);
+        mDescription = mDescription.mid(0, mTempDataStart);
+        mDescriptIndex = mDescriptIndex.mid(0, mTempDataStart);
+        auto it = mType.end();
+        while (it != mType.begin()) {
+            --it;
+            if (it.key() >= mTempDataStart)
+                it = mType.erase(it);
+            else break;
+        }
+    }
+
+    for (const Snippet &s : snippets) {
+        mData << s.trigger;
+        const QString desc = s.label + (s.description.isEmpty() ? QString() : ": " + s.description);
+        mDescription << desc;
+        mDescriptIndex << int(mDescription.size()) - 1;
+    }
+    if (!snippets.isEmpty())
+        mType.insert(int(mData.size()) - 1, ccSnippet);
+
+    mTempDataStart = int(mData.size());
+    endResetModel();
 }
 
 void CodeCompleterModel::initData()
@@ -445,6 +480,11 @@ QVariant CodeCompleterModel::data(const QModelIndex &index, int role) const
                                     : mCasing == caseUpper ? mData.at(index.row()).toUpper() : mData.at(index.row());
     case Qt::ToolTipRole:
         return mDescription.at(mDescriptIndex.at(index.row()));
+    case Qt::DecorationRole: {
+        QIcon icon = mType.lowerBound(index.row()).value() != ccSnippet ? Theme::icon(":/solid/inst-multi")
+                                                                        : Theme::icon(":/solid/inst-single");
+        return icon;
+    }
     case Qt::UserRole:
         return mType.lowerBound(index.row()).value();
     }
@@ -609,7 +649,11 @@ CodeCompleter::~CodeCompleter()
 void CodeCompleter::setCodeEdit(QPlainTextEdit *edit)
 {
     mEdit = edit;
-    if (mEdit) setFont(mEdit->font());
+    if (mEdit) {
+        setFont(mEdit->font());
+        if (CodeEdit *ce = ViewHelper::toCodeEdit(mEdit))
+            setSnippetControl(ce->snippetControl());
+    }
 }
 
 bool CodeCompleter::event(QEvent *event)
@@ -931,6 +975,74 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
     setGeometry(rect);
 }
 
+void CodeCompleter::loadSnippets(const QString &snippetFile)
+{
+    static const char *defaultJson = R"([
+  {
+    "trigger": "for",
+    "label": "for loop",
+    "description": "GAMS for loop",
+    "body": "for (${1:i} = ${2:1} to ${3:10},\n    ${4:statement} ${1:i}\n);"
+  },
+  {
+    "trigger": "loop",
+    "label": "loop statement",
+    "description": "GAMS loop over a set",
+    "body": "loop (${1:set},\n    ${2:statement}\n);"
+  },
+  {
+    "trigger": "if",
+    "label": "if statement",
+    "description": "GAMS if statement",
+    "body": "if (${1:condition},\n    ${2:statement}\n);"
+  },
+  {
+    "trigger": "while",
+    "label": "while loop",
+    "description": "GAMS while loop",
+    "body": "while (${1:condition},\n    ${2:statement}\n);"
+  },
+  {
+    "trigger": "solve",
+    "label": "solve statement",
+    "description": "GAMS solve",
+    "body": "solve ${1:modelName} using ${2:lp} minimizing ${3:objVar};"
+  }
+])";
+
+    // create default file if missing
+    if (!QFile::exists(snippetFile)) {
+    }
+    QFile f(snippetFile);
+    if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        f.write(defaultJson);
+        f.close();
+    }
+
+    auto parseFile = [](const QString &path) -> QList<Snippet> {
+        QList<Snippet> result;
+        QFile f(path);
+        if (!f.open(QIODevice::ReadOnly)) return result;
+        QJsonParseError err;
+        QJsonDocument doc = QJsonDocument::fromJson(f.readAll(), &err);
+        if (err.error != QJsonParseError::NoError || !doc.isArray()) return result;
+        for (const QJsonValue &v : doc.array()) {
+            const QJsonObject obj = v.toObject();
+            Snippet s;
+            s.trigger     = obj.value("trigger").toString();
+            s.label       = obj.value("label").toString();
+            s.description = obj.value("description").toString();
+            s.body        = obj.value("body").toString();
+            if (!s.trigger.isEmpty() && !s.body.isEmpty())
+                result << s;
+        }
+        return result;
+    };
+
+    mSnippets = parseFile(snippetFile);
+    mModel->setSnippets(mSnippets);
+}
+
 int CodeCompleter::findFilterRow(const QString &text, int top, int bot)
 {
     int ind = (top + bot) / 2;
@@ -1095,9 +1207,32 @@ void CodeCompleter::insertCurrent(bool equalPartOnly)
             hideIt = false;
         else
             hideIt = (res == mFilterText) || hideIt;
-        cur.insertText(res);
-        cur.endEditBlock();
-        mEdit->setTextCursor(cur);
+
+        const int itemType = model()->data(currentIndex(), Qt::UserRole).toInt();
+        const bool isSnippet = (itemType & ccSnippet) && !mSnippets.isEmpty();
+
+        if (isSnippet) {
+            const QString trigger = model()->data(currentIndex(), Qt::DisplayRole).toString();
+            QString snippetBody;
+            for (const Snippet &s : std::as_const(mSnippets)) {
+                if (s.trigger.compare(trigger, Qt::CaseInsensitive) == 0) {
+                    snippetBody = s.body;
+                    break;
+                }
+            }
+            cur.setPosition(cur.position() - int(mFilterText.length()));
+            cur.setPosition(cur.position() + trigger.length(), QTextCursor::KeepAnchor);
+            cur.removeSelectedText();
+            const int insertPos = cur.position();
+            cur.endEditBlock();
+            mEdit->setTextCursor(cur);
+            if (!snippetBody.isEmpty() && mSnippetControl)
+                mSnippetControl->activateSnippet(mEdit, snippetBody, insertPos);
+        } else {
+            cur.insertText(res);
+            cur.endEditBlock();
+            mEdit->setTextCursor(cur);
+        }
     }
     if (hideIt) {
         mEdit->setFocus();
@@ -1133,7 +1268,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::Assignment:
     case syntax::SyntaxKind::Semicolon:
     case syntax::SyntaxKind::CommaIdent:
-        filter = cc_Start; break;
+        filter = cc_Start | ccSnippet; break;
 
     case syntax::SyntaxKind::SubDCO:
     case syntax::SyntaxKind::AssignmentSystemData:
@@ -1190,7 +1325,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::SolveKey:
     case syntax::SyntaxKind::Put:
     case syntax::SyntaxKind::PutFormula:
-        filter = cc_Start; break;
+        filter = cc_Start | ccSnippet; break;
     case syntax::SyntaxKind::Abort:
     case syntax::SyntaxKind::AbortKey:
     case syntax::SyntaxKind::ExecuteTool:

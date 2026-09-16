@@ -425,6 +425,7 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
+    mFileMetaRepo.completer()->loadSnippets(CommonPaths::gamsUserConfigDir() + "/gams_snippets.json");
 
     // stack help under output
     if (tabifiedDockWidgets(ui->dockHelpView).contains(ui->dockProcessLog)) {

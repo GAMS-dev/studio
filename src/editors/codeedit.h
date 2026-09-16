@@ -25,6 +25,7 @@
 #include <QIcon>
 #include <QTimer>
 #include "editors/abstractedit.h"
+#include "editors/snippetcontrol.h"
 #include "syntax/textmark.h"
 #include "syntax/syntaxcommon.h"
 
@@ -130,6 +131,7 @@ public:
     QTextBlock findFoldStart(QTextBlock block) const;
     void jumpTo(int line, int column = 0) override;
     void setCompleter(CodeCompleter *completer);
+    SnippetControl *snippetControl() { return &mSnippetControl; }
     void clearSearchSelection() override;
     void setSearchSelectionActive(bool active) override;
     void updateSearchSelection() override;
@@ -356,6 +358,7 @@ private:
     ProfilerArea *mProfilerArea = nullptr;
     ProfilerHeader *mProfilerHeader = nullptr;
     CodeCompleter *mCompleter = nullptr;
+    SnippetControl mSnippetControl;
     QTimer mCompleterTimer;
     int mCurrentCol;
     QTimer mCursorTimer;
