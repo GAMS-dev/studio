@@ -4,6 +4,7 @@ Version 1.25.7  *
 - Fixed the state of a GDX file and its symbols not being restored correctly after a GDX file reload.
 - Ensure that the Studio is below the top border of the screen.
 - Allow the LOG section to be smaller when docked below the main editors.
+- Switch the source to read-only mode when the text decoder detected errors.
 
 Version 1.25.6
 ==================
