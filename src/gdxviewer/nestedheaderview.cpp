@@ -234,10 +234,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 painter->save();
             } else if (dimIdxEnd-1 == i && dimIdxEnd == dim()) {
                 painter->restore();
-                if (sym()->type() == GMS_DT_VAR || sym()->type() == GMS_DT_EQU)
-                    painter->drawLine(opt.rect.left(), opt.rect.top(), opt.rect.right(), opt.rect.top());
-                else
-                    painter->drawLine(opt.rect.left(), opt.rect.bottom(), opt.rect.right(), opt.rect.bottom());
+                painter->drawLine(opt.rect.left(), opt.rect.bottom(), opt.rect.right(), opt.rect.bottom());
                 painter->save();
             }
         }
