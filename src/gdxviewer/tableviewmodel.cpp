@@ -28,10 +28,20 @@ namespace gdxviewer {
 TableViewModel::TableViewModel(GdxSymbol* sym, GdxSymbolTableModel* gdxSymbolTable, QObject *parent)
     : QAbstractTableModel(parent), mSym(sym), mGdxSymbolTable(gdxSymbolTable)
 {
-    mTvColDim = mSym->mDim > 1 ? 1 : 0;
-    mTvDimOrder.reserve(mSym->mDim);
-    for (int i = 0; i < mSym->mDim; ++i)
+    mTvColDim = (mSym->mDim > 1 ? 1 : 0) + (isVarEqu() ? 1 : 0);
+    mTvDimOrder.reserve(tvDimExt());
+    for (int i = 0; i < tvDimExt(); ++i)
         mTvDimOrder << i;
+}
+
+bool TableViewModel::isVarEqu() const
+{
+    return mSym->mType == GMS_DT_VAR || mSym->mType == GMS_DT_EQU;
+}
+
+int TableViewModel::tvDimExt() const
+{
+    return mSym->mDim + (isVarEqu() ? 1 : 0);
 }
 
 TableViewModel::~TableViewModel()
@@ -39,10 +49,23 @@ TableViewModel::~TableViewModel()
 
 }
 
+QString TableViewModel::attrLabel(uint valIdx)
+{
+    switch(valIdx) {
+    case GMS_VAL_LEVEL: return "Level";
+    case GMS_VAL_MARGINAL: return "Marginal";
+    case GMS_VAL_LOWER: return "Lower";
+    case GMS_VAL_UPPER: return "Upper";
+    case GMS_VAL_SCALE: return "Scale";
+    }
+    return QString();
+}
+
 QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (role == Qt::DisplayRole) {        
+    if (role == Qt::DisplayRole) {
         QStringList header;
+        int ed = tvDimExt();
         if (orientation == Qt::Horizontal) {
             if (mNeedDummyColumn) {
                 if (mNeedDummyRow) {
@@ -56,22 +79,14 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
                 else
                     header << "Text";
             }
-            else if (mSym->mType == GMS_DT_VAR || mSym->mType == GMS_DT_EQU) {
-                for (int i=0; i<mTvColHeaders[section].size()-1; i++) {
-                    uint uel = mTvColHeaders[section][i];
-                    header << mGdxSymbolTable->uel2Label(int(uel));
-                }
-                switch(mTvColHeaders[section].last()) {
-                case GMS_VAL_LEVEL: header << "Level"; break;
-                case GMS_VAL_MARGINAL: header << "Marginal"; break;
-                case GMS_VAL_LOWER: header << "Lower"; break;
-                case GMS_VAL_UPPER: header << "Upper"; break;
-                case GMS_VAL_SCALE: header << "Scale"; break;
-                }
-            }
             else {
-                for (uint uel: mTvColHeaders[section])
-                    header << mGdxSymbolTable->uel2Label(int(uel));
+                for (int i=0; i<mTvColDim; i++) {
+                    uint v = mTvColHeaders[section][i];
+                    if (isVarEqu() && mTvDimOrder[ed-mTvColDim+i] == mSym->mDim)
+                        header << attrLabel(v);
+                    else
+                        header << mGdxSymbolTable->uel2Label(int(v));
+                }
             }
         }
         else {
@@ -82,8 +97,13 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
                     header << "Text";
             }
             else {
-                for (uint uel: mTvRowHeaders[section])
-                    header << mGdxSymbolTable->uel2Label(int(uel));
+                for (int i=0; i<ed-mTvColDim; i++) {
+                    uint v = mTvRowHeaders[section][i];
+                    if (isVarEqu() && mTvDimOrder[i] == mSym->mDim)
+                        header << attrLabel(v);
+                    else
+                        header << mGdxSymbolTable->uel2Label(int(v));
+                }
             }
         }
         return header;
@@ -161,37 +181,43 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
 }
 
 
-void TableViewModel::calcDefaultColumnsTableView()
+void TableViewModel::calcDefaultSectionsTableView()
 {
-    mDefaultColumnTableView.clear();
-    mDefaultColumnTableView.resize(columnCount());
-    if(mSym->mType != GMS_DT_VAR && mSym->mType != GMS_DT_EQU)
+    mDefaultSectionsTableView.clear();
+    if (!isVarEqu())
         return; // symbols other than variable and equation do not have default values
-    double defVal;
-    for(int col=0; col<columnCount(); col++) {
-        if (mSym->mType == GMS_DT_VAR)
-            defVal = gmsDefRecVar[mSym->mSubType][col%GMS_VAL_MAX];
-        else // mType == GMS_DT_EQU
-            defVal = gmsDefRecEqu[mSym->mSubType][col%GMS_VAL_MAX];
-        for(int row=0; row<rowCount(); row++) {
+
+    bool attrInCol = attrOrientation() == Qt::Horizontal;
+    int sectionCount = attrInCol ? columnCount() : rowCount();
+    int otherCount = attrInCol ? rowCount() : columnCount();
+    mDefaultSectionsTableView.resize(sectionCount);
+
+    for (int s=0; s<sectionCount; s++) {
+        int valIdx = attrValueForSection(s, attrOrientation());
+        if (valIdx < 0) {
+            mDefaultSectionsTableView[s] = false;
+            continue;
+        }
+        double defVal = mSym->mType == GMS_DT_VAR ? gmsDefRecVar[mSym->mSubType][valIdx]
+                                                    : gmsDefRecEqu[mSym->mSubType][valIdx];
+        bool allDefault = true;
+        for (int o=0; o<otherCount; o++) {
             QList<uint> keys;
-            if (mNeedDummyRow)
-                keys = mTvColHeaders[col];
-            else if (mNeedDummyColumn)
-                keys = mTvRowHeaders[row];
+            if (attrInCol)
+                keys = mNeedDummyRow ? mTvColHeaders[s] : mTvRowHeaders[o] + mTvColHeaders[s];
             else
-                keys = mTvRowHeaders[row] + mTvColHeaders[col];
+                keys = mNeedDummyColumn ? mTvRowHeaders[s] : mTvRowHeaders[s] + mTvColHeaders[o];
             double val = defVal;
             if (mTvKeysToValIdx.contains(keys))
                 val = mSym->mValues[size_t(mTvKeysToValIdx[keys])];
 
             // We really need (defVal != val) here - but that leads to compiler-warning
-            if(defVal < val || defVal > val) {
-                mDefaultColumnTableView[col] = false;
+            if (defVal < val || defVal > val) {
+                allDefault = false;
                 break;
             }
-            mDefaultColumnTableView[col] = true;
         }
+        mDefaultSectionsTableView[s] = allDefault;
     }
 }
 
@@ -216,8 +242,9 @@ void TableViewModel::calcLabelsInRows()
             uelsInRows[c].insert(mTvRowHeaders[r][c]);
     }
     for (int c=0; c<uelsInRows.size(); c++) {
+        bool isAttr = attrLocalIndex(Qt::Vertical) == c;
         for(const uint &uel : std::as_const(uelsInRows[c]))
-            mlabelsInRows[c].append(mGdxSymbolTable->uel2Label(int(uel)));
+            mlabelsInRows[c].append(isAttr ? attrLabel(uel) : mGdxSymbolTable->uel2Label(int(uel)));
     }
 }
 
@@ -243,10 +270,16 @@ void TableViewModel::scrollVTriggered()
 
 void TableViewModel::initTableView(int nrColDim, QList<int> dimOrder)
 {
-    if (dimOrder.isEmpty()) {
-        for (int i=0; i<mSym->mDim; i++)
+    int ed = tvDimExt();
+
+    // fall back to the default pivot for a missing or stale (e.g. pre-existing persisted) order
+    if (dimOrder.size() != ed) {
+        dimOrder.clear();
+        for (int i=0; i<ed; i++)
             dimOrder << i;
+        nrColDim = (mSym->mDim > 1 ? 1 : 0) + (isVarEqu() ? 1 : 0);
     }
+    nrColDim = qBound(0, nrColDim, ed);
 
     mTvColDim = nrColDim;
     mTvDimOrder = dimOrder;
@@ -256,30 +289,47 @@ void TableViewModel::initTableView(int nrColDim, QList<int> dimOrder)
     mTvRowHeaders.clear();
     mTvColHeaders.clear();
     mTvKeysToValIdx.clear();
-
     QList<uint> lastRowHeader;
     QList<uint> lastColHeader;
     size_t r;
 
+    QList<uint> fullKey(ed);
     QList<uint> rowHeader;
     QList<uint> colHeader;
     size_t keyIdx;
+    int rowDim = ed - mTvColDim;
+
+    // position of the attribute's slot within rowHeader/colHeader, so the valIdx loop below
+    // can patch that one entry in place instead of rebuilding both tuples from scratch
+    int attrRowIdx = -1, attrColIdx = -1;
+    if (isVarEqu()) {
+        int pos = mTvDimOrder.indexOf(mSym->mDim);
+        if (pos < rowDim)
+            attrRowIdx = pos;
+        else
+            attrColIdx = pos - rowDim;
+    }
+
     for (int rec=0; rec<mSym->mFilterRecCount; rec++) {
         r = mSym->mRecSortIdx[size_t(mSym->mRecFilterIdx[size_t(rec)])];
         keyIdx = r*mSym->mDim;
+
+        for (int i=0; i<mSym->mDim; i++)
+            fullKey[i] = mSym->mKeys[keyIdx+i];
+
         rowHeader.resize(0);
         colHeader.resize(0);
+        for(int i=0; i<rowDim; i++)
+            rowHeader.push_back(mTvDimOrder[i] == mSym->mDim ? 0 : fullKey[mTvDimOrder[i]]);
+        for(int i=rowDim; i<ed; i++)
+            colHeader.push_back(mTvDimOrder[i] == mSym->mDim ? 0 : fullKey[mTvDimOrder[i]]);
 
-        for(int i=0; i<mSym->mDim-mTvColDim; i++)
-            rowHeader.push_back(mSym->mKeys[keyIdx+mTvDimOrder[i]]);
-        for(int i=mSym->mDim-mTvColDim; i<mSym->mDim; i++)
-            colHeader.push_back(mSym->mKeys[keyIdx+mTvDimOrder[i]]);
-
-        if (mSym->mType == GMS_DT_VAR || mSym->mType == GMS_DT_EQU) {
-            colHeader.push_back(0);
+        if (isVarEqu()) {
             for (int valIdx=0; valIdx<GMS_VAL_MAX; valIdx++) {
-                colHeader.pop_back();
-                colHeader.push_back(uint(valIdx));
+                if (attrRowIdx != -1)
+                    rowHeader[attrRowIdx] = uint(valIdx);
+                else
+                    colHeader[attrColIdx] = uint(valIdx);
 
                 QList<uint> keys = rowHeader + colHeader;
                 mTvKeysToValIdx[keys] = int(r)*GMS_VAL_MAX + valIdx;
@@ -326,7 +376,7 @@ void TableViewModel::initTableView(int nrColDim, QList<int> dimOrder)
     mNeedDummyRow = mTvRowHeaders.isEmpty();
     mNeedDummyColumn = mTvColHeaders.isEmpty();
 
-    calcDefaultColumnsTableView();
+    calcDefaultSectionsTableView();
     calcLabelsInRows();
 }
 
@@ -364,9 +414,73 @@ QList<int> TableViewModel::tvDimOrder() const
     return mTvDimOrder;
 }
 
-QList<bool> TableViewModel::defaultColumnTableView() const
+int TableViewModel::attrPos() const
 {
-    return mDefaultColumnTableView;
+    if (!isVarEqu())
+        return -1;
+    return mTvDimOrder.indexOf(mSym->mDim);
+}
+
+int TableViewModel::attrLocalIndex(Qt::Orientation orientation) const
+{
+    int pos = attrPos();
+    if (pos == -1)
+        return -1;
+    if (attrOrientation() != orientation)
+        return -1;
+    if (orientation == Qt::Horizontal)
+        return pos - (tvDimExt()-mTvColDim);
+    return pos;
+}
+
+Qt::Orientation TableViewModel::attrOrientation() const
+{
+    int pos = attrPos();
+    if (pos == -1)
+        return Qt::Horizontal;
+    return pos >= tvDimExt()-mTvColDim ? Qt::Horizontal : Qt::Vertical;
+}
+
+int TableViewModel::rowColDivider() const
+{
+    int ed = tvDimExt();
+    int rowDim = ed - mTvColDim;
+    if (rowDim <= 0 || rowDim >= ed)
+        return -1;
+
+    int stripPos = 0;
+    for (int i=0; i<rowDim; i++)
+        stripPos += mTvDimOrder[i] == mSym->mDim ? GMS_VAL_MAX : 1;
+    return stripPos - 1;
+}
+
+int TableViewModel::attrValueForSection(int section, Qt::Orientation orientation) const
+{
+    if (!isVarEqu())
+        return -1;
+    int ed = tvDimExt();
+    if (orientation == Qt::Horizontal) {
+        if (section < 0 || section >= mTvColHeaders.size())
+            return -1;
+        for (int i=0; i<mTvColDim; i++)
+            if (mTvDimOrder[ed-mTvColDim+i] == mSym->mDim)
+                return int(mTvColHeaders[section][i]);
+    } else {
+        if (section < 0 || section >= mTvRowHeaders.size())
+            return -1;
+        int rowDim = ed-mTvColDim;
+        for (int i=0; i<rowDim; i++)
+            if (mTvDimOrder[i] == mSym->mDim)
+                return int(mTvRowHeaders[section][i]);
+    }
+    return -1;
+}
+
+bool TableViewModel::isAllDefault(int section, Qt::Orientation orientation) const
+{
+    if (!isVarEqu() || attrOrientation() != orientation)
+        return false;
+    return mDefaultSectionsTableView.value(section, false);
 }
 
 int TableViewModel::tvColDim() const
@@ -395,13 +509,6 @@ void TableViewModel::setTableViewNoArgs()
 {
     if (mSym->isLoaded())
         setTableView();
-}
-
-bool TableViewModel::isAllDefault(int valColIdx)
-{
-    if(type() == GMS_DT_VAR || type() == GMS_DT_EQU)
-        return mDefaultColumnTableView[valColIdx];
-    return false;
 }
 
 } // namespace gdxviewer

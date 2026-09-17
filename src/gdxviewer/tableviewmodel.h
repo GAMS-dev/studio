@@ -45,11 +45,12 @@ public:
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    QList<bool> defaultColumnTableView() const;
-
     QList<int> tvDimOrder() const;
 
     int dim();
+
+    // Symbol dimension + 1 for the attributes (var/equ only)
+    int tvDimExt() const;
 
     int tvColDim() const;
 
@@ -59,7 +60,22 @@ public:
 
     void setTableViewNoArgs();
 
-    bool isAllDefault(int valColIdx);
+    // position of the attribute pseudo-dim within tvDimOrder(), -1 if not var/equ
+    int attrPos() const;
+
+    // attrPos() relative to its own orientation, -1 if elsewhere
+    int attrLocalIndex(Qt::Orientation orientation) const;
+
+    // orientation the attribute currently resides in
+    Qt::Orientation attrOrientation() const;
+
+    // GMS_VAL_LEVEL, GMS_VAL_MARGINAL, GMS_VAL_LOWER, GMS_VAL_UPPER, GMS_VAL_SCALE or -1
+    int attrValueForSection(int section, Qt::Orientation orientation) const;
+
+    bool isAllDefault(int section, Qt::Orientation orientation) const;
+
+    // table view filter column index after which the row/col divider should be drawn, -1 if none;
+    int rowColDivider() const;
 
     bool needDummyRow() const;
 
@@ -80,7 +96,10 @@ signals:
     void initFinished();
 
 private:
-    void calcDefaultColumnsTableView();
+    bool isVarEqu() const;
+    static QString attrLabel(uint valIdx);
+
+    void calcDefaultSectionsTableView();
 
     void calcLabelsInRows();
     QList<QList<QString>> mlabelsInRows;
@@ -96,7 +115,7 @@ private:
     QList<QList<uint>> mTvColHeaders;
     QHash<QList<uint>, int> mTvKeysToValIdx;
 
-    QList<bool> mDefaultColumnTableView;
+    QList<bool> mDefaultSectionsTableView;
     int mHeatedAttributes = 1;
 
     bool mNeedDummyRow = false;

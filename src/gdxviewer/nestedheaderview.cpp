@@ -66,13 +66,9 @@ int NestedHeaderView::dim() const
     else if (orientation() == Qt::Horizontal && sym()->needDummyColumn())
         return 1;
     else if (orientation() == Qt::Vertical)
-        return sym()->dim() - sym()->tvColDim();
-    else {
-        int d = sym()->tvColDim();
-        if (sym()->type() == GMS_DT_VAR || sym()->type() == GMS_DT_EQU)
-            return d+1;
-        return d;
-    }
+        return sym()->tvDimExt() - sym()->tvColDim();
+    else
+        return sym()->tvColDim();
 }
 
 void NestedHeaderView::setDdEnabled(bool value)
@@ -99,6 +95,9 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
         int prevIndex = logicalIndex -1;
         if (orientation() == Qt::Horizontal) { //find the preceeding column that is not hidden
             while (prevIndex >0 && ((QTableView*)this->parent())->isColumnHidden(prevIndex))
+                prevIndex--;
+        } else { //find the preceeding row that is not hidden
+            while (prevIndex >0 && ((QTableView*)this->parent())->isRowHidden(prevIndex))
                 prevIndex--;
         }
         labelPrevSection = model()->headerData(prevIndex, orientation(), Qt::DisplayRole).toStringList();
@@ -144,7 +143,8 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             painter->restore();
             QPen pen(painter->pen());
             pen.setColor(palette().text().color());
-            if (!sym()->needDummyRow()) {  // do not highlight search matches in dummy rows
+            // no highlight for dummy/attribute rows
+            if (!sym()->needDummyRow() && i != sym()->attrLocalIndex(Qt::Vertical)) {
                 if (!((TableViewModel *)model())->sym()->searchRegEx().pattern().isEmpty() && ((TableViewModel *)model())->sym()->searchRegEx().match(textSearch).hasMatch()) {
                     pen.setColor(QColor(Qt::white));
                     QPen pen2 = pen;
@@ -204,8 +204,8 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             QPen pen(painter->pen());
             pen.setColor(palette().text().color());
 
-            // do not highlight search matches in dummy columns or var/equ attributes (e.g. level, marginal, ...)
-            if ((!sym()->needDummyColumn() && sym()->type() != GMS_DT_VAR && sym()->type() != GMS_DT_EQU) || i<dim()-1) {
+            // no highlight for dummy/attribute columns
+            if (!sym()->needDummyColumn() && i != sym()->attrLocalIndex(Qt::Horizontal)) {
                 if (!((TableViewModel *)model())->sym()->searchRegEx().pattern().isEmpty() && ((TableViewModel *)model())->sym()->searchRegEx().match(textSearch).hasMatch()) {
                     pen.setColor(QColor(Qt::white));
                     QPen pen2 = pen;
@@ -271,9 +271,6 @@ void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
             return;
         if (orientation() == Qt::Horizontal && pointToDimension(mDragStartPosition) == 0 && sym()->needDummyColumn())
             return;
-        //do not allow to drag the value column (lavel, marginal,...) of variables and equations
-        if (orientation() == Qt::Horizontal && (sym()->type() == GMS_DT_EQU || sym()->type() == GMS_DT_VAR) && pointToDimension(mDragStartPosition)==dim()-1)
-            return;
         mSymbolView->setDragInProgress(true);
         QMimeData *mimeData = new QMimeData;
         if (orientation() == Qt::Vertical)
@@ -326,7 +323,7 @@ void NestedHeaderView::decideAcceptDragEvent(QDragMoveEvent *event)
 int NestedHeaderView::toGlobalDim(int localDim, int orientation)
 {
     if (orientation == Qt::Horizontal)
-        return localDim + sym()->dim()-sym()->tvColDim();
+        return localDim + sym()->tvDimExt()-sym()->tvColDim();
     else
         return localDim;
 }
@@ -398,7 +395,7 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
     emit static_cast<QTableView*>(this->parent())->verticalHeader()->geometriesChanged();
 
     GdxSymbolView *symView = static_cast<GdxSymbolView*>(parent()->parent());
-    symView->moveTvFilterColumns(dimIdxStart, dimIdxEnd);
+    symView->syncTvFilterColumns();
 
     dimIdxEnd = -1;
     dimIdxStart = -1;
@@ -446,17 +443,6 @@ int NestedHeaderView::pointToDropDimension(QPoint p)
     int globalStart = toGlobalDim(dimIdxStart, dragOrientationStart);
     int localEnd = pointToDimension(p);
     int globalEnd   = toGlobalDim(localEnd, dragOrientationEnd);
-
-    if ((sym()->type() == GMS_DT_EQU || sym()->type() == GMS_DT_VAR) && globalEnd == sym()->dim()) {
-        if (globalStart+1 == globalEnd) {
-            if (dragOrientationStart == dragOrientationEnd)
-                return localEnd-1;
-            else
-                return 0;
-        }
-        else
-            return dim()-1;
-    }
 
     //special behavior for switching adjacent dimensions when start and end orientation is the same
     if (dragOrientationStart == dragOrientationEnd) {

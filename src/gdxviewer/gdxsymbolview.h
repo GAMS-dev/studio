@@ -59,7 +59,7 @@ public:
     void setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, GdxSymbolViewState* symViewState=nullptr);
     void copySelectionToClipboard(const QString &separator, bool copyLabels = true);
     void toggleColumnHidden();
-    void moveTvFilterColumns(int from, int to);
+    void syncTvFilterColumns();
     void applyState(GdxSymbolViewState* symViewState);
     void applyFilters(GdxSymbolViewState* symViewState);
     void saveState(GdxSymbolViewState* symViewState);

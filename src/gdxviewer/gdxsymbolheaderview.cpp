@@ -95,9 +95,7 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
             pen.setWidth(2);
             painter->setPen(pen);
             int idx = visualIndex(logicalIndex);
-            if (idx == tvModel->dim() - tvModel->tvColDim()-1)
-                painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
-            if (symbol->type() != GMS_DT_SET && idx == tvModel->dim()-1)
+            if (idx == tvModel->rowColDivider())
                 painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
         }
     }

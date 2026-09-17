@@ -266,17 +266,24 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
     if (mSym) {
         if (mTableView) {
             ui->tvTableView->setUpdatesEnabled(false);
-            if (checked) {
+            // squeeze/show-attribute applies to whichever axis currently holds the attribute
+            Qt::Orientation attrOrient = mTvModel->attrOrientation();
+            if (attrOrient == Qt::Horizontal) {
                 for (int col=0; col<mTvModel->columnCount(); col++) {
-                    if (mTvModel->isAllDefault(col) || !mShowValColActions[col%GMS_DT_MAX]->isChecked())
-                        ui->tvTableView->setColumnHidden(col, true);
-                    else
-                        ui->tvTableView->setColumnHidden(col, false);
+                    int valIdx = mTvModel->attrValueForSection(col, Qt::Horizontal);
+                    bool hide = valIdx>=0 && ((checked && mTvModel->isAllDefault(col, Qt::Horizontal)) || !mShowValColActions[valIdx]->isChecked());
+                    ui->tvTableView->setColumnHidden(col, hide);
                 }
-            }
-            else {
+                for (int row=0; row<mTvModel->rowCount(); row++)
+                    ui->tvTableView->setRowHidden(row, false);
+            } else {
+                for (int row=0; row<mTvModel->rowCount(); row++) {
+                    int valIdx = mTvModel->attrValueForSection(row, Qt::Vertical);
+                    bool hide = valIdx>=0 && ((checked && mTvModel->isAllDefault(row, Qt::Vertical)) || !mShowValColActions[valIdx]->isChecked());
+                    ui->tvTableView->setRowHidden(row, hide);
+                }
                 for (int col=0; col<mTvModel->columnCount(); col++)
-                    ui->tvTableView->setColumnHidden(col, !mShowValColActions[col%GMS_DT_MAX]->isChecked());
+                    ui->tvTableView->setColumnHidden(col, false);
             }
             for (int col=0; col<GMS_VAL_MAX; col++)
                 ui->tvTableViewFilter->setColumnHidden(mSym->dim()+col, !mShowValColActions[col]->isChecked());
@@ -412,9 +419,22 @@ void GdxSymbolView::toggleColumnHidden()
     toggleSqueezeDefaults(mSqDefaults->isChecked());
 }
 
-void GdxSymbolView::moveTvFilterColumns(int from, int to)
+void GdxSymbolView::syncTvFilterColumns()
 {
-    ui->tvTableViewFilter->horizontalHeader()->moveSection(from, to);
+    QHeaderView *fh = ui->tvTableViewFilter->horizontalHeader();
+    QList<int> target;
+    for (int g : mTvModel->tvDimOrder()) {
+        if (g < mSym->dim())
+            target << g;
+        else
+            for (int v=0; v<GMS_VAL_MAX; v++)
+                target << mSym->dim()+v;
+    }
+    for (int pos=0; pos<target.size(); pos++) {
+        int visPos = fh->visualIndex(target.at(pos));
+        if (visPos != pos)
+            fh->moveSection(visPos, pos);
+    }
 }
 
 void GdxSymbolView::updateNumericalPrecision()
