@@ -853,6 +853,10 @@ void EngineStartDialog::reListProvider(const QList<QHash<QString, QVariant> > &a
     if (mAuthMethod >= 0 && ui->cbLoginMethod->currentIndex() != mAuthMethod && ui->cbLoginMethod->count() > mAuthMethod) {
         ui->cbLoginMethod->setCurrentIndex(mAuthMethod);
     }
+    updateSelector();
+    if (!mValidUrl.isEmpty()) {
+        emit engineUrlValidated(mValidUrl);
+    }
 }
 
 void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double> > > &instances, QMap<QString, QString> *poolOwners,
