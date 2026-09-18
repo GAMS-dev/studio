@@ -377,7 +377,9 @@ void CodeEdit::disconnectTimers()
 
 void CodeEdit::clearSelection()
 {
-    textCursor().clearSelection();
+    QTextCursor cur = textCursor();
+    cur.clearSelection();
+    setTextCursor(cur);
 }
 
 void CodeEdit::deleteSelection()
@@ -505,12 +507,17 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     if (mSnippetControl.isActive()) {
         if (mSnippetControl.handleKey(e)) {
             e->accept();
+            if (!mSnippetControl.isActive()){
+                updateExtraSelections();
+                clearSelection();
+            }
             return;
         }
-        // mSnippetControl.deactivate();
     }
 
     if (mCompleter && mCompleter->isVisible()) {
+        mSnippetControl.deactivate();
+        updateExtraSelections();
         QSet<int> completerKeys;
         completerKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
                       << Qt::Key_PageUp << Qt::Key_PageDown << Qt::Key_Enter << Qt::Key_Return << Qt::Key_Tab;
@@ -568,6 +575,8 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             QMouseEvent me(QEvent::MouseMove, mousePos, QCursor::pos(), Qt::NoButton, qApp->mouseButtons(), e->modifiers());
             mouseMoveEvent(&me);
         }
+        mSnippetControl.deactivate();
+        updateExtraSelections();
         return;
     }
 
@@ -576,14 +585,10 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             if (prepareCompleter())
                 showCompleter();
             e->accept();
-            return;
-        }
-        if (e->key() == Hotkey::JumpToContext) {
+        } else if (e->key() == Hotkey::JumpToContext) {
             jumpToCurrentLink(cursorRect().topLeft());
             e->accept();
-            return;
-        }
-        if (e->key() == Hotkey::NewLine) {
+        } else if (e->key() == Hotkey::NewLine) {
             QTextCursor cursor = textCursor();
             int pos = cursor.positionInBlock();
             cursor.beginEditBlock();
@@ -597,24 +602,16 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             cursor.endEditBlock();
             setTextCursor(cursor);
             e->accept();
-            return;
-        }
-        if (e == Hotkey::ToggleBlockFolding) {
+        } else if (e == Hotkey::ToggleBlockFolding) {
             QTextBlock block = textCursor().block();
             toggleFolding(block);
-            return;
-        }
-        if (e == Hotkey::Indent) {
+        } else if (e == Hotkey::Indent) {
             indent(mSettings->toInt(skEdTabSize));
             e->accept();
-            return;
-        }
-        if (e == Hotkey::Outdent) {
+        } else if (e == Hotkey::Outdent) {
             indent(-mSettings->toInt(skEdTabSize));
             e->accept();
-            return;
-        }
-        if (mSettings->toBool(skEdAutoIndent) && e->key() == Qt::Key_Backspace) {
+        } else if (mSettings->toBool(skEdAutoIndent) && e->key() == Qt::Key_Backspace) {
             int pos = textCursor().positionInBlock();
 
             QString line = textCursor().block().text();
@@ -624,9 +621,13 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             if (allWhitespace && !textCursor().hasSelection() && match.capturedLength() == pos) {
                 indent(-mSettings->toInt(skEdTabSize));
                 e->accept();
-                return;
             }
         }
+    }
+    if (e->isAccepted()) {
+        mSnippetControl.deactivate();
+        updateExtraSelections();
+        return;
     }
 
     if (e == Hotkey::FindPrev)
@@ -662,7 +663,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             selection = mOpening.at(indexOpening) + selection + mClosing.at(indexOpening);
             tc.insertText(selection);
             setTextCursor(tc);
-            return;
+            e->accept();
 
         // jump over closing character if already in place
         } else if (mSmartType && indexClosing != -1 &&
@@ -671,7 +672,6 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             tc.movePosition(QTextCursor::NextCharacter);
             setTextCursor(tc);
             e->accept();
-            return;
 
         // insert closing characters
         } else if (indexOpening != -1 && allowClosing(indexOpening)) {
@@ -682,6 +682,10 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             tc.movePosition(QTextCursor::PreviousCharacter);
             setTextCursor(tc);
             e->accept();
+        }
+        if (e->isAccepted()) {
+            mSnippetControl.deactivate();
+            updateExtraSelections();
             return;
         }
 
@@ -702,6 +706,8 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 
                 // keep smarttype on conditionally; e.g. for ((|)); qt creator does this, too
                 mSmartType = (mOpening.indexOf(a) == mClosing.indexOf(b));
+                mSnippetControl.deactivate();
+                updateExtraSelections();
                 return;
             }
         }
@@ -1237,6 +1243,8 @@ int CodeEdit::textCursorColumn(QPoint mousePos)
 
 void CodeEdit::mousePressEvent(QMouseEvent* e)
 {
+    mSnippetControl.deactivate();
+    updateExtraSelections();
     bool done = false;
     mSmartType = false; // exit on mouse navigation
     setContextMenuPolicy(Qt::DefaultContextMenu);
@@ -2693,6 +2701,7 @@ void CodeEdit::updateExtraSelections()
     if (!mLineNumberArea) return;
     QList<QTextEdit::ExtraSelection> selections;
     extraSelSearchSelection(selections);
+    extraSnippetSelection(selections);
     extraSelLineMarks(selections);
     extraSelCurrentLine(selections);
     extraSelMarks(selections);
@@ -2933,6 +2942,20 @@ void CodeEdit::extraSelSearchSelection(QList<QTextEdit::ExtraSelection> &selecti
         selections.append(mBlockEditSelection->extraSelections());
     } else {
         AbstractEdit::extraSelSearchSelection(selections);
+    }
+}
+
+void CodeEdit::extraSnippetSelection(QList<QTextEdit::ExtraSelection> &selections)
+{
+    if (!mSnippetControl.isActive() || mSnippetControl.placeholders().isEmpty())
+        return;
+    for (const QTextCursor &cur : mSnippetControl.placeholders()) {
+        QTextEdit::ExtraSelection selection;
+        selection.cursor = cur;
+        selection.format.setUnderlineColor(Qt::gray);
+        selection.format.setFontUnderline(true);
+        selection.format.setFontOverline(true);
+        selections << selection;
     }
 }
 

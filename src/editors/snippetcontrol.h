@@ -36,6 +36,12 @@ struct Snippet {
     QString body;
 };
 
+struct Placeholder {
+    int order = 0;          // ${N:...} -> N, 0 = exit marker
+    QTextCursor cursor1;    // anchor-1 or NULL when at the start of the document
+    QTextCursor cursor2;    // position (end)
+};
+
 class SnippetControl
 {
 public:
@@ -47,20 +53,16 @@ public:
     bool handleKey(QKeyEvent *e);
     bool isActive() const { return mEdit != nullptr; }
     void deactivate();
+    QList<QTextCursor> placeholders() const;
 
 private:
-    struct Placeholder {
-        int order = 0;      // ${N:...} -> N, 0 = exit marker
-        QTextCursor cursor;
-    };
-
     void parseAndInsert(const QString &body, int insertPos);
     void selectPlaceholder(int index);
 
-    QList<Snippet>     mSnippets;
-    QPlainTextEdit    *mEdit = nullptr;
+    QList<Snippet> mSnippets;
+    QPlainTextEdit *mEdit = nullptr;
     QList<Placeholder> mPlaceholders; // sorted by tab order, exit marker last
-    int                mCurrentIndex = 0;
+    int mCurrentIndex = 0;
 };
 
 } // namespace studio

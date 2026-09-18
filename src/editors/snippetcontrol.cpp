@@ -53,19 +53,19 @@ void SnippetControl::parseAndInsert(const QString &body, int insertPos)
             if (close < 0) { plain += body.at(i++); continue; }
             const QString inner = body.mid(i + 2, close - i - 2);
             const int colon = inner.indexOf(':');
-            RawPlaceholder ph;
+            RawPlaceholder rph;
             if (colon < 0) {
-                ph.order = inner.toInt();
-                ph.textStart = plain.size();
-                ph.textLen = 0;
+                rph.order = inner.toInt();
+                rph.textStart = plain.size();
+                rph.textLen = 0;
             } else {
-                ph.order = inner.left(colon).toInt();
-                ph.textStart = plain.size();
+                rph.order = inner.left(colon).toInt();
+                rph.textStart = plain.size();
                 const QString def = inner.mid(colon + 1);
-                ph.textLen = def.size();
+                rph.textLen = def.size();
                 plain += def;
             }
-            raw << ph;
+            raw << rph;
             i = close + 1;
         } else {
             plain += body.at(i++);
@@ -78,15 +78,18 @@ void SnippetControl::parseAndInsert(const QString &body, int insertPos)
 
     // Build placeholders sorted by order, exit marker (0) always at end
     QMap<int, Placeholder> ordered;
-    for (const RawPlaceholder &ph : std::as_const(raw)) {
-        Placeholder p;
-        p.order  = ph.order;
-        p.cursor = QTextCursor(mEdit->document());
-        p.cursor.setPosition(insertPos + ph.textStart);
-        if (ph.textLen > 0)
-            p.cursor.setPosition(insertPos + ph.textStart + ph.textLen, QTextCursor::KeepAnchor);
-        const int key = (ph.order == 0) ? INT_MAX : ph.order;
-        ordered.insert(key, p);
+    for (const RawPlaceholder &rph : std::as_const(raw)) {
+        Placeholder ph;
+        ph.order  = rph.order;
+        if (insertPos + rph.textStart > 0) {
+            ph.cursor1 = QTextCursor(mEdit->document());
+            ph.cursor1.setPosition(insertPos + rph.textStart - 1);
+        } else
+            ph.cursor1 = QTextCursor();
+        ph.cursor2 = QTextCursor(mEdit->document());
+        ph.cursor2.setPosition(insertPos + rph.textStart + rph.textLen);
+        const int key = (rph.order == 0) ? INT_MAX : rph.order;
+        ordered.insert(key, ph);
     }
     mPlaceholders = ordered.values();
 }
@@ -105,24 +108,22 @@ void SnippetControl::activateSnippet(QPlainTextEdit *edit, const QString &body, 
 
 void SnippetControl::selectPlaceholder(int index)
 {
-    if (!mEdit || index < 0 || index >= mPlaceholders.size()) {
+    if (!mEdit) {
         deactivate();
         return;
     }
+    if (index < 0) index = mPlaceholders.size() - 1;
+    if (index >= mPlaceholders.size()) index = 0;
     mCurrentIndex = index;
     const Placeholder &ph = mPlaceholders.at(index);
 
     QTextCursor cur = mEdit->textCursor();
-    if (ph.cursor.hasSelection()) {
-        mEdit->setTextCursor(ph.cursor);
-    } else {
-        cur.setPosition(ph.cursor.position());
-        mEdit->setTextCursor(cur);
-    }
-
-    // deactivate after placing cursor on exit marker
-    if (ph.order == 0)
-        deactivate();
+    if (ph.cursor1.isNull())
+        cur.setPosition(0);
+    else
+        cur.setPosition(ph.cursor1.position() + 1);
+    cur.setPosition(ph.cursor2.position(), QTextCursor::KeepAnchor);
+    mEdit->setTextCursor(cur);
 }
 
 bool SnippetControl::handleKey(QKeyEvent *e)
@@ -130,16 +131,9 @@ bool SnippetControl::handleKey(QKeyEvent *e)
     if (!isActive()) return false;
 
     switch (e->key()) {
+    case Qt::Key_Backtab:
     case Qt::Key_Tab:
-        if (e->modifiers() & Qt::ShiftModifier) {
-            if (mCurrentIndex > 0)
-                selectPlaceholder(mCurrentIndex - 1);
-        } else {
-            if (mCurrentIndex + 1 < mPlaceholders.size())
-                selectPlaceholder(mCurrentIndex + 1);
-            else
-                deactivate();
-        }
+        selectPlaceholder(mCurrentIndex + (e->modifiers() & Qt::ShiftModifier ? -1 : +1));
         return true;
     case Qt::Key_Enter:
     case Qt::Key_Return:
@@ -170,6 +164,21 @@ void SnippetControl::deactivate()
     mEdit = nullptr;
     mPlaceholders.clear();
     mCurrentIndex = 0;
+}
+
+QList<QTextCursor> SnippetControl::placeholders() const
+{
+    QList<QTextCursor> res;
+    for (const Placeholder &ph : std::as_const(mPlaceholders)) {
+        QTextCursor cur = QTextCursor(mEdit->document());
+        if (ph.cursor1.isNull())
+            cur.setPosition(0);
+        else
+            cur.setPosition(ph.cursor1.position() + 1);
+        cur.setPosition(ph.cursor2.position(), QTextCursor::KeepAnchor);
+        res << cur;
+    }
+    return res;
 }
 
 } // namespace studio

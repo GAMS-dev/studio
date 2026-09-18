@@ -613,6 +613,9 @@ void FilterCompleterModel::setTypeFilter(int completerTypeFilter, int subType, b
 bool FilterCompleterModel::lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const
 {
     int pat = source_left.data(Qt::UserRole).toInt() | source_right.data(Qt::UserRole).toInt();
+    if ((pat & ccSnippet) && pat != ccSnippet) {
+        return source_left.data(Qt::UserRole).toInt() == ccSnippet;
+    }
     if ((pat & ccSufName) && pat != ccSufName) {
         return source_left.data(Qt::UserRole).toInt() == ccSufName;
     }
@@ -982,7 +985,7 @@ void CodeCompleter::loadSnippets(const QString &snippetFile)
     "trigger": "for",
     "label": "for loop",
     "description": "GAMS for loop",
-    "body": "for (${1:i} = ${2:1} to ${3:10},\n    ${4:statement} ${1:i}\n);"
+    "body": "for (${1:i} = ${2:1} to ${3:10},\n    ${4:statement}\n);"
   },
   {
     "trigger": "loop",
@@ -1016,6 +1019,7 @@ void CodeCompleter::loadSnippets(const QString &snippetFile)
     QFile f(snippetFile);
     if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
         f.write(defaultJson);
+        DEB() << "Code snippets in " << snippetFile;
         f.close();
     }
 
@@ -1224,15 +1228,17 @@ void CodeCompleter::insertCurrent(bool equalPartOnly)
             cur.setPosition(cur.position() + trigger.length(), QTextCursor::KeepAnchor);
             cur.removeSelectedText();
             const int insertPos = cur.position();
-            cur.endEditBlock();
             mEdit->setTextCursor(cur);
-            if (!snippetBody.isEmpty() && mSnippetControl)
+            if (!snippetBody.isEmpty() && mSnippetControl) {
                 mSnippetControl->activateSnippet(mEdit, snippetBody, insertPos);
+                if (AbstractEdit *ce = ViewHelper::toAbstractEdit(mEdit))
+                    ce->updateExtraSelections();
+            }
         } else {
             cur.insertText(res);
-            cur.endEditBlock();
             mEdit->setTextCursor(cur);
         }
+        cur.endEditBlock();
     }
     if (hideIt) {
         mEdit->setFocus();

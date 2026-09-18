@@ -180,6 +180,7 @@ protected:
     virtual void extraSelSearchMatches(QList<QTextEdit::ExtraSelection> &selections);
     void extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections);
     void extraSelSearchSelection(QList<QTextEdit::ExtraSelection>& selections) override;
+    void extraSnippetSelection(QList<QTextEdit::ExtraSelection>& selections);
     QTimer &wordDelayTimer() { return mWordDelay; }
     QPoint toolTipPos(const QPoint &mousePos) override;
     QString getToolTipText(const QPoint &pos) override;
