@@ -639,15 +639,13 @@ void MainWindow::initWelcomePage()
     //    When the labels have been recalculated, the string that belongs to the label becomes invalid.
     connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
         PExProjectNode *project = mProjectRepo.findProject(projectPath);
-        if (!project && QFile::exists(projectPath)) {
+        if (!project && QFile::exists(projectPath))
             openProject(projectPath);
-            if (PExProjectNode *pro = mProjectRepo.findProject(projectPath)) {
-                if (pro->mainFile())
-                    openFile(pro->mainFile(), true, pro);
-                else
-                    openFileNode(pro);
-            }
-
+        if (PExProjectNode *pro = mProjectRepo.findProject(projectPath)) {
+            if (pro->mainFile())
+                openFile(pro->mainFile(), true, pro);
+            else
+                openFileNode(pro);
         }
     });
 
