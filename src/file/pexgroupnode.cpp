@@ -1469,12 +1469,9 @@ bool PExProjectNode::startComServer(gamscom::ComFeatures features)
         mComServer = new gamscom::Server(workDir(), this);
         mComServer->setVerbose(mVerbose);
         mComServer->setProfiler(mProfiler);
+        mContLineData->clearLinesMap();
+        mIncludes.clear();
         mProfiler->clear();
-        connect(mComServer, &gamscom::Server::connected, this, [this]() {
-            mContLineData->clearLinesMap();
-            mIncludes.clear();
-            if (mProfiler) mProfiler->clear();
-        });
         connect(mComServer, &gamscom::Server::signalMapDone, this, [this, features]() {
             if (features & gamscom::cfRunDebug) {
                 mContLineData->adjustBreakpoints();

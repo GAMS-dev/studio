@@ -191,6 +191,7 @@ private:
     QString mMainFilename;
     bool mVerbose = false;
     int mDelayCounter = 0;
+    int mSubRuns = 0;
     QList<IncludeLine*> mIncludes;
 
     static QSet<int> mPortsInUse;

@@ -55,6 +55,7 @@ Server::~Server()
 void Server::setProfiler(Profiler *profiler)
 {
     mProfiler = profiler;
+    mSubRuns = 0;
 }
 
 void Server::init()
@@ -165,6 +166,8 @@ void Server::newConnection()
     });
     DEB() << "GAMScom-Server: Socket connected to GAMS";
     setState(Prepare);
+    if (mSubRuns++)
+        emit signalMapDone();
     emit connected();
 }
 
@@ -273,7 +276,8 @@ Server::ParseResult Server::handleReply(const QString &replyData)
                 else
                     mIncludes.prepend(new IncludeLine(mIncludes.first()->parentFile));
             }
-            mProfiler->addIncludes(mIncludes);
+            if (mProfiler)
+                mProfiler->addIncludes(mIncludes);
         }
         calcSourceMetrics();
 
@@ -318,7 +322,6 @@ Server::ParseResult Server::handleReply(const QString &replyData)
         logMessage("GAMScom-Server: Unknown GAMS request: " + reList.join(", "));
         return prError;
     }
-
 
     return prOk;
 }
