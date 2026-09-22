@@ -156,8 +156,10 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
                 return mSym->formatValue(val, true);
             if (role == Qt::UserRole) { // raw value
                 if (mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
-                    int mask = 1 << mTvColHeaders[index.column()].last();
-                    if ((mask & mHeatedAttributes) == 0)
+                    Qt::Orientation attrOrient = attrOrientation();
+                    int section = attrOrient == Qt::Horizontal ? index.column() : index.row();
+                    int attrValIdx = attrValueForSection(section, attrOrient);
+                    if (attrValIdx >= 0 && ((1 << attrValIdx) & mHeatedAttributes) == 0)
                         return GMS_SV_UNDEF;
                 }
                 return val;

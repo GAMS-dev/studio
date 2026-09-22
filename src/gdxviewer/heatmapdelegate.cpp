@@ -97,8 +97,16 @@ void HeatmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
         if (val == GMS_SV_EPS) val = 0;
         int mod = mSymbol->numericalColumnCount();
         if (ok && mod) {
-            int col = index.model() == mSymbol ? index.column() - mSymbol->dim() : index.column();
-            int numBoundIndex = mod == 1 ? 0 : col % mod;
+            int numBoundIndex = 0;
+            if (mSymbol->type() == GMS_DT_VAR || mSymbol->type() == GMS_DT_EQU) {
+                if (index.model() == mSymbol) {
+                    numBoundIndex = (index.column() - mSymbol->dim()) % mod;
+                } else {
+                    Qt::Orientation attrOrient = mTvModel->attrOrientation();
+                    int section = attrOrient == Qt::Horizontal ? index.column() : index.row();
+                    numBoundIndex = qMax(0, mTvModel->attrValueForSection(section, attrOrient));
+                }
+            }
             if (!mSymbol->allEqual(numBoundIndex)) {
                 QStyleOptionViewItem opt = option;
                 initStyleOption(&opt, index);
