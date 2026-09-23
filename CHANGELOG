@@ -6,6 +6,7 @@ Version 1.25.7  *
 - Allow the LOG section to be smaller when docked below the main editors.
 - Switch the source to read-only mode when the text decoder detected errors.
 - Fixed the Welcome Page "Last Projects" list not opening projects that are already open.
+- Fixed Studio stuck when running with profiler and `solvelink=0`.
 
 Version 1.25.6
 ==================
