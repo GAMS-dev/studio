@@ -52,7 +52,7 @@ public:
     void activateSnippet(QPlainTextEdit *edit, const QString &body, int insertPos);
     bool handleKey(QKeyEvent *e);
     bool isActive() const { return mEdit != nullptr; }
-    void deactivate();
+    void deactivate(bool unselect);
     QList<QTextCursor> placeholders() const;
 
 private:

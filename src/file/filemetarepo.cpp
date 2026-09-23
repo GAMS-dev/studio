@@ -36,7 +36,7 @@ FileMetaRepo::FileMetaRepo(QObject *parent) : QObject(parent)
     mMissCheckTimer.setSingleShot(true);
     connect(&mMissCheckTimer, &QTimer::timeout, this, &FileMetaRepo::checkMissing);
     mSettings = Settings::settings();
-    mCompleter.setIconSize(QSize(10, 10));
+    mCompleter.setIconSize(QSize(7, 7));
 }
 
 FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const

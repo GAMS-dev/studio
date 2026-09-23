@@ -481,8 +481,8 @@ QVariant CodeCompleterModel::data(const QModelIndex &index, int role) const
     case Qt::ToolTipRole:
         return mDescription.at(mDescriptIndex.at(index.row()));
     case Qt::DecorationRole: {
-        QIcon icon = mType.lowerBound(index.row()).value() != ccSnippet ? Theme::icon(":/solid/inst-multi")
-                                                                        : Theme::icon(":/solid/inst-single");
+        QIcon icon = mType.lowerBound(index.row()).value() == ccSnippet ? Theme::icon(":/img/square-red")
+                                                                        : Theme::icon(":/img/square-gray");
         return icon;
     }
     case Qt::UserRole:
@@ -1047,6 +1047,11 @@ void CodeCompleter::loadSnippets(const QString &snippetFile)
     mModel->setSnippets(mSnippets);
 }
 
+void CodeCompleter::setSnippetControl(SnippetControl *control)
+{
+    mSnippetControl = control;
+}
+
 int CodeCompleter::findFilterRow(const QString &text, int top, int bot)
 {
     int ind = (top + bot) / 2;
@@ -1225,12 +1230,13 @@ void CodeCompleter::insertCurrent(bool equalPartOnly)
                 }
             }
             cur.setPosition(cur.position() - int(mFilterText.length()));
-            cur.setPosition(cur.position() + trigger.length(), QTextCursor::KeepAnchor);
+            cur.setPosition(cur.position() + mFilterText.length(), QTextCursor::KeepAnchor);
             cur.removeSelectedText();
             const int insertPos = cur.position();
             mEdit->setTextCursor(cur);
             if (!snippetBody.isEmpty() && mSnippetControl) {
                 mSnippetControl->activateSnippet(mEdit, snippetBody, insertPos);
+                suppressOpenBegin();
                 if (AbstractEdit *ce = ViewHelper::toAbstractEdit(mEdit))
                     ce->updateExtraSelections();
             }

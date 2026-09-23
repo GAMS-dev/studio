@@ -289,6 +289,7 @@ void CodeEdit::extendedRedo()
 
 void CodeEdit::extendedUndo()
 {
+    endSnippetControl();
     if (mBlockEdit) endBlockEdit();
     undo();
     updateBlockEditPos();
@@ -507,17 +508,14 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     if (mSnippetControl.isActive()) {
         if (mSnippetControl.handleKey(e)) {
             e->accept();
-            if (!mSnippetControl.isActive()){
+            if (!mSnippetControl.isActive())
                 updateExtraSelections();
-                clearSelection();
-            }
             return;
         }
     }
 
     if (mCompleter && mCompleter->isVisible()) {
-        mSnippetControl.deactivate();
-        updateExtraSelections();
+        endSnippetControl();
         QSet<int> completerKeys;
         completerKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
                       << Qt::Key_PageUp << Qt::Key_PageDown << Qt::Key_Enter << Qt::Key_Return << Qt::Key_Tab;
@@ -575,8 +573,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             QMouseEvent me(QEvent::MouseMove, mousePos, QCursor::pos(), Qt::NoButton, qApp->mouseButtons(), e->modifiers());
             mouseMoveEvent(&me);
         }
-        mSnippetControl.deactivate();
-        updateExtraSelections();
+        endSnippetControl();
         return;
     }
 
@@ -625,8 +622,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         }
     }
     if (e->isAccepted()) {
-        mSnippetControl.deactivate();
-        updateExtraSelections();
+        endSnippetControl();
         return;
     }
 
@@ -684,8 +680,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             e->accept();
         }
         if (e->isAccepted()) {
-            mSnippetControl.deactivate();
-            updateExtraSelections();
+            endSnippetControl();
             return;
         }
 
@@ -706,8 +701,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 
                 // keep smarttype on conditionally; e.g. for ((|)); qt creator does this, too
                 mSmartType = (mOpening.indexOf(a) == mClosing.indexOf(b));
-                mSnippetControl.deactivate();
-                updateExtraSelections();
+                endSnippetControl();
                 return;
             }
         }
@@ -1243,8 +1237,7 @@ int CodeEdit::textCursorColumn(QPoint mousePos)
 
 void CodeEdit::mousePressEvent(QMouseEvent* e)
 {
-    mSnippetControl.deactivate();
-    updateExtraSelections();
+    endSnippetControl();
     bool done = false;
     mSmartType = false; // exit on mouse navigation
     setContextMenuPolicy(Qt::DefaultContextMenu);
@@ -1905,18 +1898,27 @@ void CodeEdit::checkCompleterAutoOpen()
 
 bool CodeEdit::prepareCompleter()
 {
-    if (isReadOnly()) return false;
+    if (isReadOnly() || mSnippetControl.isActive()) return false;
     return mCompleter;
 }
 
 void CodeEdit::showCompleter()
 {
-    if (mCompleter) {
+    if (mCompleter && !mSnippetControl.isActive()) {
         if (mCompleter->codeEdit()) mCompleter->disconnect();
         mCompleter->setCodeEdit(this);
         connect(mCompleter, &CodeCompleter::scanSyntax, this, &CodeEdit::scanSyntax);
         connect(mCompleter, &CodeCompleter::syntaxFlagData, this, &CodeEdit::syntaxFlagData);
         mCompleter->ShowIfData();
+    }
+}
+
+void CodeEdit::endSnippetControl()
+{
+    if (mSnippetControl.isActive()) {
+        mSnippetControl.deactivate(true);
+        updateExtraSelections();
+        mCompleter->suppressOpenStop();
     }
 }
 
@@ -2685,7 +2687,7 @@ void CodeEdit::handleTextChanged()
             showCompleter();
         else
             mCompleterTimer.start(500ms);
-    } else if (mCompleter) {
+    } else if (mCompleter && !mSnippetControl.isActive()) {
         mCompleter->suppressOpenStop();
     }
 }

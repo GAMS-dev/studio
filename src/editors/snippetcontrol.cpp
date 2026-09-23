@@ -100,7 +100,7 @@ void SnippetControl::activateSnippet(QPlainTextEdit *edit, const QString &body, 
     mCurrentIndex = 0;
     parseAndInsert(body, insertPos);
     if (mPlaceholders.isEmpty()) {
-        deactivate();
+        deactivate(false);
         return;
     }
     selectPlaceholder(0);
@@ -109,7 +109,7 @@ void SnippetControl::activateSnippet(QPlainTextEdit *edit, const QString &body, 
 void SnippetControl::selectPlaceholder(int index)
 {
     if (!mEdit) {
-        deactivate();
+        deactivate(false);
         return;
     }
     if (index < 0) index = mPlaceholders.size() - 1;
@@ -146,12 +146,13 @@ bool SnippetControl::handleKey(QKeyEvent *e)
         }
         // no exit marker — place cursor after last placeholder and deactivate
         selectPlaceholder(mPlaceholders.size() - 1);
-        deactivate();
+        deactivate(false);
         return true;
-
     case Qt::Key_Escape:
-        deactivate();
+        deactivate(true);
         return true;
+    case Qt::Key_Space:
+        return (e->modifiers() & Qt::ControlModifier);
 
     default:
         break;
@@ -159,8 +160,15 @@ bool SnippetControl::handleKey(QKeyEvent *e)
     return false;
 }
 
-void SnippetControl::deactivate()
+void SnippetControl::deactivate(bool unselect)
 {
+    if (mEdit && unselect) {
+        QTextCursor cur = mEdit->textCursor();
+        if (cur.hasSelection()) {
+            cur.clearSelection();
+            mEdit->setTextCursor(cur);
+        }
+    }
     mEdit = nullptr;
     mPlaceholders.clear();
     mCurrentIndex = 0;

@@ -269,6 +269,7 @@ private:
     void checkCompleterAutoOpen();
     bool prepareCompleter();
     void showCompleter();
+    void endSnippetControl();
     QStringList tabsToSpaces(const QStringList &source, int indent, int tabSize);
 
     void rawKeyPressEvent(QKeyEvent *e);
