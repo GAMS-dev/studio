@@ -70,7 +70,10 @@ void CodeCompleterModel::setSnippets(const QList<Snippet> &snippets)
 
     for (const Snippet &s : snippets) {
         mData << s.trigger;
-        const QString desc = s.label + (s.description.isEmpty() ? QString() : ": " + s.description);
+        const QString desc = (s.trigger.size() && s.trigger.last(1) >= '0' && s.trigger.last(1) <= '9'
+                                  ? s.trigger.left(s.trigger.size() - 1)
+                                  : s.trigger)
+                           + (s.description.isEmpty() ? QString() : ": " + s.description);
         mDescription << desc;
         mDescriptIndex << int(mDescription.size()) - 1;
     }
@@ -475,7 +478,12 @@ QVariant CodeCompleterModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid()) return QVariant();
     switch (role) {
+    case Qt::EditRole:
+        return mCasing == caseLower ? mData.at(index.row()).toLower()
+               : mCasing == caseUpper ? mData.at(index.row()).toUpper() : mData.at(index.row());
     case Qt::DisplayRole:
+        if (mType.lowerBound(index.row()).value() == ccSnippet)
+            return mDescription.at(mDescriptIndex.at(index.row()));
         return mCasing == caseLower ? mData.at(index.row()).toLower()
                                     : mCasing == caseUpper ? mData.at(index.row()).toUpper() : mData.at(index.row());
     case Qt::ToolTipRole:
@@ -546,7 +554,7 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
     if (type & ccSufName)
         return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     if (!test(type, mTypeFilter)) return false;
-    QString text = sourceModel()->data(index, Qt::DisplayRole).toString();
+    QString text = sourceModel()->data(index, Qt::EditRole).toString();
     if (type & cc_SubDco || type & ccExec || type & ccExecT || type & ccAbort) {
         if (text.startsWith('.') != mNeedDot)
             return false;
@@ -982,33 +990,73 @@ void CodeCompleter::loadSnippets(const QString &snippetFile)
 {
     static const char *defaultJson = R"([
   {
+    "trigger": "..",
+    "description": "equation",
+    "body": "${1:eq}.. ${2:stm1} =e= ${3:stm2};"
+  },
+  {
+    "trigger": "Set1",
+    "description": "extended",
+    "body": "Set ${1:sym} '${2:text}' /\n   ${3:e1} '${4:text1}',\n   ${5:e2} '${6:text2}' /;"
+  },
+  {
+    "trigger": "Set2",
+    "description": "short",
+    "body": "Set ${1:sym} /\n   ${2:e1},\n   ${3:e2} /;"
+  },
+  {
+    "trigger": "Variable",
+    "description": "",
+    "body": "Variable\n   ${1:v1}(${2:i1})\n   ${3:v2}(${4:i2});"
+  },
+  {
+    "trigger": "Parameter",
+    "description": "",
+    "body": "Parameter\n   ${1:v1}(${2:i1})\n   ${3:v2}(${4:i2});"
+  },
+  {
+    "trigger": "Equation",
+    "description": "",
+    "body": "Equation\n   ${1:eq1} '${2:text1}'\n   ${3:eq2} '${4:text2}';"
+  },
+  {
+    "trigger": "Table",
+    "description": "",
+    "body": "Table ${1:t1}(${2:s1},${3:s2}) '${4:text}'\n        ${5:s1h1} ${6:s1h2}\n   ${7:s2h1}  ${8:1x1}  ${9:1x2}\n   ${10:s2h2}  ${11:2x1}  ${12:2x2};"
+  },
+  {
     "trigger": "for",
-    "label": "for loop",
-    "description": "GAMS for loop",
-    "body": "for (${1:i} = ${2:1} to ${3:10},\n    ${4:statement}\n);"
+    "description": "loop",
+    "body": "for (${1:i} = ${2:1} to ${3:10},\n   ${4:statement}\n);"
   },
   {
     "trigger": "loop",
-    "label": "loop statement",
-    "description": "GAMS loop over a set",
-    "body": "loop (${1:set},\n    ${2:statement}\n);"
+    "description": "loop over a set",
+    "body": "loop (${1:set},\n   ${2:statement}\n);"
   },
   {
     "trigger": "if",
-    "label": "if statement",
-    "description": "GAMS if statement",
-    "body": "if (${1:condition},\n    ${2:statement}\n);"
+    "description": "",
+    "body": "if (${1:condition},\n   ${2:statement}\n);"
   },
   {
     "trigger": "while",
-    "label": "while loop",
-    "description": "GAMS while loop",
-    "body": "while (${1:condition},\n    ${2:statement}\n);"
+    "description": "loop",
+    "body": "while (${1:condition},\n   ${2:statement}\n);"
+  },
+  {
+    "trigger": "embeddedCode",
+    "description": "",
+    "body": "embeddedCode ${1:python}:\n   ${2:statement}\nendEmbeddedCode"
+  },
+  {
+    "trigger": "$onEmbeddedCode",
+    "description": "",
+    "body": "$onEmbeddedCode ${1:python}:\n   ${2:statement}\n$offEmbeddedCode"
   },
   {
     "trigger": "solve",
-    "label": "solve statement",
-    "description": "GAMS solve",
+    "description": "",
     "body": "solve ${1:modelName} using ${2:lp} minimizing ${3:objVar};"
   }
 ])";
@@ -1034,7 +1082,6 @@ void CodeCompleter::loadSnippets(const QString &snippetFile)
             const QJsonObject obj = v.toObject();
             Snippet s;
             s.trigger     = obj.value("trigger").toString();
-            s.label       = obj.value("label").toString();
             s.description = obj.value("description").toString();
             s.body        = obj.value("body").toString();
             if (!s.trigger.isEmpty() && !s.body.isEmpty())
@@ -1221,7 +1268,7 @@ void CodeCompleter::insertCurrent(bool equalPartOnly)
         const bool isSnippet = (itemType & ccSnippet) && !mSnippets.isEmpty();
 
         if (isSnippet) {
-            const QString trigger = model()->data(currentIndex(), Qt::DisplayRole).toString();
+            const QString trigger = model()->data(currentIndex(), Qt::EditRole).toString();
             QString snippetBody;
             for (const Snippet &s : std::as_const(mSnippets)) {
                 if (s.trigger.compare(trigger, Qt::CaseInsensitive) == 0) {

@@ -31,7 +31,6 @@ namespace studio {
 
 struct Snippet {
     QString trigger;
-    QString label;
     QString description;
     QString body;
 };
