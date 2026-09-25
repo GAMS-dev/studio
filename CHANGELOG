@@ -17,6 +17,16 @@ Version 1.26.0  *
 - Highlighting of search results in the GDX Viewer is now delayed until the search is initiated.
 - Enabled Table View mode in the GDX Viewer for 1-dimensional symbols.
 
+Version 1.25.7
+==================
+- Fixed a crash when an open GDX file changed externally.
+- Fixed the state of a GDX file and its symbols not being restored correctly after a GDX file reload.
+- Ensure that the Studio is below the top border of the screen.
+- Allow the LOG section to be smaller when docked below the main editors.
+- Switch the source to read-only mode when the text decoder detected errors.
+- Fixed the Welcome Page "Last Projects" list not opening projects that are already open.
+- Fixed Studio stuck when running with profiler and `solvelink=0`.
+
 Version 1.25.6
 ==================
 - Upgrade to Qt 6.11.2

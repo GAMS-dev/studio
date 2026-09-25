@@ -75,6 +75,7 @@ public:
 
     void applyDefaults();
     QList<bool> showAttributes();
+    bool stateInitialized() const;
 
     void setSymInfo(QString symName, QString text);
     void setHeaderControlsVisible(bool visible);
@@ -181,6 +182,9 @@ private:
     bool mDragInProgress = false;
     bool mAutoResizeLV;
     bool mAutoResizeTV;
+
+    // set once applyState()/applyDefaults() has run for this view instance
+    bool mStateInitialized = false;
 
     QRegularExpression mSearchRegEx;
 };

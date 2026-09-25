@@ -639,15 +639,13 @@ void MainWindow::initWelcomePage()
     //    When the labels have been recalculated, the string that belongs to the label becomes invalid.
     connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
         PExProjectNode *project = mProjectRepo.findProject(projectPath);
-        if (!project && QFile::exists(projectPath)) {
+        if (!project && QFile::exists(projectPath))
             openProject(projectPath);
-            if (PExProjectNode *pro = mProjectRepo.findProject(projectPath)) {
-                if (pro->mainFile())
-                    openFile(pro->mainFile(), true, pro);
-                else
-                    openFileNode(pro);
-            }
-
+        if (PExProjectNode *pro = mProjectRepo.findProject(projectPath)) {
+            if (pro->mainFile())
+                openFile(pro->mainFile(), true, pro);
+            else
+                openFileNode(pro);
         }
     });
 
@@ -964,6 +962,10 @@ void MainWindow::initNavigator()
 void MainWindow::updateCanSave(QWidget* current)
 {
     bool activateSave = (current && current != mWp);
+    if (FileMeta *meta = mFileMetaRepo.fileMeta(current)) {
+        if (meta->isReadOnly() || meta->encodingError())
+            activateSave = false;
+    }
     ui->actionSave->setEnabled(activateSave);
     ui->actionSave_As->setEnabled(activateSave);
 }
@@ -2053,9 +2055,9 @@ void MainWindow::on_actionSave_triggered()
     FileMeta* fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
     if (!fm) return;
 
-    if (fm->isModified() && !fm->isReadOnly())
+    if (fm->isModified() && !fm->isReadOnly() && !fm->encodingError())
         fm->save();
-    else if (fm->isReadOnly())
+    else if (fm->isReadOnly() || fm->encodingError())
         on_actionSave_As_triggered();
 
 }
@@ -2302,6 +2304,7 @@ void MainWindow::codecReload(QAction *action)
             if (project)
                 mRecent.project()->setNeedSave();
             updateMenuToEncoding(fm->encoding());
+            updateCanSave(focusWidget());
             updateStatusFile();
         }
         updateAndSaveSettings();
@@ -2350,7 +2353,7 @@ void MainWindow::activeMainTabChanged(int index)
         bool canEncode = true;
         bool canWrite = true;
         if (AbstractEdit* edit = ViewHelper::toAbstractEdit(editWidget)) {
-            canEncode = !edit->isReadOnly();
+            canEncode = !node->file()->isReadOnly();
             canWrite = !edit->isReadOnly();
         } else if (ViewHelper::toTextView(editWidget)) {
             canWrite = false;
@@ -3299,11 +3302,9 @@ void MainWindow::updateAndSaveSettings()
     if (mShutDown) return;
     Settings *settings = Settings::settings();
 
-    QScreen *screen = window()->screen();
-    QSize scrDiff = screen->availableSize() - frameSize();
-    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
+    if (!isMaximized() && !isFullScreen()) {
         settings->setSize(skWinSize, size());
-        settings->setPoint(skWinPos, geometry().topLeft());
+        settings->setPoint(skWinPos, frameGeometry().topLeft());
     }
     settings->setByteArray(skWinState, saveState());
     settings->setBool(skWinMaximized, isMaximized() || (mMaximizedBeforeFullScreen && isFullScreen()));
@@ -3412,9 +3413,9 @@ void MainWindow::restoreFromSettings()
 
     mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
     if (settings->toBool(skWinFullScreen)) {
-        setWindowState(windowState() ^ Qt::WindowFullScreen);
+        setWindowState(windowState() | Qt::WindowFullScreen);
     } else if (mMaximizedBeforeFullScreen) {
-        setWindowState(windowState() ^ Qt::WindowMaximized);
+        setWindowState(windowState() | Qt::WindowMaximized);
     }
     ui->actionFull_Screen->setChecked(settings->toBool(skWinFullScreen));
     restoreState(settings->toByteArray(skWinState));
@@ -5425,30 +5426,45 @@ void MainWindow::rehighlightOpenFiles()
 
 void MainWindow::ensureSizeAndInScreen()
 {
+    if (isMaximized() || isFullScreen()) return;
+
     QRect appGeo = geometry();
     appGeo.setSize(mWindowSize);
     QRect appFGeo = frameGeometry();
-    QMargins margins(appGeo.left() - appFGeo.left(), appGeo.top() - appFGeo.top(),
-                     appFGeo.right() - appGeo.right(), appFGeo.bottom() - appGeo.bottom());
-    QRect screenGeo = QGuiApplication::primaryScreen()->availableVirtualGeometry();
-    QList<QRect> frames;
+    QMargins margins(appGeo.left()    - appFGeo.left(),
+                     appGeo.top()     - appFGeo.top(),
+                     appFGeo.right()  - appGeo.right(),
+                     appFGeo.bottom() - appGeo.bottom());
+    if (margins.top() == 0) {
+        const qreal dpr = screen() ? screen()->devicePixelRatio() : 1.0;
+        margins.setTop(qRound(40 * dpr));
+    }
+
+    const qint64 appArea = appGeo.width() * appGeo.height();
+
+    QRect  bestScreen;
+    qint64 bestArea = 0;
     const auto screens = QGuiApplication::screens();
     for (QScreen *screen : screens) {
         QRect rect = screen->availableGeometry();
         QRect sect = rect.intersected(appGeo);
-        if (100*sect.height()*sect.width() / (appGeo.height()*appGeo.width()) > 3)
-            frames << rect;
+        qint64 sectArea = sect.width() * sect.height();
+        if (appArea > 0 && sectArea * 100 / appArea > 3 && sectArea > bestArea) {
+            bestArea   = sectArea;
+            bestScreen = rect;
+        }
     }
-    if (frames.size() == 1)
-        screenGeo = frames.at(0);
+
+    QRect screenGeo = bestScreen.isValid() ? bestScreen : QGuiApplication::primaryScreen()->availableGeometry();
     screenGeo -= margins;
 
-    if (appGeo.width() > screenGeo.width()) appGeo.setWidth(screenGeo.width());
+    if (appGeo.width()  > screenGeo.width())  appGeo.setWidth(screenGeo.width());
     if (appGeo.height() > screenGeo.height()) appGeo.setHeight(screenGeo.height());
-    if (appGeo.x() < screenGeo.x()) appGeo.moveLeft(screenGeo.x());
-    if (appGeo.y() < screenGeo.y()) appGeo.moveTop(screenGeo.y());
-    if (appGeo.right() > screenGeo.right()) appGeo.moveLeft(screenGeo.right()-appGeo.width());
-    if (appGeo.bottom() > screenGeo.bottom()) appGeo.moveTop(screenGeo.bottom()-appGeo.height());
+    if (appGeo.x()      < screenGeo.x())      appGeo.moveLeft(screenGeo.x());
+    if (appGeo.y()      < screenGeo.y())      appGeo.moveTop(screenGeo.y());
+    if (appGeo.right()  > screenGeo.right())  appGeo.moveLeft(screenGeo.right() - appGeo.width());
+    if (appGeo.bottom() > screenGeo.bottom()) appGeo.moveTop(screenGeo.bottom() - appGeo.height());
+
     if (appGeo != geometry()) setGeometry(appGeo);
 }
 
@@ -5624,8 +5640,7 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         connect(tv, &TextView::continueSearchPressed, this, &MainWindow::continueSearch);
     }
     if (ViewHelper::toCodeEdit(edit)) {
-        AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
-        if (!ae->isReadOnly()) {
+        if (!fileMeta->isReadOnly()) {
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
             connect(fileMeta, &FileMeta::modifiedChanged, this, &MainWindow::fileModifiedChanged, Qt::UniqueConnection);
             connect(fileMeta, &FileMeta::getProfilerMaxCompoundValues, this, [this]

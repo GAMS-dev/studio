@@ -505,6 +505,12 @@ void GdxSymbolView::applyDefaults()
     mRestoreSqZeroes = Settings::settings()->toBool(SettingsKey::skGdxDefaultRestoreSqueezeZeroes);
     updateNumericalPrecision();
     updateHeatmapButton();
+    mStateInitialized = true;
+}
+
+bool GdxSymbolView::stateInitialized() const
+{
+    return mStateInitialized;
 }
 
 QList<bool> GdxSymbolView::showAttributes()
@@ -1065,6 +1071,7 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     ui->tbHeatmap->setChecked(symViewState->showHeatmap());
     ui->cbHeatmapFilter->setChecked(symViewState->heatmapUseFilter());
     updateHeatmapButton();
+    mStateInitialized = true;
 }
 
 void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)

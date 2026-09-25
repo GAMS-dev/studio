@@ -316,6 +316,7 @@ void FileMeta::setKind(FileKind kind)
 {
     if (kind == FileKind::TxtRO && mData.size < 1024*1024) {
         mData.type = &FileType::from(FileKind::Txt);
+        mForceReadOnly = true;
         setReadOnly(true);
     } else {
         mData.type = &FileType::from(kind);
@@ -617,8 +618,6 @@ void FileMeta::addEditor(QWidget *edit)
         connect(this, &FileMeta::saveProjects, mFileRepo, &FileMetaRepo::saveProjects, Qt::UniqueConnection);
     } else if (option::SolverOptionEditor* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
         connect(soEdit, &option::SolverOptionEditor::modificationChanged, this, &FileMeta::modificationChanged);
-    } else if (connect::ConnectEditor* gcEdit = ViewHelper::toGamsConnectEditor(edit)) {
-        connect(gcEdit, &connect::ConnectEditor::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
         connect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (efi::EfiEditor* efi = ViewHelper::toEfiEditor(edit)) {
@@ -681,6 +680,34 @@ bool FileMeta::initFoldedBlocks(QList<int> startLines)
             edit->toggleFolding(block);
     }
     return true;
+}
+
+void FileMeta::updateReadOnly()
+{
+    bool isRO = mForceReadOnly || mEncodingError
+                || kind() == FileKind::TxtRO
+                || kind() == FileKind::Lst
+                || kind() == FileKind::Lxi
+                || kind() == FileKind::Gdx
+                || kind() == FileKind::Ref
+                || kind() == FileKind::Log;
+    if (document()) { // There is a text editor
+        for (QWidget *wid : editors()) {
+            AbstractEdit *aEdit = ViewHelper::toAbstractEdit(wid);
+            if (aEdit) {
+                // Qt::TextEditable is sufficient (setReadOnly not necessary)
+                aEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard |
+                                               (isRO ? Qt::NoTextInteraction : Qt::TextEditable));
+                QTextCursor cursor = aEdit->textCursor();
+                aEdit->setTextCursor(cursor);
+            }
+        }
+    }
+}
+
+bool FileMeta::encodingError() const
+{
+    return mEncodingError;
 }
 
 void FileMeta::setFoldedBlocks(const QList<int> &foldedBlocks)
@@ -895,12 +922,12 @@ void FileMeta::load(QString encoding, bool init)
         if (decoder.isValid()) {
             QString msg;
             QString text = decoder.decode(data);
-            if (decoder.hasError()) {
+            mEncodingError = decoder.hasError();
+            if (mEncodingError) {
                 msg = "Errors when decoding with '" + encoding + "'";
                 if (auto encode = decoder.encodingForData(data))
                     msg += " Decoding with '" + QString(QStringConverter::nameForEncoding(*encode)) + "' might work";
                     //decoder = QStringDecoder(*encode);
-
             }
             QList<QPoint> edPos = getEditPositions();
             mLoading = true;
@@ -909,12 +936,18 @@ void FileMeta::load(QString encoding, bool init)
             if (mHighlighter) mHighlighter->resume();
             setEditPositions(edPos);
             mLoading = false;
-            if (!msg.isEmpty()) DEB() << msg;
+            if (!msg.isEmpty()) {
+                SysLogLocator::systemLog()->append("Encoding '" + encoding + "' couldn't decode all characters."
+                                                   + " Set read-only mode for " + mLocation, LogMsgType::Error);
+            }
         } else {
-            SysLogLocator::systemLog()->append("Invalid encoding " + encoding, LogMsgType::Info);
+            SysLogLocator::systemLog()->append("Invalid encoding '" + encoding + "' Set read-only mode for " + mLocation
+                                               , LogMsgType::Error);
+            mEncodingError = true;
         }
         file.close();
         setModified(false);
+        updateReadOnly();
         return;
     }
     return;
@@ -927,6 +960,7 @@ void FileMeta::load(QString encoding, bool init)
 ///
 bool FileMeta::save(const QString &newLocation)
 {
+    if (mEncodingError) return false;
     if (!newLocation.isEmpty())
         DEB() << "save " << mLocation << "  to  " << newLocation;
     QString location = newLocation.isEmpty() ? mLocation : newLocation;
@@ -1205,8 +1239,6 @@ bool FileMeta::isModified() const
 
 bool FileMeta::isReadOnly() const
 {
-    AbstractEdit* edit = mEditors.isEmpty() ? nullptr : ViewHelper::toAbstractEdit(mEditors.first());
-    if (edit) return edit->isReadOnly();
     if (mForceReadOnly) return true;
 
     if (kind() == FileKind::TxtRO
@@ -1225,15 +1257,7 @@ void FileMeta::setReadOnly(bool readOnly)
     if (mForceReadOnly == readOnly) return;
     // This adds a readonly to usually editable editors (currently only for CodeEdit)
     mForceReadOnly = readOnly;
-    if (document()) { // There is a text editor
-        for (QWidget *wid : editors()) {
-            AbstractEdit *aEdit = ViewHelper::toAbstractEdit(wid);
-            if (aEdit) {
-                aEdit->setReadOnly(mForceReadOnly);
-                aEdit->setTextInteractionFlags(aEdit->textInteractionFlags() | Qt::TextSelectableByKeyboard);
-            }
-        }
-    }
+    updateReadOnly();
 }
 
 bool FileMeta::isAutoReload() const
@@ -1438,8 +1462,8 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
         codeEdit = new CodeEdit(parent);
-        codeEdit->setReadOnly(mForceReadOnly);
-        codeEdit->setTextInteractionFlags(codeEdit->textInteractionFlags() | Qt::TextSelectableByKeyboard);
+        codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard |
+                                          (mForceReadOnly ? Qt::NoTextInteraction : Qt::TextEditable));
 
         edit = (kind() == FileKind::Txt || kind() == FileKind::Efi) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
                                                                     : ViewHelper::initEditorType(codeEdit);
@@ -1448,8 +1472,9 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
         edit->setTabChangesFocus(false);
         res = edit;
         if (kind() == FileKind::Log) {
-            edit->setReadOnly(true);
+            mForceReadOnly = true;
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+
         } else {
             connect(codeEdit, &CodeEdit::hasHRef, project, &PExProjectNode::hasHRef);
             connect(codeEdit, &CodeEdit::takeCheckedPaths, project, &PExProjectNode::takeCheckedPaths);
@@ -1525,7 +1550,6 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
                             ce->updateProfilerWidth();
                 }
             });
-
             connect(codeEdit, &CodeEdit::getProfileShort, this, [this](int line, qreal &timeSec, size_t &memory, size_t &rows, size_t &steps) {
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
                 if (!pro || !pro->profiler()) return;
@@ -1537,7 +1561,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
                 if (contLines.isEmpty()) {
                     contLines << pro->profiler()->continuousLine(mLocation, line);
                 }
-                for (int line : contLines)
+                for (int line : std::as_const(contLines))
                     pro->profiler()->getProfile(line, timeSec, memory, rows, steps);
             });
             connect(codeEdit, &CodeEdit::getProfileLong, this, [this](int line, QStringList &profileData) {

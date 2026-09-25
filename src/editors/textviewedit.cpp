@@ -36,7 +36,7 @@ TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
     : CodeEdit(parent), mMapper(mapper), mSettings(Settings::settings())
 {
     setMarks(nullptr);
-    setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+    setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
     setAllowBlockEdit(false);
     setLineWrapMode(QPlainTextEdit::NoWrap);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

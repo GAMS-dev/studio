@@ -55,6 +55,7 @@ Server::~Server()
 void Server::setProfiler(Profiler *profiler)
 {
     mProfiler = profiler;
+    mSubRuns = 0;
 }
 
 void Server::init()
@@ -117,11 +118,12 @@ void Server::stopAndDelete()
 {
     setState(Finished);
     deleteSocket();
-    if (mPortsInUse.contains(mServer->serverPort()))
+    if (mServer) {
         mPortsInUse.remove(mServer->serverPort());
-    if (isListening())
         mServer->close();
-    mServer->deleteLater();
+        mServer->deleteLater();
+        mServer = nullptr;
+    }
     qDeleteAll(mIncludes);
     mIncludes.clear();
 }
@@ -164,6 +166,8 @@ void Server::newConnection()
     });
     DEB() << "GAMScom-Server: Socket connected to GAMS";
     setState(Prepare);
+    if (mSubRuns++)
+        emit signalMapDone();
     emit connected();
 }
 
@@ -272,7 +276,8 @@ Server::ParseResult Server::handleReply(const QString &replyData)
                 else
                     mIncludes.prepend(new IncludeLine(mIncludes.first()->parentFile));
             }
-            mProfiler->addIncludes(mIncludes);
+            if (mProfiler)
+                mProfiler->addIncludes(mIncludes);
         }
         calcSourceMetrics();
 
@@ -317,7 +322,6 @@ Server::ParseResult Server::handleReply(const QString &replyData)
         logMessage("GAMScom-Server: Unknown GAMS request: " + reList.join(", "));
         return prError;
     }
-
 
     return prOk;
 }
@@ -557,11 +561,10 @@ void Server::calcSourceMetrics()
     QMap<QString, int> lineCountRaw;
     for (auto itSize = lineCount.constBegin(); itSize != lineCount.constEnd(); ++itSize) {
         lineCountRaw.insert(itSize.key(), itSize.value());
-        for (auto itInc = incLines.constBegin(); itInc != incLines.constEnd(); ++itInc) {
-            if (itSize.key() == itInc.key()) {
-                for (auto itLine = itInc.value().constBegin(); itLine != itInc.value().constEnd(); ++itLine) {
-                    lineCountRaw[itInc.key()] -= lineCount.value(itLine.value());
-                }
+        auto itInc = incLines.constFind(itSize.key());
+        if (itInc != incLines.constEnd()) {
+            for (auto itLine = itInc.value().constBegin(); itLine != itInc.value().constEnd(); ++itLine) {
+                lineCountRaw[itInc.key()] -= lineCount.value(itLine.value());
             }
         }
     }
@@ -589,7 +592,6 @@ void Server::calcSourceMetrics()
             contents.insert(itSize.key(), readFile(itSize.key(), itSize.value()));
             iLine.insert(itSize.key(), 0);
         }
-
         // Create continuous line content
         // QString main;
         // for (int i = mIncludes.size()-1; i >= 0; --i) {
@@ -654,11 +656,6 @@ void Server::sendPause()
 void Server::sendWriteGdx(const QString &gdxFile)
 {
     callProcedure(writeGDX, {gdxFile});
-}
-
-bool Server::isListening()
-{
-    return mServer && mServer->isListening();
 }
 
 quint16 Server::port()

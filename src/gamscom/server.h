@@ -122,7 +122,6 @@ public:
     ~Server() override;
     void setProfiler(Profiler *profiler);
     DebugState state() const;
-    bool isListening();
     quint16 port();
     void setMain(const QString &mainFilename);
     bool start(ComFeatures features);
@@ -192,6 +191,7 @@ private:
     QString mMainFilename;
     bool mVerbose = false;
     int mDelayCounter = 0;
+    int mSubRuns = 0;
     QList<IncludeLine*> mIncludes;
 
     static QSet<int> mPortsInUse;

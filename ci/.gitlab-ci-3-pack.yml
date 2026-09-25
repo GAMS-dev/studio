@@ -1,23 +1,6 @@
-# =========================================================================
-# 1. SINGLE JOB - stoping the environment deletes the artifacts
-# =========================================================================
-
-stop_all_platforms:
-  stage: .post
-  allow_failure: true
-  environment:
-    name: mr-cleanup/$CI_COMMIT_REF_SLUG
-    action: stop
-  script:
-    - echo "MR closed or merged. Deleting all platform artifacts..."
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: manual
-
-
-# =========================================================================
-# 2. DEFINE LIFECYCLE TEMPLATES (Controls artifact expiration)
-# =========================================================================
+# =============================================================================
+# 1. DEFINE LIFECYCLE TEMPLATES (Controls artifact expiration)
+# =============================================================================
 
 .rules-tags:
   artifacts:
@@ -27,9 +10,8 @@ stop_all_platforms:
 
 .rules-branches:
   artifacts:
-    expire_in: 1 week
+    expire_in: 2 days
   rules:
-    # Exclude all tags completely
     - if: '$CI_COMMIT_TAG'
       when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -38,9 +20,9 @@ stop_all_platforms:
     - if: '$CI_COMMIT_BRANCH'
 
 
-# =========================================================================
-# 3. DEFINE ENVIRONMENT BASE JOBS FOR PACK
-# =========================================================================
+# =============================================================================
+# 2. DEFINE BASE JOBS FOR PACK
+# =============================================================================
 
 .base-pack-deg:
   stage: pack
@@ -107,9 +89,6 @@ stop_all_platforms:
         echo "Stapling failed"
         exit 1
       fi
-  environment:
-    name: mr-cleanup/$CI_COMMIT_REF_SLUG
-    on_stop: stop_all_platforms
   artifacts:
     name: "GAMS_Studio-deg-x86_64"
     paths: ['GAMS_Studio-deg-x86_64.dmg']
@@ -180,9 +159,6 @@ stop_all_platforms:
         echo "Stapling failed"
         exit 1
       fi
-  environment:
-    name: mr-cleanup/$CI_COMMIT_REF_SLUG
-    on_stop: stop_all_platforms
   artifacts:
     name: "GAMS_Studio-dac-arm_64"
     paths: ['GAMS_Studio-dac-arm_64.dmg']
@@ -221,9 +197,6 @@ stop_all_platforms:
   - linuxdeploy-plugin-appimage-x86_64.AppImage --appdir=appdir
   # rename the AppImage... for MR artifact exposure
   - mv GAMS_Studio-${LINUXDEPLOY_OUTPUT_VERSION}-x86_64.AppImage GAMS_Studio-leg-x86_64.AppImage
-  environment:
-    name: mr-cleanup/$CI_COMMIT_REF_SLUG
-    on_stop: stop_all_platforms
   artifacts:
     name: "GAMS_Studio-leg-x86_64"
     paths: ['GAMS_Studio-leg-x86_64.AppImage']
@@ -267,18 +240,15 @@ stop_all_platforms:
     # zip studio directory... for MR artifact exposure
     - cd ..
     - Compress-Archive -Path studio -DestinationPath GAMS_Studio-wei-x86_64.zip
-  environment:
-    name: mr-cleanup/$CI_COMMIT_REF_SLUG
-    on_stop: stop_all_platforms
   artifacts:
     name: "GAMS_Studio-wei-x86_64"
     paths: ['GAMS_Studio-wei-x86_64.zip']
     expose_as: 'GAMS_Studio-wei-x86_64'
 
 
-# =========================================================================
-# 4. GENERATE TARGET JOBS (Combines platforms with the target rules)
-# =========================================================================
+# =============================================================================
+# 3. GENERATE TARGET JOBS (Combines platforms with the target rules)
+# =============================================================================
 
 # --- MACOS x86 (deg) ---
 pack-deg-tags:

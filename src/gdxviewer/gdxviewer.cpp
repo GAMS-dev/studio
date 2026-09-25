@@ -93,18 +93,18 @@ void GdxViewer::updateSelectedSymbol(const QItemSelection &selected, const QItem
     Q_UNUSED(selected)
     QModelIndexList rows = ui->tvSymbols->selectionModel()->selectedRows();
     if (rows.size() > 0) {
-        int selectedIdx = mSymbolTableProxyModel->mapToSource(rows.at(0)).row();
+        QString selectedName = mGdxSymbolTable->gdxSymbols().at(mSymbolTableProxyModel->mapToSource(rows.at(0)).row())->name();
         if (deselected.indexes().size() > 0) {
             GdxSymbol* deselectedSymbol = mGdxSymbolTable->gdxSymbols().at(mSymbolTableProxyModel->mapToSource(deselected.indexes().at(0)).row());
-
-            std::ignore = QtConcurrent::run(&GdxSymbol::stopLoadingData, deselectedSymbol);
+            deselectedSymbol->stopLoadingData();
         }
 
         if (reload(mDecoder.name()) != 0)
             return;
 
-        GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
+        GdxSymbol* selectedSymbol = mGdxSymbolTable->getSymbolByName(selectedName);
         if (!selectedSymbol) return;
+        int selectedIdx = mGdxSymbolTable->gdxSymbols().indexOf(selectedSymbol);
 
         if (mState) {
             mState->setSelectedSymbol(selectedSymbol->name());
@@ -234,6 +234,8 @@ void GdxViewer::selectSearchField()
 
 void GdxViewer::releaseFile()
 {
+    if (mIsInitialized)
+        saveState();
     if (ui->splitter->widget(1) != ui->widget)
         ui->splitter->replaceWidget(1, ui->widget);
     freeSymbols();
@@ -250,7 +252,6 @@ void GdxViewer::invalidate()
     }
     if (isEnabled()) {
         if (mIsInitialized) {
-            saveState();
             delete mExportDialog;
             mExportDialog = nullptr;
         }
@@ -392,11 +393,11 @@ void GdxViewer::freeSymbols()
     disconnect(ui->tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
     ui->tvSymbols->setModel(nullptr);
 
+    QMutexLocker locker(mGdxMutex);
     if(mGdxSymbolTable) {
         delete mGdxSymbolTable;
         mGdxSymbolTable = nullptr;
     }
-    QMutexLocker locker(mGdxMutex);
     gdxClose(mGdx);
     locker.unlock();
 
@@ -467,7 +468,8 @@ void GdxViewer::saveState()
 
     mState->setHeaderControlsVisible(mHeaderControlsVisible);
     for (GdxSymbolView* symView : std::as_const(mSymbolViews)) {
-        if (symView && symView->sym()->isLoaded()) {
+        // stateInitialized() avoids saving a view before its restored/default state was applied
+        if (symView && symView->sym()->isLoaded() && symView->stateInitialized()) {
             GdxSymbolViewState* symViewState = mState->addSymbolViewState(symView->sym()->name());
             symView->saveState(symViewState);
 
@@ -512,7 +514,7 @@ void GdxViewer::applySymbolState(GdxSymbol *sym)
 {
     QString name = sym->name();
     GdxSymbolView* symView = symbolViewByName(name);
-    if (symView) {
+    if (symView && !symView->stateInitialized()) {
         if (mState && mState->symbolViewState(name)) {
             GdxSymbolViewState* symViewState = mState->symbolViewState(name);
             symView->applyState(symViewState);
@@ -524,16 +526,15 @@ void GdxViewer::applySymbolState(GdxSymbol *sym)
 
 void GdxViewer::applySelectedSymbol()
 {
-    if (!mState)
+    if (!mState || !ui->tvSymbols->model())
         return;
     QString name = mState->selectedSymbol();
     if (!name.isEmpty()) {
-        mState->setSelectedSymbol("");
         for (int r=0; r<ui->tvSymbols->model()->rowCount(); r++) {
             QModelIndex index = ui->tvSymbols->model()->index(r, 1);
             if (index.data().toString().toLower() == name.toLower()) {
-                if (mState->symbolViewState(name) || mState->selectedSymbolIsAlias())
-                    ui->tvSymbols->selectRow(r);
+                ui->tvSymbols->selectRow(r);
+                mState->setSelectedSymbol("");
                 break;
             }
         }

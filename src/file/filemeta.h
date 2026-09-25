@@ -116,6 +116,8 @@ public:
     const NodeId &projectId() const;
     void setProjectId(const NodeId &newProjectId);
 
+    bool encodingError() const;
+
 public slots:
     void reload();
     void updateView();
@@ -170,6 +172,7 @@ private:
     void updateEditorColors();
     void addEditor(QWidget* edit);
     bool initFoldedBlocks(QList<int> startLines);
+    void updateReadOnly();
 
 private:
     FileId mId;
@@ -190,6 +193,7 @@ private:
     int mLineCount = 0;
     int mChangedLine = 0;
     bool mLoading = false;
+    bool mEncodingError = false;
     QTimer mTempAutoReloadTimer;
     QTimer mReloadTimer;
     QTimer mDirtyLinesUpdater;
