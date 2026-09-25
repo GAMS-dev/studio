@@ -1,4 +1,4 @@
-Version 1.25.7  *
+Version 1.25.7
 ==================
 - Fixed a crash when an open GDX file changed externally.
 - Fixed the state of a GDX file and its symbols not being restored correctly after a GDX file reload.
