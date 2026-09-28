@@ -71,9 +71,9 @@ void CodeCompleterModel::setSnippets(const QList<Snippet> &snippets)
     for (const Snippet &s : snippets) {
         mData << s.trigger;
         const QString desc = (s.trigger.size() && s.trigger.last(1) >= '0' && s.trigger.last(1) <= '9'
-                                  ? s.trigger.left(s.trigger.size() - 1)
+                                  ? s.trigger.left(s.trigger.size() - 1).trimmed()
                                   : s.trigger)
-                           + (s.description.isEmpty() ? QString() : ": " + s.description);
+                           + (s.description.isEmpty() ? QString() : " - " + s.description);
         mDescription << desc;
         mDescriptIndex << int(mDescription.size()) - 1;
     }
@@ -621,9 +621,6 @@ void FilterCompleterModel::setTypeFilter(int completerTypeFilter, int subType, b
 bool FilterCompleterModel::lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const
 {
     int pat = source_left.data(Qt::UserRole).toInt() | source_right.data(Qt::UserRole).toInt();
-    if ((pat & ccSnippet) && pat != ccSnippet) {
-        return source_left.data(Qt::UserRole).toInt() == ccSnippet;
-    }
     if ((pat & ccSufName) && pat != ccSufName) {
         return source_left.data(Qt::UserRole).toInt() == ccSufName;
     }
