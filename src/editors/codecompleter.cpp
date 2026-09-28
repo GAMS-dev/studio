@@ -1180,6 +1180,11 @@ void CodeCompleter::loadSnippets(const QString &snippetFile)
     "body": "sum(${1:a}, ${2:b})${0}"
   },
   {
+    "trigger": "prod",
+    "description": "",
+    "body": "prod(${1:a}, ${2:b})${0}"
+  },
+  {
     "trigger": "max",
     "description": "",
     "body": "max(${1:a}, ${2:b})${0}"
@@ -1188,6 +1193,26 @@ void CodeCompleter::loadSnippets(const QString &snippetFile)
     "trigger": "min",
     "description": "",
     "body": "min(${1:a}, ${2:b})${0}"
+  },
+  {
+    "trigger": "smax",
+    "description": "",
+    "body": "smax(${1:a}, ${2:b})${0}"
+  },
+  {
+    "trigger": "smin",
+    "description": "",
+    "body": "smin(${1:a}, ${2:b})${0}"
+  },
+  {
+    "trigger": "samd",
+    "description": "",
+    "body": "sand(${1:a}, ${2:b})${0}"
+  },
+  {
+    "trigger": "sor",
+    "description": "",
+    "body": "sor(${1:a}, ${2:b})${0}"
   },
   {
     "trigger": "power",
