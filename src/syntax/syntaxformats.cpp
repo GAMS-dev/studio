@@ -247,7 +247,6 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mFlavors.insert(QString("offEmbeddedCodeS").toLower(), flavorEmbed0);
     mFlavors.insert(QString("offEmbeddedCodeV").toLower(), flavorEmbed0);
 
-    // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
     mSpecialKinds.insert(QString("onEcho").toLower(), SyntaxKind::IgnoredHead);

@@ -141,6 +141,7 @@ bool SnippetControl::handleKey(QKeyEvent *e)
         for (int i = 0; i < mPlaceholders.size(); ++i) {
             if (mPlaceholders.at(i).order == 0) {
                 selectPlaceholder(i);
+                deactivate(false);
                 return true;
             }
         }
