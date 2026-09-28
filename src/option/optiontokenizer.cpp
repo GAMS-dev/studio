@@ -422,7 +422,7 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem*> &items)
         } // if (key.isEmpty()) { } else {
     } // for (OptionItem item : items)
 
-    for (OptionItem* item : itemList) {
+    for (const OptionItem* item : std::as_const(itemList)) {
         QString key = item->key;
         if (key.startsWith("-") || key.startsWith("/"))
             key = key.mid(1);
@@ -431,7 +431,7 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem*> &items)
         if (mOption->getOptionType(key) == optTypeImmediate)
             continue;
 
-        if (idList.count(item->optionId)>1) {
+        if (idList.count(item->optionId) > 1) {
             QTextLayout::FormatRange fr;
             fr.start = item->keyPosition;
             fr.length = item->key.length();

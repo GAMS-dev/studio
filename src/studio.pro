@@ -333,6 +333,7 @@ HEADERS += \
     editors/chunktextmapper.h \
     editors/codecompleter.h \
     editors/codeedit.h \
+    editors/defaultsnippets.h \
     editors/defaultsystemlogger.h \
     editors/editorhelper.h \
     editors/fastfilemapper.h \

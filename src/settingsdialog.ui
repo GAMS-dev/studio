@@ -1321,7 +1321,7 @@
           <attribute name="label">
            <string>Gradient colors</string>
           </attribute>
-          <layout class="QVBoxLayout" name="verticalLayoutEc">
+          <layout class="QVBoxLayout" name="verticalLayoutGc">
            <property name="leftMargin">
             <number>0</number>
            </property>

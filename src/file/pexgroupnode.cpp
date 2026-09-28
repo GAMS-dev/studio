@@ -792,7 +792,7 @@ void PExProjectNode::setMainFile(FileMeta *gmsFile)
     setParameter("gms", "");
     if (!gmsFile) {
         setParameter("lst", "");
-        for (NodeId id : ids) {
+        for (const NodeId &id : std::as_const(ids)) {
             emit changed(id);
         }
         emit mainFileChanged();
@@ -805,7 +805,7 @@ void PExProjectNode::setMainFile(FileMeta *gmsFile)
     setParameter("gms", gmsPath);
     if (hasLogNode()) logNode()->resetLst();
 
-    for (NodeId id : ids) {
+    for (const NodeId &id : std::as_const(ids)) {
         emit changed(id);
     }
     emit mainFileChanged();
@@ -1010,7 +1010,7 @@ void PExProjectNode::delBreakpoint(const QString &filename, int line)
 
 void PExProjectNode::delBreakpoints(const QString &filename, int line, bool before)
 {
-    QList<int> removedContLines = mContLineData->delBreakpoints(filename, line, before);
+    const QList<int> removedContLines = mContLineData->delBreakpoints(filename, line, before);
     if (mComServer) {
         for (int contLine : removedContLines) {
             if (contLine >= 0)
@@ -1415,7 +1415,7 @@ void PExProjectNode::addNodesForSpecialFiles(bool ignoreMissing)
         }
     }
     if (ignoreMissing) {
-        for (const QString &delKey : delKeys)
+        for (const QString &delKey : std::as_const(delKeys))
             mParameterHash.remove(delKey);
     }
 }
