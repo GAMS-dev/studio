@@ -48,7 +48,7 @@ void TestCompleter::testDco()
     mSynSim.clearBlockSyntax();
     mSynSim.addBlockSyntax(0, SyntaxKind::Standard, 0);
 
-    expect = cc_Start;
+    expect = cc_Start | ccSnippet;
     mCompleter->updateFilter( 0, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
@@ -131,11 +131,11 @@ void TestCompleter::testPut()
     mSynSim.addBlockSyntax(23, SyntaxKind::String, 0);
     mSynSim.addBlockSyntax(24, SyntaxKind::Semicolon, 0);
 
-    expect = cc_Start;
+    expect = cc_Start | ccSnippet;
     mCompleter->updateFilter( 3, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
-    expect = cc_Res | ccSysSufR | ccSysSufC | ccCtConst;
+    expect = cc_Res | ccSysSufR | ccSysSufC | ccCtConst | ccSnippet;
     mCompleter->updateFilter( 4, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
@@ -143,7 +143,7 @@ void TestCompleter::testPut()
     mCompleter->updateFilter( 6, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
-    expect = cc_Start & ~(ccDcoStrt | ccDcoEnd);
+    expect = (cc_Start | ccSnippet) & ~(ccDcoStrt | ccDcoEnd);
     mCompleter->updateFilter(24, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 }
