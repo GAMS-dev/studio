@@ -49,8 +49,10 @@ AbstractProcess::AbstractProcess(const QString &appName, QObject *parent)
         qRegisterMetaType<QProcess::ProcessState>();
     if (!QMetaType::isRegistered(qMetaTypeId<NodeId>()))
         qRegisterMetaType<NodeId>();
-#ifdef __APPLE__
-    mProcess.setChildProcessModifier([](){::setpgid(0,0);});
+#ifndef _WIN64
+    mProcess.setChildProcessArgumentsModifier([](const QProcess::ChildProcessArgumentModifierArguments &) {
+        ::setpgid(0, 0);
+    });
 #endif
 }
 
@@ -89,7 +91,9 @@ void AbstractProcess::interruptIntern(bool hardKill)
 {
 #ifdef _WIN64
     if (hardKill) {
-        mProcess.kill();
+        qint64 pid = mProcess.processId();
+        if (pid > 0)
+            QProcess::startDetached("taskkill", QStringList() << "/F" << "/T" << "/PID" << QString::number(pid));
     } else {
 
         QString procName("___GAMSMSGWINDOW___" + QString::number(mProcess.processId()));
