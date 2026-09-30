@@ -50,8 +50,8 @@ AbstractProcess::AbstractProcess(const QString &appName, QObject *parent)
     if (!QMetaType::isRegistered(qMetaTypeId<NodeId>()))
         qRegisterMetaType<NodeId>();
 #ifndef _WIN64
-    mProcess.setChildProcessArgumentsModifier([](const QProcess::ChildProcessArgumentModifierArguments &) {
-        ::setpgid(0, 0);
+    mProcess.setChildProcessModifier([]() {
+        ::setpgid(0,0);
     });
 #endif
 }
