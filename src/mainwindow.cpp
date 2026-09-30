@@ -99,6 +99,9 @@ namespace studio {
 static const int CMaxAddFiles = 99;
 static const int CMaxOpenFiles = 25;
 
+static const QString CGamsSnippetFile("/gams_snippets.json");
+static const QString CUserSnippetFile("/user_snippets.json");
+
 static const QStringList COpenAltText {"&Open in New Project...",
                                        "&Open in Current Project...",
                                        "Open the file(s) in a new project",
@@ -425,7 +428,8 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
-    mFileMetaRepo.completer()->loadSnippets(CommonPaths::gamsUserConfigDir() + "/gams_snippets.json");
+    mFileMetaRepo.completer()->loadSnippets(CommonPaths::gamsUserConfigDir() + CGamsSnippetFile,
+                                            CommonPaths::gamsUserConfigDir() + CUserSnippetFile);
 
     // stack help under output
     if (tabifiedDockWidgets(ui->dockHelpView).contains(ui->dockProcessLog)) {
@@ -7103,6 +7107,11 @@ void MainWindow::resetViews()
     }
     Settings::settings()->resetKeys(Settings::viewKeys());
     Settings::settings()->save();
+}
+
+void MainWindow::resetSnippets()
+{
+    mFileMetaRepo.completer()->resetDefaultSnippets(CommonPaths::gamsUserConfigDir() + CGamsSnippetFile);
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)

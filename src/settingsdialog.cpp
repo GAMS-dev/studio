@@ -878,6 +878,11 @@ void SettingsDialog::on_btn_resetView_clicked()
     mMain->resetViews();
 }
 
+void SettingsDialog::on_btn_resetSnippets_clicked()
+{
+    mMain->resetViews();
+}
+
 void SettingsDialog::on_cb_writeLog_toggled(bool checked)
 {
     ui->lbl_nrBackups->setEnabled(checked);

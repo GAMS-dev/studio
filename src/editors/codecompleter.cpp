@@ -26,6 +26,7 @@
 #include "exception.h"
 #include "viewhelper.h"
 #include "defaultsnippets.h"
+#include "settings.h"
 
 #include <QPlainTextEdit>
 #include <QSortFilterProxyModel>
@@ -987,13 +988,18 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
     setGeometry(rect);
 }
 
-void CodeCompleter::loadSnippets(const QString &snippetFile)
+void CodeCompleter::loadSnippets(const QString &snippetFile, const QString &userSnippetFile)
 {
     // create default file if missing
     if (!QFile::exists(snippetFile))
         createDefaultSnippetFile(snippetFile);
 
-    auto parseFile = [](const QString &path) -> QList<Snippet> {
+    // create user dummy file if missing
+    if (!QFile::exists(userSnippetFile))
+        createUserSnippetFile(userSnippetFile);
+
+
+    auto parseFile = [](const QString &path, int &version) -> QList<Snippet> {
         QList<Snippet> res;
         QFile f(path);
         if (!f.open(QIODevice::ReadOnly)) return res;
@@ -1015,6 +1021,8 @@ void CodeCompleter::loadSnippets(const QString &snippetFile)
         }
         for (const QJsonValue &v : doc.array()) {
             const QJsonObject obj = v.toObject();
+            if (version < 0)
+                version = obj.value("version").toInt(-1);
             Snippet s;
             s.trigger     = obj.value("trigger").toString();
             s.description = obj.value("description").toString();
@@ -1026,11 +1034,19 @@ void CodeCompleter::loadSnippets(const QString &snippetFile)
         return res;
     };
 
-    mSnippets = parseFile(snippetFile);
+    // parse the default snippets file, if the internal version is higher, recreate it and parse again
+    int version = 0;
+    mSnippets = parseFile(snippetFile, version);
+    if (version < getSnippetsVersion(defaultJson)) {
+        createDefaultSnippetFile(snippetFile);
+        mSnippets = parseFile(snippetFile, version);
+    }
+    // append user snippets if valid
+    mSnippets.append(parseFile(userSnippetFile, version));
     mModel->setSnippets(mSnippets);
 }
 
-void CodeCompleter::resetSnippets(const QString &snippetFile)
+void CodeCompleter::resetDefaultSnippets(const QString &snippetFile)
 {
     createDefaultSnippetFile(snippetFile);
 }

@@ -23,9 +23,10 @@
 
 #include "logger.h"
 
-inline void createDefaultSnippetFile(const QString &snippetFile)
-{
-    static const char *defaultJson = R"([
+static const char *defaultJson = R"([
+  {
+    "version": "1"
+  },
   {
     "trigger": "..",
     "description": "equation",
@@ -258,7 +259,34 @@ inline void createDefaultSnippetFile(const QString &snippetFile)
   }
 ])";
 
-    // create default file if missing
+static const char *userJson = R"([
+  {
+    "_hint": "remove '_' before 'trigger' and adapt 'body' and description to your needs. This line can also be removed. For more examples see 'gams_snippets.json'",
+    "_trigger": "example1",
+    "description": "",
+    "body": "example1 (${1:i} = ${2:1} to ${3:10},\n   ${4:statement}\n);"
+  },
+  {
+    "_trigger": "example2",
+    "description": "",
+    "body": "example2 (${1:i} = ${2:1} to ${3:10},\n   ${4:statement}\n);"
+  }
+])";
+
+inline void createUserSnippetFile(const QString &snippetFile)
+{
+
+    QFile f(snippetFile);
+    if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        f.write(userJson);
+        f.close();
+        DEB() << "Default snippets written to " << snippetFile;
+    } else
+        DEB() << "Could not write snippets to " << snippetFile;
+}
+
+inline void createDefaultSnippetFile(const QString &snippetFile)
+{
     QFile f(snippetFile);
     if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
         f.write(defaultJson);
@@ -266,4 +294,28 @@ inline void createDefaultSnippetFile(const QString &snippetFile)
         DEB() << "Default snippets written to " << snippetFile;
     } else
         DEB() << "Could not write snippets to " << snippetFile;
+}
+
+inline int getSnippetsVersion(const QByteArray &snippets)
+{
+    int res = -1;
+    QRegularExpression versionRegex(R"("version"\s*:\s*"([^"]+)");
+    QRegularExpressionMatch match = versionRegex.match(QString::fromUtf8(snippets));
+    if (match.hasMatch()) {
+        bool ok = false;
+        res = match.captured(1).toInt(&ok);
+        return ok ? res : -1;
+    }
+    return -1;
+}
+
+inline int getSnippetsVersionFromFile(const QString &snippetFile)
+{
+    QFile file(snippetFile);
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QByteArray fileChunk = file.read(100);
+        file.close();
+        return getSnippetsVersion(fileChunk);
+    }
+    return -1;
 }

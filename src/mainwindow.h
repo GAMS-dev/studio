@@ -153,6 +153,7 @@ public:
     bool readTabs(const QVariantMap &tabData);
     void writeTabs(QVariantMap &tabData) const;
     void resetViews();
+    void resetSnippets();
     void resizeOptionEditor(const QSize &size);
     void setForeground();
     void setForegroundOSCheck();
