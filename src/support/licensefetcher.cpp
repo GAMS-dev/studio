@@ -282,7 +282,7 @@ void LicenseFetcher::checkLicense(const QStringList &lines)
             fetchLicenseValues(modulesLine, line);
 
             // extract access code from line 5
-        } else if (lineNr == 5 && (line.startsWith("DC") || line.startsWith("FL") || line.startsWith("CL"))) {
+        } else if (lineNr == 5) {
             fetchAccessCode(line);
 
             // extract license type from line 6
@@ -297,7 +297,7 @@ void LicenseFetcher::fetchBaseDate(const QString &line)
 {
     QRegularExpressionMatch match = CRexBaseDate.match(line);
     if (match.hasMatch()) {
-        QString sDate = match.captured(1);
+        QStringView sDate = match.captured(1);
         if (sDate.length() != 6) {
             emit error("Invalid license date");
             return;
