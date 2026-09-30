@@ -26,7 +26,6 @@
 #include "exception.h"
 #include "viewhelper.h"
 #include "defaultsnippets.h"
-#include "settings.h"
 
 #include <QPlainTextEdit>
 #include <QSortFilterProxyModel>
