@@ -1113,7 +1113,7 @@ int CodeCompleter::findBound(int pos, const QString &nextTwo, int good, int look
         if (good == look) return ind;
         ind = look;
     }
-    QStringView str = model()->data(model()->index(ind, 0)).toString();
+    QString str = model()->data(model()->index(ind, 0)).toString();
     if (str.length() > pos && str.mid(pos, 2).compare(nextTwo, Qt::CaseInsensitive) == 0)
         return findBound(pos, nextTwo, ind, look);
     if (ind == look) return ind;

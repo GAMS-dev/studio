@@ -297,7 +297,7 @@ void LicenseFetcher::fetchBaseDate(const QString &line)
 {
     QRegularExpressionMatch match = CRexBaseDate.match(line);
     if (match.hasMatch()) {
-        QStringView sDate = match.captured(1);
+        QString sDate = match.captured(1);
         if (sDate.length() != 6) {
             emit error("Invalid license date");
             return;

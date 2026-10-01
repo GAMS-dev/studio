@@ -244,7 +244,7 @@ void StatusWidgets::setLicenseState(support::LicenseState licenseState, const QD
         background = Theme::mixColor(QColor(255,255,255), Theme::Normal_Red, .9);
         icon = Theme::icon(":/solid/plane");
         text = "?";
-        toolTip = "GAMS network license (expired)";
+        toolTip = "GAMS network license (checkout expired)";
         break;
     default:
         background = Theme::mixColor(QColor(255,255,255), Theme::Normal_Red, .9);
