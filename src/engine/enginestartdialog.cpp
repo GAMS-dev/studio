@@ -59,6 +59,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     listView->viewport()->installEventFilter(delegate);
     ui->cbSelector->setView(listView);
     ui->cbSelector->installEventFilter(this);
+    connect(delegate, &ComboboxRemoveDelegate::entryRemoved, this, &EngineStartDialog::loginDataChanged);
 
     QPalette palette = qApp->palette();
     Theme::fillThemeColorPalette(palette, true, false);
@@ -798,7 +799,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
             mProc->getUsername();
         }
         if (!mValidUrl.isEmpty())
-            emit engineUrlValidated(mValidUrl);
+            emit loginDataChanged();
     }
 }
 
@@ -855,7 +856,7 @@ void EngineStartDialog::reListProvider(const QList<QHash<QString, QVariant> > &a
     }
     updateSelector();
     if (!mValidUrl.isEmpty()) {
-        emit engineUrlValidated(mValidUrl);
+        emit loginDataChanged();
     }
 }
 
@@ -1186,7 +1187,7 @@ void EngineStartDialog::on_cbLoginMethod_currentIndexChanged(int index)
         setCanLogin(ui->cbLoginMethod->currentIndex() > 2 || !ui->edSsoName->text().isEmpty());
     }
     if (!mValidUrl.isEmpty())
-        emit engineUrlValidated(mValidUrl);
+        emit loginDataChanged();
 }
 
 bool EngineStartDialog::openInBrowser(const QString &text)

@@ -87,7 +87,7 @@ public:
 
 signals:
     void submit(bool start);
-    void engineUrlValidated(const QString &validUrl);
+    void loginDataChanged();
     void jobTagChanged(const QString &jobTag);
     void storeInstanceSelection();
 

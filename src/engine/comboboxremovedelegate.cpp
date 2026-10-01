@@ -24,6 +24,7 @@
 #include <QMouseEvent>
 #include <QListView>
 #include <QToolTip>
+#include <QTimer>
 
 namespace gams {
 namespace studio {
@@ -106,6 +107,7 @@ bool ComboboxRemoveDelegate::eventFilter(QObject *watched, QEvent *event)
                         if (auto* model = listView->model()) {
                             model->removeRow(index.row());
                             listView->setCurrentIndex(listView->model()->index(0, 0));
+                            QTimer::singleShot(0, this, &ComboboxRemoveDelegate::entryRemoved);
                         }
                         return true;
                     }
