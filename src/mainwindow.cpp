@@ -34,7 +34,6 @@
 #include "encodingsdialog.h"
 #include "file/uncpath.h"
 #include "welcome/welcomepage.h"
-#include "welcome/overview.h"
 #include "modeldialog/modeldialog.h"
 #include "navigator/navigatordialog.h"
 #include "navigator/navigatorlineedit.h"
@@ -735,8 +734,8 @@ void MainWindow::adjustFonts()
     const qreal fontFactor = 0.95;
     const qreal fontFactorStatusbar = 0.85;
     QFont f(ui->menuBar->font());
-    mTableFontSizeDif = f.pointSizeF() - QFontDatabase::systemFont(QFontDatabase::FixedFont).pointSizeF() -
-                        (QSysInfo::productType() == "osx" || QSysInfo::productType() == "macos") ? 0 : 1;
+    mTableFontSizeDif = (f.pointSizeF() - QFontDatabase::systemFont(QFontDatabase::FixedFont).pointSizeF() -
+                        (QSysInfo::productType() == "osx" || QSysInfo::productType() == "macos")) ? 0 : 1;
     f.setPointSizeF(ui->menuBar->font().pointSizeF() * fontFactor);
     ui->centralWidget->setFont(f);
     ui->splitter->setFont(f);

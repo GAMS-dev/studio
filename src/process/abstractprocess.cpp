@@ -28,7 +28,6 @@
 
 #ifdef _WIN64
 #include <Windows.h>
-#include <signal.h>
 #elif __APPLE__
 #include <csignal>
 #include <unistd.h>
