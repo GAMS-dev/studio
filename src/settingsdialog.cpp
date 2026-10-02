@@ -880,7 +880,7 @@ void SettingsDialog::on_btn_resetView_clicked()
 
 void SettingsDialog::on_btn_resetSnippets_clicked()
 {
-    mMain->resetViews();
+    mMain->resetSnippets();
 }
 
 void SettingsDialog::on_cb_writeLog_toggled(bool checked)
