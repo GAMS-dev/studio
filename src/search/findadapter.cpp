@@ -286,9 +286,9 @@ bool EditFindAdapter::findReplace(const QString &replacement)
 {
     if (!mEdit->findReplace(replacement))
         return false;
-    QTextCursor cursor = mEdit->textCursor();
-    cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, replacement.length());
-    mEdit->setTextCursor(cursor);
+    // QTextCursor cursor = mEdit->textCursor();
+    // cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, replacement.length());
+    // mEdit->setTextCursor(cursor);
     return true;
 }
 
