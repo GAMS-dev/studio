@@ -212,6 +212,7 @@ void EditFindAdapter::handleNextResult(const FindResult &res)
         c.setPosition(res.pos + res.len, QTextCursor::KeepAnchor);
         mEdit->setTextCursor(c);
         mEdit->ensureCursorVisible();
+        mEdit->lockSelectedFind();
         if (res.wrapped) emit showStatusMessage(tr("Suche am Anfang/Ende fortgesetzt"));
         emitFindDone(true);
     } else {
