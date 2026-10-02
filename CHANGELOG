@@ -1,3 +1,7 @@
+Version 1.25.8 *
+==================
+- A command line parameter is no longer automatically filled with the casing of a previous entry.
+
 Version 1.25.7
 ==================
 - Fixed a crash when an open GDX file changed externally.
