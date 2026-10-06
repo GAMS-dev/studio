@@ -33,6 +33,15 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
+// a persisted table view state predating attribute-pivoting has a shorter tvDimOrder; fall
+// back to the same default pivot TableViewModel itself would use in that case
+static int sanitizedTvColDim(int tvColDim, const QList<int> &tvDimOrder, int symDim, bool hasAttrDim)
+{
+    if (tvDimOrder.size() == symDim + (hasAttrDim ? 1 : 0))
+        return tvColDim;
+    return (symDim > 1 ? 1 : 0) + (hasAttrDim ? 1 : 0);
+}
+
 ExportDriver::ExportDriver(GdxViewer *gdxViewer, ExportModel *exportModel, QObject *parent)
     : QObject (parent),
       mProc(new ConnectProcess(this)),
@@ -83,6 +92,7 @@ QString ExportDriver::generateInstructions(const QString &gdxFile, const QString
     mTruncSheetNames.clear();
     QString inst;
     mNoAttributes.clear();
+    mReorderedSymbols.clear();
     inst += generateGdxReader(gdxFile);
     if (applyFilters)
         inst += generateFilters();
@@ -116,7 +126,6 @@ QString ExportDriver::generateGdxReader(const QString &gdxFile)
 QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
     bool isNumber = false;
-    bool tableViewActive = false;
     QString sq = "'";
     QString dq = "\"";
 
@@ -153,30 +162,29 @@ QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFi
         GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
         QString name = hasActiveFilter(sym->aliasedSymbol()) && applyFilters ? sym->name() + FILTER_SUFFIX : sym->name();
         int columnDimension = 0;
-        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
-            name = sym->name() + PROJ_SUFFIX;
+        bool isVarEqu = sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU;
+        bool hasAttrDim = isVarEqu && !mNoAttributes.contains(sym->name());
+
         GdxSymbolViewState *symViewState = getSymbolViewState(sym->aliasedSymbol());
         GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
         if (symView && symView->isTableViewActive()) {
-            tableViewActive = true;
-            columnDimension = symView->getTvModel()->tvColDim();
+            columnDimension = hasAttrDim ? symView->getTvModel()->tvColDim() : 0;
         }
         else if (symViewState && symViewState->tableViewActive()) {
-            tableViewActive = true;
-            columnDimension = symViewState->tvColDim();
+            columnDimension = hasAttrDim ? sanitizedTvColDim(symViewState->tvColDim(), symViewState->tvDimOrder(), sym->dim(), hasAttrDim) : 0;
         }
         else if (!symView && !symViewState && sym->dim() >= 1 && GdxSymbolView::DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView)) {
-            tableViewActive = true;
-            columnDimension = sym->dim() > 1 ? 1 : 0;
+            columnDimension = (sym->dim() > 1 ? 1 : 0) + (hasAttrDim ? 1 : 0);
         }
-        if ((sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)) {
-            if (!mNoAttributes.contains(sym->name()))
-                columnDimension += 1;
-            else if (tableViewActive)
-                columnDimension = 0;
+        else if (isVarEqu && hasAttrDim) {
+            columnDimension = 1;
         }
-        if (generateDomains(sym) != generateDomainsNew(sym))
+
+        if (isVarEqu)
+            name = sym->name() + (mReorderedSymbols.contains(sym->name()) ? PROJ_SUFFIX2 : PROJ_SUFFIX);
+        else if (mReorderedSymbols.contains(sym->name()))
             name = sym->name() + PROJ_SUFFIX;
+
         inst += "      - name: " + name + "\n";
         inst += "        range: " + generateSheetName(sym) + "!A1\n";
         inst += "        columnDimension: " + QString::number(columnDimension) + "\n";
@@ -190,13 +198,9 @@ QString ExportDriver::generateProjections(bool applyFilters, bool hiddenAttribut
     QString inst;
     for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
         GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
-        QString name;
-        QString newName;
-        QString dom = generateDomains(sym);
-        QString domNew = generateDomainsNew(sym);
-        bool domOrderChanged = dom != domNew;
+        bool isVarEqu = sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU;
         QString suffix = "";
-        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU) {
+        if (isVarEqu) {
             if (hiddenAttributes)
                 suffix = ".all";
             else {
@@ -236,12 +240,22 @@ QString ExportDriver::generateProjections(bool applyFilters, bool hiddenAttribut
                 }
             }
         }
-        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU || domOrderChanged) {
+
+        // ed includes the trailing attribute pseudo-dim Projection creates for a suffix list
+        bool hasAttrDim = isVarEqu && suffix.length() > 0;
+        int ed = sym->dim() + (hasAttrDim ? 1 : 0);
+        QString dom = generateDomains(sym);
+        QString natDom = generateDomains(sym, ed);
+        QString domNew = generateDomainsNew(sym, ed);
+        bool domOrderChanged = domNew != natDom;
+
+        if (isVarEqu) {
+            QString name;
             if (hasActiveFilter(sym->aliasedSymbol()) && applyFilters)
                 name = sym->name() + FILTER_SUFFIX + suffix + dom;
             else
                 name = sym->name() + suffix + dom;
-            newName = sym->name() + PROJ_SUFFIX + domNew;
+            QString newName = sym->name() + PROJ_SUFFIX + dom;
             inst += "- Projection:\n";
             inst += "    name: " + name + "\n";
             inst += "    newName: " + newName + "\n";
@@ -249,12 +263,31 @@ QString ExportDriver::generateProjections(bool applyFilters, bool hiddenAttribut
                 mNoAttributes << sym->name();
                 inst += "    asSet: True\n";
             }
+
+            // Projection always appends the attribute as the trailing dim, so a second,
+            // plain (suffix-less) Projection reorders the already-materialized parameter's
+            // own dims (attribute included) to match Studio's pivot
             if (domOrderChanged) {
+                mReorderedSymbols << sym->name();
+                QString finalName = sym->name() + PROJ_SUFFIX2;
+                inst += "- Projection:\n";
+                inst += "    name: " + sym->name() + PROJ_SUFFIX + natDom + "\n";
+                inst += "    newName: " + finalName + domNew + "\n";
                 inst += "- PythonCode:\n";
                 inst += "    code: |\n";
-                inst += "      r = connect.container.data['" + sym->name() + PROJ_SUFFIX + "'].records\n";
-                inst += "      connect.container.data['" + sym->name() + PROJ_SUFFIX + "'].records=r.sort_values([c for c in r.columns])\n";
+                inst += "      r = connect.container.data['" + finalName + "'].records\n";
+                inst += "      connect.container.data['" + finalName + "'].records=r.sort_values([c for c in r.columns])\n";
             }
+        }
+        else if (domOrderChanged) {
+            mReorderedSymbols << sym->name();
+            inst += "- Projection:\n";
+            inst += "    name: " + sym->name() + dom + "\n";
+            inst += "    newName: " + sym->name() + PROJ_SUFFIX + domNew + "\n";
+            inst += "- PythonCode:\n";
+            inst += "    code: |\n";
+            inst += "      r = connect.container.data['" + sym->name() + PROJ_SUFFIX + "'].records\n";
+            inst += "      connect.container.data['" + sym->name() + PROJ_SUFFIX + "'].records=r.sort_values([c for c in r.columns])\n";
         }
     }
     return inst;
@@ -434,13 +467,14 @@ QString ExportDriver::generateSheetName(GdxSymbol *sym)
 }
 
 
-QString ExportDriver::generateDomains(GdxSymbol *sym)
+QString ExportDriver::generateDomains(GdxSymbol *sym, int dimOverride)
 {
     QString dom;
     sym = sym->aliasedSymbol();
-    if (sym->dim() > 0) {
+    int n = dimOverride >= 0 ? dimOverride : sym->dim();
+    if (n > 0) {
         dom = "(";
-        for (int i=0; i<sym->dim(); i++)
+        for (int i=0; i<n; i++)
             dom += QString::number(i) + ",";
         dom.truncate(dom.length()-1);
         dom += ")";
@@ -448,11 +482,13 @@ QString ExportDriver::generateDomains(GdxSymbol *sym)
     return dom;
 }
 
-QString ExportDriver::generateDomainsNew(GdxSymbol *sym)
+// ed is the number of dims the caller expects in the result: sym->dim(), or sym->dim()+1 for a
+// var/equ whose exported attribute (Level/Marginal/...) becomes its own trailing pseudo-dim
+QString ExportDriver::generateDomainsNew(GdxSymbol *sym, int ed)
 {
     QString dom;
     sym = sym->aliasedSymbol();
-    if (sym->dim() > 0) {
+    if (ed > 0) {
         GdxSymbolViewState *symViewState = getSymbolViewState(sym);
         QList<int> dimOrder;
         GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
@@ -475,15 +511,20 @@ QString ExportDriver::generateDomainsNew(GdxSymbol *sym)
                 delete dummyHeader;
             }
         }
-        if (!dimOrder.isEmpty()) {
+        // an order covering only the real index dims (list view, or a stale/legacy table view
+        // state) has the attribute, if any, trailing
+        if (dimOrder.size() == sym->dim() && ed == sym->dim()+1)
+            dimOrder << sym->dim();
+
+        if (dimOrder.size() == ed) {
             dom = "(";
-            for (int i=0; i<sym->dim(); i++)
+            for (int i=0; i<ed; i++)
                 dom += QString::number(dimOrder.at(i)) + ",";
             dom.truncate(dom.length()-1);
             dom += ")";
             return dom;
-        } else
-            return generateDomains(sym);
+        }
+        return generateDomains(sym, ed);
     }
     return dom;
 }

@@ -48,6 +48,7 @@ signals:
 
 private:
     const QString PROJ_SUFFIX = "_proj_";
+    const QString PROJ_SUFFIX2 = "_proj2_";
     const QString FILTER_SUFFIX = "_filter_";
 
     QScopedPointer<ConnectProcess> mProc;
@@ -60,10 +61,11 @@ private:
     QString generateFilters();
     QString generateSheetName(GdxSymbol *sym);
 
-    QString generateDomains(GdxSymbol *sym);
-    QString generateDomainsNew(GdxSymbol *sym);
+    QString generateDomains(GdxSymbol *sym, int dimOverride = -1);
+    QString generateDomainsNew(GdxSymbol *sym, int ed);
 
     QStringList mNoAttributes;
+    QStringList mReorderedSymbols; // symbols for which generateProjections() emitted a stage-2 (PROJ_SUFFIX2) reorder
     QStringList mTruncSheetNames;
 
     bool hasActiveLabelFilter(GdxSymbol *sym);
