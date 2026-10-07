@@ -33,7 +33,7 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-const int GdxSymbol::MAX_DISPLAY_RECORDS = 102261126;
+const int GdxSymbol::MAX_DISPLAY_RECORDS = 97612000;
 
 const QList<QString> GdxSymbol::superScript = QList<QString>({
                                          QString(u8"\u2070"),

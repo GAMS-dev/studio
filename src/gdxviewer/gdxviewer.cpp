@@ -289,7 +289,7 @@ void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
             if (selectedSymbolNew) {
                 if (selectedSymbolNew->isDataTruncated()) {
                     auto logger = SysLogLocator::systemLog();
-                    QString msg = "GDX symbol '" + selectedSymbolNew->name() + "' in file '" + mGdxFile + "' exceeds the maximum number of records (~107 million) that can be displayed and might be truncated depending on applied filters reducing the actual number of records to be displayed.";
+                    QString msg = "GDX symbol '" + selectedSymbolNew->name() + "' in file '" + mGdxFile + "' exceeds the maximum number of records (~97 million) that can be displayed and might be truncated depending on applied filters reducing the actual number of records to be displayed.";
                     logger->append(msg, LogMsgType::Warning);
                 }
                 applySymbolState(selectedSymbolNew);
