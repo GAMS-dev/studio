@@ -153,7 +153,6 @@ public:
     bool readTabs(const QVariantMap &tabData);
     void writeTabs(QVariantMap &tabData) const;
     void resetViews();
-    void resetSnippets();
     void resizeOptionEditor(const QSize &size);
     void setForeground();
     void setForegroundOSCheck();
@@ -490,6 +489,8 @@ private slots:
     void updateProfilerAction();
     void on_actionImport_GPR_project_triggered();
     void on_projectSort_clicked();
+
+    void on_actionEdit_User_Snippets_triggered();
 
 private:
     void deleteLogFiles(const QString &pattern, const QString &workspace);

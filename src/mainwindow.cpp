@@ -428,8 +428,8 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
-    mFileMetaRepo.completer()->loadSnippets(CommonPaths::gamsUserConfigDir() + CGamsSnippetFile,
-                                            CommonPaths::gamsUserConfigDir() + CUserSnippetFile);
+    mFileMetaRepo.completer()->loadSnippets(CommonPaths::studioDocumentsDir() + CGamsSnippetFile,
+                                            CommonPaths::studioUserSnippets());
 
     // stack help under output
     if (tabifiedDockWidgets(ui->dockHelpView).contains(ui->dockProcessLog)) {
@@ -1065,6 +1065,7 @@ void MainWindow::moveEvent(QMoveEvent *event)
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event)
+    DEB() << "Studio size: " << event->size();
     // JM: In the closing procedure the WindowFlag "Maximized" is deleted without resizing the window. That leads to a
     // resizeEvent with the wrong (maximized) size. Thus the metrics need to be taken into account here to skip that.
 
@@ -7109,11 +7110,6 @@ void MainWindow::resetViews()
     Settings::settings()->save();
 }
 
-void MainWindow::resetSnippets()
-{
-    mFileMetaRepo.completer()->resetDefaultSnippets(CommonPaths::gamsUserConfigDir() + CGamsSnippetFile);
-}
-
 void MainWindow::resizeOptionEditor(const QSize &size)
 {
     mGamsParameterEditor->resize(size);
@@ -7748,6 +7744,12 @@ void MainWindow::updateProjectSortIcon()
     QString tt("Sorting by  %1, %2");
     tt = tt.arg(ttKey.at(mProjectFilterHandler->sortKey()), ttOrder.at(mProjectFilterHandler->sortOrder()));
     ui->projectSort->setToolTip(tt);
+}
+
+void MainWindow::on_actionEdit_User_Snippets_triggered()
+{
+    PExProjectNode *project = mProjectRepo.createProject("", "", "", onExist_Project, "", PExProjectNode::tGams);
+    openFilePath(CommonPaths::studioUserSnippets(), project, OpenGroupOption::ogNone, true);
 }
 
 

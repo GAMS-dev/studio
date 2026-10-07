@@ -93,6 +93,7 @@ public:
 
     static QString gamsUserConfigDir();
     static QString defaultGamsUserConfigFile();
+    static QString studioUserSnippets();
 
     static void setGamsStandardPaths(const QStringList &gamsPaths, StandardPathType pathType);
     static QStringList gamsStandardPaths(StandardPathType pathType = StandardPathAll);
@@ -153,6 +154,7 @@ private:
     static const QString ModlibsPrefixPath;
     static const QString GamsUserConfigFile;
     static const QString LicenseFile;
+    static const QString UserSnippetsFile;
     static const QString UserLicensePath;
     static const QString GamsConfigPath;
     static const QString GamsConnectSchemaDir;

@@ -25,9 +25,6 @@
 
 static const char *defaultJson = R"([
   {
-    "version": "1"
-  },
-  {
     "trigger": "..",
     "description": "equation",
     "body": "${1:eq}.. ${2:stm1} =${3:e}= ${4:stm2};${0}"
@@ -48,19 +45,29 @@ static const char *defaultJson = R"([
     "body": "Alias (${1:v1}, ${2:v2});${0}"
   },
   {
-    "trigger": "Variable",
-    "description": "",
+    "trigger": "Variable1",
+    "description": "short",
+    "body": "Variable\n   ${1:v1}\n   ${2:v2};${0}"
+  },
+  {
+    "trigger": "Variable2",
+    "description": "extended",
     "body": "Variable\n   ${1:v1}(${2:i1})\n   ${3:v2}(${4:i2});${0}"
   },
   {
-    "trigger": "Scalar",
+    "trigger": "Scalar1",
+    "description": "short",
+    "body": "Scalar\n   ${1:s1} / ${2:value1} /\n   ${3:s2} / ${4:value2} /;${0}"
+  },
+  {
+    "trigger": "Scalar2",
     "description": "",
     "body": "Scalar\n   ${1:s1} ${2:text1} / ${3:value1} /\n   ${4:s2} ${5:text2} / ${6:value2} /;${0}"
   },
   {
     "trigger": "Parameter1",
     "description": "short",
-    "body": "Parameter\n   ${1:v1}(${2:i1})\n   ${3:v2}(${4:i2});${0}"
+    "body": "Parameter\n   ${1:v1}\n   ${2:v2};${0}"
   },
   {
     "trigger": "Parameter2",
@@ -68,8 +75,13 @@ static const char *defaultJson = R"([
     "body": "Parameter ${1:p}(${2:s}) '${3:text}'\n   / ${4:e1} = ${5:v1},\n     ${6:e2} = ${7:v2} /;${0}"
   },
   {
-    "trigger": "Equation",
-    "description": "",
+    "trigger": "Equation1",
+    "description": "short",
+    "body": "Equation\n   ${1:eq1}\n   ${3:eq2};${0}"
+  },
+  {
+    "trigger": "Equation2",
+    "description": "extended",
     "body": "Equation\n   ${1:eq1} '${2:text1}'\n   ${3:eq2} '${4:text2}';${0}"
   },
   {
@@ -83,9 +95,24 @@ static const char *defaultJson = R"([
     "body": "Model\n   ${1:name1} '${2:text1}' / ${3:def1} /\n   ${4:name2} '${5:text2}' / ${6:def2} /;${0}"
   },
   {
-    "trigger": "Table",
-    "description": "",
-    "body": "Table ${1:t1}(${2:s1},${3:s2}) '${4:text}'\n        ${5:s1h1} ${6:s1h2}\n   ${7:s2h1}  ${8:1x1}  ${9:1x2}\n   ${10:s2h2}  ${11:2x1}  ${12:2x2};"
+    "trigger": "Table1",
+    "description": "short 2",
+    "body": "Table ${1:t1}(${2:s1},${3:s2})\n        ${5:s1h1} ${6:s1h2}\n   ${7:s2h1}  ${8:1.1}  ${9:1.2}\n   ${10:s2h2}  ${11:2.1}  ${12:2.2};"
+  },
+  {
+    "trigger": "Table2",
+    "description": "short 3",
+    "body": "Table ${1:t1}(${2:s1},${3:s2})\n        ${5:s1h1} ${6:s1h2}  ${7:s1h3}\n   ${8:s2h1}  ${9:1.1}  ${10:1.2}  ${11:1.3}\n   ${12:s2h2}  ${13:2.1}  ${14:2.2}  ${15:2.3};"
+  },
+  {
+    "trigger": "Table3",
+    "description": "extended 2",
+    "body": "Table ${1:t1}(${2:s1},${3:s2}) '${4:text}'\n        ${5:s1h1} ${6:s1h2}\n   ${7:s2h1}  ${8:1.1}  ${9:1.2}\n   ${10:s2h2}  ${11:2.1}  ${12:2.2};"
+  },
+  {
+    "trigger": "Table4",
+    "description": "extended 3",
+    "body": "Table ${1:t1}(${2:s1},${3:s2}) '${4:text}'\n        ${5:s1h1} ${6:s1h2}  ${7:s1h3}\n   ${8:s2h1}  ${9:1.1}  ${10:1.2}  ${11:1.3}\n   ${12:s2h2}  ${13:2.1}  ${14:2.2}  ${15:2.3};"
   },
   {
     "trigger": "File",
@@ -126,6 +153,21 @@ static const char *defaultJson = R"([
     "trigger": "embeddedCodeV",
     "description": "",
     "body": "embeddedCodeV ${1:python}:\n   ${2:statement}\nendEmbeddedCode"
+  },
+  {
+    "trigger": "continueEmbeddedCode",
+    "description": "",
+    "body": "continueEmbeddedCode ${1:python}:\n   ${2:statement}\nendEmbeddedCode"
+  },
+  {
+    "trigger": "continueEmbeddedCodeS",
+    "description": "",
+    "body": "continueEmbeddedCodeS ${1:python}:\n   ${2:statement}\nendEmbeddedCode"
+  },
+  {
+    "trigger": "continueEmbeddedCodeV",
+    "description": "",
+    "body": "continueEmbeddedCodeV ${1:python}:\n   ${2:statement}\nendEmbeddedCode"
   },
   {
     "trigger": "$onEmbeddedCode",
@@ -285,15 +327,9 @@ inline void createUserSnippetFile(const QString &snippetFile)
         DEB() << "Could not write snippets to " << snippetFile;
 }
 
-inline void createDefaultSnippetFile(const QString &snippetFile)
+inline const QByteArray getDefaultSnippets()
 {
-    QFile f(snippetFile);
-    if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        f.write(defaultJson);
-        f.close();
-        DEB() << "Default snippets written to " << snippetFile;
-    } else
-        DEB() << "Could not write snippets to " << snippetFile;
+    return defaultJson;
 }
 
 inline int getSnippetsVersion(const QByteArray &snippets)
@@ -305,17 +341,6 @@ inline int getSnippetsVersion(const QByteArray &snippets)
         bool ok = false;
         res = match.captured(1).toInt(&ok);
         return ok ? res : -1;
-    }
-    return -1;
-}
-
-inline int getSnippetsVersionFromFile(const QString &snippetFile)
-{
-    QFile file(snippetFile);
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QByteArray fileChunk = file.read(100);
-        file.close();
-        return getSnippetsVersion(fileChunk);
     }
     return -1;
 }

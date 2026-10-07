@@ -304,7 +304,7 @@ void LicenseFetcher::fetchBaseDate(const QString &line)
         }
         QList<int> vals;
         for (int i = 0; i < 3; ++i)
-            vals << sDate.mid(2*i, 2).toInt();
+            vals << QStringView(sDate).sliced(2*i, 2).toInt();
 
         // Avoid century switch bug
         int currentYear = QDate::currentDate().year();

@@ -354,6 +354,7 @@
     </property>
     <addaction name="actionTerminal"/>
     <addaction name="actionGDX_Diff"/>
+    <addaction name="actionEdit_User_Snippets"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuMIRO">
@@ -1935,6 +1936,21 @@ The behaviour can be specified via the Workspace tab in the Settings.</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::TextHeuristicRole</enum>
+   </property>
+  </action>
+  <action name="actionEdit_User_Snippets">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/file-alt</normaloff>:/img/file-alt</iconset>
+   </property>
+   <property name="text">
+    <string>User Snippets</string>
+   </property>
+   <property name="toolTip">
+    <string>Edit user snippets file</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
  </widget>

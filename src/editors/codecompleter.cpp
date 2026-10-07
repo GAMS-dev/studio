@@ -989,22 +989,13 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
 
 void CodeCompleter::loadSnippets(const QString &snippetFile, const QString &userSnippetFile)
 {
-    // create default file if missing
-    if (!QFile::exists(snippetFile))
-        createDefaultSnippetFile(snippetFile);
-
     // create user dummy file if missing
     if (!QFile::exists(userSnippetFile))
         createUserSnippetFile(userSnippetFile);
 
-
-    auto parseFile = [](const QString &path, int &version) -> QList<Snippet> {
-        QList<Snippet> res;
-        QFile f(path);
-        if (!f.open(QIODevice::ReadOnly)) return res;
-        DEB() << "Reading code snippets from " << path;
+    auto parseData = [](const QByteArray &data) -> QHash<QString, Snippet> {
+        QHash<QString, Snippet> res;
         QJsonParseError err;
-        QByteArray data = f.readAll();
         QJsonDocument doc = QJsonDocument::fromJson(data, &err);
         if (err.error != QJsonParseError::NoError || !doc.isArray()) {
             int line = 1;
@@ -1020,34 +1011,30 @@ void CodeCompleter::loadSnippets(const QString &snippetFile, const QString &user
         }
         for (const QJsonValue &v : doc.array()) {
             const QJsonObject obj = v.toObject();
-            if (version < 0)
-                version = obj.value("version").toInt(-1);
             Snippet s;
             s.trigger     = obj.value("trigger").toString();
             s.description = obj.value("description").toString();
             s.body        = obj.value("body").toString();
             if (!s.trigger.isEmpty() && !s.body.isEmpty())
-                res << s;
+                res.insert(s.trigger, s);
         }
         DEB() << "  - Snippet count: " << res.size();
         return res;
     };
 
-    // parse the default snippets file, if the internal version is higher, recreate it and parse again
-    int version = 0;
-    mSnippets = parseFile(snippetFile, version);
-    if (version < getSnippetsVersion(defaultJson)) {
-        createDefaultSnippetFile(snippetFile);
-        mSnippets = parseFile(snippetFile, version);
-    }
-    // append user snippets if valid
-    mSnippets.append(parseFile(userSnippetFile, version));
-    mModel->setSnippets(mSnippets);
-}
+    QHash<QString, Snippet> list;
+    list = parseData(getDefaultSnippets());
 
-void CodeCompleter::resetDefaultSnippets(const QString &snippetFile)
-{
-    createDefaultSnippetFile(snippetFile);
+    QFile file(userSnippetFile);
+    if (file.open(QIODevice::ReadOnly)) {
+        DEB() << "Reading code snippets from " << userSnippetFile;
+        QByteArray data = file.readAll();
+        file.close();
+        for (const Snippet &snip : parseData(data))
+            list.insert(snip.trigger, snip);
+    }
+    mSnippets.append(list.values());
+    mModel->setSnippets(mSnippets);
 }
 
 void CodeCompleter::setSnippetControl(SnippetControl *control)

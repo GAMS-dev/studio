@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "snippetcontrol.h"
-#include "logger.h"
 
 #include <QKeyEvent>
 #include <QPlainTextEdit>

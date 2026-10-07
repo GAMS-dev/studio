@@ -65,6 +65,7 @@ QStringList CommonPaths::GamsStandardDataPaths;
 
 const QString CommonPaths::GamsUserConfigFile = "gamsconfig.yaml";
 const QString CommonPaths::LicenseFile = "gamslice.txt";
+const QString CommonPaths::UserSnippetsFile = "user_snippets.txt";
 
 CommonPaths::CommonPaths()
 {
@@ -196,6 +197,11 @@ QString CommonPaths::gamsUserConfigDir()
 QString CommonPaths::defaultGamsUserConfigFile()
 {
     return QDir::cleanPath(gamsUserConfigDir() + "/" + GamsUserConfigFile);
+}
+
+QString CommonPaths::studioUserSnippets()
+{
+    return QDir::cleanPath(gamsUserConfigDir() + "/" + UserSnippetsFile);
 }
 
 void CommonPaths::setGamsStandardPaths(const QStringList &gamsPaths, StandardPathType pathType)
