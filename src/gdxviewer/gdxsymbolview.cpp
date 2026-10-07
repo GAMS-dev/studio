@@ -38,6 +38,7 @@
 #include <QLabel>
 #include <QTimer>
 #include <QDir>
+#include <QLocale>
 #include <numerics/doubleformatter.h>
 
 namespace gams {
@@ -219,6 +220,8 @@ bool GdxSymbolView::event(QEvent *event)
             ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
             ui->tbDomRight->setIconSize(QSize(height/2, height/2));
         }
+        // deferred, as the parent's AbstractView updates the row height after the children got the FontChange
+        QTimer::singleShot(0, this, &GdxSymbolView::updateMaxDisplayRecords);
     }
     return QWidget::event(event);
 }
@@ -337,6 +340,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
     connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
     connect(mSym, &GdxSymbol::filterChanged, this, &GdxSymbolView::toggleColumnHidden);
     showDefaultView(symViewState);
+    updateMaxDisplayRecords();
     ui->tvListView->setModel(mSym);
 
     if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
@@ -1131,7 +1135,23 @@ void GdxSymbolView::onSearch(bool backward)
 
 void GdxSymbolView::setTruncatedDataVisible(bool visible)
 {
+    // called on every rowCount(), so only rebuild the tooltip when the limit changed
+    if (visible && mSym && mSym->maxDisplayRecords() != mTruncatedTooltipLimit) {
+        mTruncatedTooltipLimit = mSym->maxDisplayRecords();
+        ui->laTruncatedData->setToolTip(QString("Symbol exceeds the maximum number of records (%1) that can be displayed "
+                                                "with the current row height and is visually truncated. Zooming out increases this limit.")
+                                        .arg(QLocale().toString(mSym->maxDisplayRecords())));
+    }
     ui->laTruncatedData->setVisible(visible);
+}
+
+void GdxSymbolView::updateMaxDisplayRecords()
+{
+    if (!mSym)
+        return;
+    // QHeaderView keeps section positions as int pixels, so rowCount*rowHeight must not exceed INT_MAX
+    int rowHeight = qMax(1, ui->tvListView->verticalHeader()->defaultSectionSize());
+    mSym->setMaxDisplayRecords((INT_MAX - RESERVE_PIXELS) / rowHeight);
 }
 
 void GdxSymbolView::markSearchResults()

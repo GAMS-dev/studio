@@ -108,10 +108,14 @@ private slots:
     void onResizeColumnsTV();
     void onSearch(bool backward=false);
     void setTruncatedDataVisible(bool visible);
+    void updateMaxDisplayRecords();
 
     void on_pbHeaderControls_toggled(bool checked);
 
 private:
+    // headroom for viewport/offset calculations inside Qt when deriving the max number of displayable records
+    static const int RESERVE_PIXELS = 32768;  // 2^15
+
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;
     TableViewModel* mTvModel = nullptr;
@@ -174,6 +178,7 @@ private:
     bool mStateInitialized = false;
 
     QRegularExpression mSearchRegEx;
+    int mTruncatedTooltipLimit = -1;
 };
 
 
