@@ -3,6 +3,7 @@ Version 1.25.8 *
 - A command line parameter is no longer automatically filled with the casing of a previous entry.
 - Fixed Studio not extracting the access code for some licenses.
 - Fixed Replace in Quick Find not replacing current match.
+- Fixed Studio window can't be reduced in width when the path of the current file is long.
 
 Version 1.25.7
 ==================
