@@ -67,12 +67,12 @@ static const char *defaultJson = R"([
   {
     "trigger": "Parameter1",
     "description": "short",
-    "body": "Parameter\n   ${1:v1}\n   ${2:v2};${0}"
+    "body": "Parameter\n   ${1:1}\n   ${2:2};${0}"
   },
   {
     "trigger": "Parameter2",
     "description": "extended",
-    "body": "Parameter ${1:p}(${2:s}) '${3:text}'\n   / ${4:e1} = ${5:v1},\n     ${6:e2} = ${7:v2} /;${0}"
+    "body": "Parameter ${1:p}(${2:s}) '${3:text}'\n   / ${4:e1} = ${5:1},\n     ${6:e2} = ${7:2} /;${0}"
   },
   {
     "trigger": "Equation1",
@@ -96,23 +96,19 @@ static const char *defaultJson = R"([
   },
   {
     "trigger": "Table1",
-    "description": "short 2",
-    "body": "Table ${1:t1}(${2:s1},${3:s2})\n        ${5:s1h1} ${6:s1h2}\n   ${7:s2h1}  ${8:1.1}  ${9:1.2}\n   ${10:s2h2}  ${11:2.1}  ${12:2.2};"
+    "description": "dim2",
+    "body": "Table ${1:t1}(${2:s1},${3:s2}) '${4:text}'
+        ${5:s1h1} ${6:s1h2}  ${7:s1h3}
+   ${8:s2h1}  ${9:1.1}  ${10:1.2}  ${11:1.3}
+   ${12:s2h2}  ${13:2.1}  ${14:2.2}  ${15:2.3};"
   },
   {
     "trigger": "Table2",
-    "description": "short 3",
-    "body": "Table ${1:t1}(${2:s1},${3:s2})\n        ${5:s1h1} ${6:s1h2}  ${7:s1h3}\n   ${8:s2h1}  ${9:1.1}  ${10:1.2}  ${11:1.3}\n   ${12:s2h2}  ${13:2.1}  ${14:2.2}  ${15:2.3};"
-  },
-  {
-    "trigger": "Table3",
-    "description": "extended 2",
-    "body": "Table ${1:t1}(${2:s1},${3:s2}) '${4:text}'\n        ${5:s1h1} ${6:s1h2}\n   ${7:s2h1}  ${8:1.1}  ${9:1.2}\n   ${10:s2h2}  ${11:2.1}  ${12:2.2};"
-  },
-  {
-    "trigger": "Table4",
-    "description": "extended 3",
-    "body": "Table ${1:t1}(${2:s1},${3:s2}) '${4:text}'\n        ${5:s1h1} ${6:s1h2}  ${7:s1h3}\n   ${8:s2h1}  ${9:1.1}  ${10:1.2}  ${11:1.3}\n   ${12:s2h2}  ${13:2.1}  ${14:2.2}  ${15:2.3};"
+    "description": "dim4",
+    "body": "Table ${1:t1}(${2:i},${3:j},${4:k},${5:l}) '${6:text}'
+          ${7:k1}.${8:l1} ${9:k1}.${10:l2}  ${11:k2}.${12:l1}
+   ${13:i1}.${14:j1}    ${15:1.1}   ${16:1.2}    ${17:1.3}
+   ${18:i1}.${19:j2}    ${20:2.1}   ${21:2.2}    ${22:2.3};"
   },
   {
     "trigger": "File",
@@ -303,7 +299,23 @@ static const char *defaultJson = R"([
 
 static const char *userJson = R"([
   {
-    "_hint": "remove '_' before 'trigger' and adapt 'body' and description to your needs. This line can also be removed. For more examples see 'gams_snippets.json'",
+    "usage": "
+     === How to define your own snippets ===
+
+    Below you see two examples for code snippets currently inactive. Remove '_' before 'trigger' will make them
+    available in GAMS Studio.
+
+    1. The 'trigger' defines the text that will make the snippet available in the code completer. If the last character
+       is a digit it is ignored, this allows multiple definitions of the same keyword.
+
+    2. The 'description' is shown right after the keyword in the code completer to distinct multi defined keywords.
+
+    3. The 'body' is the content of the snippet. After insertion the completer focuses placeholder 1 and switches
+       to the next with the TAB key. On ENTER the snippet control is left at the position of placeholder 0 if defined
+       or on the last placeholder otherwise.
+  "
+  },
+  {
     "_trigger": "example1",
     "description": "",
     "body": "example1 (${1:i} = ${2:1} to ${3:10},\n   ${4:statement}\n);"
@@ -311,7 +323,7 @@ static const char *userJson = R"([
   {
     "_trigger": "example2",
     "description": "",
-    "body": "example2 (${1:i} = ${2:1} to ${3:10},\n   ${4:statement}\n);"
+    "body": "example2 (${1:x}, ${2:y})${0}"
   }
 ])";
 
@@ -322,7 +334,7 @@ inline void createUserSnippetFile(const QString &snippetFile)
     if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
         f.write(userJson);
         f.close();
-        DEB() << "Default snippets written to " << snippetFile;
+        DEB() << "Default user snippets created at " << snippetFile;
     } else
         DEB() << "Could not write snippets to " << snippetFile;
 }

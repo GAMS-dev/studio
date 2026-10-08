@@ -987,7 +987,7 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
     setGeometry(rect);
 }
 
-void CodeCompleter::loadSnippets(const QString &snippetFile, const QString &userSnippetFile)
+void CodeCompleter::loadSnippets(const QString &userSnippetFile)
 {
     // create user dummy file if missing
     if (!QFile::exists(userSnippetFile))
@@ -1027,7 +1027,7 @@ void CodeCompleter::loadSnippets(const QString &snippetFile, const QString &user
 
     QFile file(userSnippetFile);
     if (file.open(QIODevice::ReadOnly)) {
-        DEB() << "Reading code snippets from " << userSnippetFile;
+        DEB() << "Reading user code snippets from " << userSnippetFile;
         QByteArray data = file.readAll();
         file.close();
         for (const Snippet &snip : parseData(data))

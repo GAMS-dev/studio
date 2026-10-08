@@ -428,8 +428,7 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
-    mFileMetaRepo.completer()->loadSnippets(CommonPaths::studioDocumentsDir() + CGamsSnippetFile,
-                                            CommonPaths::studioUserSnippets());
+    mFileMetaRepo.completer()->loadSnippets(CommonPaths::studioUserSnippets());
 
     // stack help under output
     if (tabifiedDockWidgets(ui->dockHelpView).contains(ui->dockProcessLog)) {

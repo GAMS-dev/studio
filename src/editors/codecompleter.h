@@ -156,7 +156,7 @@ public:
     void setCodeEdit(QPlainTextEdit *edit);
     QPlainTextEdit* codeEdit() { return mEdit; }
     void updateFilter(int posInBlock = -1, QString line = QString());
-    void loadSnippets(const QString &snippetFile, const QString &userSnippetFile);
+    void loadSnippets(const QString &userSnippetFile);
     const QList<Snippet> &snippets() const { return mSnippets; }
     void setSnippetControl(SnippetControl *control);
     void updateDynamicData(const QStringList &symbols);

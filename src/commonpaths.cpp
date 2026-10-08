@@ -65,7 +65,7 @@ QStringList CommonPaths::GamsStandardDataPaths;
 
 const QString CommonPaths::GamsUserConfigFile = "gamsconfig.yaml";
 const QString CommonPaths::LicenseFile = "gamslice.txt";
-const QString CommonPaths::UserSnippetsFile = "user_snippets.txt";
+const QString CommonPaths::UserSnippetsFile = "user_snippets.json";
 
 CommonPaths::CommonPaths()
 {
