@@ -348,7 +348,7 @@ QSize AmountLabel::sizeHint() const
         return QSize(50, 20);
 
     QFontMetrics metrics(font());
-    return QSize(metrics.horizontalAdvance(mFullText) + 6, 20);
+    return QSize(metrics.horizontalAdvance(mFullText), 20);
 }
 
 void AmountLabel::updateText()
