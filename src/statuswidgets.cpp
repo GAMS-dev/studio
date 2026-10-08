@@ -318,7 +318,7 @@ void AmountLabel::paintEvent(QPaintEvent *event)
     if (mFullText.isEmpty()) {
         QWidget::paintEvent(event);
     } else {
-        int availableWidth = width() - 6;
+        int availableWidth = width();
         if (availableWidth < 0) availableWidth = 0;
         QFontMetrics metrics = painter.fontMetrics();
         QString elidedText = metrics.elidedText(mFullText, Qt::ElideMiddle, availableWidth);
@@ -326,7 +326,6 @@ void AmountLabel::paintEvent(QPaintEvent *event)
     }
 
     if (mLoadAmount < 1.0) {
-        QPainter painter(this);
         int x = qRound((width() - 1) * qBound(0.0 ,mLoadAmount, 1.0));
         painter.save();
         painter.setPen(Qt::NoPen);
