@@ -4,6 +4,8 @@ Version 1.25.8 *
 - Fixed Studio not extracting the access code for some licenses.
 - Fixed Replace in Quick Find not replacing current match.
 - Fixed Studio window can't be reduced in width when the path of the current file is long.
+- Fixed GDX Viewer table view not displaying data correctly for symbols with bad UELs.
+- Reimplemented truncation behavior of large data to use a dynamic approach instead of a fixed maximum record count.
 
 Version 1.25.7
 ==================
