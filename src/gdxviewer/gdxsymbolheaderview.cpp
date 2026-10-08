@@ -94,9 +94,25 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
             pen.setColor(palette().text().color());
             pen.setWidth(2);
             painter->setPen(pen);
-            int idx = visualIndex(logicalIndex);
-            if (idx == tvModel->rowColDivider())
-                painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
+            // a divider marks the row/col pivot boundary; skip hidden columns (e.g. an
+            // unchecked attribute) when looking for the next visible section to compare against
+            bool isVarEqu = symbol->type() == GMS_DT_VAR || symbol->type() == GMS_DT_EQU;
+            int pivotEnd = tvModel->dim() + (isVarEqu ? GMS_VAL_MAX : 0);
+            if (logicalIndex < pivotEnd && !tvModel->dimInColumns(logicalIndex)) {
+                QTableView *tv = static_cast<QTableView*>(this->parent());
+                int nextVisual = visualIndex(logicalIndex) + 1;
+                int nextLogical = -1;
+                while (nextVisual < count()) {
+                    int cand = this->logicalIndex(nextVisual);
+                    if (cand < pivotEnd && !tv->isColumnHidden(cand)) {
+                        nextLogical = cand;
+                        break;
+                    }
+                    nextVisual++;
+                }
+                if (nextLogical != -1 && tvModel->dimInColumns(nextLogical))
+                    painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
+            }
         }
     }
     if (mHeaderType != HeaderType::TableViewFilter && Theme::instance()->baseTheme(!Theme::isDark())) {

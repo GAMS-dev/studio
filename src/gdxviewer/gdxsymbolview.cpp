@@ -287,6 +287,7 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
             }
             for (int col=0; col<GMS_VAL_MAX; col++)
                 ui->tvTableViewFilter->setColumnHidden(mSym->dim()+col, !mShowValColActions[col]->isChecked());
+            ui->tvTableViewFilter->horizontalHeader()->viewport()->update();
             ui->tvTableView->setUpdatesEnabled(true);
         } else {
             ui->tvListView->setUpdatesEnabled(false);

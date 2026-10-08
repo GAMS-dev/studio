@@ -443,17 +443,11 @@ Qt::Orientation TableViewModel::attrOrientation() const
     return pos >= tvDimExt()-mTvColDim ? Qt::Horizontal : Qt::Vertical;
 }
 
-int TableViewModel::rowColDivider() const
+bool TableViewModel::dimInColumns(int logicalFilterColumn) const
 {
-    int ed = tvDimExt();
-    int rowDim = ed - mTvColDim;
-    if (rowDim <= 0 || rowDim >= ed)
-        return -1;
-
-    int stripPos = 0;
-    for (int i=0; i<rowDim; i++)
-        stripPos += mTvDimOrder[i] == mSym->mDim ? GMS_VAL_MAX : 1;
-    return stripPos - 1;
+    int dimIdx = logicalFilterColumn < mSym->mDim ? logicalFilterColumn : mSym->mDim;
+    int pos = mTvDimOrder.indexOf(dimIdx);
+    return pos >= tvDimExt() - mTvColDim;
 }
 
 int TableViewModel::attrValueForSection(int section, Qt::Orientation orientation) const

@@ -74,8 +74,9 @@ public:
 
     bool isAllDefault(int section, Qt::Orientation orientation) const;
 
-    // table view filter column index after which the row/col divider should be drawn, -1 if none;
-    int rowColDivider() const;
+    // whether the dim at this logical filter-strip column (0..dim()-1 for an index dim,
+    // dim()..dim()+GMS_VAL_MAX-1 for any attribute column) is currently pivoted into columns
+    bool dimInColumns(int logicalFilterColumn) const;
 
     bool needDummyRow() const;
 
