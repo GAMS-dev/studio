@@ -32,12 +32,18 @@ static const char *defaultJson = R"([
   {
     "trigger": "Set1",
     "description": "short",
-    "body": "Set ${1:sym} /\n   ${2:e1},\n   ${3:e2} /;${0}"
+    "body": "Set
+   ${1:s1}(${2:dim})
+   ${3:s2}(${4:dim1},${5:dim2});${0}"
   },
   {
     "trigger": "Set2",
     "description": "extended",
-    "body": "Set ${1:sym} '${2:text}' /\n   ${3:e1} '${4:text1}',\n   ${5:e2} '${6:text2}' /;${0}"
+    "body": "Set
+   ${1:s1}(${2:dim})       '${3:text}' / ${4:l1} 1,
+                          ${5:l2} 2 /
+   ${6:s2}(${7:dim1},${8:dim2}) '${9:text}' / ${10:l1}.${11:k1} 1,
+                          ${12:l1}.${13:k2} 2 /;${0}"
   },
   {
     "trigger": "Alias",
@@ -47,32 +53,50 @@ static const char *defaultJson = R"([
   {
     "trigger": "Variable1",
     "description": "short",
-    "body": "Variable\n   ${1:v1}\n   ${2:v2};${0}"
+    "body": "Variable
+   ${1:v1}
+   ${2:v2}(${3:s1})
+   ${4:v3}(${5:s1},${6:s2});${0}"
   },
   {
     "trigger": "Variable2",
     "description": "extended",
-    "body": "Variable\n   ${1:v1}(${2:i1})\n   ${3:v2}(${4:i2});${0}"
+    "body": "Variable
+   ${1:v1}        '${2:text}' / 1 /
+   ${3:v2}(${4:s1})    '${5:text}' / ${6:l1} 1,
+                      ${7:l2} 2 /
+   ${8:v3}(${9:s1},${10:s2}) '${11:text}' / ${12:l1}.${13:k1} 1,
+                      ${14:l1}.${15:k2} 2 /;${0}"
   },
   {
     "trigger": "Scalar1",
     "description": "short",
-    "body": "Scalar\n   ${1:s1} / ${2:value1} /\n   ${3:s2} / ${4:value2} /;${0}"
+    "body": "Scalar\n   ${1:s1}\n   ${3:s2};${0}"
   },
   {
     "trigger": "Scalar2",
-    "description": "",
-    "body": "Scalar\n   ${1:s1} ${2:text1} / ${3:value1} /\n   ${4:s2} ${5:text2} / ${6:value2} /;${0}"
+    "description": "extended",
+    "body": "Scalar
+   ${1:s1} ${2:text1} / ${3:value1} /
+   ${4:s2} ${5:text2} / ${6:value2} /;${0}"
   },
   {
     "trigger": "Parameter1",
     "description": "short",
-    "body": "Parameter\n   ${1:1}\n   ${2:2};${0}"
+    "body": "Parameter
+   ${1:p1}
+   ${2:p2}(${3:s1})
+   ${4:p3}(${5:s1},${6:s2});${0}"
   },
   {
     "trigger": "Parameter2",
     "description": "extended",
-    "body": "Parameter ${1:p}(${2:s}) '${3:text}'\n   / ${4:e1} = ${5:1},\n     ${6:e2} = ${7:2} /;${0}"
+    "body": "Parameter
+   ${1:p1}        '${2:text}' / 1 /
+   ${3:p2}(${4:s1})    '${5:text}' / ${6:l1} 1,
+                      ${7:l2} 2 /
+   ${8:p3}(${9:s1},${10:s2}) '${11:text}' / ${12:l1}.${13:k1} 1,
+                      ${14:l1}.${15:k2} 2 /;${0}"
   },
   {
     "trigger": "Equation1",
@@ -82,7 +106,12 @@ static const char *defaultJson = R"([
   {
     "trigger": "Equation2",
     "description": "extended",
-    "body": "Equation\n   ${1:eq1} '${2:text1}'\n   ${3:eq2} '${4:text2}';${0}"
+    "body": "Equation
+   ${1:eq1}        '${2:text}' / 1 /
+   ${3:eq2}(${4:s1})    '${5:text}' / ${6:l1} 1,
+                       ${7:l2} 2 /
+   ${8:eq3}(${9:s1},${10:s2}) '${11:text}' / ${12:l1}.${13:k1} 1,
+                       ${14:l1}.${15:k2} 2 /;${0}"
   },
   {
     "trigger": "Function",
