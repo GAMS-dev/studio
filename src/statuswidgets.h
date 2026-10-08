@@ -34,26 +34,7 @@ class QLabel;
 namespace gams {
 namespace studio {
 
-class AmountLabel: public QLabel
-{
-    Q_OBJECT
-    qreal mLoadAmount = 1.0;
-    QString mLoadingText;
-    QString mBaseText;
-public:
-    AmountLabel(QWidget *parent) : QLabel(parent) {}
-    explicit AmountLabel(QWidget *parent=nullptr, Qt::WindowFlags f=Qt::WindowFlags())
-        : QLabel(parent, f) {}
-    explicit AmountLabel(const QString &text, QWidget *parent=nullptr, Qt::WindowFlags f=Qt::WindowFlags())
-        : QLabel(text, parent, f) { setBaseText(text); }
-    qreal getAmount() const { return mLoadAmount; }
-    void setAmount(qreal value);
-    void setBaseText(const QString &text);
-    void setLoadingText(const QString &loadingText);
-
-protected:
-    void paintEvent(QPaintEvent *event) override;
-};
+class AmountLabel;
 
 class StatusWidgets : public QObject
 {

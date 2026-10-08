@@ -942,7 +942,7 @@ void MainWindow::initNavigator()
 
     QLabel* spacer = new QLabel;
     spacer->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-    ui->statusBar->addWidget(spacer, 2);
+    ui->statusBar->addWidget(spacer, 1);
 
     mNavigatorInput->setMinimumWidth(300);
     mNavigatorInput->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);

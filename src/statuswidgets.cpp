@@ -38,6 +38,29 @@ const QString UC_Checkmark("\u2713");
 namespace gams {
 namespace studio {
 
+class AmountLabel: public QWidget
+{
+    qreal mLoadAmount = 1.0;
+    QString mLoadingText;
+    QString mBaseText;
+    QString mFullText;
+public:
+    explicit AmountLabel(const QString &text, QWidget *parent=nullptr, Qt::WindowFlags f=Qt::WindowFlags())
+        : QWidget(parent, f) { setBaseText(text); initPolicy(); }
+    qreal getAmount() const { return mLoadAmount; }
+    void setAmount(qreal value);
+    void setBaseText(const QString &text);
+    void setLoadingText(const QString &loadingText);
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+    QSize minimumSizeHint() const override;
+    QSize sizeHint() const override;
+    void updateText();
+    void initPolicy();
+};
+
+
 StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(parent->statusBar())
 {
     mEditLines = new QLabel("0 lines");
@@ -95,7 +118,7 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
 
     mFileName = new AmountLabel("Filename");
     mFileName->setLoadingText("(counting)");
-    mStatusBar->addWidget(mFileName, 1);
+    mStatusBar->addWidget(mFileName, 0);
 }
 
 void StatusWidgets::setFileName(const QString &fileName)
@@ -273,41 +296,75 @@ void StatusWidgets::setLicenseState(support::LicenseState licenseState, const QD
 
 void AmountLabel::setAmount(qreal value)
 {
-    if ((value < 1.0) != (mLoadAmount < 1.0)) {
-        mLoadAmount = value;
-        setText(mBaseText + ((mLoadAmount < 1.0) ? " "+mLoadingText : ""));
-    } else {
-        mLoadAmount = value;
-        repaint();
-    }
+    mLoadAmount = value;
+    updateText();
 }
 
 void AmountLabel::setBaseText(const QString &text)
 {
     mBaseText = text;
-    setText(mBaseText + ((mLoadAmount < 1.0) ? " "+mLoadingText : ""));
+    updateText();
 }
 
 void AmountLabel::setLoadingText(const QString &loadingText)
 {
     mLoadingText = loadingText;
-    setText(mBaseText + ((mLoadAmount < 1.0) ? " "+mLoadingText : ""));
+    updateText();
 }
 
 void AmountLabel::paintEvent(QPaintEvent *event)
 {
-    QLabel::paintEvent(event);
-    if (mLoadAmount < 1.0) {
-        int x = qRound((width() - 1) * qBound(0.0 ,mLoadAmount, 1.0));
-        QPainter p(this);
-        p.save();
-        p.setPen(Qt::NoPen);
-        p.setBrush(QColor(160,160,160, 220));
-        p.drawRect(QRect(x, 0, width()-1, 3));
-        p.setBrush(QColor(255,120,0, 220));
-        p.drawRect(QRect(0, 0, x, 3));
-        p.restore();
+    QPainter painter(this);
+    if (mFullText.isEmpty()) {
+        QWidget::paintEvent(event);
+    } else {
+        int availableWidth = width() - 6;
+        if (availableWidth < 0) availableWidth = 0;
+        QFontMetrics metrics = painter.fontMetrics();
+        QString elidedText = metrics.elidedText(mFullText, Qt::ElideMiddle, availableWidth);
+        painter.drawText(rect(), Qt::AlignLeft | Qt::AlignVCenter, elidedText);
     }
+
+    if (mLoadAmount < 1.0) {
+        QPainter painter(this);
+        int x = qRound((width() - 1) * qBound(0.0 ,mLoadAmount, 1.0));
+        painter.save();
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(160,160,160, 220));
+        painter.drawRect(QRect(x, 0, width()-1, 3));
+        painter.setBrush(QColor(255,120,0, 220));
+        painter.drawRect(QRect(0, 0, x, 3));
+        painter.restore();
+    }
+}
+
+QSize AmountLabel::minimumSizeHint() const
+{
+    return QSize(15, 20);
+}
+
+QSize AmountLabel::sizeHint() const
+{
+    if (mFullText.isEmpty())
+        return QSize(50, 20);
+
+    QFontMetrics metrics(font());
+    return QSize(metrics.horizontalAdvance(mFullText) + 6, 20);
+}
+
+void AmountLabel::updateText()
+{
+    mFullText = mBaseText + ((mLoadAmount < 1.0) ? " "+mLoadingText : "");
+    setToolTip(mFullText);
+    updateGeometry();
+    update();
+
+}
+
+void AmountLabel::initPolicy()
+{
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    setMinimumWidth(15);
 }
 
 } // namespace Studio
