@@ -804,7 +804,7 @@ int GdxSymbol::recordCount() const
 int GdxSymbol::visibleRecordCount() const
 {
     if (isDataTruncated())
-        return GdxSymbol::MAX_DISPLAY_RECORDS;
+        return mMaxDisplayRecords;
     else
         return mFilterRecCount;
 }

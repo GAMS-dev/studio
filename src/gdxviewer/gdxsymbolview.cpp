@@ -359,6 +359,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
 
     connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::updateRecordCount);
     connect(mSym, &GdxSymbol::filterChanged, this, &GdxSymbolView::updateRecordCount);
+    connect(mSym, &GdxSymbol::truncatedData, this, &GdxSymbolView::updateRecordCount);
 
     showDefaultView(symViewState);
     updateMaxDisplayRecords();
