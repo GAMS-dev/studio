@@ -1,4 +1,4 @@
-Version 1.25.8 *
+Version 1.25.8
 ==================
 - A command line parameter is no longer automatically filled with the casing of a previous entry.
 - Fixed Studio not extracting the access code for some licenses.
@@ -6,7 +6,7 @@ Version 1.25.8 *
 - Fixed Studio window can't be reduced in width when the path of the current file is long.
 - Fixed GDX Viewer table view not displaying data correctly for symbols with bad UELs.
 - Reimplemented truncation behavior of large data to use a dynamic approach instead of a fixed maximum record count.
-- Fixed subprocesses not terminating properly when stopping a run or exiting Studo.
+- Fixed subprocesses not terminating properly when stopping a run or exiting Studio.
 
 Version 1.25.7
 ==================
