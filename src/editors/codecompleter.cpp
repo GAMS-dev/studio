@@ -823,6 +823,7 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
     QPair<int,int> syntax = getSyntax(block, posInBlock, dcoFlavor, dotPos);
 
     int validStart = peekStart;
+    QStringView lineView(line);
     while (peekStart > 0) {
         --peekStart;
         CharGroup cg = group(line.at(peekStart));
@@ -837,7 +838,7 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
                     || syntax.first == int(syntax::SyntaxKind::AssignmentSystemData)) {
                 if (line.at(peekStart) == '.') {
                     const QString sys("system.");
-                    if (peekStart >= sys.length() && sys.compare(line.mid(validStart - sys.length(), sys.length()), Qt::CaseInsensitive) == 0) {
+                    if (peekStart >= sys.length() && sys.compare(lineView.mid(validStart - sys.length(), sys.length()), Qt::CaseInsensitive) == 0) {
                         validStart -= sys.length();
                         if (validStart > 0 && line.at(validStart-1) == '%')
                             --validStart;

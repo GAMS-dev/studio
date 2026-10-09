@@ -33,8 +33,6 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-const int GdxSymbol::MAX_DISPLAY_RECORDS = 102261126;
-
 const QList<QString> GdxSymbol::superScript = QList<QString>({
                                          QString(u8"\u2070"),
                                          QString(u8"\u00B9"),
@@ -137,7 +135,7 @@ int GdxSymbol::rowCount(const QModelIndex &parent) const
         return 0;
     if (isDataTruncated()) {
         emit truncatedData(true);
-        return GdxSymbol::MAX_DISPLAY_RECORDS;
+        return mMaxDisplayRecords;
     }
     else {
         emit truncatedData(false);
@@ -480,7 +478,25 @@ void GdxSymbol::initNumericalBounds()
 
 bool GdxSymbol::isDataTruncated() const
 {
-    return mFilterRecCount > GdxSymbol::MAX_DISPLAY_RECORDS;
+    return mFilterRecCount > mMaxDisplayRecords;
+}
+
+void GdxSymbol::setMaxDisplayRecords(int maxDisplayRecords)
+{
+    if (maxDisplayRecords == mMaxDisplayRecords)
+        return;
+    int oldRowCount = rowCount();
+    mMaxDisplayRecords = maxDisplayRecords;
+    // while loading, the loader thread resets the model regularly and picks up the new limit
+    if (mIsLoaded && rowCount() != oldRowCount) {
+        beginResetModel();
+        endResetModel();
+    }
+}
+
+int GdxSymbol::maxDisplayRecords() const
+{
+    return mMaxDisplayRecords;
 }
 
 int GdxSymbol::numericalColumnCount() const

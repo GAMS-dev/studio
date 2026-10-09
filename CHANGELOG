@@ -17,6 +17,16 @@ Version 1.26.0  *
 - Highlighting of search results in the GDX Viewer is now delayed until the search is initiated.
 - Enabled Table View mode in the GDX Viewer for 1-dimensional symbols.
 
+Version 1.25.8
+==================
+- A command line parameter is no longer automatically filled with the casing of a previous entry.
+- Fixed Studio not extracting the access code for some licenses.
+- Fixed Replace in Quick Find not replacing current match.
+- Fixed Studio window can't be reduced in width when the path of the current file is long.
+- Fixed GDX Viewer table view not displaying data correctly for symbols with bad UELs.
+- Reimplemented truncation behavior of large data to use a dynamic approach instead of a fixed maximum record count.
+- Fixed subprocesses not terminating properly when stopping a run or exiting Studio.
+
 Version 1.25.7
 ==================
 - Fixed a crash when an open GDX file changed externally.

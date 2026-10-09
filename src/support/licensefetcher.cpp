@@ -282,12 +282,13 @@ void LicenseFetcher::checkLicense(const QStringList &lines)
             fetchLicenseValues(modulesLine, line);
 
             // extract access code from line 5
-        } else if (lineNr == 5 && line.startsWith("DC")) {
+        } else if (lineNr == 5) {
             fetchAccessCode(line);
 
-            // extract access code from line 6
+            // extract license type from line 6
         } else if (lineNr == 6) {
             fetchLicenseType(line);
+            break;
         }
     }
 }

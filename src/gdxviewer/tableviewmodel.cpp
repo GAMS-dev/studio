@@ -256,12 +256,9 @@ void TableViewModel::initTableView(int nrColDim, QList<int> dimOrder)
     mTvRowHeaders.clear();
     mTvColHeaders.clear();
     mTvKeysToValIdx.clear();
-    QList<uint> lastRowHeader(mSym->mDim-mTvColDim);
-    for (int i=0; i<lastRowHeader.size(); i++)
-        lastRowHeader[i] = 0;
-    QList<uint> lastColHeader(mTvColDim);
-    for (int i=0; i<lastColHeader.size(); i++)
-        lastColHeader[i] = 0;
+
+    QList<uint> lastRowHeader;
+    QList<uint> lastColHeader;
     size_t r;
 
     QList<uint> rowHeader;

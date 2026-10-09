@@ -212,6 +212,7 @@ void EditFindAdapter::handleNextResult(const FindResult &res)
         c.setPosition(res.pos + res.len, QTextCursor::KeepAnchor);
         mEdit->setTextCursor(c);
         mEdit->ensureCursorVisible();
+        mEdit->lockSelectedFind();
         if (res.wrapped) emit showStatusMessage(tr("Suche am Anfang/Ende fortgesetzt"));
         emitFindDone(true);
     } else {
@@ -285,9 +286,6 @@ bool EditFindAdapter::findReplace(const QString &replacement)
 {
     if (!mEdit->findReplace(replacement))
         return false;
-    QTextCursor cursor = mEdit->textCursor();
-    cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, replacement.length());
-    mEdit->setTextCursor(cursor);
     return true;
 }
 

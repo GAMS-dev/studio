@@ -28,7 +28,6 @@
 
 #ifdef _WIN64
 #include <Windows.h>
-#include <signal.h>
 #elif __APPLE__
 #include <csignal>
 #include <unistd.h>
@@ -49,8 +48,10 @@ AbstractProcess::AbstractProcess(const QString &appName, QObject *parent)
         qRegisterMetaType<QProcess::ProcessState>();
     if (!QMetaType::isRegistered(qMetaTypeId<NodeId>()))
         qRegisterMetaType<NodeId>();
-#ifdef __APPLE__
-    mProcess.setChildProcessModifier([](){::setpgid(0,0);});
+#ifndef _WIN64
+    mProcess.setChildProcessModifier([]() {
+        ::setpgid(0,0);
+    });
 #endif
 }
 
@@ -85,11 +86,26 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 }
 #endif // _WIN64
 
+#ifndef _WIN64
+static void killProcessGroup(qint64 pid)
+{
+    // (pid <= 1) guards against
+    //   kill(0, ...) signals own process group
+    //   kill(-1, ...) signals every process we are allowed to signal
+    if (pid <= 1)
+        return;
+    if (kill(-pid, SIGKILL) != 0) // if killing process group fails
+        kill(pid, SIGKILL);       // kill only the process
+}
+#endif
+
 void AbstractProcess::interruptIntern(bool hardKill)
 {
 #ifdef _WIN64
     if (hardKill) {
-        mProcess.kill();
+        qint64 pid = mProcess.processId();
+        if (pid > 0)
+            QProcess::startDetached("taskkill", QStringList() << "/F" << "/T" << "/PID" << QString::number(pid));
     } else {
 
         QString procName("___GAMSMSGWINDOW___" + QString::number(mProcess.processId()));
@@ -109,10 +125,10 @@ void AbstractProcess::interruptIntern(bool hardKill)
         emit interruptGenerated();
     }
 #elif __APPLE__
-    if (hardKill)
-        mProcess.kill();
-    else {
-        auto pid = mProcess.processId();
+    auto pid = mProcess.processId();
+    if (hardKill) {
+        killProcessGroup(pid);
+    } else {
         signal(SIGINT, SIG_IGN);
         kill(qAbs(pid), SIGINT);
         signal(SIGINT, SIG_DFL);
@@ -121,10 +137,10 @@ void AbstractProcess::interruptIntern(bool hardKill)
     emit interruptGenerated();
 #else // Linux
     auto pid = mProcess.processId();
-    if (!pid)
+    if (pid <= 1)
         return;
     if (hardKill)
-        kill(pid, SIGKILL);
+        killProcessGroup(pid);
     else
         kill(pid, SIGINT);
     emit interruptGenerated();

@@ -114,6 +114,9 @@ public:
 
     bool isDataTruncated() const;
 
+    void setMaxDisplayRecords(int maxDisplayRecords);
+    int maxDisplayRecords() const;
+
 signals:
     void loadFinished();
     void loadPaused();
@@ -132,8 +135,6 @@ private:
     QRegularExpression mSearchRegEx;
 
 private:
-    static const int MAX_DISPLAY_RECORDS;
-
     void initNumericalBounds();
     gdxHandle_t mGdx = nullptr;
     int mNr;
@@ -159,6 +160,7 @@ private:
     bool mIsLoaded = false;
     int mLoadedRecCount = 0;
     int mFilterRecCount = 0;
+    int mMaxDisplayRecords = INT_MAX / 64; // conservative until the view provides the limit for its row height
 
     bool stopLoading = false;
 

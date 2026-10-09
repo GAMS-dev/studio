@@ -17,13 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "option/gamsparameterwidget.h"
+#include "ui_gamsparameterwidget.h"
+
+#include "option/gamsparameditor.h"
 #include "checkmenu.h"
 #include "mainwindow.h"
 #include "settings.h"
 
-#include "option/gamsparameterwidget.h"
-#include "ui_gamsparameterwidget.h"
-#include "option/gamsparameditor.h"
+#include <QCompleter>
 
 namespace gams {
 namespace studio {
@@ -52,6 +54,27 @@ GamsParameterWidget::GamsParameterWidget(QAction *aRun, QAction *aCompile, QActi
 
     mExtendedEditor = new QDockWidget("GAMS Parameters", this);
     mExtendedEditor->setObjectName("gamsArguments");
+
+    // Allow to change only the casing of parameters
+    ui->gamsParameterCommandLine->setDuplicatesEnabled(true);
+    if (ui->gamsParameterCommandLine->completer())
+        ui->gamsParameterCommandLine->completer()->setCaseSensitivity(Qt::CaseSensitive);
+    QAbstractItemModel* model = ui->gamsParameterCommandLine->model();
+    connect(model, &QAbstractItemModel::rowsInserted, [model](const QModelIndex &parent, int start, int end) {
+        for (int i = start; i <= end; ++i) {
+            QString newText = model->index(i, 0, parent).data(Qt::DisplayRole).toString();
+            for (int r = model->rowCount(parent) - 1; r >= 0; --r) {
+                if (r == i) continue;
+                QString alterText = model->index(r, 0, parent).data(Qt::DisplayRole).toString();
+                if (QString::compare(alterText, newText, Qt::CaseInsensitive) == 0) {
+                    model->removeRow(r, parent);
+                    if (r < i)
+                        --i;
+                    break;
+                }
+            }
+        }
+    });
 
     mDockChild = new GamsParamEditor(FileKind::None, ui->gamsParameterCommandLine->lineEdit()->text(), mOptionTokenizer, mExtendedEditor);
     mExtendedEditor->setWidget(mDockChild);
