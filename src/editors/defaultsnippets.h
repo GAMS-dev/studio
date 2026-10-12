@@ -62,11 +62,11 @@ static const char *defaultJson = R"([
     "trigger": "Variable2",
     "description": "extended",
     "body": "Variable
-   ${1:v1}        '${2:text}' / 1 /
-   ${3:v2}(${4:s1})    '${5:text}' / ${6:l1} 1,
-                      ${7:l2} 2 /
-   ${8:v3}(${9:s1},${10:s2}) '${11:text}' / ${12:l1}.${13:k1} 1,
-                      ${14:l1}.${15:k2} 2 /;${0}"
+   ${1:v1}        '${2:text}' / ${3:l} 1 /
+   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
+                      ${8:a.up} 2 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
+                      ${14:a.c.l} 2 /;${0}"
   },
   {
     "trigger": "Scalar1",
@@ -77,8 +77,8 @@ static const char *defaultJson = R"([
     "trigger": "Scalar2",
     "description": "extended",
     "body": "Scalar
-   ${1:s1} ${2:text1} / ${3:value1} /
-   ${4:s2} ${5:text2} / ${6:value2} /;${0}"
+   ${1:s1} ${2:text1} / ${3:1} /
+   ${4:s2} ${5:text2} / ${6:2} /;${0}"
   },
   {
     "trigger": "Parameter1",
@@ -107,11 +107,11 @@ static const char *defaultJson = R"([
     "trigger": "Equation2",
     "description": "extended",
     "body": "Equation
-   ${1:eq1}        '${2:text}' / 1 /
-   ${3:eq2}(${4:s1})    '${5:text}' / ${6:l1} 1,
-                       ${7:l2} 2 /
-   ${8:eq3}(${9:s1},${10:s2}) '${11:text}' / ${12:l1}.${13:k1} 1,
-                       ${14:l1}.${15:k2} 2 /;${0}"
+   ${1:eq1}        '${2:text}' / ${3:l} 1 /
+   ${4:eq2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
+                       ${8:a.up} 2 /
+   ${9:eq3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
+                       ${14:a.c.l} 2 /;${0}"
   },
   {
     "trigger": "Function",
@@ -145,6 +145,11 @@ static const char *defaultJson = R"([
     "body": "File ${1:name} '${2:text}' /${3:file}/;${0}"
   },
   {
+    "trigger": "if",
+    "description": "",
+    "body": "if (${1:condition},\n   ${2:statement}\n);"
+  },
+  {
     "trigger": "for",
     "description": "loop",
     "body": "for (${1:i} = ${2:1} to ${3:10},\n   ${4:statement}\n);"
@@ -155,14 +160,14 @@ static const char *defaultJson = R"([
     "body": "loop (${1:set},\n   ${2:statement}\n);"
   },
   {
-    "trigger": "if",
-    "description": "",
-    "body": "if (${1:condition},\n   ${2:statement}\n);"
-  },
-  {
     "trigger": "while",
     "description": "loop",
     "body": "while (${1:condition},\n   ${2:statement}\n);"
+  },
+  {
+    "trigger": "repeat",
+    "description": "loop",
+    "body": "repeat (\n   ${2:statement};\nuntil ${1:condition} );"
   },
   {
     "trigger": "embeddedCode",
