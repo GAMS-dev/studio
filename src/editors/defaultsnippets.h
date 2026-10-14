@@ -46,6 +46,20 @@ static const char *defaultJson = R"([
                           ${12:l1}.${13:k2} 2 /;${0}"
   },
   {
+    "trigger": "Singleton Set1",
+    "description": "short",
+    "body": "Singleton Set
+   ${1:s1}(${2:dim})
+   ${3:s2}(${4:dim1},${5:dim2});${0}"
+  },
+  {
+    "trigger": "Singleton Set2",
+    "description": "extended",
+    "body": "Singleton Set
+   ${1:s1}(${2:dim})       '${3:text}' / ${4:l1} 1 /
+   ${6:s2}(${7:dim1},${8:dim2}) '${9:text}' / ${10:l1}.${11:k1} 1 /;${0}"
+  },
+  {
     "trigger": "Alias",
     "description": "",
     "body": "Alias (${1:v1}, ${2:v2});${0}"
@@ -62,6 +76,168 @@ static const char *defaultJson = R"([
     "trigger": "Variable2",
     "description": "extended",
     "body": "Variable
+   ${1:v1}        '${2:text}' / ${3:l} 1 /
+   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
+                      ${8:a.up} 2 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
+                      ${14:a.c.l} 2 /;${0}"
+  },
+  {
+    "trigger": "Binary Variable1",
+    "description": "short",
+    "body": "Binary Variable
+   ${1:v1}
+   ${2:v2}(${3:s1})
+   ${4:v3}(${5:s1},${6:s2});${0}"
+  },
+  {
+    "trigger": "Binary Variable2",
+    "description": "extended",
+    "body": "Binary Variable
+   ${1:v1}        '${2:text}' / ${3:l} 1 /
+   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
+                      ${8:a.up} 0 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
+                      ${14:a.c.l} 0 /;${0}"
+  },
+  {
+    "trigger": "Integer Variable1",
+    "description": "short",
+    "body": "Integer Variable
+   ${1:v1}
+   ${2:v2}(${3:s1})
+   ${4:v3}(${5:s1},${6:s2});${0}"
+  },
+  {
+    "trigger": "Integer Variable2",
+    "description": "extended",
+    "body": "Integer Variable
+   ${1:v1}        '${2:text}' / ${3:l} 1 /
+   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
+                      ${8:a.up} 2 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
+                      ${14:a.c.l} 2 /;${0}"
+  },
+  {
+    "trigger": "Negative Variable1",
+    "description": "short",
+    "body": "Negative Variable
+   ${1:v1}
+   ${2:v2}(${3:s1})
+   ${4:v3}(${5:s1},${6:s2});${0}"
+  },
+  {
+    "trigger": "Negative Variable2",
+    "description": "extended",
+    "body": "Negative Variable
+   ${1:v1}        '${2:text}' / ${3:l} -1 /
+   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} -1,
+                      ${8:a.up} -2 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} -1,
+                      ${14:a.c.l} -2 /;${0}"
+  },
+  {
+    "trigger": "NonNegative Variable1",
+    "description": "short",
+    "body": "NonNegative Variable
+   ${1:v1}
+   ${2:v2}(${3:s1})
+   ${4:v3}(${5:s1},${6:s2});${0}"
+  },
+  {
+    "trigger": "NonNegative Variable2",
+    "description": "extended",
+    "body": "NonNegative Variable
+   ${1:v1}        '${2:text}' / ${3:l} 1 /
+   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
+                      ${8:a.up} 2 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
+                      ${14:a.c.l} 2 /;${0}"
+  },
+  {
+    "trigger": "Positive Variable1",
+    "description": "short",
+    "body": "Positive Variable
+   ${1:v1}
+   ${2:v2}(${3:s1})
+   ${4:v3}(${5:s1},${6:s2});${0}"
+  },
+  {
+    "trigger": "Positive Variable2",
+    "description": "extended",
+    "body": "Positive Variable
+   ${1:v1}        '${2:text}' / ${3:l} 1 /
+   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
+                      ${8:a.up} 2 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
+                      ${14:a.c.l} 2 /;${0}"
+  },
+  {
+    "trigger": "SemiCont Variable1",
+    "description": "short",
+    "body": "SemiCont Variable
+   ${1:v1}
+   ${2:v2}(${3:s1})
+   ${4:v3}(${5:s1},${6:s2});${0}"
+  },
+  {
+    "trigger": "SemiCont Variable2",
+    "description": "extended",
+    "body": "SemiCont Variable
+   ${1:v1}        '${2:text}' / ${3:l} 1 /
+   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
+                      ${8:a.up} 2 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
+                      ${14:a.c.l} 2 /;${0}"
+  },
+  {
+    "trigger": "SemiInt Variable1",
+    "description": "short",
+    "body": "SemiInt Variable
+   ${1:v1}
+   ${2:v2}(${3:s1})
+   ${4:v3}(${5:s1},${6:s2});${0}"
+  },
+  {
+    "trigger": "SemiInt Variable2",
+    "description": "extended",
+    "body": "SemiInt Variable
+   ${1:v1}        '${2:text}' / ${3:l} 1 /
+   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
+                      ${8:a.up} 2 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
+                      ${14:a.c.l} 2 /;${0}"
+  },
+  {
+    "trigger": "SOS1 Variable1",
+    "description": "short",
+    "body": "SOS1 Variable
+   ${1:v1}
+   ${2:v2}(${3:s1})
+   ${4:v3}(${5:s1},${6:s2});${0}"
+  },
+  {
+    "trigger": "SOS1 Variable2",
+    "description": "extended",
+    "body": "SOS1 Variable
+   ${1:v1}        '${2:text}' / ${3:l} 1 /
+   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
+                      ${8:a.up} 2 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
+                      ${14:a.c.l} 2 /;${0}"
+  },
+  {
+    "trigger": "SOS2 Variable1",
+    "description": "short",
+    "body": "SOS2 Variable
+   ${1:v1}
+   ${2:v2}(${3:s1})
+   ${4:v3}(${5:s1},${6:s2});${0}"
+  },
+  {
+    "trigger": "SOS2 Variable2",
+    "description": "extended",
+    "body": "SOS2 Variable
    ${1:v1}        '${2:text}' / ${3:l} 1 /
    ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
                       ${8:a.up} 2 /

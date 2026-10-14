@@ -1017,24 +1017,13 @@ void CodeCompleter::loadSnippets(const QString &userSnippetFile)
             s.body        = obj.value("body").toString();
             if (!s.trigger.isEmpty() && !s.body.isEmpty())
                 res.insert(s.trigger, s);
-            if (s.body.startsWith("set", Qt::CaseInsensitive)) {
-                QString sub = "Singleton ";
+            if (s.body.startsWith("variable", Qt::CaseInsensitive)) {
+                QString sub = "Free ";
                 if (s.trigger.at(0).isLower()) sub = sub.toLower();
                 if (s.trigger.at(1).isUpper()) sub = sub.toUpper();
                 s.trigger.prepend(sub);
                 s.body.prepend(sub);
                 res.insert(s.trigger, s);
-            } else if (s.body.startsWith("variable", Qt::CaseInsensitive)) {
-                for (auto i = syntax::SyntaxData::declaration4Var().constBegin();
-                     i != syntax::SyntaxData::declaration4Var().constEnd(); ++i) {
-                    Snippet s2 = s;
-                    QString sub = i->first;
-                    if (s.trigger.at(0).isLower()) sub = sub.toLower();
-                    if (s.trigger.at(1).isUpper()) sub = sub.toUpper();
-                    s2.trigger.prepend(sub + " ");
-                    s2.body.prepend(sub + " ");
-                    res.insert(s2.trigger, s2);
-                }
             }
         }
         DEB() << "  - Snippet count: " << res.size();
