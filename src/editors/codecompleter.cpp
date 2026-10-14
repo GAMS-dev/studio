@@ -69,7 +69,7 @@ void CodeCompleterModel::setSnippets(const QList<Snippet> &snippets)
         }
     }
 
-    QString deb;
+    QStringList deb;
     for (const Snippet &s : snippets) {
         mData << s.trigger;
         const QString desc = (s.trigger.size() && s.trigger.last(1) >= '0' && s.trigger.last(1) <= '9'
@@ -77,10 +77,11 @@ void CodeCompleterModel::setSnippets(const QList<Snippet> &snippets)
                                   : s.trigger)
                            + (s.description.isEmpty() ? QString() : " - " + s.description);
         mDescription << desc;
-        deb += '`'+desc+"`, ";
+        deb << '`'+desc+"`";
         mDescriptIndex << int(mDescription.size()) - 1;
     }
-    DEB() << deb;
+    std::sort(deb.begin(), deb.end());
+    DEB() << deb.join(", ");
     if (!snippets.isEmpty())
         mType.insert(int(mData.size()) - 1, ccSnippet);
 

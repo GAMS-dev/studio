@@ -203,8 +203,8 @@ static const char *defaultJson = R"([
     "description": "extended",
     "body": "SemiInt Variable
    ${1:v1}        '${2:text}' / ${3:l} 1 /
-   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
-                      ${8:a.up} 2 /
+   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 0,
+                      ${8:a.up} 10 /
    ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
                       ${14:a.c.l} 2 /;${0}"
   },
@@ -212,37 +212,30 @@ static const char *defaultJson = R"([
     "trigger": "SOS1 Variable1",
     "description": "short",
     "body": "SOS1 Variable
-   ${1:v1}
-   ${2:v2}(${3:s1})
-   ${4:v3}(${5:s1},${6:s2});${0}"
+   ${1:v1}(${2:s1})
+   ${3:v2}(${4:s1},${5:s2});${0}"
   },
   {
     "trigger": "SOS1 Variable2",
     "description": "extended",
     "body": "SOS1 Variable
-   ${1:v1}        '${2:text}' / ${3:l} 1 /
-   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
-                      ${8:a.up} 2 /
-   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
-                      ${14:a.c.l} 2 /;${0}"
+   ${1:v1}(${2:s1})    '${3:text}' / ${4:a.up} 2 /
+   ${5:v2}(${6:s1},${7:s2}) '${8:text}' / ${9:b.c.l} 1 /;${0}"
   },
   {
     "trigger": "SOS2 Variable1",
     "description": "short",
     "body": "SOS2 Variable
-   ${1:v1}
-   ${2:v2}(${3:s1})
-   ${4:v3}(${5:s1},${6:s2});${0}"
+   ${2:v1}(${3:s1})
+   ${4:v2}(${5:s1},${6:s2});${0}"
   },
   {
     "trigger": "SOS2 Variable2",
     "description": "extended",
     "body": "SOS2 Variable
-   ${1:v1}        '${2:text}' / ${3:l} 1 /
-   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
-                      ${8:a.up} 2 /
-   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
-                      ${14:a.c.l} 2 /;${0}"
+   ${1:v1}(${2:s1})    '${3:text}' / ${4:a.up} 2 /
+   ${5:v2}(${6:s1},${7:s2}) '${8:text}' / ${9:b.c.l} 1,
+                      ${10:b.d.l} 2 /;${0}"
   },
   {
     "trigger": "Scalar1",
