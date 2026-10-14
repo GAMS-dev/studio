@@ -99,11 +99,8 @@ protected:
     void closeEvent(QCloseEvent *event) override;
     void showEvent(QShowEvent *event) override;
 
-    void initData(int selectorIndex);
+    void initData(QVariantHash data);
     QString generateSelectorName(const QVariantHash &data);
-    void insertSelector(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken,
-                          const QString &ssoName, int authExpireMinutes, bool selfCert, const QString &_nSpace,
-                          const QString &_userInst, bool _forceGdx);
     void insertSelector(const QVariantHash &data, bool atStart = true);
     void showLogin();
     void showConnect();
@@ -121,10 +118,15 @@ protected:
     void updateUrlEdit();
     bool openInBrowser(const QString &text);
     void updatePoolControls(bool adaptCheckBox = false, bool adaptSize = false);
-    void updateSelector();
+    QVariantHash getHashDataForCurrentFields();
+    QVariantHash getHashData(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken,
+                             const QString &ssoName, int authExpireMinutes, bool selfCert, const QString &_nSpace,
+                             const QString &_userInst, bool _forceGdx);
+    void addCurrentSelector();
 
 private slots:
     void on_cbSelector_activated(int index);
+    void updateSelector();
     void urlEdited(const QString &text);
     void updateLoginStates();
     void updateSubmitStates();
