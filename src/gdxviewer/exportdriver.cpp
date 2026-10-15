@@ -33,8 +33,7 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-// a persisted table view state predating attribute-pivoting has a shorter tvDimOrder; fall
-// back to the same default pivot TableViewModel itself would use in that case
+// a persisted table view state without attribute-pivoting has a shorter tvDimOrder - fall back to default
 static int sanitizedTvColDim(int tvColDim, const QList<int> &tvDimOrder, int symDim, bool hasAttrDim)
 {
     if (tvDimOrder.size() == symDim + (hasAttrDim ? 1 : 0))
@@ -241,12 +240,10 @@ QString ExportDriver::generateProjections(bool applyFilters, bool hiddenAttribut
             }
         }
 
-        // ed includes the trailing attribute pseudo-dim Projection creates for a suffix list
         bool hasAttrDim = isVarEqu && suffix.length() > 0;
-        int ed = sym->dim() + (hasAttrDim ? 1 : 0);
         QString dom = generateDomains(sym);
-        QString natDom = generateDomains(sym, ed);
-        QString domNew = generateDomainsNew(sym, ed);
+        QString natDom = generateDomains(sym, hasAttrDim);
+        QString domNew = generateDomainsNew(sym, hasAttrDim);
         bool domOrderChanged = domNew != natDom;
 
         if (isVarEqu) {
@@ -264,9 +261,7 @@ QString ExportDriver::generateProjections(bool applyFilters, bool hiddenAttribut
                 inst += "    asSet: True\n";
             }
 
-            // Projection always appends the attribute as the trailing dim, so a second,
-            // plain (suffix-less) Projection reorders the already-materialized parameter's
-            // own dims (attribute included) to match Studio's pivot
+            // Projection puts the attribute last, so a second Projection reorders all dims to match Studio's pivot
             if (domOrderChanged) {
                 mReorderedSymbols << sym->name();
                 QString finalName = sym->name() + PROJ_SUFFIX2;
@@ -467,11 +462,11 @@ QString ExportDriver::generateSheetName(GdxSymbol *sym)
 }
 
 
-QString ExportDriver::generateDomains(GdxSymbol *sym, int dimOverride)
+QString ExportDriver::generateDomains(GdxSymbol *sym, bool includeAttrDim)
 {
     QString dom;
     sym = sym->aliasedSymbol();
-    int n = dimOverride >= 0 ? dimOverride : sym->dim();
+    int n = sym->dim() + (includeAttrDim ? 1 : 0);
     if (n > 0) {
         dom = "(";
         for (int i=0; i<n; i++)
@@ -482,12 +477,11 @@ QString ExportDriver::generateDomains(GdxSymbol *sym, int dimOverride)
     return dom;
 }
 
-// ed is the number of dims the caller expects in the result: sym->dim(), or sym->dim()+1 for a
-// var/equ whose exported attribute (Level/Marginal/...) becomes its own trailing pseudo-dim
-QString ExportDriver::generateDomainsNew(GdxSymbol *sym, int ed)
+QString ExportDriver::generateDomainsNew(GdxSymbol *sym, bool includeAttrDim)
 {
     QString dom;
     sym = sym->aliasedSymbol();
+    int ed = sym->dim() + (includeAttrDim ? 1 : 0);
     if (ed > 0) {
         GdxSymbolViewState *symViewState = getSymbolViewState(sym);
         QList<int> dimOrder;
@@ -513,7 +507,7 @@ QString ExportDriver::generateDomainsNew(GdxSymbol *sym, int ed)
         }
         // an order covering only the real index dims (list view, or a stale/legacy table view
         // state) has the attribute, if any, trailing
-        if (dimOrder.size() == sym->dim() && ed == sym->dim()+1)
+        if (dimOrder.size() == sym->dim() && includeAttrDim)
             dimOrder << sym->dim();
 
         if (dimOrder.size() == ed) {
@@ -524,7 +518,7 @@ QString ExportDriver::generateDomainsNew(GdxSymbol *sym, int ed)
             dom += ")";
             return dom;
         }
-        return generateDomains(sym, ed);
+        return generateDomains(sym, includeAttrDim);
     }
     return dom;
 }
