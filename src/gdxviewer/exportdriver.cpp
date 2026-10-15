@@ -242,9 +242,7 @@ QString ExportDriver::generateProjections(bool applyFilters, bool hiddenAttribut
 
         bool hasAttrDim = isVarEqu && suffix.length() > 0;
         QString dom = generateDomains(sym);
-        QString natDom = generateDomains(sym, hasAttrDim);
         QString domNew = generateDomainsNew(sym, hasAttrDim);
-        bool domOrderChanged = domNew != natDom;
 
         if (isVarEqu) {
             QString name;
@@ -262,7 +260,8 @@ QString ExportDriver::generateProjections(bool applyFilters, bool hiddenAttribut
             }
 
             // Projection puts the attribute last, so a second Projection reorders all dims to match Studio's pivot
-            if (domOrderChanged) {
+            QString natDom = generateDomains(sym, hasAttrDim);
+            if (domNew != natDom) {
                 mReorderedSymbols << sym->name();
                 QString finalName = sym->name() + PROJ_SUFFIX2;
                 inst += "- Projection:\n";
@@ -274,7 +273,7 @@ QString ExportDriver::generateProjections(bool applyFilters, bool hiddenAttribut
                 inst += "      connect.container.data['" + finalName + "'].records=r.sort_values([c for c in r.columns])\n";
             }
         }
-        else if (domOrderChanged) {
+        else if (domNew != dom) {
             mReorderedSymbols << sym->name();
             inst += "- Projection:\n";
             inst += "    name: " + sym->name() + dom + "\n";
