@@ -298,7 +298,7 @@ static const char *defaultJson = R"([
     "body": "Table ${1:t1}(${2:s1},${3:s2}) '${4:text}'
         ${5:s1h1} ${6:s1h2}  ${7:s1h3}
    ${8:s2h1}  ${9:1.1}  ${10:1.2}  ${11:1.3}
-   ${12:s2h2}  ${13:2.1}  ${14:2.2}  ${15:2.3};"
+   ${12:s2h2}  ${13:2.1}  ${14:2.2}  ${15:2.3};${0}"
   },
   {
     "trigger": "Table2",
@@ -306,7 +306,7 @@ static const char *defaultJson = R"([
     "body": "Table ${1:t1}(${2:i},${3:j},${4:k},${5:l}) '${6:text}'
           ${7:k1}.${8:l1} ${9:k1}.${10:l2}  ${11:k2}.${12:l1}
    ${13:i1}.${14:j1}    ${15:1.1}   ${16:1.2}    ${17:1.3}
-   ${18:i1}.${19:j2}    ${20:2.1}   ${21:2.2}    ${22:2.3};"
+   ${18:i1}.${19:j2}    ${20:2.1}   ${21:2.2}    ${22:2.3};${0}"
   },
   {
     "trigger": "File",
@@ -321,132 +321,132 @@ static const char *defaultJson = R"([
   {
     "trigger": "for",
     "description": "loop",
-    "body": "for (${1:i} = ${2:1} to ${3:10},\n   ${4:statement}\n);"
+    "body": "for (${1:i} = ${2:1} to ${3:10},\n   ${4:statement}${0}\n);"
   },
   {
     "trigger": "loop",
     "description": "loop over a set",
-    "body": "loop (${1:set},\n   ${2:statement}\n);"
+    "body": "loop (${1:set},\n   ${2:statement}${0}\n);"
   },
   {
     "trigger": "while",
     "description": "loop",
-    "body": "while (${1:condition},\n   ${2:statement}\n);"
+    "body": "while (${1:condition},\n   ${2:statement}${0}\n);"
   },
   {
     "trigger": "repeat",
     "description": "loop",
-    "body": "repeat (\n   ${2:statement};\nuntil ${1:condition} );"
+    "body": "repeat (\n   ${2:statement}${0};\nuntil ${1:condition} );"
   },
   {
     "trigger": "embeddedCode",
     "description": "",
-    "body": "embeddedCode ${1:python}:\n   ${2:statement}\nendEmbeddedCode"
+    "body": "embeddedCode ${1:python}:\n   ${2:statement}${0}\nendEmbeddedCode"
   },
   {
     "trigger": "embeddedCodeS",
     "description": "",
-    "body": "embeddedCodeS ${1:python}:\n   ${2:statement}\nendEmbeddedCode"
+    "body": "embeddedCodeS ${1:python}:\n   ${2:statement}${0}\nendEmbeddedCode"
   },
   {
     "trigger": "embeddedCodeV",
     "description": "",
-    "body": "embeddedCodeV ${1:python}:\n   ${2:statement}\nendEmbeddedCode"
+    "body": "embeddedCodeV ${1:python}:\n   ${2:statement}${0}\nendEmbeddedCode"
   },
   {
     "trigger": "continueEmbeddedCode",
     "description": "",
-    "body": "continueEmbeddedCode ${1:python}:\n   ${2:statement}\nendEmbeddedCode"
+    "body": "continueEmbeddedCode ${1:python}:\n   ${2:statement}${0}\nendEmbeddedCode"
   },
   {
     "trigger": "continueEmbeddedCodeS",
     "description": "",
-    "body": "continueEmbeddedCodeS ${1:python}:\n   ${2:statement}\nendEmbeddedCode"
+    "body": "continueEmbeddedCodeS ${1:python}:\n   ${2:statement}${0}\nendEmbeddedCode"
   },
   {
     "trigger": "continueEmbeddedCodeV",
     "description": "",
-    "body": "continueEmbeddedCodeV ${1:python}:\n   ${2:statement}\nendEmbeddedCode"
+    "body": "continueEmbeddedCodeV ${1:python}:\n   ${2:statement}${0}\nendEmbeddedCode"
   },
   {
     "trigger": "$onEmbeddedCode",
     "description": "",
-    "body": "$onEmbeddedCode ${1:python}:\n   ${2:statement}\n$offEmbeddedCode"
+    "body": "$onEmbeddedCode ${1:python}:\n   ${2:statement}${0}\n$offEmbeddedCode"
   },
   {
     "trigger": "$onEmbeddedCodeS",
     "description": "",
-    "body": "$onEmbeddedCodeS ${1:python}:\n   ${2:statement}\n$offEmbeddedCode"
+    "body": "$onEmbeddedCodeS ${1:python}:\n   ${2:statement}${0}\n$offEmbeddedCode"
   },
   {
     "trigger": "$onEmbeddedCodeV",
     "description": "",
-    "body": "$onEmbeddedCodeV ${1:python}:\n   ${2:statement}\n$offEmbeddedCode"
+    "body": "$onEmbeddedCodeV ${1:python}:\n   ${2:statement}${0}\n$offEmbeddedCode"
   },
   {
     "trigger": "$onEcho",
     "description": "",
-    "body": "$onEcho > ${1:file}\n${2:output}\n$offEcho"
+    "body": "$onEcho > ${1:file}\n${2:output}${0}\n$offEcho"
   },
   {
     "trigger": "$onEchoS",
     "description": "",
-    "body": "$onEchoS > ${1:file}\n${2:output}\n$offEcho"
+    "body": "$onEchoS > ${1:file}\n${2:output}${0}\n$offEcho"
   },
   {
     "trigger": "$onEchoV",
     "description": "",
-    "body": "$onEchoV > ${1:file}\n${2:output}\n$offEcho"
+    "body": "$onEchoV > ${1:file}\n${2:output}${0}\n$offEcho"
   },
   {
     "trigger": "$onPut",
     "description": "",
-    "body": "$onPut\n${1:text}\n$offPut"
+    "body": "$onPut\n${1:text}${0}\n$offPut"
   },
   {
     "trigger": "$onPutS",
     "description": "",
-    "body": "$onPutS\n${1:text}\n$offPut"
+    "body": "$onPutS\n${1:text}${0}\n$offPut"
   },
   {
     "trigger": "$onPutV",
     "description": "",
-    "body": "$onPutV\n${1:text}\n$offPut"
+    "body": "$onPutV\n${1:text}${0}\n$offPut"
   },
   {
     "trigger": "$onExternalInput",
     "description": "",
-    "body": "$onExternalInput\n${1:text}\n$offExternalInput"
+    "body": "$onExternalInput\n${1:text}${0}\n$offExternalInput"
   },
   {
     "trigger": "$onExternalOutput",
     "description": "",
-    "body": "$onExternalOutput\n${1:text}\n$offExternalOutput"
+    "body": "$onExternalOutput\n${1:text}${0}\n$offExternalOutput"
   },
   {
     "trigger": "$ifThen",
     "description": "",
-    "body": "$ifThen ${1:condition}\n   ${2:statement}\n$endIf"
+    "body": "$ifThen ${1:condition}\n   ${2:statement}${0}\n$endIf"
   },
   {
     "trigger": "$ifThenI",
     "description": "",
-    "body": "$ifThenI ${1:condition}\n   ${2:statement}\n$endIf"
+    "body": "$ifThenI ${1:condition}\n   ${2:statement}${0}\n$endIf"
   },
   {
     "trigger": "$ifThenE",
     "description": "",
-    "body": "$ifThenE ${1:condition}\n   ${2:statement}\n$endIf"
+    "body": "$ifThenE ${1:condition}\n   ${2:statement}${0}\n$endIf"
   },
   {
     "trigger": "$onFold",
     "description": "",
-    "body": "$onFold\n${1:code}\n$offFold"
+    "body": "$onFold\n${1:code}${0}\n$offFold"
   },
   {
     "trigger": "$onText",
     "description": "",
-    "body": "$onText\n${1:comment}\n$offText"
+    "body": "$onText\n${1:comment}${0}\n$offText"
   },
   {
     "trigger": "solve",
