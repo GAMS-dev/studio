@@ -143,7 +143,7 @@ void EngineStartDialog::authorizeChanged(const QString &authToken)
         showLogin();
     } else {
         mProc->listJobs();
-        addCurrentSelector();
+        addSelectorFromCurrent();
         ui->widSelector->setVisible(false);
     }
 }
@@ -234,7 +234,7 @@ void EngineStartDialog::init(const QString &_url, const int authMethod, const QS
     insertSelector(hash, false);
     for (const QVariant &item : recent)
         insertSelector(item.toHash(), false);
-    initData(getHashData(_url, authMethod, _user, _userToken, ssoName, authExpireMinutes, selfCert,
+    initData(toVariantHash(_url, authMethod, _user, _userToken, ssoName, authExpireMinutes, selfCert,
                          _nSpace, _userInst, _forceGdx));
 }
 
@@ -266,17 +266,17 @@ void EngineStartDialog::initData(QVariantHash data)
     updateSelector();
 }
 
-QVariantHash EngineStartDialog::getHashDataForCurrentFields()
+QVariantHash EngineStartDialog::getVariantHashForCurrentFields()
 {
-    QVariantHash hash = getHashData(mUrl, mAuthMethod, ui->edUser->text(), mProc->authToken(), ui->edSsoName->text(),
+    QVariantHash hash = toVariantHash(mUrl, mAuthMethod, ui->edUser->text(), mProc->authToken(), ui->edSsoName->text(),
                                     mAuthExpireMinutes, ui->cbAcceptCert->isChecked(), ui->cbNamespace->currentText(),
                                     mLastValidInstance, ui->cbForceGdx->isChecked());
     return hash;
 }
 
-QVariantHash EngineStartDialog::getHashData(const QString &_url, const int authMethod, const QString &_user,
-                                            const QString &_userToken, const QString &ssoName, int authExpireMinutes,
-                                            bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx)
+QVariantHash EngineStartDialog::toVariantHash(const QString &_url, const int authMethod, const QString &_user,
+                                              const QString &_userToken, const QString &ssoName, int authExpireMinutes,
+                                              bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx)
 {
     QVariantHash hash;
     hash.insert("page", _url);
@@ -292,16 +292,16 @@ QVariantHash EngineStartDialog::getHashData(const QString &_url, const int authM
     return hash;
 }
 
-void EngineStartDialog::addCurrentSelector()
+void EngineStartDialog::addSelectorFromCurrent()
 {
-    insertSelector(getHashDataForCurrentFields());
+    insertSelector(getVariantHashForCurrentFields());
     updateSelector();
 }
 
 void EngineStartDialog::updateSelector()
 {
     if (!mProc) return;
-    QVariantHash hash = getHashDataForCurrentFields();
+    QVariantHash hash = getVariantHashForCurrentFields();
     QString name = generateSelectorName(hash);
     int index = ui->cbSelector->findText(name);
     ui->cbSelector->blockSignals(true);
