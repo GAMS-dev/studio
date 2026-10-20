@@ -16,6 +16,7 @@ Version 1.26.0  *
 - Restricted GDX Viewer row label search matches in Table View to the first column per row.
 - Highlighting of search results in the GDX Viewer is now delayed until the search is initiated.
 - Enabled Table View mode in the GDX Viewer for 1-dimensional symbols.
+- Added built-in code snippets to the completer. Custom snippets can be defined via `Tools > User Snippets`.
 
 Version 1.25.8
 ==================
