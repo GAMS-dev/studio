@@ -560,6 +560,10 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
         return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     if (!test(type, mTypeFilter)) return false;
     QString text = sourceModel()->data(index, Qt::EditRole).toString();
+    if (text == ".." && filterRegularExpression().pattern().endsWith("\\.\\..*")
+        && !filterRegularExpression().pattern().endsWith("\\.\\.\\..*")) {
+        return true;
+    }
     if (type & cc_SubDco || type & ccExec || type & ccExecT || type & ccAbort) {
         if (text.startsWith('.') != mNeedDot)
             return false;
@@ -577,10 +581,6 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
         default: ;
         }
     }
-//    if (type == ccResEnd) {
-//        if (text.toLower() != "endembeddedcode" && text.toLower() != "pauseembeddedcode")
-//            return false;
-//    }
     if (mEmpty) {
         if (sourceRow == mDollarGroupRow || sourceRow == mPercentGroupRow)
             return true;
@@ -734,6 +734,8 @@ void CodeCompleter::keyPressEvent(QKeyEvent *e)
         if (mEdit)
             qApp->sendEvent(mEdit, e);
         updateFilter();
+        if (mFilterText.isEmpty())
+            hide();
     }
     }
 }
@@ -1234,7 +1236,10 @@ void CodeCompleter::insertCurrent(bool equalPartOnly)
             const int insertPos = cur.position();
             mEdit->setTextCursor(cur);
             if (!snippetBody.isEmpty() && mSnippetControl) {
-                mSnippetControl->activateSnippet(mEdit, snippetBody, insertPos);
+                QString firstValue;
+                if (mFilterText.endsWith("..") && mFilterText.length() > 2)
+                    firstValue = mFilterText.left(mFilterText.length() - 2);
+                mSnippetControl->activateSnippet(mEdit, snippetBody, insertPos, firstValue);
                 suppressOpenBegin();
                 if (AbstractEdit *ce = ViewHelper::toAbstractEdit(mEdit))
                     ce->updateExtraSelections();

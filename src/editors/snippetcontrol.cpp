@@ -93,7 +93,7 @@ void SnippetControl::parseAndInsert(const QString &body, int insertPos)
     mPlaceholders = ordered.values();
 }
 
-void SnippetControl::activateSnippet(QPlainTextEdit *edit, const QString &body, int insertPos)
+void SnippetControl::activateSnippet(QPlainTextEdit *edit, const QString &body, int insertPos, const QString firstValue)
 {
     mEdit = edit;
     mCurrentIndex = 0;
@@ -103,6 +103,11 @@ void SnippetControl::activateSnippet(QPlainTextEdit *edit, const QString &body, 
         return;
     }
     selectPlaceholder(0);
+    if (!firstValue.isEmpty()) {
+        QTextCursor cur = mEdit->textCursor();
+        cur.insertText(firstValue);
+        selectPlaceholder(0);
+    }
 }
 
 void SnippetControl::selectPlaceholder(int index)

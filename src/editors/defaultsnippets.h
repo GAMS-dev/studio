@@ -33,31 +33,35 @@ static const char *defaultJson = R"([
     "trigger": "Set1",
     "description": "short",
     "body": "Set
-   ${1:s1}(${2:dim})
-   ${3:s2}(${4:dim1},${5:dim2});${0}"
+   ${1:s3}(${2:s1})
+   ${3:s4}(${4:s1},${5:s2});${0}"
   },
   {
     "trigger": "Set2",
     "description": "extended",
     "body": "Set
-   ${1:s1}(${2:dim})       '${3:text}' / ${4:l1} 1,
-                          ${5:l2} 2 /
-   ${6:s2}(${7:dim1},${8:dim2}) '${9:text}' / ${10:l1}.${11:k1} 1,
-                          ${12:l1}.${13:k2} 2 /;${0}"
+   ${1:s1}        '${2:text-s1}' / ${3:[1]} 'text-[1]',
+                         ${4:[2]} 'text-[2]',
+                         ${5:[3]} 'text-[3]' /
+   ${6:s2}        '${7:text-s2}' / ${8:s2h1} * ${9:s2h9} /
+   ${10:s3}(${11:s1})    '${12:text-s3}' / ${13:[1]}, ${14:[3]} /
+   ${15:s2}(${16:s1},${17:s3}) '${18:text-s4}' / ${19:s2h3}.${20:[1]} 'text-s2h3.[1]',
+                         ${21:s2h5}.${22:[3]} 'text-s2h5.[3]' /;${0}"
   },
   {
     "trigger": "Singleton Set1",
     "description": "short",
     "body": "Singleton Set
-   ${1:s1}(${2:dim})
-   ${3:s2}(${4:dim1},${5:dim2});${0}"
+   ${1:ss1}(${2:s1})
+   ${3:ss2}(${4:s1},${5:s2});${0}"
   },
   {
     "trigger": "Singleton Set2",
     "description": "extended",
     "body": "Singleton Set
-   ${1:s1}(${2:dim})       '${3:text}' / ${4:l1} 1 /
-   ${6:s2}(${7:dim1},${8:dim2}) '${9:text}' / ${10:l1}.${11:k1} 1 /;${0}"
+   ${1:ss1}        '${2:text-ss1}' / ${3:s1} 'text-s1' /
+   ${4:ss2}(${5:s1})    '${6:text-ss2}' / ${7:[1]} 'text-[1]' /
+   ${8:ss3}(${9:s1},${10:s2}) '${11:text-ss3}' / ${12:[1]}.${13:s2h4} 'text-[1].s2h4' /;${0}"
   },
   {
     "trigger": "Alias",
@@ -76,11 +80,12 @@ static const char *defaultJson = R"([
     "trigger": "Variable2",
     "description": "extended",
     "body": "Variable
-   ${1:v1}        '${2:text}' / ${3:l} 1 /
-   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
-                      ${8:a.up} 2 /
-   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
-                      ${14:a.c.l} 2 /;${0}"
+   ${1:v1}        '${2:text-v1}' / ${3:l} 0.1 /
+   ${4:v2}(${5:s1})    '${6:text-v2}' / ${7:[1].lo} 21,
+                         ${8:[2].up} 22 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text-v3}' / ${13:[1]}.${14:s2h1.up} 1,
+                         ${15:[1]}.${16:s2h3.lo} 0,
+                         ${17:[1]}.${18:s2h1.l} 0.2 /;${0}"
   },
   {
     "trigger": "Binary Variable1",
@@ -94,11 +99,12 @@ static const char *defaultJson = R"([
     "trigger": "Binary Variable2",
     "description": "extended",
     "body": "Binary Variable
-   ${1:v1}        '${2:text}' / ${3:l} 1 /
-   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
-                      ${8:a.up} 0 /
-   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
-                      ${14:a.c.l} 0 /;${0}"
+   ${1:v1}        '${2:text-v1}' / ${3:l} 1 /
+   ${4:v2}(${5:s1})    '${6:text-v2}' / ${7:[1].lo} 0,
+                         ${8:[2].up} 1 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text-v3}' / ${13:[1]}.${14:s2h1.up} 1,
+                         ${15:[1]}.${16:s2h3.lo} 0,
+                         ${17:[1]}.${18:s2h1.l} 1 /;${0}"
   },
   {
     "trigger": "Integer Variable1",
@@ -112,11 +118,12 @@ static const char *defaultJson = R"([
     "trigger": "Integer Variable2",
     "description": "extended",
     "body": "Integer Variable
-   ${1:v1}        '${2:text}' / ${3:l} 1 /
-   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
-                      ${8:a.up} 2 /
-   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
-                      ${14:a.c.l} 2 /;${0}"
+   ${1:v1}        '${2:text-v1}' / ${3:l} 3 /
+   ${4:v2}(${5:s1})    '${6:text-v2}' / ${7:[1].lo} 21,
+                         ${8:[2].up} 22 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text-v3}' / ${13:[1]}.${14:s2h1.up} 3,
+                         ${15:[1]}.${16:s2h3.lo} 0,
+                         ${17:[1]}.${18:s2h1.l} 2 /;${0}"
   },
   {
     "trigger": "Negative Variable1",
@@ -130,11 +137,12 @@ static const char *defaultJson = R"([
     "trigger": "Negative Variable2",
     "description": "extended",
     "body": "Negative Variable
-   ${1:v1}        '${2:text}' / ${3:l} -1 /
-   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} -1,
-                      ${8:a.up} -2 /
-   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} -1,
-                      ${14:a.c.l} -2 /;${0}"
+   ${1:v1}        '${2:text-v1}' / ${3:l} -0.1 /
+   ${4:v2}(${5:s1})    '${6:text-v2}' / ${7:[1].lo} -22,
+                         ${8:[2].up} -21 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text-v3}' / ${13:[1]}.${14:s2h1.up} 0,
+                         ${15:[1]}.${16:s2h3.lo} -1,
+                         ${17:[1]}.${18:s2h1.l} -0.2 /;${0}"
   },
   {
     "trigger": "NonNegative Variable1",
@@ -148,11 +156,12 @@ static const char *defaultJson = R"([
     "trigger": "NonNegative Variable2",
     "description": "extended",
     "body": "NonNegative Variable
-   ${1:v1}        '${2:text}' / ${3:l} 1 /
-   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
-                      ${8:a.up} 2 /
-   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
-                      ${14:a.c.l} 2 /;${0}"
+   ${1:v1}        '${2:text-v1}' / ${3:l} 0.1 /
+   ${4:v2}(${5:s1})    '${6:text-v2}' / ${7:[1].lo} 21,
+                         ${8:[2].up} 22 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text-v3}' / ${13:[1]}.${14:s2h1.up} 1,
+                         ${15:[1]}.${16:s2h3.lo} 0,
+                         ${17:[1]}.${18:s2h1.l} 0.2 /;${0}"
   },
   {
     "trigger": "Positive Variable1",
@@ -166,11 +175,12 @@ static const char *defaultJson = R"([
     "trigger": "Positive Variable2",
     "description": "extended",
     "body": "Positive Variable
-   ${1:v1}        '${2:text}' / ${3:l} 1 /
-   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
-                      ${8:a.up} 2 /
-   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
-                      ${14:a.c.l} 2 /;${0}"
+   ${1:v1}        '${2:text-v1}' / ${3:l} 0.1 /
+   ${4:v2}(${5:s1})    '${6:text-v2}' / ${7:[1].lo} 21,
+                         ${8:[2].up} 22 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text-v3}' / ${13:[1]}.${14:s2h1.up} 1,
+                         ${15:[1]}.${16:s2h3.lo} 0,
+                         ${17:[1]}.${18:s2h1.l} 0.2 /;${0}"
   },
   {
     "trigger": "SemiCont Variable1",
@@ -184,11 +194,12 @@ static const char *defaultJson = R"([
     "trigger": "SemiCont Variable2",
     "description": "extended",
     "body": "SemiCont Variable
-   ${1:v1}        '${2:text}' / ${3:l} 1 /
-   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
-                      ${8:a.up} 2 /
-   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
-                      ${14:a.c.l} 2 /;${0}"
+   ${1:v1}        '${2:text-v1}' / ${3:l} 0.1 /
+   ${4:v2}(${5:s1})    '${6:text-v2}' / ${7:[1].lo} 21,
+                         ${8:[2].up} 22 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text-v3}' / ${13:[1]}.${14:s2h1.up} 1,
+                         ${15:[1]}.${16:s2h3.lo} 0,
+                         ${17:[1]}.${18:s2h1.l} 0.2 /;${0}"
   },
   {
     "trigger": "SemiInt Variable1",
@@ -202,11 +213,12 @@ static const char *defaultJson = R"([
     "trigger": "SemiInt Variable2",
     "description": "extended",
     "body": "SemiInt Variable
-   ${1:v1}        '${2:text}' / ${3:l} 1 /
-   ${4:v2}(${5:s1})    '${6:text}' / ${7:a.lo} 0,
-                      ${8:a.up} 10 /
-   ${9:v3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
-                      ${14:a.c.l} 2 /;${0}"
+   ${1:v1}        '${2:text-v1}' / ${3:l} 1 /
+   ${4:v2}(${5:s1})    '${6:text-v2}' / ${7:[1].lo} 21,
+                         ${8:[2].up} 22 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text-v3}' / ${13:[1]}.${14:s2h1.up} 3,
+                         ${15:[1]}.${16:s2h3.lo} 0,
+                         ${17:[1]}.${18:s2h1.l} 2 /;${0}"
   },
   {
     "trigger": "SOS1 Variable1",
@@ -219,8 +231,12 @@ static const char *defaultJson = R"([
     "trigger": "SOS1 Variable2",
     "description": "extended",
     "body": "SOS1 Variable
-   ${1:v1}(${2:s1})    '${3:text}' / ${4:a.up} 2 /
-   ${5:v2}(${6:s1},${7:s2}) '${8:text}' / ${9:b.c.l} 1 /;${0}"
+   ${1:v1}        '${2:text-v1}' / ${3:l} 0.1 /
+   ${4:v2}(${5:s1})    '${6:text-v2}' / ${7:[1].lo} 0,
+                         ${8:[2].up} 2 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text-v3}' / ${13:[1]}.${14:s2h1.up} 2,
+                         ${15:[1]}.${16:s2h3.lo} 0,
+                         ${17:[1]}.${18:s2h1.l} 0.2 /;${0}"
   },
   {
     "trigger": "SOS2 Variable1",
@@ -233,9 +249,12 @@ static const char *defaultJson = R"([
     "trigger": "SOS2 Variable2",
     "description": "extended",
     "body": "SOS2 Variable
-   ${1:v1}(${2:s1})    '${3:text}' / ${4:a.up} 2 /
-   ${5:v2}(${6:s1},${7:s2}) '${8:text}' / ${9:b.c.l} 1,
-                      ${10:b.d.l} 2 /;${0}"
+   ${1:v1}        '${2:text-v1}' / ${3:l} 0.1 /
+   ${4:v2}(${5:s1})    '${6:text-v2}' / ${7:[1].lo} 0,
+                         ${8:[2].up} 2 /
+   ${9:v3}(${10:s1},${11:s2}) '${12:text-v3}' / ${13:[1]}.${14:s2h5.l} 2,
+                         ${15:[1]}.${16:s2h6.l} 5,
+                         ${17:[1]}.${18:s2h5.lo} 0.2 /;${0}"
   },
   {
     "trigger": "Scalar1",
@@ -246,8 +265,8 @@ static const char *defaultJson = R"([
     "trigger": "Scalar2",
     "description": "extended",
     "body": "Scalar
-   ${1:s1} ${2:text1} / ${3:1} /
-   ${4:s2} ${5:text2} / ${6:2} /;${0}"
+   ${1:s1} ${2:text-s1} / ${3:1} /
+   ${4:s2} ${5:text-s2} / ${6:2} /;${0}"
   },
   {
     "trigger": "Parameter1",
@@ -261,26 +280,26 @@ static const char *defaultJson = R"([
     "trigger": "Parameter2",
     "description": "extended",
     "body": "Parameter
-   ${1:p1}        '${2:text}' / 1 /
-   ${3:p2}(${4:s1})    '${5:text}' / ${6:l1} 1,
-                      ${7:l2} 2 /
-   ${8:p3}(${9:s1},${10:s2}) '${11:text}' / ${12:l1}.${13:k1} 1,
-                      ${14:l1}.${15:k2} 2 /;${0}"
+   ${1:p1}        '${2:text-p1}' / 123 /
+   ${3:p2}(${4:s1})    '${5:text-p2}' / ${6:[1]} 1,
+                         ${7:[2]} 2 /
+   ${8:p3}(${9:s1},${10:s2}) '${11:text-p3}' / ${12:[1].s2h1} 1,
+                         ${13:[2].s2h1} 2 /;${0}"
   },
   {
     "trigger": "Equation1",
     "description": "short",
-    "body": "Equation\n   ${1:eq1}\n   ${3:eq2};${0}"
+    "body": "Equation\n   ${1:eq1}\n   ${3:eq2}(${4:s1});${0}"
   },
   {
     "trigger": "Equation2",
     "description": "extended",
     "body": "Equation
-   ${1:eq1}        '${2:text}' / ${3:l} 1 /
-   ${4:eq2}(${5:s1})    '${6:text}' / ${7:a.lo} 1,
-                       ${8:a.up} 2 /
-   ${9:eq3}(${10:s1},${11:s2}) '${12:text}' / ${13:b.c.l} 1,
-                       ${14:a.c.l} 2 /;${0}"
+   ${1:eq1}        '${2:text-eq1}' / l 1 /
+   ${3:eq2}(${4:s1})    '${5:text-eq2}' / ${6:[1].lo} 1,
+                           ${7:[1].up} 2 /
+   ${8:eq3}(${9:s1},${10:s2}) '${11:text-eq3}' / ${12:[1].s2h1.lo} 1,
+                           ${13:[2].s2h1.up} 2 /;${0}"
   },
   {
     "trigger": "Function",
@@ -296,17 +315,17 @@ static const char *defaultJson = R"([
     "trigger": "Table1",
     "description": "dim2",
     "body": "Table ${1:t1}(${2:s1},${3:s2}) '${4:text}'
-        ${5:s1h1} ${6:s1h2}  ${7:s1h3}
-   ${8:s2h1}  ${9:1.1}  ${10:1.2}  ${11:1.3}
-   ${12:s2h2}  ${13:2.1}  ${14:2.2}  ${15:2.3};${0}"
+   [0]  ${5:s2h1} ${6:s2h2} ${7:s2h3}
+   ${8:[1]_}   ${9:1.1}  ${10:1.2}  ${11:1.3}
+   ${12:[2]_}   ${13:2.1}  ${14:2.2}  ${15:2.3};${0}"
   },
   {
     "trigger": "Table2",
     "description": "dim4",
     "body": "Table ${1:t1}(${2:i},${3:j},${4:k},${5:l}) '${6:text}'
-          ${7:k1}.${8:l1} ${9:k1}.${10:l2}  ${11:k2}.${12:l1}
-   ${13:i1}.${14:j1}    ${15:1.1}   ${16:1.2}    ${17:1.3}
-   ${18:i1}.${19:j2}    ${20:2.1}   ${21:2.2}    ${22:2.3};${0}"
+          ${7:k1}.${8:l1} ${9:k1}.${10:l2} ${11:k2}.${12:l1}
+   ${13:i1}.${14:j1}    ${15:1.1}   ${16:1.2}   ${17:1.3}
+   ${18:i1}.${19:j2}    ${20:2.1}   ${21:2.2}   ${22:2.3};${0}"
   },
   {
     "trigger": "File",
@@ -316,27 +335,27 @@ static const char *defaultJson = R"([
   {
     "trigger": "if",
     "description": "",
-    "body": "if (${1:condition},\n   ${2:statement}\n);"
+    "body": "if (${1:condition},\n   ${2:statement};\n);"
   },
   {
     "trigger": "for",
     "description": "loop",
-    "body": "for (${1:i} = ${2:1} to ${3:10},\n   ${4:statement}${0}\n);"
+    "body": "for (${1:i} = ${2:1} to ${3:10},\n   ${4:statement};${0}\n);"
   },
   {
     "trigger": "loop",
     "description": "loop over a set",
-    "body": "loop (${1:set},\n   ${2:statement}${0}\n);"
+    "body": "loop (${1:set},\n   ${2:statement};${0}\n);"
   },
   {
     "trigger": "while",
     "description": "loop",
-    "body": "while (${1:condition},\n   ${2:statement}${0}\n);"
+    "body": "while (${1:condition},\n   ${2:statement};${0}\n);"
   },
   {
     "trigger": "repeat",
     "description": "loop",
-    "body": "repeat (\n   ${2:statement}${0};\nuntil ${1:condition} );"
+    "body": "repeat (\n   ${2:statement};${0};\nuntil ${1:condition} );"
   },
   {
     "trigger": "embeddedCode",
@@ -426,17 +445,17 @@ static const char *defaultJson = R"([
   {
     "trigger": "$ifThen",
     "description": "",
-    "body": "$ifThen ${1:condition}\n   ${2:statement}${0}\n$endIf"
+    "body": "$ifThen ${1:condition}\n   ${2:statement};${0}\n$endIf"
   },
   {
     "trigger": "$ifThenI",
     "description": "",
-    "body": "$ifThenI ${1:condition}\n   ${2:statement}${0}\n$endIf"
+    "body": "$ifThenI ${1:condition}\n   ${2:statement};${0}\n$endIf"
   },
   {
     "trigger": "$ifThenE",
     "description": "",
-    "body": "$ifThenE ${1:condition}\n   ${2:statement}${0}\n$endIf"
+    "body": "$ifThenE ${1:condition}\n   ${2:statement};${0}\n$endIf"
   },
   {
     "trigger": "$onFold",
@@ -521,7 +540,7 @@ static const char *userJson = R"([
   {
     "_trigger": "example1",
     "description": "",
-    "body": "example1 (${1:i} = ${2:1} to ${3:10},\n   ${4:statement}\n);"
+    "body": "example1 (${1:i} = ${2:1} to ${3:10},\n   ${4:statement};${0}\n);"
   },
   {
     "_trigger": "example2",
@@ -544,7 +563,21 @@ inline void createUserSnippetFile(const QString &snippetFile)
 
 inline const QByteArray getDefaultSnippets()
 {
-    return defaultJson;
+    const QMap<QByteArray, QByteArray> map = {{"[1]", "a"}, {"[2]", "b"}, {"[3]", "c"}};
+    int max = 0;
+    for (const QByteArray &val : map.values())
+        max = qMax(max, val.length());
+
+    QByteArray res = defaultJson;
+    QByteArray spaces(max, ' ');
+    res.replace("[0]", spaces);
+
+    for (auto it = map.constBegin(); it != map.constEnd(); ++it) {
+        QByteArray uniSizeVal = it.value() + QByteArray(max - it.value().size(), ' ');
+        res.replace(it.key()+'_', uniSizeVal);
+        res.replace(it.key(), it.value());
+    }
+    return res;
 }
 
 inline int getSnippetsVersion(const QByteArray &snippets)

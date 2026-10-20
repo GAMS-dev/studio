@@ -48,7 +48,7 @@ public:
 
     void load(const QList<Snippet> &snippets);
 
-    void activateSnippet(QPlainTextEdit *edit, const QString &body, int insertPos);
+    void activateSnippet(QPlainTextEdit *edit, const QString &body, int insertPos, const QString firstValue);
     bool handleKey(QKeyEvent *e);
     bool isActive() const { return mEdit != nullptr; }
     void deactivate(bool unselect);
