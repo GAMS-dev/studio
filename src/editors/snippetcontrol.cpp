@@ -106,7 +106,7 @@ void SnippetControl::activateSnippet(QPlainTextEdit *edit, const QString &body, 
     if (!firstValue.isEmpty()) {
         QTextCursor cur = mEdit->textCursor();
         cur.insertText(firstValue);
-        selectPlaceholder(0);
+        selectPlaceholder(mCurrentIndex + 1);
     }
 }
 

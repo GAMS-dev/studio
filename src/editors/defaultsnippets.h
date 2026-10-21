@@ -33,8 +33,8 @@ static const char *defaultJson = R"([
     "trigger": "Set1",
     "description": "short",
     "body": "Set
-   ${1:s3}(${2:s1})
-   ${3:s4}(${4:s1},${5:s2});${0}"
+   ${1:s1}(${2:s1})
+   ${3:s2}(${4:s1},${5:s2});${0}"
   },
   {
     "trigger": "Set2",
@@ -45,7 +45,7 @@ static const char *defaultJson = R"([
                          ${5:[3]} 'text-[3]' /
    ${6:s2}        '${7:text-s2}' / ${8:s2h1} * ${9:s2h9} /
    ${10:s3}(${11:s1})    '${12:text-s3}' / ${13:[1]}, ${14:[3]} /
-   ${15:s2}(${16:s1},${17:s3}) '${18:text-s4}' / ${19:s2h3}.${20:[1]} 'text-s2h3.[1]',
+   ${15:s2}(${16:s2},${17:s3}) '${18:text-s4}' / ${19:s2h3}.${20:[1]} 'text-s2h3.[1]',
                          ${21:s2h5}.${22:[3]} 'text-s2h5.[3]' /;${0}"
   },
   {
@@ -265,8 +265,8 @@ static const char *defaultJson = R"([
     "trigger": "Scalar2",
     "description": "extended",
     "body": "Scalar
-   ${1:s1} ${2:text-s1} / ${3:1} /
-   ${4:s2} ${5:text-s2} / ${6:2} /;${0}"
+   ${1:s1} '${2:text-s1}' / ${3:1} /
+   ${4:s2} '${5:text-s2}' / ${6:2} /;${0}"
   },
   {
     "trigger": "Parameter1",
@@ -345,7 +345,7 @@ static const char *defaultJson = R"([
   {
     "trigger": "loop",
     "description": "loop over a set",
-    "body": "loop (${1:set},\n   ${2:statement};${0}\n);"
+    "body": "loop (${1:s1},\n   ${2:statement};${0}\n);"
   },
   {
     "trigger": "while",
@@ -355,7 +355,7 @@ static const char *defaultJson = R"([
   {
     "trigger": "repeat",
     "description": "loop",
-    "body": "repeat (\n   ${2:statement};${0};\nuntil ${1:condition} );"
+    "body": "repeat (\n   ${2:statement};${0}\nuntil ${1:condition} );"
   },
   {
     "trigger": "embeddedCode",
