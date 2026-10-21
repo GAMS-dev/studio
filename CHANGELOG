@@ -17,6 +17,7 @@ Version 1.26.0  *
 - Highlighting of search results in the GDX Viewer is now delayed until the search is initiated.
 - Enabled Table View mode in the GDX Viewer for 1-dimensional symbols.
 - Added built-in code snippets to the completer. Custom snippets can be defined via `Tools > User Snippets`.
+- The attribute values of variables and equations can now be dragged between rows and columns in the GDX Viewer's Table View, just like any other dimension.
 
 Version 1.25.8
 ==================
