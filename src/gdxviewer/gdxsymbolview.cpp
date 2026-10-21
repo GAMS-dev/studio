@@ -523,6 +523,20 @@ void GdxSymbolView::applyDefaults()
                 mShowValColActions.at(i)->setChecked(Settings::settings()->toBool(SettingsKey::skGdxDefaultShowScale));
         }
         mSqDefaults->setChecked(Settings::settings()->toBool(SettingsKey::skGdxDefaultSqueezeDefaults));
+
+        // default to heating Level, falling back to the first shown attribute if Level is hidden
+        int defaultHeated = 0;
+        if (mShowValColActions.at(GMS_VAL_LEVEL)->isChecked())
+            defaultHeated = 1 << GMS_VAL_LEVEL;
+        else {
+            for (int i=0; i<GMS_VAL_MAX; i++) {
+                if (mShowValColActions.at(i)->isChecked()) {
+                    defaultHeated = 1 << i;
+                    break;
+                }
+            }
+        }
+        setHeatedAttributes(defaultHeated);
     }
 
     mSqZeroes->setChecked(Settings::settings()->toBool(SettingsKey::skGdxDefaultSqueezeZeroes));
