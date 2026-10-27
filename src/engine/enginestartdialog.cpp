@@ -61,6 +61,9 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     listView->viewport()->installEventFilter(delegate);
     ui->cbSelector->setView(listView);
     ui->cbSelector->installEventFilter(this);
+    auto policy = ui->cbSelector->sizePolicy();
+    policy.setRetainSizeWhenHidden(true);
+    ui->cbSelector->setSizePolicy(policy);
     connect(delegate, &ComboboxRemoveDelegate::entryRemoved, this, &EngineStartDialog::loginDataChanged);
 
     QPalette palette = qApp->palette();
@@ -457,7 +460,6 @@ void EngineStartDialog::showEvent(QShowEvent *event)
 void EngineStartDialog::showLogin()
 {
     ui->stackedWidget->setCurrentIndex(0);
-    ui->cbSelector->setVisible(true);
     ui->bAlways->setVisible(false);
     setWindowTitle("GAMS Engine Login");
     ui->bOk->setText("Login");
@@ -468,7 +470,6 @@ void EngineStartDialog::showConnect()
 {
     setWindowTitle("Connecting");
     ui->stackedWidget->setCurrentIndex(2);
-    ui->cbSelector->setVisible(false);
 }
 
 void EngineStartDialog::showSubmit()
@@ -479,7 +480,6 @@ void EngineStartDialog::showSubmit()
     }
     setWindowTitle("Submit Job");
     ui->stackedWidget->setCurrentIndex(1);
-    ui->cbSelector->setVisible(false);
     ui->bAlways->setVisible(true);
     ui->bOk->setText("OK");
     ui->nUser->setText(user());
