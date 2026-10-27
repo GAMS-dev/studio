@@ -22,8 +22,8 @@
 #include "support/gamslicenseinfo.h"
 #include "logger.h"
 #include "engineprocess.h"
-#include "theme.h"
 #include "comboboxremovedelegate.h"
+#include "theme.h"
 
 #include <QPushButton>
 #include <QEvent>
@@ -43,7 +43,6 @@ namespace engine {
 const QString EngineStartDialog::CUnavailable("-");
 const QString CDefaultClearEntry("-new-");
 
-
 EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
     ui(new Ui::EngineStartDialog), mProc(nullptr)
@@ -54,6 +53,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QFont f = ui->laWarn->font();
     f.setBold(true);
     ui->laWarn->setFont(f);
+
     QListView* listView = new QListView(ui->cbSelector);
     ComboboxRemoveDelegate *delegate = new ComboboxRemoveDelegate(ui->cbSelector);
     listView->setItemDelegate(delegate);
@@ -65,11 +65,11 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
 
     QPalette palette = qApp->palette();
     Theme::fillThemeColorPalette(palette, true, false);
-    ui->cbSelector->setPalette(palette);
     ui->cbLoginMethod->setPalette(palette);
     ui->edUrl->setPalette(palette);
     ui->edUser->setPalette(palette);
     ui->edPassword->setPalette(palette);
+    ui->edSsoName->setPalette(palette);
     ui->edJobTag->setPalette(palette);
     ui->edSsoName->setPalette(palette);
     ui->cbNamespace->setPalette(palette);
@@ -85,15 +85,12 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     connect(ui->bAlways, &QPushButton::clicked, this, [this]() { buttonClicked(ui->bAlways); });
 
     connect(ui->edUrl, &QLineEdit::textEdited, this, [this]() { mUrlChangedTimer.start(); });
-    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::updateSelector);
     connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->cbNamespace, &QComboBox::currentTextChanged, this, &EngineStartDialog::updateSubmitStates);
-    connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateSelector);
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
-    connect(ui->edSsoName, &QLineEdit::textChanged, this, &EngineStartDialog::updateSelector);
     connect(ui->edSsoName, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
-    connect(ui->edToken, &QPlainTextEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
+    connect(ui->edToken, &QPlainTextEdit::textChanged, this, [this]() { updateLoginStates(); });
     connect(ui->bLogout, &QPushButton::clicked, this, &EngineStartDialog::bLogoutClicked);
     connect(ui->cbForceGdx, &QCheckBox::checkStateChanged, this, &EngineStartDialog::forceGdxStateChanged);
     connect(ui->cbAcceptCert, &QCheckBox::checkStateChanged, this, &EngineStartDialog::certAcceptChanged);
@@ -144,7 +141,6 @@ void EngineStartDialog::authorizeChanged(const QString &authToken)
     } else {
         mProc->listJobs();
         addSelectorFromCurrent();
-        ui->widSelector->setVisible(false);
     }
 }
 
@@ -166,6 +162,7 @@ void EngineStartDialog::setResume(bool resume)
         mProc->listProvider();
         return;
     }
+
 }
 
 void EngineStartDialog::start()
@@ -227,18 +224,18 @@ bool EngineStartDialog::isCertAccepted()
 }
 
 void EngineStartDialog::init(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken,
-                                 const QString &ssoName, int authExpireMinutes, bool selfCert, const QString &_nSpace,
-                                 const QString &_userInst, bool _forceGdx, const QVariantList recent)
+                             const QString &ssoName, int authExpireMinutes, bool selfCert, const QString &_nSpace,
+                             const QString &_userInst, bool _forceGdx, const QVariantList recent)
 {
     QVariantHash hash;
     insertSelector(hash, false);
     for (const QVariant &item : recent)
         insertSelector(item.toHash(), false);
-    initData(toVariantHash(_url, authMethod, _user, _userToken, ssoName, authExpireMinutes, selfCert,
-                         _nSpace, _userInst, _forceGdx));
+    initData(toVariantHash(_url, authMethod, _user, _userToken, ssoName, authExpireMinutes, selfCert, _nSpace,
+                           _userInst, _forceGdx));
 }
 
-void EngineStartDialog::initData(QVariantHash data)
+void EngineStartDialog::initData(const QVariantHash &data)
 {
     mUrl = cleanUrl(data.value("page").toString());
     ui->edUrl->setText(mUrl);
@@ -246,67 +243,75 @@ void EngineStartDialog::initData(QVariantHash data)
     bool ok;
     mAuthMethod = data.value("authMethod").toInt(&ok);
     if (!ok) mAuthMethod = 0;
-    ui->cbLoginMethod->setCurrentIndex(qMin(mAuthMethod, ui->cbLoginMethod->count()));
-    QString user = data.value("user").toString().trimmed();
-    if (mProc && mAuthMethod == 0) mProc->initUsername(user);
+    mLockAuthMethod = true;
+    ui->cbLoginMethod->setCurrentIndex(qMin(mAuthMethod, 2));
+    mLockAuthMethod = false;
+    ui->stackLoginInput->setCurrentIndex(qMin(mAuthMethod, 2));
+    if (mProc && mAuthMethod == 0) mProc->initUsername(data.value("user").toString().trimmed());
     if (mProc && mAuthMethod == 1) mProc->setAuthToken(data.value("userToken").toString().trimmed());
-    if (mProc && mAuthMethod >= 2)
+    if (mProc && mAuthMethod >= 2) {
         ui->edSsoName->setText(data.value("ssoName").toString().trimmed());
-    ui->edUser->setText(user);
-    ui->nUser->setText(user);
-    if (data.value("selfCert").toBool()) {
+        showVerificationCode(QString(), QString(), QString());
+        if (mAuthMethod > 2)
+            mProc->listProvider();
+    }
+
+    ui->edUser->setText(data.value("user").toString().trimmed());
+    ui->nUser->setText(data.value("user").toString().trimmed());
+    if (data.value("isSelfCert").toBool()) {
         ui->cbAcceptCert->setVisible(true);
         ui->cbAcceptCert->setChecked(true);
     }
-    mAuthExpireMinutes = data.value("authExpire").toInt(&ok);
-    if (!ok) mAuthExpireMinutes = 22*60; // default: slightly less than a day
+    mAuthExpireMinutes = data.value("authExpire").toInt();
     ui->cbNamespace->addItem(data.value("namespace").toString().trimmed());
-    mLastValidInstance = data.value("userInstance").toString();
+    mLastValidInstance = data.value("userInstance").toString().trimmed();
     ui->cbForceGdx->setChecked(data.value("forceGdx").toBool());
-    updateSelector();
+    getVersionAndIP();
 }
 
-QVariantHash EngineStartDialog::getVariantHashForCurrentFields()
+QString EngineStartDialog::generateSelectorName(const QVariantHash &data)
 {
-    QVariantHash hash = toVariantHash(mUrl, mAuthMethod, ui->edUser->text(), mProc->authToken(), ui->edSsoName->text(),
-                                    mAuthExpireMinutes, ui->cbAcceptCert->isChecked(), ui->cbNamespace->currentText(),
-                                    mLastValidInstance, ui->cbForceGdx->isChecked());
-    return hash;
+    if (data.isEmpty()) return CDefaultClearEntry;
+    QUrl url(data.value("page").toString());
+    QString res = url.adjusted(QUrl::RemovePort | QUrl::NormalizePathSegments).url();
+    if (res.endsWith('/')) res.removeLast();
+    bool ok;
+    int authMethod = data.value("authMethod").toInt(&ok);
+    if (!ok) authMethod = 0;
+    if (authMethod == 0) {
+        QString user = data.value("user").toString();
+        if (user.isEmpty())
+            res += " with username";
+        else
+            res += " as " + user;
+    } else if (authMethod == 1) {
+        res += " with token";
+    } else {
+        QString ssoName = data.value("ssoName").toString();
+        if (ssoName.isEmpty())
+            res += " via single-sign-on";
+        else
+            res += " via " + ssoName;
+    }
+    return res;
 }
 
-QVariantHash EngineStartDialog::toVariantHash(const QString &_url, const int authMethod, const QString &_user,
-                                              const QString &_userToken, const QString &ssoName, int authExpireMinutes,
-                                              bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx)
+void EngineStartDialog::insertSelector(const QVariantHash &data, bool atStart)
 {
-    QVariantHash hash;
-    hash.insert("page", _url);
-    hash.insert("authMethod", authMethod);
-    hash.insert("user", _user);
-    hash.insert("userToken", _userToken);
-    hash.insert("ssoName", ssoName);
-    hash.insert("authExpire", authExpireMinutes);
-    hash.insert("isSelfCert", selfCert);
-    hash.insert("namespace", _nSpace);
-    hash.insert("userInstance", _userInst);
-    hash.insert("forceGdx", _forceGdx);
-    return hash;
-}
+    if (ui->cbSelector->count() == 0)
+        ui->cbSelector->addItem(CDefaultClearEntry, QVariantHash());
 
-void EngineStartDialog::addSelectorFromCurrent()
-{
-    insertSelector(getVariantHashForCurrentFields());
-    updateSelector();
-}
+    QString name = generateSelectorName(data);
+    if (name == CDefaultClearEntry)
+        return;
 
-void EngineStartDialog::updateSelector()
-{
-    if (!mProc) return;
-    QVariantHash hash = getVariantHashForCurrentFields();
-    QString name = generateSelectorName(hash);
-    int index = ui->cbSelector->findText(name);
-    ui->cbSelector->blockSignals(true);
-    ui->cbSelector->setCurrentIndex(index);
-    ui->cbSelector->blockSignals(false);
+    for (int i = ui->cbSelector->count()-2 ; i >= 0 ; --i) {
+        QVariantHash itemData = ui->cbSelector->itemData(i, Qt::UserRole).toHash();
+        if (itemData.isEmpty()) continue;
+        if (name == generateSelectorName(itemData))
+            ui->cbSelector->removeItem(i);
+    }
+    ui->cbSelector->insertItem(atStart ? 0 : ui->cbSelector->count()-1, name, data);
 }
 
 bool EngineStartDialog::isAlways()
@@ -378,7 +383,7 @@ void EngineStartDialog::setEngineVersion(const QString &version)
 
 int EngineStartDialog::authMethod()
 {
-    return qMax(0, mAuthMethod);
+    return qBound(0, ui->cbLoginMethod->currentIndex(), ui->cbLoginMethod->count()-1);
 }
 
 QString EngineStartDialog::jobTag()
@@ -394,7 +399,7 @@ void EngineStartDialog::setJobTag(const QString &jobTag)
 QVariantList EngineStartDialog::recent()
 {
     QVariantList res;
-    for (int i = 1; i < ui->cbSelector->count() - 1; ++i) {
+    for (int i = 0; i < ui->cbSelector->count() - 1; ++i) {
         res << ui->cbSelector->itemData(i);
     }
     return res;
@@ -414,7 +419,6 @@ bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
             container->setFixedWidth(newWidth);
         }
     }
-
     return QDialog::eventFilter(watched, event);
 }
 
@@ -450,66 +454,10 @@ void EngineStartDialog::showEvent(QShowEvent *event)
         ui->cbAcceptCert->setVisible(false);
 }
 
-QString EngineStartDialog::generateSelectorName(const QVariantHash &data)
-{
-    if (data.isEmpty()) return CDefaultClearEntry;
-    QUrl url(data.value("page").toString());
-    QString res = url.adjusted(QUrl::RemovePort | QUrl::NormalizePathSegments).url();
-    if (res.endsWith('/')) res.removeLast();
-    bool ok;
-    int authMethod = data.value("authMethod").toInt(&ok);
-    if (!ok) authMethod = 0;
-    if (authMethod == 0) {
-        QString user = data.value("user").toString();
-        if (user.isEmpty())
-            res += " with username";
-        else
-            res += " as " + user;
-    } else if (authMethod == 1) {
-        res += " with token";
-    } else {
-        QString ssoName = data.value("ssoName").toString();
-        if (ssoName.isEmpty())
-            res += " via single-sign-on";
-        else
-            res += " via " + ssoName;
-    }
-    return res;
-}
-
-void EngineStartDialog::insertSelector(const QVariantHash &data, bool atStart)
-{
-    if (ui->cbSelector->count() == 0)
-        ui->cbSelector->addItem(CDefaultClearEntry, QVariantHash());
-
-    QString name = generateSelectorName(data);
-    if (name == CDefaultClearEntry)
-        return;
-
-    for (int i = ui->cbSelector->count()-2 ; i >= 0 ; --i) {
-        QVariantHash itemData = ui->cbSelector->itemData(i, Qt::UserRole).toHash();
-        if (itemData.isEmpty()) continue;
-        bool itemConf = itemData.value("confirmed", false).toBool();
-        QString itemName = generateSelectorName(itemData);
-        if (itemConf && name == itemName) {
-            ui->cbSelector->removeItem(i);
-        }
-    }
-    ui->cbSelector->insertItem(atStart ? 0 : ui->cbSelector->count()-1, name, data);
-}
-
-void EngineStartDialog::on_cbSelector_activated(int index)
-{
-    if (index >= 0) {
-        initData(ui->cbSelector->itemData(index).toHash());
-        start();
-    }
-}
-
 void EngineStartDialog::showLogin()
 {
-    ui->widSelector->setVisible(true);
     ui->stackedWidget->setCurrentIndex(0);
+    ui->cbSelector->setVisible(true);
     ui->bAlways->setVisible(false);
     setWindowTitle("GAMS Engine Login");
     ui->bOk->setText("Login");
@@ -520,6 +468,7 @@ void EngineStartDialog::showConnect()
 {
     setWindowTitle("Connecting");
     ui->stackedWidget->setCurrentIndex(2);
+    ui->cbSelector->setVisible(false);
 }
 
 void EngineStartDialog::showSubmit()
@@ -530,6 +479,7 @@ void EngineStartDialog::showSubmit()
     }
     setWindowTitle("Submit Job");
     ui->stackedWidget->setCurrentIndex(1);
+    ui->cbSelector->setVisible(false);
     ui->bAlways->setVisible(true);
     ui->bOk->setText("OK");
     ui->nUser->setText(user());
@@ -567,6 +517,7 @@ void EngineStartDialog::bLogoutClicked()
     ui->edToken->document()->clear();
     mProc->setAuthToken("");
     mProc->initUsername("");
+    ui->ssoPane->hide();
     emit mProc->authorized("");
     showLogin();
 }
@@ -621,7 +572,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     ui->bAlways->setEnabled(false);
 
     if (inLogin() && button == ui->bOk) {
-        switch (mAuthMethod) {
+        switch (authMethod()) {
         case 0:
             mProc->authorize(user(), ui->edPassword->text(), mAuthExpireMinutes);
             break;
@@ -679,12 +630,12 @@ void EngineStartDialog::getVersionAndIP()
 void EngineStartDialog::setCanLogin(bool value)
 {
     value = value && !ui->edUrl->text().isEmpty()
-            && (!mProc->authToken().isEmpty() ||
-                  (mAuthMethod==0 && !user().isEmpty() && (!ui->edPassword->text().isEmpty()))
-               || (mAuthMethod==1 && !ui->edToken->document()->toPlainText().isEmpty())
-               || (mAuthMethod==2 && !ui->edSsoName->text().isEmpty())
-               || (mAuthMethod > 2))
-            && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
+    && (!mProc->authToken().isEmpty() ||
+       (authMethod()==0 && !user().isEmpty() && (!ui->edPassword->text().isEmpty()))
+       || (authMethod()==1 && !ui->edToken->document()->toPlainText().isEmpty())
+       || (authMethod()==2 && !ui->edSsoName->text().isEmpty())
+       || (authMethod() > 2))
+        && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
     if (value != ui->bOk->isEnabled()) {
         ui->bOk->setEnabled(value);
         ui->bAlways->setEnabled(value);
@@ -710,6 +661,14 @@ void EngineStartDialog::hideCert()
     ui->cbAcceptCert->setVisible(false);
 }
 
+void EngineStartDialog::on_cbSelector_activated(int index)
+{
+    if (index >= 0) {
+        initData(ui->cbSelector->itemData(index).toHash());
+        showLogin();
+    }
+}
+
 void EngineStartDialog::urlEdited(const QString &text)
 {
     mProc->abortRequests();
@@ -726,12 +685,13 @@ void EngineStartDialog::updateLoginStates()
         getVersionAndIP();
     }
     setConnectionState(mConnectState);
+    updateSelector();
 }
 
 void EngineStartDialog::updateSubmitStates()
 {
     bool value = !ui->cbNamespace->currentText().isEmpty() && mAuthorized &&
-            (!mProc->inKubernetes() || (ui->cbInstance->count() && ui->cbInstance->currentData().toList().size() >= 4));
+                 (!mProc->inKubernetes() || (ui->cbInstance->count() && ui->cbInstance->currentData().toList().size() >= 4));
     if (value != ui->bOk->isEnabled()) {
         ui->bOk->setEnabled(value);
         ui->bAlways->setEnabled(value);
@@ -757,7 +717,7 @@ void EngineStartDialog::reListJobsError(const QString &error)
     DEB() << "ERROR: " << error;
     if (!inLogin()) {
         showLogin();
-    } else if (mAuthMethod == 1) {
+    } else if (authMethod() == 1) {
         ui->laWarn->setText("Invalid access token");
         ui->edToken->setFocus();
     }
@@ -814,8 +774,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
                 showConnect();
             mProc->getUsername();
         }
-        if (!mValidUrl.isEmpty())
-            emit loginDataChanged();
+        emit loginDataChanged();
     }
 }
 
@@ -867,13 +826,8 @@ void EngineStartDialog::reListProvider(const QList<QHash<QString, QVariant> > &a
     }
     while (ui->cbLoginMethod->count() > cbIndex)
         ui->cbLoginMethod->removeItem(cbIndex);
-    if (mAuthMethod >= 0 && ui->cbLoginMethod->currentIndex() != mAuthMethod && ui->cbLoginMethod->count() > mAuthMethod) {
+    if (mAuthMethod >= 0 && ui->cbLoginMethod->currentIndex() != mAuthMethod && ui->cbLoginMethod->count() > mAuthMethod)
         ui->cbLoginMethod->setCurrentIndex(mAuthMethod);
-        updateSelector();
-    }
-    if (!mValidUrl.isEmpty()) {
-        emit loginDataChanged();
-    }
 }
 
 void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double> > > &instances, QMap<QString, QString> *poolOwners,
@@ -997,6 +951,7 @@ void EngineStartDialog::forceGdxStateChanged(Qt::CheckState state)
 
 void EngineStartDialog::updateConnectStateAppearance()
 {
+    updateSelector();
     switch (mConnectState) {
     case scsNone: {
         ui->laEngGamsVersion->setText("");
@@ -1060,7 +1015,7 @@ void EngineStartDialog::updateConnectStateAppearance()
                 // hidden start
                 if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
                 mAlways = true;
-//                mProc->setNamespace(ui->cbNamespace->currentText().trimmed());
+                //                mProc->setNamespace(ui->cbNamespace->currentText().trimmed());
                 emit submit(true);
             }
         } else {
@@ -1112,7 +1067,7 @@ void EngineStartDialog::initUrlAndChecks(const QString &url)
     mInitialProtocol = protocol(mUrl);
     mNoSSL = !QSslSocket::supportsSsl() && mInitialProtocol == ucHttps;
     if (!mUrl.endsWith('/'))
-            mUrl += '/';
+        mUrl += '/';
     if (mUrl.endsWith("/api/", Qt::CaseInsensitive)) {
         mUrlChecks.setFlag(ucApiHttps, false);
         mUrlChecks.setFlag(ucApiHttp, false);
@@ -1196,15 +1151,13 @@ void EngineStartDialog::on_cbLoginMethod_currentIndexChanged(int index)
         ui->stackLoginInput->setCurrentIndex(2);
         ui->laSso->setVisible(ui->cbLoginMethod->currentIndex() == 2);
         ui->edSsoName->setVisible(ui->cbLoginMethod->currentIndex() == 2);
-        if (ui->cbLoginMethod->currentIndex() > 2) {
-            const QHash<QString, QVariant> provider = ui->cbLoginMethod->currentData().toHash();
-            ui->edSsoName->setText(provider.value("name").toString());
-        }
+
         setCanLogin(ui->cbLoginMethod->currentIndex() > 2 || !ui->edSsoName->text().isEmpty());
     }
-    updateSelector();
     if (!mValidUrl.isEmpty())
         emit loginDataChanged();
+    if (!mLockAuthMethod)
+        mAuthMethod = ui->cbLoginMethod->currentIndex();
 }
 
 bool EngineStartDialog::openInBrowser(const QString &text)
@@ -1256,6 +1209,51 @@ void EngineStartDialog::updatePoolControls(bool adaptCheckBox, bool adaptSize)
             ui->sbInstSize->setPalette(QPalette());
     }
     ui->pbInstSend->setEnabled(canChange && targetSize == currentSize && ui->sbInstSize->value() != currentSize);
+}
+
+QVariantHash EngineStartDialog::getVariantHashForCurrentFields()
+{
+    QVariantHash hash = toVariantHash(mUrl, mAuthMethod, ui->edUser->text(), mProc->authToken(), ui->edSsoName->text(),
+                                      mAuthExpireMinutes, ui->cbAcceptCert->isChecked(), ui->cbNamespace->currentText(),
+                                      mLastValidInstance, ui->cbForceGdx->isChecked());
+    return hash;
+}
+
+QVariantHash EngineStartDialog::toVariantHash(const QString &_url, const int authMethod, const QString &_user,
+                                              const QString &_userToken, const QString &ssoName, int authExpireMinutes,
+                                              bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx)
+{
+    QVariantHash hash;
+    hash.insert("page", _url);
+    hash.insert("authMethod", authMethod);
+    hash.insert("user", _user);
+    hash.insert("userToken", _userToken);
+    hash.insert("ssoName", ssoName);
+    hash.insert("authExpire", authExpireMinutes);
+    hash.insert("isSelfCert", selfCert);
+    hash.insert("namespace", _nSpace);
+    hash.insert("userInstance", _userInst);
+    hash.insert("forceGdx", _forceGdx);
+    return hash;
+}
+
+void EngineStartDialog::addSelectorFromCurrent()
+{
+    insertSelector(getVariantHashForCurrentFields());
+    ui->cbSelector->blockSignals(true);
+    ui->cbSelector->setCurrentIndex(0);
+    ui->cbSelector->blockSignals(false);
+}
+
+void EngineStartDialog::updateSelector()
+{
+    if (!mProc) return;
+    QVariantHash hash = getVariantHashForCurrentFields();
+    QString name = generateSelectorName(hash);
+    int index = ui->cbSelector->findText(name);
+    ui->cbSelector->blockSignals(true);
+    ui->cbSelector->setCurrentIndex(index);
+    ui->cbSelector->blockSignals(false);
 }
 
 void EngineStartDialog::on_bCopyCode_clicked()
@@ -1330,7 +1328,6 @@ void EngineStartDialog::on_sbInstSize_valueChanged(int value)
         ui->cbInstActivate->setChecked(value > 0);
     updatePoolControls();
 }
-
 
 
 } // namespace engine

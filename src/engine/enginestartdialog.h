@@ -99,7 +99,7 @@ protected:
     void closeEvent(QCloseEvent *event) override;
     void showEvent(QShowEvent *event) override;
 
-    void initData(QVariantHash data);
+    void initData(const QVariantHash &data);
     QString generateSelectorName(const QVariantHash &data);
     void insertSelector(const QVariantHash &data, bool atStart = true);
     void showLogin();
@@ -125,7 +125,6 @@ protected:
     void addSelectorFromCurrent();
 
 private slots:
-    void on_cbSelector_activated(int index);
     void updateSelector();
     void urlEdited(const QString &text);
     void updateLoginStates();
@@ -156,6 +155,7 @@ private slots:
     void certAcceptChanged(Qt::CheckState);
     void hideCert();
 
+    void on_cbSelector_activated(int index);
     void on_cbLoginMethod_currentIndexChanged(int index);
     void on_bCopyCode_clicked();
     void on_bShowLogin_clicked();
@@ -199,6 +199,7 @@ private:
     QString mGamsVersion;
     int mAuthExpireMinutes = 60*2;
     int mAuthMethod = 0;
+    bool mLockAuthMethod = false;
 
     static const QString CUnavailable;
 };

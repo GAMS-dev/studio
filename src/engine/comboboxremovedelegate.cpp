@@ -31,6 +31,7 @@ namespace studio {
 
 ComboboxRemoveDelegate::ComboboxRemoveDelegate(QComboBox *parent)
     : QStyledItemDelegate{parent}
+    , mComboBox(parent)
 {}
 
 void ComboboxRemoveDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -106,7 +107,10 @@ bool ComboboxRemoveDelegate::eventFilter(QObject *watched, QEvent *event)
                     else if (event->type() == QEvent::MouseButtonPress) {
                         if (auto* model = listView->model()) {
                             model->removeRow(index.row());
-                            listView->setCurrentIndex(listView->model()->index(0, 0));
+                            listView->setCurrentIndex(listView->model()->index(-1, 0));
+                            if (mComboBox)
+                                QTimer::singleShot(10, mComboBox, &QComboBox::showPopup);
+
                             QTimer::singleShot(0, this, &ComboboxRemoveDelegate::entryRemoved);
                         }
                         return true;

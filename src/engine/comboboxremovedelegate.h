@@ -28,6 +28,7 @@ namespace studio {
 
 class ComboboxRemoveDelegate : public QStyledItemDelegate
 {
+    QComboBox *mComboBox = nullptr;
     Q_OBJECT
 public:
     explicit ComboboxRemoveDelegate(QComboBox *parent = nullptr);
