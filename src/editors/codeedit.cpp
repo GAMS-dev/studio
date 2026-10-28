@@ -60,9 +60,6 @@ QRegularExpression CodeEdit::mRexEmbedConnectFile(QString("(.*)(embeddedcode(|v|
                                                   , QRegularExpression::CaseInsensitiveOption);
 QRegularExpression CodeEdit::mRexYamlFile(QString("(yamlfile(end|)=((\\\"[^\\\"]*\\\")|('[^']*')|[^\\s\\\"']*))")
                                           , QRegularExpression::CaseInsensitiveOption);
-QRegularExpression CodeEdit::mRexIndent("^(\\s*).*$");
-QRegularExpression CodeEdit::mRexIndentPre("^((\\s+)|([^\\s]+))");
-QRegularExpression CodeEdit::mRexTruncate("(^.*[^\\s]|^)(\\s+)$");
 QRegularExpression CodeEdit::mRexWordStart("^\\w");
 
 inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySequence(_hotkey); }
@@ -587,15 +584,10 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             e->accept();
         } else if (e->key() == Hotkey::NewLine) {
             QTextCursor cursor = textCursor();
-            int pos = cursor.positionInBlock();
             cursor.beginEditBlock();
-            QString leadingText = cursor.block().text().left(pos).trimmed();
             cursor.insertText("\n");
-            if (!leadingText.isEmpty()) {
-                if (cursor.block().previous().isValid())
-                    truncate(cursor.block().previous());
-                adjustIndent(cursor);
-            }
+            adjustIndent(cursor);
+            truncate(cursor.block().previous());
             cursor.endEditBlock();
             setTextCursor(cursor);
             e->accept();
@@ -1184,41 +1176,56 @@ void CodeEdit::keyReleaseEvent(QKeyEvent* e)
     AbstractEdit::keyReleaseEvent(e);
 }
 
+static int leadingWhitespaceLen(const QString &s)
+{
+    int n = 0;
+    while (n < s.length() && s.at(n).isSpace()) ++n;
+    return n;
+}
+
 void CodeEdit::adjustIndent(QTextCursor cursor)
 {
     if (!mSettings->toBool(skEdAutoIndent)) return;
 
-    QRegularExpressionMatch match = mRexIndent.match(cursor.block().text());
-    if (match.hasMatch()) {
-        QTextBlock prev = cursor.block().previous();
-        QRegularExpressionMatch pMatch = mRexIndentPre.match(prev.text());
-        while (true) {
-            if (pMatch.hasMatch()) {
-                if (pMatch.capturedLength(2) < 1)
-                    break;
-                QString spaces = pMatch.captured(2);
-                cursor.setPosition(cursor.position() + int(match.capturedLength(1)), QTextCursor::KeepAnchor);
-                cursor.removeSelectedText();
-                cursor.insertText(spaces);
-                setTextCursor(cursor);
-                break;
-            }
-            prev = prev.previous();
-            if (!prev.isValid() || prev.blockNumber() < cursor.blockNumber()-50)
-                break;
-            pMatch = mRexIndentPre.match(prev.text());
-        }
+    QTextBlock block = cursor.block();
+    auto usable = [](const QTextBlock &b) {
+        return b.isValid() && !b.text().trimmed().isEmpty();
+    };
+    QString newIndent;
+    if (usable(block.previous())) {
+        const QString t = block.previous().text();
+        newIndent = t.left(leadingWhitespaceLen(t));
+    } else if (usable(block.next())) {
+        const QString t = block.next().text();
+        newIndent = t.left(leadingWhitespaceLen(t));
     }
-}
+    const int oldLen     = leadingWhitespaceLen(block.text());
+    const int posInBlock = cursor.positionInBlock();
+    if (newIndent == block.text().left(oldLen))
+        return;
 
+    QTextCursor edit(block);
+    edit.setPosition(block.position());
+    edit.setPosition(block.position() + oldLen, QTextCursor::KeepAnchor);
+    edit.insertText(newIndent);
+    const int newPosInBlock = (posInBlock <= oldLen) ? newIndent.length()
+                                                     : posInBlock - oldLen + newIndent.length();
+    cursor.setPosition(block.position() + newPosInBlock);
+    setTextCursor(cursor);
+}
 
 void CodeEdit::truncate(const QTextBlock &block)
 {
-    QRegularExpressionMatch match = mRexTruncate.match(block.text());
-    if (match.hasMatch()) {
+    if (!block.isValid()) return;
+    QString text = block.text();
+    int removeCount = 0;
+    for (int i = text.length() - 1; i >= 0 && text.at(i).isSpace(); --i)
+        removeCount++;
+
+    if (removeCount > 0) {
         QTextCursor cursor(block);
         cursor.movePosition(QTextCursor::EndOfBlock);
-        cursor.setPosition(cursor.position() - int(match.capturedLength(2)), QTextCursor::KeepAnchor);
+        cursor.setPosition(cursor.position() - removeCount, QTextCursor::KeepAnchor);
         cursor.removeSelectedText();
     }
 }
