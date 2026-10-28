@@ -36,8 +36,8 @@ variables:
   FORCE_NOTARIZATION:
     value: 0
     options:
-      - 0
-      - 1
+      - "0"
+      - "1"
     description: "Select to '1' to force Apple/Window notarization on branches that normally skip it."
   PF_CUSTOM_BRANCH:
     value: 0
@@ -45,12 +45,12 @@ variables:
   QT_IMAGE_VERSION:
     value: qt6.11.3
     options:
-      - 6.11.3
-      - 6.11.2
+      - "6.11.3"
+      - "6.11.2"
     description: "Current Qt image version"
   QT_VERSION:
     value: 6.11.3
     options:
-      - 6.11.3
-      - 6.11.2
+      - "6.11.3"
+      - "6.11.2"
     description: "Current Qt version"
