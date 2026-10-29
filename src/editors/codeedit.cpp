@@ -584,10 +584,20 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             e->accept();
         } else if (e->key() == Hotkey::NewLine) {
             QTextCursor cursor = textCursor();
+            QString s = cursor.block().text();
+            int n = 0;
+            while (n < s.size() && s.at(n).isSpace()) ++n;
+            bool inStart = cursor.positionInBlock() <= n;
             cursor.beginEditBlock();
-            cursor.insertText("\n");
-            adjustIndent(cursor);
-            truncate(cursor.block().previous());
+            if (inStart) {
+                cursor.movePosition(QTextCursor::StartOfLine);
+                cursor.insertText("\n");
+                cursor.setPosition(cursor.position() + n);
+            } else {
+                cursor.insertText("\n");
+                adjustIndent(cursor);
+                truncate(cursor.block().previous());
+            }
             cursor.endEditBlock();
             setTextCursor(cursor);
             e->accept();
