@@ -1176,30 +1176,29 @@ void CodeEdit::keyReleaseEvent(QKeyEvent* e)
     AbstractEdit::keyReleaseEvent(e);
 }
 
-static int leadingWhitespaceLen(const QString &s)
-{
-    int n = 0;
-    while (n < s.length() && s.at(n).isSpace()) ++n;
-    return n;
-}
-
 void CodeEdit::adjustIndent(QTextCursor cursor)
 {
     if (!mSettings->toBool(skEdAutoIndent)) return;
 
     QTextBlock block = cursor.block();
-    auto usable = [](const QTextBlock &b) {
-        return b.isValid() && !b.text().trimmed().isEmpty();
+    auto indentOf = [](const QTextBlock &b) {
+        const QString t = b.text();
+        int n = 0;
+        while (n < t.length() && (t.at(n).isSpace() || t.at(n) == '/')) ++n;
+        return t.left(n);
     };
-    QString newIndent;
-    if (usable(block.previous())) {
-        const QString t = block.previous().text();
-        newIndent = t.left(leadingWhitespaceLen(t));
-    } else if (usable(block.next())) {
-        const QString t = block.next().text();
-        newIndent = t.left(leadingWhitespaceLen(t));
-    }
-    const int oldLen     = leadingWhitespaceLen(block.text());
+    auto neighbor = [](QTextBlock b, bool fwd) {
+        do b = fwd ? b.next() : b.previous();
+        while (b.isValid() && b.text().trimmed().isEmpty());
+        return b;
+    };
+
+    const QTextBlock p = neighbor(block, false), n = neighbor(block, true);
+    const QString pi = p.isValid() ? indentOf(p) : QString();
+    const QString ni = n.isValid() ? indentOf(n) : QString();
+    const QString newIndent(qMax(pi.length(), ni.length()), ' ');
+
+    const int oldLen     = indentOf(block).length();
     const int posInBlock = cursor.positionInBlock();
     if (newIndent == block.text().left(oldLen))
         return;
