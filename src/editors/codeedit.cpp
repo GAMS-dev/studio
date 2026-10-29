@@ -406,6 +406,13 @@ void CodeEdit::copySelection()
     if (mBlockEdit && !mBlockEdit->blockText().isEmpty()) {
         mBlockEdit->selectionToClipboard();
     } else {
+        if (Settings::settings()->toBool(skEdAutoSelectCopy) && textCursor().selection().isEmpty()) {
+            QTextCursor cur = textCursor();
+            cur.movePosition(QTextCursor::StartOfBlock);
+            cur.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+            cur.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
+            setTextCursor(cur);
+        }
         QMimeData *dat = new QMimeData();
         dat->setData("text/html", HtmlConverter::toHtml(textCursor(), Theme::instance()->color(Theme::Edit_background)));
         const QTextDocumentFragment fragment(textCursor());

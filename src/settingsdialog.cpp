@@ -276,6 +276,7 @@ void SettingsDialog::loadSettings()
     ui->cb_clearlog->setChecked(mSettings->toBool(skEdClearLog));
     ui->cb_highlightUnderCursor->setChecked(mSettings->toBool(skEdWordUnderCursor));
     ui->cb_highlightcurrent->setChecked(mSettings->toBool(skEdHighlightCurrentLine));
+    ui->cb_autoSelectCopy->setChecked(mSettings->toBool(skEdAutoSelectCopy));
     ui->cb_autoindent->setChecked(mSettings->toBool(skEdAutoIndent));
     ui->cb_writeLog->setChecked(mSettings->toBool(skEdWriteLog));
     ui->sb_nrLogBackups->setValue(mSettings->toInt(skEdLogBackupCount));
@@ -451,6 +452,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skEdClearLog, ui->cb_clearlog->isChecked());
     mSettings->setBool(skEdWordUnderCursor, ui->cb_highlightUnderCursor->isChecked());
     mSettings->setBool(skEdHighlightCurrentLine, ui->cb_highlightcurrent->isChecked());
+    mSettings->setBool(skEdAutoSelectCopy, ui->cb_autoSelectCopy->isChecked());
     mSettings->setBool(skEdAutoIndent, ui->cb_autoindent->isChecked());
     mSettings->setBool(skEdWriteLog, ui->cb_writeLog->isChecked());
     mSettings->setInt(skEdLogBackupCount, ui->sb_nrLogBackups->value());

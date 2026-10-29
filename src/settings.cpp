@@ -391,6 +391,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEdProfilerPrevCols, scUser, {"editor","ProfilerPrevCols"}, 7);
     safelyAdd(res, skEdWordUnderCursor, scUser, {"editor","wordUnderCursor"}, false);
     safelyAdd(res, skEdHighlightCurrentLine, scUser, {"editor","highlightCurrentLine"}, false);
+    safelyAdd(res, skEdAutoSelectCopy, scUser, {"editor","autoSelectCopy"}, true);
     safelyAdd(res, skEdAutoIndent, scUser, {"editor","autoIndent"}, true);
     safelyAdd(res, skEdWriteLog, scUser, {"editor","writeLog"}, true);
     safelyAdd(res, skEdLogBackupCount, scUser, {"editor","logBackupCount"}, 0);

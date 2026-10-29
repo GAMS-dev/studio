@@ -136,6 +136,7 @@ enum SettingsKey {
     skEdProfilerPrevCols,
     skEdWordUnderCursor,
     skEdHighlightCurrentLine,
+    skEdAutoSelectCopy,
     skEdAutoIndent,
     skEdWriteLog,
     skEdLogBackupCount,

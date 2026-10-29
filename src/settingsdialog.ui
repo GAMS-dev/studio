@@ -36,7 +36,7 @@
       <enum>QTabWidget::TabShape::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>5</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -584,13 +584,6 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="2">
-           <widget class="QCheckBox" name="cb_smartTooltip">
-            <property name="text">
-             <string>Smart tooltip help</string>
-            </property>
-           </widget>
-          </item>
           <item row="7" column="0">
            <widget class="QCheckBox" name="cb_showlinenr">
             <property name="enabled">
@@ -610,13 +603,6 @@
             </property>
             <property name="checked">
              <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="11" column="2">
-           <widget class="QCheckBox" name="cb_autoFoldDco">
-            <property name="text">
-             <string>Fold DCO blocks on open</string>
             </property>
            </widget>
           </item>
@@ -646,13 +632,6 @@
             </property>
             <property name="value">
              <number>4</number>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="2">
-           <widget class="QCheckBox" name="cb_completerAutoOpen">
-            <property name="text">
-             <string>Auto open completer</string>
             </property>
            </widget>
           </item>
@@ -689,6 +668,34 @@
             </property>
             <property name="maximum">
              <number>50000</number>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="2">
+           <widget class="QCheckBox" name="cb_autoFoldDco">
+            <property name="text">
+             <string>Fold DCO blocks on open</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="2">
+           <widget class="QCheckBox" name="cb_completerAutoOpen">
+            <property name="text">
+             <string>Auto open completer</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="2">
+           <widget class="QCheckBox" name="cb_smartTooltip">
+            <property name="text">
+             <string>Smart tooltip help</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="2">
+           <widget class="QCheckBox" name="cb_autoSelectCopy">
+            <property name="text">
+             <string>Cut/Copy current line on missing selection</string>
             </property>
            </widget>
           </item>
@@ -1238,8 +1245,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>100</width>
+            <height>30</height>
            </rect>
           </property>
           <attribute name="label">
@@ -1265,8 +1272,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>100</width>
+            <height>30</height>
            </rect>
           </property>
           <attribute name="label">
@@ -1295,8 +1302,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>100</width>
+            <height>30</height>
            </rect>
           </property>
           <attribute name="label">
@@ -2124,11 +2131,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <tabstop>cb_showlinenr</tabstop>
   <tabstop>cb_highlightUnderCursor</tabstop>
   <tabstop>cb_completerCasing</tabstop>
-  <tabstop>cb_smartTooltip</tabstop>
   <tabstop>sb_tabsize</tabstop>
-  <tabstop>cb_completerAutoOpen</tabstop>
   <tabstop>sb_highlightBound</tabstop>
-  <tabstop>cb_autoFoldDco</tabstop>
   <tabstop>sb_highlightMaxLines</tabstop>
   <tabstop>cb_clearlog</tabstop>
   <tabstop>cb_linewrap_process</tabstop>
