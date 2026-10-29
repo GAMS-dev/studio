@@ -29,6 +29,7 @@
 #include "option/lineeditcompleteevent.h"
 #include "ui_mainwindow.h"
 #include "editors/codeedit.h"
+#include "editors/textblankops.h"
 #include "editors/abstractedit.h"
 #include "editors/systemlogedit.h"
 #include "encodingsdialog.h"
@@ -2392,6 +2393,7 @@ void MainWindow::activeMainTabChanged(int index)
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
+    ui->menuBlank_Operations->setEnabled(ce && !ce->isReadOnly());
     updateStatusMode();
     updateStatusFile();
     updateStatusLineCount();
@@ -7752,6 +7754,51 @@ void MainWindow::on_actionEdit_User_Snippets_triggered()
     PExProjectNode *project = mProjectRepo.createProject("", "", "", onExist_Project, "", PExProjectNode::tGams);
     openFilePath(CommonPaths::studioUserSnippets(), project, OpenGroupOption::ogNone, true);
 }
+
+void MainWindow::on_actionTrim_Leading_Spaces_triggered()
+{
+    if (FileMeta * fm = mFileMetaRepo.fileMeta(focusWidget())) {
+        if (!fm->isReadOnly() && fm->document())
+            fm->processBlankOps(TextBlankOps::TrimLeading);
+    }
+}
+
+void MainWindow::on_actionTrim_Trailing_Spaces_triggered()
+{
+    if (FileMeta * fm = mFileMetaRepo.fileMeta(focusWidget())) {
+        if (!fm->isReadOnly() && fm->document())
+            fm->processBlankOps(TextBlankOps::TrimTrailing);
+    }
+}
+
+void MainWindow::on_actionTrim_Leading_and_Trailing_Spaces_triggered()
+{
+    if (FileMeta * fm = mFileMetaRepo.fileMeta(focusWidget())) {
+        if (!fm->isReadOnly() && fm->document())
+            fm->processBlankOps(TextBlankOps::Trim);
+    }
+}
+
+void MainWindow::on_actionEOL_to_Space_triggered()
+{
+    if (FileMeta * fm = mFileMetaRepo.fileMeta(focusWidget())) {
+        if (!fm->isReadOnly() && fm->document())
+            fm->processBlankOps(TextBlankOps::EolToSpace);
+    }
+}
+
+void MainWindow::on_actionTAB_to_Space_triggered()
+{
+    if (FileMeta * fm = mFileMetaRepo.fileMeta(focusWidget())) {
+        if (!fm->isReadOnly() && fm->document())
+            fm->processBlankOps(TextBlankOps::TabToSpace);
+    }
+}
+
+
+
+
+
 
 
 }

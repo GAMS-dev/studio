@@ -97,6 +97,7 @@ SOURCES += \
     editors/snippetcontrol.cpp \
     editors/sysloglocator.cpp \
     editors/systemlogedit.cpp \
+    editors/textblankops.cpp \
     editors/textview.cpp \
     editors/textviewedit.cpp \
     encoding.cpp \
@@ -345,6 +346,7 @@ HEADERS += \
     editors/snippetcontrol.h \
     editors/sysloglocator.h \
     editors/systemlogedit.h \
+    editors/textblankops.h \
     editors/textview.h \
     editors/textviewedit.h \
     encoding.h \

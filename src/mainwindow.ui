@@ -228,6 +228,16 @@
      <addaction name="actionRemove_Line"/>
      <addaction name="actionComment"/>
     </widget>
+    <widget class="QMenu" name="menuBlank_Operations">
+     <property name="title">
+      <string>Blank Operations</string>
+     </property>
+     <addaction name="actionTrim_Leading_Spaces"/>
+     <addaction name="actionTrim_Trailing_Spaces"/>
+     <addaction name="actionTrim_Leading_and_Trailing_Spaces"/>
+     <addaction name="actionEOL_to_Space"/>
+     <addaction name="actionTAB_to_Space"/>
+    </widget>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
     <addaction name="separator"/>
@@ -242,6 +252,7 @@
     <addaction name="actionOverwrite_Mode"/>
     <addaction name="separator"/>
     <addaction name="menuEncoding"/>
+    <addaction name="menuBlank_Operations"/>
     <addaction name="actionFind"/>
     <addaction name="action_FindReplace"/>
     <addaction name="actionSearch"/>
@@ -1951,6 +1962,31 @@ The behaviour can be specified via the Workspace tab in the Settings.</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionTrim_Leading_Spaces">
+   <property name="text">
+    <string>Trim Leading Spaces</string>
+   </property>
+  </action>
+  <action name="actionTrim_Trailing_Spaces">
+   <property name="text">
+    <string>Trim Trailing Spaces</string>
+   </property>
+  </action>
+  <action name="actionTrim_Leading_and_Trailing_Spaces">
+   <property name="text">
+    <string>Trim Leading and Trailing Spaces</string>
+   </property>
+  </action>
+  <action name="actionEOL_to_Space">
+   <property name="text">
+    <string>EOL to Space</string>
+   </property>
+  </action>
+  <action name="actionTAB_to_Space">
+   <property name="text">
+    <string>TAB to Space</string>
    </property>
   </action>
  </widget>

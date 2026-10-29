@@ -34,7 +34,6 @@
 #include "editors/navigationhistory.h"
 #include "editors/navigationhistorylocator.h"
 #include "textfilesaver.h"
-
 #include "encoding.h"
 #include <QStringConverter>
 
@@ -664,6 +663,15 @@ void FileMeta::updateFoldedBlocks()
         if (mFoldedBlocks.size() == 1)
             mFoldedBlocks.clear();
     }
+}
+
+void FileMeta::processBlankOps(TextBlankOps::Flags ops)
+{
+    if (!mDocument || mEditors.isEmpty()) return;
+    CodeEdit *ce = ViewHelper::toCodeEdit(mEditors.first());
+    if (!ce) return;
+    TextBlankOps worker(ce->textCursor());
+    worker.apply(ops);
 }
 
 bool FileMeta::initFoldedBlocks(QList<int> startLines)

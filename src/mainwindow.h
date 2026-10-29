@@ -489,8 +489,12 @@ private slots:
     void updateProfilerAction();
     void on_actionImport_GPR_project_triggered();
     void on_projectSort_clicked();
-
     void on_actionEdit_User_Snippets_triggered();
+    void on_actionTrim_Leading_Spaces_triggered();
+    void on_actionTrim_Trailing_Spaces_triggered();
+    void on_actionTrim_Leading_and_Trailing_Spaces_triggered();
+    void on_actionEOL_to_Space_triggered();
+    void on_actionTAB_to_Space_triggered();
 
 private:
     void deleteLogFiles(const QString &pattern, const QString &workspace);

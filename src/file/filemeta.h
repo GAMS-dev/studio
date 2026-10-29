@@ -26,6 +26,7 @@
 #include <QTableView>
 #include "syntax.h"
 #include "editors/codeedit.h"
+#include "editors/textblankops.h"
 #include "editors/textview.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
@@ -84,6 +85,7 @@ public:
     void setFoldedBlocks(const QList<int> &foldedBlocks);
     QList<int> foldedBlocks() const;
     void updateFoldedBlocks();
+    void processBlankOps(TextBlankOps::Flags ops);
 
     QWidget *createEdit(QWidget *parent, PExProjectNode *project, const QFont &font, QString encoding = QString(), bool forcedAsTextEdit = false);
     int addToTab(QTabWidget *tabWidget, QWidget *edit, NewTabStrategy tabStrategy = tabAfterCurrent);
