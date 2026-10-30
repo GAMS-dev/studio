@@ -1983,6 +1983,9 @@ The behaviour can be specified via the Workspace tab in the Settings.</string>
    <property name="text">
     <string>EOL to Space</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+J</string>
+   </property>
   </action>
   <action name="actionTAB_to_Space">
    <property name="text">
