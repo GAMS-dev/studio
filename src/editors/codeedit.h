@@ -407,9 +407,6 @@ private:
     static QRegularExpression mRexIncDcoFile;
     static QRegularExpression mRexEmbedConnectFile;
     static QRegularExpression mRexYamlFile;
-    static QRegularExpression mRexTruncate;
-    static QRegularExpression mRexIndent;
-    static QRegularExpression mRexIndentPre;
     static QRegularExpression mRexWordStart;
 };
 

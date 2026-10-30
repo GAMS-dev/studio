@@ -585,10 +585,12 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         } else if (e->key() == Hotkey::NewLine) {
             QTextCursor cursor = textCursor();
             QString s = cursor.block().text();
+            cursor.beginEditBlock();
+            if (cursor.hasSelection())
+                cursor.removeSelectedText();
             int n = 0;
             while (n < s.size() && s.at(n).isSpace()) ++n;
             bool inStart = cursor.positionInBlock() <= n;
-            cursor.beginEditBlock();
             if (inStart) {
                 cursor.movePosition(QTextCursor::StartOfLine);
                 cursor.insertText("\n");
@@ -1191,10 +1193,10 @@ void CodeEdit::adjustIndent(QTextCursor cursor)
     if (!mSettings->toBool(skEdAutoIndent)) return;
 
     QTextBlock block = cursor.block();
-    auto indentOf = [](const QTextBlock &b) {
+    auto indentOf = [](const QTextBlock &b, bool strict = false) {
         const QString t = b.text();
         int n = 0;
-        while (n < t.length() && (t.at(n).isSpace() || t.at(n) == '/')) ++n;
+        while (n < t.length() && (t.at(n).isSpace() || (!strict && t.at(n) == '/'))) ++n;
         return t.left(n);
     };
     auto neighbor = [](QTextBlock b, bool fwd) {
@@ -1202,13 +1204,13 @@ void CodeEdit::adjustIndent(QTextCursor cursor)
         while (b.isValid() && b.text().trimmed().isEmpty());
         return b;
     };
-
-    const QTextBlock p = neighbor(block, false), n = neighbor(block, true);
+    const QTextBlock p = neighbor(block, false);
+    const QTextBlock n = neighbor(block, true);
     const QString pi = p.isValid() ? indentOf(p) : QString();
     const QString ni = n.isValid() ? indentOf(n) : QString();
     const QString newIndent(qMax(pi.length(), ni.length()), ' ');
 
-    const int oldLen     = indentOf(block).length();
+    const int oldLen     = indentOf(block, true).length();
     const int posInBlock = cursor.positionInBlock();
     if (newIndent == block.text().left(oldLen))
         return;
