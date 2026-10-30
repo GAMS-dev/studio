@@ -1,173 +1,415 @@
+/**
+ * GAMS Studio
+ *
+ * Copyright (c) 2017-2026 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2026 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include <QApplication>
 #include <QWidget>
-#include <QVBoxLayout>
+#include <QGridLayout>
 #include <QPushButton>
-#include <QMessageBox>
-#include <QString>
-#include <stdexcept>
+#include <QLabel>
+#include <QDebug>
+#include <QList>
+#include <QMutex>
+#include <QDir>
+#include <QStandardPaths>
+#include <QDesktopServices>
+#include <QUrl>
 
-#ifdef _WIN64
-#include <windows.h>
-#include <dbghelp.h>
-#include <tchar.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <csignal>
+#include <exception>
+#include <stdexcept>
+#include <thread>
+
+#ifdef Q_OS_WIN
+#  include <windows.h>
+#  include <dbghelp.h>
+#  include <intrin.h>
 #endif
 
-// Crash functions
-void nullPointerCrash() {
-    int* ptr = nullptr;
+// ===========================================================================
+// Crash-Handler (Windows; Linux/macOS: Core-Dump or ReportCrash vom OS)
+// ===========================================================================
+#ifdef Q_OS_WIN
+namespace CrashDump {
+
+wchar_t             g_dumpDir[MAX_PATH] = L".";
+HANDLE              g_requestEvent = nullptr;
+HANDLE              g_doneEvent    = nullptr;
+EXCEPTION_POINTERS* g_exceptionPointers = nullptr;
+DWORD               g_crashThreadId = 0;
+volatile LONG       g_inProgress = 0;
+QtMessageHandler    g_previousMessageHandler = nullptr;
+
+// Own thread with own sane stack: also works with Stack Overflow.
+DWORD WINAPI writerThread(LPVOID)
+{
+    WaitForSingleObject(g_requestEvent, INFINITE);
+
+    SYSTEMTIME t;
+    GetLocalTime(&t);
+    wchar_t path[MAX_PATH + 64];
+    swprintf_s(path, L"%ls\\crash_%04u%02u%02u_%02u%02u%02u.dmp", g_dumpDir,
+               t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
+
+    HANDLE file = CreateFileW(path, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS,
+                              FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (file != INVALID_HANDLE_VALUE) {
+        MINIDUMP_EXCEPTION_INFORMATION mei{ g_crashThreadId, g_exceptionPointers, FALSE };
+        const auto type = MINIDUMP_TYPE(MiniDumpWithThreadInfo
+                                        | MiniDumpWithIndirectlyReferencedMemory);
+        MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), file, type,
+                          g_exceptionPointers ? &mei : nullptr, nullptr, nullptr);
+        CloseHandle(file);
+    }
+    SetEvent(g_doneEvent);
+    return 0;
+}
+
+// Is called from the crashing thread: doesn't need much stack, no Heap, no Qt.
+void writeDump(EXCEPTION_POINTERS* ep)
+{
+    if (InterlockedExchange(&g_inProgress, 1) != 0)
+        Sleep(INFINITE);
+
+    g_exceptionPointers = ep;
+    g_crashThreadId = GetCurrentThreadId();
+    SetEvent(g_requestEvent);
+    WaitForSingleObject(g_doneEvent, 60 * 1000);
+}
+
+// Own Exception-Codes, for !analyze
+constexpr DWORD kCodeTerminate        = 0xE0000001;   // std::terminate
+constexpr DWORD kCodeAbort            = 0xE0000002;   // abort() / SIGABRT
+constexpr DWORD kCodePureCall         = 0xE0000003;   // pure virtual call
+constexpr DWORD kCodeInvalidParameter = 0xE0000004;   // CRT invalid parameter
+constexpr DWORD kCodeQtFatal          = 0xE0000005;   // qFatal()
+
+// For cases without real Exception (terminate, abort, purecall, ...)
+// get register kontext and write it as exception info to the Dump.
+// For .ecxr and !analyze in WinDbg.
+Q_NEVER_INLINE void dumpAndExit(DWORD exceptionCode)
+{
+    CONTEXT context{};
+    RtlCaptureContext(&context);
+
+    EXCEPTION_RECORD record{};
+    record.ExceptionCode  = exceptionCode;
+    record.ExceptionFlags = EXCEPTION_NONCONTINUABLE;
+#if defined(_M_X64)
+    record.ExceptionAddress = reinterpret_cast<PVOID>(context.Rip);
+#elif defined(_M_ARM64)
+    record.ExceptionAddress = reinterpret_cast<PVOID>(context.Pc);
+#elif defined(_M_IX86)
+    record.ExceptionAddress = reinterpret_cast<PVOID>(context.Eip);
+#endif
+
+    EXCEPTION_POINTERS pointers{ &record, &context };
+    writeDump(&pointers);
+    TerminateProcess(GetCurrentProcess(), exceptionCode);
+}
+
+LONG WINAPI unhandledExceptionFilter(EXCEPTION_POINTERS* ep)
+{
+    writeDump(ep);
+    return EXCEPTION_EXECUTE_HANDLER;    // EXCEPTION_CONTINUE_SEARCH: additional WER-Dump
+}
+
+void onTerminate()      { dumpAndExit(kCodeTerminate); }   // per Thread! Other Threads land via abort() in SIGABRT
+void onAbortSignal(int) { dumpAndExit(kCodeAbort); }
+void onPureCall()       { dumpAndExit(kCodePureCall); }
+void onInvalidParameter(const wchar_t*, const wchar_t*, const wchar_t*, unsigned, uintptr_t)
+{
+    dumpAndExit(kCodeInvalidParameter);
+}
+
+// qFatal() ends the prozess on Windows without SIGABRT/Exception,
+// deshalb hier abfangen.
+void onQtMessage(QtMsgType type, const QMessageLogContext& context, const QString& message)
+{
+    if (g_previousMessageHandler)
+        g_previousMessageHandler(type, context, message);
+    if (type == QtFatalMsg)
+        dumpAndExit(kCodeQtFatal);
+}
+
+QString install()
+{
+    const QString dir = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
+                        + QStringLiteral("/CrashDumps");
+    QDir().mkpath(dir);
+    const QString native = QDir::toNativeSeparators(dir);
+    if (native.size() < MAX_PATH) {
+        native.toWCharArray(g_dumpDir);
+        g_dumpDir[native.size()] = L'\0';
+    }
+
+    g_requestEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+    g_doneEvent    = CreateEventW(nullptr, TRUE,  FALSE, nullptr);
+    if (HANDLE thread = CreateThread(nullptr, 0, writerThread, nullptr, 0, nullptr))
+        CloseHandle(thread);
+
+    ULONG stackGuarantee = 64 * 1024;
+    SetThreadStackGuarantee(&stackGuarantee);
+
+    SetUnhandledExceptionFilter(unhandledExceptionFilter);
+    std::set_terminate(onTerminate);
+    std::signal(SIGABRT, onAbortSignal);
+    _set_purecall_handler(onPureCall);
+    _set_invalid_parameter_handler(onInvalidParameter);
+    _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
+    g_previousMessageHandler = qInstallMessageHandler(onQtMessage);
+
+    return native;
+}
+
+} // namespace CrashDump
+#endif
+
+// ===========================================================================
+// Crash-Funktionen
+// Q_NEVER_INLINE: each funktion stays an own frame in the stacktrace.
+// volatile:       prevents remove by the optimizer.
+// ===========================================================================
+
+Q_NEVER_INLINE void nullPointer()
+{
+    int* volatile ptr = nullptr;
     *ptr = 42;
 }
 
-void divideByZeroCrash() {
-    int x = 1;
-    int y = 0;
-    int z = x / y;
-    (void)z;
+Q_NEVER_INLINE void divideByZero()
+{
+    // On ARM64 (Apple Silicon, Windows on ARM) int division by 0 doesn't result in an exception
+    volatile int divisor = 0;
+    volatile int result = 1 / divisor;
+    (void)result;
 }
 
-void segmentationFaultCrash() {
-    char* ptr = (char*)0xCCCCCCCC;
+Q_NEVER_INLINE void invalidAddress()
+{
+    char* volatile ptr = reinterpret_cast<char*>(0xCCCCCCCC);
     *ptr = 'X';
 }
 
-void stackOverflowCrash() {
-    stackOverflowCrash();
-}
-
-void uncaughtExceptionCrash() {
-    throw std::runtime_error("This is an uncaught exception!");
-}
-
-void accessQListRange() {
-    QList<int> x;
-    x << 1;
-    qDebug() << x[1];
-}
-
-// Handle crash by string
-void handleCrash(const QString& crashType)
+Q_NEVER_INLINE int recurse(int depth)
 {
-    if (crashType == "null") {
-        nullPointerCrash();
-    } else if (crashType == "div0") {
-        divideByZeroCrash();
-    } else if (crashType == "segfault") {
-        segmentationFaultCrash();
-    } else if (crashType == "stack") {
-        stackOverflowCrash();
-    } else if (crashType == "exception") {
-        uncaughtExceptionCrash();
-    } else if (crashType == "qlist") {
-        accessQListRange();
-    } else {
-        qDebug() << "Unknown crash type:" << crashType.toStdString();
-        exit(1);
-    }
+    volatile char buffer[1024];
+    buffer[0] = static_cast<char>(depth);
+    return recurse(depth + 1) + buffer[0];   // no end rekursion -> doesn't turn to loop
 }
 
-#ifdef _WIN64
-LONG WINAPI crashHandler(EXCEPTION_POINTERS* exceptionInfo)
+Q_NEVER_INLINE void stackOverflow()
 {
-    HANDLE process = GetCurrentProcess();
-    HANDLE thread = GetCurrentThread();
-    CONTEXT context = *exceptionInfo->ContextRecord;
+    recurse(0);
+}
 
-    char exePath[MAX_PATH];
-    GetModuleFileNameA(NULL, exePath, MAX_PATH);
-    DWORD64 base = SymLoadModuleEx(process, NULL, exePath, NULL, 0, 0, NULL, 0);
-    if (base == 0)
-        qDebug() << "SymLoadModuleEx failed:" << GetLastError();
+Q_NEVER_INLINE void uncaughtException()
+{
+    throw std::runtime_error("Uncaught exception");
+}
 
-    SymInitialize(process, NULL, TRUE);  // Load symbols
-    DWORD imageType = IMAGE_FILE_MACHINE_AMD64;
-    STACKFRAME64 stack = {};
-    stack.AddrPC.Offset = context.Rip;
-    stack.AddrPC.Mode = AddrModeFlat;
-    stack.AddrFrame.Offset = context.Rsp;
-    stack.AddrFrame.Mode = AddrModeFlat;
-    stack.AddrStack.Offset = context.Rsp;
-    stack.AddrStack.Mode = AddrModeFlat;
+Q_NEVER_INLINE void throwInNoexcept() noexcept
+{
+    throw std::runtime_error("Exception in noexcept function");   // -> std::terminate
+}
 
-    qDebug() << "\n=== Stack Trace ===\n";
-    for (int frame = 0; frame < 40; ++frame) {
-        if (!StackWalk64(imageType, process, thread, &stack, &context, NULL,
-                         SymFunctionTableAccess64, SymGetModuleBase64, NULL))
-            break;
+Q_NEVER_INLINE void callAbort()
+{
+    std::abort();
+}
 
-        if (stack.AddrPC.Offset == 0)
-            break;
+Q_NEVER_INLINE void callQFatal()
+{
+    qFatal("qFatal test");
+}
 
-        BYTE symbolBuffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];
-        PSYMBOL_INFO symbol = reinterpret_cast<PSYMBOL_INFO>(symbolBuffer);
-        symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-        symbol->MaxNameLen = MAX_SYM_NAME;
+struct PureBase
+{
+    PureBase() { callPure(); }
+    virtual ~PureBase() = default;
+    Q_NEVER_INLINE void callPure() { doIt(); }
+    virtual void doIt() = 0;
+};
 
-        IMAGEHLP_LINE64 line;
-        DWORD displacementLine = 0;
-        ZeroMemory(&line, sizeof(IMAGEHLP_LINE64));
-        line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
-        DWORD64 displacement = 0;
-        if (SymGetLineFromAddr64(process, stack.AddrPC.Offset, &displacementLine, &line))
-            qDebug() << "L" << frame << ":" << symbol->Name << " at" << line.FileName << ":" << line.LineNumber;
-        else if (SymFromAddr(process, stack.AddrPC.Offset, &displacement, symbol))
-            qDebug() << "S"  << frame << ":" << symbol->Name << "[ 0x" << Qt::hex << symbol->Address << "]" << Qt::dec;
-        else
-            qDebug() << "X"  << frame << ": [ 0x" << Qt::hex << stack.AddrPC.Offset << "] (no symbol)";
-    }
+struct PureDerived : PureBase
+{
+    void doIt() override {}
+};
 
-    SymCleanup(process);
-    return EXCEPTION_EXECUTE_HANDLER;
+Q_NEVER_INLINE void pureVirtualCall()
+{
+    PureDerived object;
+    (void)object;
+}
+
+Q_NEVER_INLINE void doubleDelete()
+{
+    // Heap-Corruption: Windows mostly ends the prozess with Fail-Fast (0xC0000374),
+    // glibc with "double free detected" + abort(). Detection not granted
+    int* volatile ptr = new int(42);
+    delete ptr;
+    delete ptr;
+}
+
+Q_NEVER_INLINE void qlistOutOfRange()
+{
+    // Far Index hits unmapped memory
+    QList<int> list{1};
+    volatile qsizetype index = 100'000'000;
+    qDebug() << list[index];
+}
+
+Q_NEVER_INLINE void crashInWorkerThread()
+{
+    std::thread worker([] { nullPointer(); });
+    worker.join();
+}
+
+Q_NEVER_INLINE void infiniteLoop()
+{
+    volatile bool running = true;
+    while (running) {}
+}
+
+Q_NEVER_INLINE void selfDeadlock()
+{
+    static QMutex mutex;
+    mutex.lock();
+    mutex.lock();   // non-rekursive Mutex -> blocks forever
+}
+
+#ifdef Q_OS_WIN
+Q_NEVER_INLINE void invalidParameter()
+{
+    char buffer[4];
+    const char* volatile source = "definitely too long";
+    strcpy_s(buffer, sizeof(buffer), source);
+}
+
+Q_NEVER_INLINE void fastFail()
+{
+    // like a Buffer Overrun (/GS): passes ALL In-Process-Handler
+    // Dump only for WER LocalDumps
+    __fastfail(FAST_FAIL_FATAL_APP_EXIT);
 }
 #endif
 
-int main(int argc, char *argv[]) {
+// ===========================================================================
+// Testtable
+// ===========================================================================
+struct CrashTest
+{
+    const char* id;
+    const char* label;
+    void (*func)();
+    const char* note;
+};
+
+const CrashTest crashTests[] = {
+    // id              label                                    func                 note
+    { "null",         "Null pointer dereference",              nullPointer,         "OK: dump & source null ptr" },
+    { "div0",         "Integer divide by zero",                divideByZero,        "OK: dump & source div /0" },
+    { "segfault",     "Write to invalid address",              invalidAddress,      "OK: dump & source address" },
+    { "stack",        "Stack overflow",                        stackOverflow,       "OK: dump & source recurse" },
+    { "exception",    "Uncaught C++ exception",                uncaughtException,   "OK: dump & source uncaught" },
+    { "noexcept",     "Throw in noexcept (std::terminate)",    throwInNoexcept,     "OK: dump & source dumpAndExit?" },
+    { "abort",        "std::abort()",                          callAbort,           "OK: dump & source dumpAndExit?" },
+    { "qfatal",       "qFatal()",                              callQFatal,          "OK: dump & source dumpAndExit?" },
+    { "purecall",     "Pure virtual call",                     pureVirtualCall,     "OK: dump & source dumpAndExit?" },
+    { "doubledelete", "Heap corruption (double delete)",       doubleDelete,        "NO dump" },
+    { "qlist",        "QList index far out of range",          qlistOutOfRange,     "OK: dump & source index range" },
+    { "thread",       "Crash in worker thread",                crashInWorkerThread, "OK: dump & source null ptr" },
+#ifdef Q_OS_WIN
+    { "invalidparam", "CRT invalid parameter (strcpy_s)",      invalidParameter,    "OK: dump & source dumpAndExit?" },
+    { "fastfail",     "__fastfail (only WER LocalDumps)",      fastFail,            "NO dump (expected)" },
+#endif
+    { "hang",         "Hang: endless loop (watchdog test)",    infiniteLoop,        "" },
+    { "deadlock",     "Hang: deadlock (watchdog test)",        selfDeadlock,        "" },
+    };
+
+// ===========================================================================
+int main(int argc, char* argv[])
+{
     QApplication app(argc, argv);
 
-#ifdef _WIN64
-    SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
-    if (!SymInitialize(GetCurrentProcess(), NULL, TRUE))
-        qDebug() << "SymInitialize failed";
-    SetUnhandledExceptionFilter(crashHandler);  // register global exception handler
+    // Crash-Reports folder
+    QString dumpDir;
+#if defined(Q_OS_WIN)
+    dumpDir = CrashDump::install();
+#elif defined(Q_OS_MACOS)
+    dumpDir = QDir::homePath() + QStringLiteral("/Library/Logs/DiagnosticReports");
+#elif defined(Q_OS_LINUX)
+    dumpDir = QStringLiteral("/var/lib/systemd/coredump");   // nur mit systemd-coredump
 #endif
 
-    // Argument mode
-    try {
-        if (argc > 1) {
-            QString arg = argv[1];
-            handleCrash(arg);
-            return 0;
-            qDebug() << "The application crashed (direct call)";
+    // Command line mode
+    if (argc > 1) {
+        const QString id = QString::fromLocal8Bit(argv[1]);
+        for (const CrashTest& test : crashTests) {
+            if (id == QLatin1String(test.id)) {
+                test.func();
+                return 0;
+            }
         }
-
-        // GUI mode
-        QWidget window;
-        window.setWindowTitle("Qt Crash Demo");
-
-        QVBoxLayout* layout = new QVBoxLayout;
-
-        auto addButton = [&](const QString& label, auto func) {
-            QPushButton* button = new QPushButton(label);
-            QObject::connect(button, &QPushButton::clicked, func);
-            layout->addWidget(button);
-        };
-
-        addButton("Null Pointer Dereference", nullPointerCrash);
-        addButton("Divide by Zero", divideByZeroCrash);
-        addButton("Segmentation Fault", segmentationFaultCrash);
-        addButton("Stack Overflow", stackOverflowCrash);
-        addButton("Throw Uncaught Exception", uncaughtExceptionCrash);
-        addButton("Access QList out of range", accessQListRange);
-
-        window.setLayout(layout);
-        window.show();
-        return app.exec();
-
-    } catch (std::exception &e) {
-        qDebug() << "Exception thrown: " << e.what();
-        QMessageBox::critical(nullptr, "Crash", e.what());
-    } catch (...) {
-        qDebug() << "The application crashed";
-        QMessageBox::critical(nullptr, "Crash", "Unspecified crash");
+        qWarning() << "Unknown crash type:" << id << "- available:";
+        for (const CrashTest& test : crashTests)
+            qWarning().noquote() << "  " << test.id << "-" << test.label;
+        return 1;
     }
 
+    // GUI-Mode (no try/catch, to keep the crash point)
+    QWidget window;
+    window.setWindowTitle(QStringLiteral("Qt Crash Demo"));
+    auto* layout = new QGridLayout(&window);
+    auto* pathLabel = new QLabel;
+    if (!dumpDir.isEmpty() && QDir(dumpDir).exists()) {
+        const QUrl url = QUrl::fromLocalFile(QDir::fromNativeSeparators(dumpDir));
+        pathLabel->setTextFormat(Qt::RichText);
+        pathLabel->setText(QStringLiteral("Crash dumps: <a href=\"%1\">%2</a>")
+                               .arg(url.toString(), dumpDir.toHtmlEscaped()));
+        pathLabel->setToolTip(QStringLiteral("Open folder"));
+        QObject::connect(pathLabel, &QLabel::linkActivated, [](const QString& link) {
+            QDesktopServices::openUrl(QUrl(link));
+        });
+    } else {
+        pathLabel->setText(QStringLiteral("Crash dumps: core dump / crash report of the OS"));
+    }
+    layout->addWidget(pathLabel, 0, 0, 1, 2);
+    layout->setColumnStretch(1, 1);
+    window.setMinimumWidth(500);
+
+    int row = 1;
+    for (const CrashTest& test : crashTests) {
+        auto* button = new QPushButton(QString::fromLatin1(test.label));
+        QObject::connect(button, &QPushButton::clicked, test.func);
+
+        auto* note = new QLabel(QString::fromUtf8(test.note));
+        note->setWordWrap(true);
+        note->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+        layout->addWidget(button, row, 0);
+        layout->addWidget(note, row, 1);
+        ++row;
+    }
+
+    window.show();
+    return app.exec();
 }
