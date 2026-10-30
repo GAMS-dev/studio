@@ -1418,6 +1418,8 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
 
     bool hasBlockSelection = mBlockEdit && !mBlockEdit->blockText().isEmpty();
     QAction *lastAct = nullptr;
+    bool canCopy = textCursor().hasSelection() || !textCursor().block().text().isEmpty();
+    bool canCut = !isReadOnly() && canCopy;
     for (auto i = menu->actions().count()-1; i >= 0; --i) {
         QAction *act = menu->actions().at(i);
         if (act->objectName() == "edit-undo") {
@@ -1450,6 +1452,7 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
             act->disconnect();
             act->setShortcut(QKeySequence("Ctrl+C"));
             act->setIcon(Theme::icon(":/%1/copy"));
+            act->setEnabled(canCopy);
             connect(act, &QAction::triggered, this, &CodeEdit::copySelection);
             menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-cut") {
@@ -1458,6 +1461,7 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
             if (hasBlockSelection) act->setEnabled(true);
             act->setShortcut(QKeySequence("Ctrl+X"));
             act->setIcon(Theme::icon(":/%1/cut"));
+            act->setEnabled(canCut);
             connect(act, &QAction::triggered, this, &CodeEdit::cutSelection);
             menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-delete") {
@@ -2561,6 +2565,8 @@ QStringList CodeEdit::getEnabledContextActions()
 {
     QStringList res;
     QMenu *menu = createStandardContextMenu();
+    bool canCopy = textCursor().hasSelection() || !textCursor().block().text().isEmpty();
+    bool canCut = !isReadOnly() && canCopy;
     bool hasBlockSelection = mBlockEdit && !mBlockEdit->blockText().isEmpty();
     for (auto i = menu->actions().count()-1; i >= 0; --i) {
         QAction *act = menu->actions().at(i);
@@ -2573,9 +2579,9 @@ QStringList CodeEdit::getEnabledContextActions()
         } else if (act->objectName() == "edit-paste") {
             if (act->isEnabled()) res << act->objectName();
         } else if (act->objectName() == "edit-copy") {
-            if (act->isEnabled() || hasBlockSelection) res << act->objectName();
+            if (act->isEnabled() || canCopy || hasBlockSelection) res << act->objectName();
         } else if (act->objectName() == "edit-cut") {
-            if (act->isEnabled() || hasBlockSelection) res << act->objectName();
+            if (act->isEnabled() || canCut || hasBlockSelection) res << act->objectName();
         } else if (act->objectName() == "edit-delete") {
             if (act->isEnabled() || hasBlockSelection) res << act->objectName();
         }

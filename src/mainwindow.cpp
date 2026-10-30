@@ -7752,7 +7752,5 @@ void MainWindow::on_actionEdit_User_Snippets_triggered()
 }
 
 
-
-
 }
 }
