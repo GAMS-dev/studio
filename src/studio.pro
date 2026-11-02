@@ -47,11 +47,12 @@ macx {
 }
 unix {
     LIBS += -ldl -lpthread
+    CONFIG += separate_debug_info
 }
 win32 {
     RC_FILE += ../platform/windows/studio.rc
-    LIBS += -luser32 -lMpr
-    QMAKE_LFLAGS_RELEASE += /OPT:ICF
+    LIBS += -luser32 -lMpr -lDbghelp
+    QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO += /OPT:ICF
 }
 
 # The following define makes your compiler emit warnings if you use
@@ -91,6 +92,8 @@ SOURCES += \
     connect/schemadefinitionmodel.cpp \
     connect/schemalistmodel.cpp \
     connect/treecellresizer.cpp \
+    crashhandler.cpp \
+    crashtests.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
     editors/chunktextmapper.cpp \
@@ -339,6 +342,8 @@ HEADERS += \
     connect/schemadefinitionmodel.h \
     connect/schemalistmodel.h \
     connect/treecellresizer.h \
+    crashhandler.h \
+    crashtests.h \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
     editors/abstracttextmapper.h \

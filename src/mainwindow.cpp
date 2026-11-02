@@ -84,6 +84,7 @@
 #include "file/gprimporter.h"
 #include "tooltipproxystyle.h"
 #include "palettestylemanager.h"
+#include "crashtests.h"
 
 #ifdef __APPLE__
 # include "../platform/macos/macoscocoabridge.h"
@@ -178,6 +179,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menu_GAMs->addCheckActions(2, actionFlags);
     actionFlags << ui->action3_Profiling;
     ui->menu_GAMs->addCheckActions(1, actionFlags);
+
+    { // FOR TESTS ONLY !!! Remove after finished
+        QMenu *crashMenu = new QMenu("CRASH-TESTS", this);
+        CrashTests::addToMenu(crashMenu);
+        ui->menuBar->addMenu(crashMenu);
+    }
 
     // PinView
     ui->splitter->setCollapsible(0, false);

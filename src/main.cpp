@@ -19,6 +19,7 @@
  */
 #include "application.h"
 #include "exception.h"
+#include "crashhandler.h"
 
 #include <QSystemSemaphore>
 
@@ -59,6 +60,8 @@ int main(int argc, char *argv[])
     Application app(argc, argv);
     app.setStyle(QStyleFactory::create(PaletteStyleManager::uniformStyleKey()));
     app.setAttribute(Qt::AA_DontShowIconsInMenus, false);
+    CrashHandler::install();
+    DEB() << "StackTrace path: " << CrashHandler::dumpDirectory();
 
     QSystemSemaphore sem(app.serverName(), 1, QSystemSemaphore::Open);
     sem.acquire();

@@ -11,8 +11,12 @@ win32 {
 LIBS += -lDbghelp
 }
 
+HEADERS += \
+    ../../src/crashhandler.h
+
 SOURCES += \
-    main.cpp
+    main.cpp \
+    ../../src/crashhandler.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
