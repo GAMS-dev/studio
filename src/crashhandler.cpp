@@ -191,9 +191,9 @@ bool CrashHandler::install(const QString& dumpDirectory)
 #else
     Q_UNUSED(dumpDirectory);
 #  if defined(Q_OS_MACOS)
-    g_dumpDirectory = QDir::homePath() + QStringLiteral("/Library/Logs/DiagnosticReports");
+    gDumpDirectory = QDir::homePath() + QStringLiteral("/Library/Logs/DiagnosticReports");
 #  elif defined(Q_OS_LINUX)
-    g_dumpDirectory = QStringLiteral("/var/lib/systemd/coredump");
+    gDumpDirectory = QStringLiteral("/var/lib/systemd/coredump");
 #  endif
 #endif
 

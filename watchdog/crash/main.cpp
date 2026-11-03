@@ -37,7 +37,7 @@
 #  include <intrin.h>
 #endif
 
-#include "crashhandler.h"
+#include "../../src/crashhandler.h"
 
 // Q_NEVER_INLINE keeps each test as its own stack frame,
 // volatile stops the optimizer from removing the crash in release builds.
