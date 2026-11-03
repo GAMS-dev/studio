@@ -47,6 +47,7 @@ exists($$PWD/gamsinclude.pri) {
         DEFINES += 'GAMS_DISTRIB_PATH=\\"\\"'
     }
 }
+message("GAMS-Path: $$GAMS_DISTRIB")
 
 INCLUDEPATH += $$GAMS_DISTRIB_C_API     \
                $$GAMS_DISTRIB_CPP_API
