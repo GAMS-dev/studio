@@ -20,7 +20,6 @@
 #include <QDir>
 #include "glbparser.h"
 #include "library.h"
-#include "exception.h"
 
 namespace gams {
 namespace studio {
@@ -37,8 +36,10 @@ bool GlbParser::parseFile(const QString &glbFile)
     mLineNr = 0;
     mGlbFile = glbFile;
     QFile file(mGlbFile);
-    if (!file.open(QFile::ReadOnly))
-        EXCEPT() << "GLB file '" << file.fileName() << "' not found";
+    if (!file.open(QFile::ReadOnly)) {
+        mErrorMessage = "Library missing: " + QDir::toNativeSeparators(glbFile);
+        return false;
+    }
     QTextStream in(&file);
 
     QStringList splitList;

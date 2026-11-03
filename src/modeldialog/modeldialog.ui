@@ -29,6 +29,13 @@
     </layout>
    </item>
    <item>
+    <widget class="QLabel" name="labelErrors">
+     <property name="text">
+      <string>Some model libraries could not be loaded. See the System Log for details.</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="tabPosition">
       <enum>QTabWidget::TabPosition::North</enum>

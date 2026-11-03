@@ -109,13 +109,8 @@ ModelDialog::ModelDialog(const QString &userLibPath, QWidget *parent)
     setTabOrder(ui->pbLoad, ui->pbCancel);
     setTabOrder(ui->pbCancel, ui->pbDescription);
 
-    if (mHasGlbErrors) {
-        QMessageBox msgBox(this);
-        msgBox.setText("Some model libraries could not be loaded due to parsing problems in the corresponding GLB files. See the system output for details.");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-    }
+    ui->labelErrors->setVisible(mHasGlbErrors);
+    ui->labelErrors->setStyleSheet(mHasGlbErrors ? "color:"+toColor(Theme::Normal_Red).name()+";" : "");
 
     // bind filter mechanism to textChanged
     connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, [this](const QRegularExpression &value) {
