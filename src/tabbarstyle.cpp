@@ -272,6 +272,17 @@ void TabBarStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *op
     QProxyStyle::drawPrimitive(element, option, painter, widget);
 }
 
+int TabBarStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidget *widget, QStyleHintReturn *returnData) const
+{
+    if (widget == mMainTabs->tabBar() || widget == mLogTabs->tabBar()) {
+        if (hint == SH_TabBar_PreferNoArrows)
+            return false;
+        if (hint == SH_TabBar_ElideMode)
+            return Qt::ElideNone;
+    }
+    return QProxyStyle::styleHint(hint, option, widget, returnData);
+}
+
 
 } // namespace studio
 } // namespace gams
