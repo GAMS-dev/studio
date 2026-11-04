@@ -176,31 +176,37 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                     textRect.setRight(textRect.right() - tab->rightButtonSize.width() - 4);
 
                 painter->save();
-                if (!tab->icon.isNull()) {
-                    const bool closeLeft = styleHint(SH_TabBar_CloseButtonPosition, nullptr, widget)
-                    == QTabBar::LeftSide;
-                    QRect iconRect(QPoint(), tab->iconSize);
-                    iconRect.moveCenter(textRect.center());
-                    if (closeLeft) {
-                        iconRect.moveRight(textRect.right());
-                        textRect.setRight(iconRect.left() - 4);
-                    } else {
-                        iconRect.moveLeft(textRect.left());
-                        textRect.setLeft(iconRect.right() + 1 + 4);
-                    }
-                    const QIcon::Mode mode = tab->state.testFlag(State_Enabled) ? QIcon::Normal : QIcon::Disabled;
-                    tab->icon.paint(painter, iconRect, Qt::AlignCenter, mode, selected ? QIcon::On : QIcon::Off);
-                }
-
-                // Text
                 QString text = platformGetText(tab->text, tabWidget->widget(tab->tabIndex));
                 if (widget == mLogTabs->tabBar() && RexSystemLog.match(text).hasMatch()) {
                     QFont font = painter->font();
                     font.setBold(true);
                     painter->setFont(font);
                 }
+                const QFontMetrics fm = painter->fontMetrics();
+
+                const bool hasIcon = !tab->icon.isNull();
+                const bool closeLeft = styleHint(SH_TabBar_CloseButtonPosition, nullptr, widget)
+                                       == QTabBar::LeftSide;
+                const int iconSpace = hasIcon ? tab->iconSize.width() + 4 : 0;
+
                 if (const auto *bar = qobject_cast<const QTabBar *>(widget))
-                    text = painter->fontMetrics().elidedText(text, bar->elideMode(), textRect.width());
+                    text = fm.elidedText(text, bar->elideMode(), textRect.width() - iconSpace);
+                const int textWidth = fm.horizontalAdvance(text);
+
+                if (hasIcon) {
+                    QRect iconRect(QPoint(), tab->iconSize);
+                    iconRect.moveCenter(textRect.center());
+                    if (closeLeft) {
+                        iconRect.moveLeft(textRect.left() + textWidth + 4);
+                    } else {
+                        iconRect.moveLeft(textRect.left());
+                        textRect.setLeft(iconRect.right() + 1 + 4);
+                    }
+                    const QIcon::Mode mode = tab->state.testFlag(State_Enabled) ? QIcon::Normal
+                                                                                : QIcon::Disabled;
+                    tab->icon.paint(painter, iconRect, Qt::AlignCenter, mode,
+                                    selected ? QIcon::On : QIcon::Off);
+                }
 
                 painter->setPen(platformGetTextColor(state, selected));
                 QProxyStyle::drawItemText(painter, textRect, Qt::AlignVCenter | Qt::AlignLeft,
