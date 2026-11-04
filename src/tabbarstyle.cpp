@@ -25,6 +25,11 @@
 #include <QStyleOptionTab>
 #include <QPainter>
 
+namespace {
+constexpr int cTextMargin = 12;
+constexpr int cSpacing    = 4;
+}
+
 namespace gams {
 namespace studio {
 
@@ -93,52 +98,86 @@ TabBarStyle::TabState TabBarStyle::getState(const QWidget *tabWidget, bool selec
     return TabState(res);
 }
 
-QSize TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const
+// QSize TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const
+// {
+//     QSize res = QProxyStyle::sizeFromContents(type, option, size, widget);
+//     QTabWidget *tabWidget = widget == mMainTabs->tabBar() ? mMainTabs : widget == mLogTabs->tabBar() ? mLogTabs : nullptr;
+//     if (tabWidget) {
+//         if (widget == mMainTabs->tabBar()) {
+//             if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
+//                 if (QWidget *wid = tabWidget->widget(tab->tabIndex)) {
+//                     QStyleOptionTab opt(*tab);
+//                     QSize newSize = size;
+//                     opt.text = platformGetText(opt.text, wid);
+//                     if (opt.text != tab->text) {
+//                         const QFont &f = widget->font();
+//                         int diff = QFontMetrics(f).horizontalAdvance(opt.text) - tab->fontMetrics.horizontalAdvance(tab->text);
+//                         newSize.setWidth(newSize.width() + diff);
+//                         res = QProxyStyle::sizeFromContents(type, &opt, newSize, widget);
+//                     }
+//                 }
+//             }
+//         } else if (widget == mLogTabs->tabBar()) {
+//             if (type == CT_TabBarTab) {
+//                 if (const QStyleOptionTab *tabOption = qstyleoption_cast<const QStyleOptionTab *>(option)) {
+//                     const QTabBar *tabBar = qobject_cast<const QTabBar *>(widget);
+//                     if (tabBar) {
+//                         int tabIndex = tabBar->tabAt(tabOption->rect.center());
+//                        if (tabIndex == 0) {
+//                             QString text = tabBar->tabText(tabIndex);
+//                             if (RexSystemLog.match(text).hasMatch()) {
+//                                 // To fix the truncated text of the tab because the bounded box of the bold font
+//                                 // has been calculated beforehand during drawControl(),
+//                                 // suggesting the amount of pixels needed to fit the bold layout.
+//                                 QFont font = qApp->font();
+//                                 QFontMetrics fontMetrics(font);
+//                                 font.setBold(true);
+//                                 QFontMetrics boldMetrics(font);
+//                                 int textWidthNormal = fontMetrics.horizontalAdvance(tabOption->text);
+//                                 int textWidthBold = boldMetrics.horizontalAdvance(tabOption->text);
+//                                 int extraWidth = textWidthBold - textWidthNormal;
+//                                 res.setWidth(res.width() + extraWidth);
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     return res;
+// }
+
+
+QSize TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option,
+                                    const QSize &size, const QWidget *widget) const
 {
     QSize res = QProxyStyle::sizeFromContents(type, option, size, widget);
-    QTabWidget *tabWidget = widget == mMainTabs->tabBar() ? mMainTabs : widget == mLogTabs->tabBar() ? mLogTabs : nullptr;
-    if (tabWidget) {
-        if (widget == mMainTabs->tabBar()) {
-            if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
-                if (QWidget *wid = tabWidget->widget(tab->tabIndex)) {
-                    QStyleOptionTab opt(*tab);
-                    QSize newSize = size;
-                    opt.text = platformGetText(opt.text, wid);
-                    if (opt.text != tab->text) {
-                        const QFont &f = widget->font();
-                        int diff = QFontMetrics(f).horizontalAdvance(opt.text) - tab->fontMetrics.horizontalAdvance(tab->text);
-                        newSize.setWidth(newSize.width() + diff);
-                        res = QProxyStyle::sizeFromContents(type, &opt, newSize, widget);
-                    }
-                }
-            }
-        } else if (widget == mLogTabs->tabBar()) {
-            if (type == CT_TabBarTab) {
-                if (const QStyleOptionTab *tabOption = qstyleoption_cast<const QStyleOptionTab *>(option)) {
-                    const QTabBar *tabBar = qobject_cast<const QTabBar *>(widget);
-                    if (tabBar) {
-                        int tabIndex = tabBar->tabAt(tabOption->rect.center());
-                       if (tabIndex == 0) {
-                            QString text = tabBar->tabText(tabIndex);
-                            if (RexSystemLog.match(text).hasMatch()) {
-                                // To fix the truncated text of the tab because the bounded box of the bold font
-                                // has been calculated beforehand during drawControl(),
-                                // suggesting the amount of pixels needed to fit the bold layout.
-                                QFont font = qApp->font();
-                                QFontMetrics fontMetrics(font);
-                                font.setBold(true);
-                                QFontMetrics boldMetrics(font);
-                                int textWidthNormal = fontMetrics.horizontalAdvance(tabOption->text);
-                                int textWidthBold = boldMetrics.horizontalAdvance(tabOption->text);
-                                int extraWidth = textWidthBold - textWidthNormal;
-                                res.setWidth(res.width() + extraWidth);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    if (type != CT_TabBarTab)
+        return res;
+
+    QTabWidget *tabWidget = widget == mMainTabs->tabBar() ? mMainTabs
+                            : widget == mLogTabs->tabBar()  ? mLogTabs : nullptr;
+    const auto *tab = qstyleoption_cast<const QStyleOptionTab *>(option);
+    if (!tabWidget || !tab)
+        return res;
+    if (tabWidget->tabPosition() == QTabWidget::West || tabWidget->tabPosition() == QTabWidget::East)
+        return res;
+
+    QFont font = widget->font();
+    const QString text = platformGetText(tab->text, tabWidget->widget(tab->tabIndex));
+    if (tabWidget == mLogTabs && RexSystemLog.match(text).hasMatch())
+        font.setBold(true);
+    const QFontMetrics fm(font);
+
+    int width = cTextMargin + fm.horizontalAdvance(text) + cTextMargin;
+    if (tab->leftButtonSize.width() > 0)
+        width += tab->leftButtonSize.width() + cSpacing;
+    if (tab->rightButtonSize.width() > 0)
+        width += tab->rightButtonSize.width() + cSpacing;
+    if (!tab->icon.isNull())
+        width += tab->iconSize.width() + cSpacing;
+
+    res.setWidth(width);
     return res;
 }
 
@@ -176,37 +215,31 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                     textRect.setRight(textRect.right() - tab->rightButtonSize.width() - 4);
 
                 painter->save();
+                if (!tab->icon.isNull()) {
+                    const bool closeLeft = styleHint(SH_TabBar_CloseButtonPosition, nullptr, widget)
+                    == QTabBar::LeftSide;
+                    QRect iconRect(QPoint(), tab->iconSize);
+                    iconRect.moveCenter(textRect.center());
+                    if (closeLeft) {
+                        iconRect.moveRight(textRect.right());
+                        textRect.setRight(iconRect.left() - 4);
+                    } else {
+                        iconRect.moveLeft(textRect.left());
+                        textRect.setLeft(iconRect.right() + 1 + 4);
+                    }
+                    const QIcon::Mode mode = tab->state.testFlag(State_Enabled) ? QIcon::Normal : QIcon::Disabled;
+                    tab->icon.paint(painter, iconRect, Qt::AlignCenter, mode, selected ? QIcon::On : QIcon::Off);
+                }
+
+                // Text
                 QString text = platformGetText(tab->text, tabWidget->widget(tab->tabIndex));
                 if (widget == mLogTabs->tabBar() && RexSystemLog.match(text).hasMatch()) {
                     QFont font = painter->font();
                     font.setBold(true);
                     painter->setFont(font);
                 }
-                const QFontMetrics fm = painter->fontMetrics();
-
-                const bool hasIcon = !tab->icon.isNull();
-                const bool closeLeft = styleHint(SH_TabBar_CloseButtonPosition, nullptr, widget)
-                                       == QTabBar::LeftSide;
-                const int iconSpace = hasIcon ? tab->iconSize.width() + 4 : 0;
-
                 if (const auto *bar = qobject_cast<const QTabBar *>(widget))
-                    text = fm.elidedText(text, bar->elideMode(), textRect.width() - iconSpace);
-                const int textWidth = fm.horizontalAdvance(text);
-
-                if (hasIcon) {
-                    QRect iconRect(QPoint(), tab->iconSize);
-                    iconRect.moveCenter(textRect.center());
-                    if (closeLeft) {
-                        iconRect.moveLeft(textRect.left() + textWidth + 4);
-                    } else {
-                        iconRect.moveLeft(textRect.left());
-                        textRect.setLeft(iconRect.right() + 1 + 4);
-                    }
-                    const QIcon::Mode mode = tab->state.testFlag(State_Enabled) ? QIcon::Normal
-                                                                                : QIcon::Disabled;
-                    tab->icon.paint(painter, iconRect, Qt::AlignCenter, mode,
-                                    selected ? QIcon::On : QIcon::Off);
-                }
+                    text = painter->fontMetrics().elidedText(text, bar->elideMode(), textRect.width());
 
                 painter->setPen(platformGetTextColor(state, selected));
                 QProxyStyle::drawItemText(painter, textRect, Qt::AlignVCenter | Qt::AlignLeft,
