@@ -77,13 +77,16 @@ void TextBlankOps::eolToSpace()
 
 void TextBlankOps::tabToSpace()
 {
-    forEachLine([this](QTextCursor &edit, const QTextBlock &b) {
+    const bool sel = mCursor.hasSelection();
+    const int from = mCursor.selectionStart(), to = mCursor.selectionEnd();
+    forEachLine([this, sel, from, to](QTextCursor &edit, const QTextBlock &b) {
         const QString t = b.text();
         std::vector<std::pair<int, int>> reps;
         for (int i = 0, col = 0; i < t.size(); ++i) {
             const bool tab = t.at(i) == QLatin1Char('\t');
             const int w = tab ? mTabWidth - col % mTabWidth : 1;
-            if (tab) reps.emplace_back(i, w);
+            const int pos = b.position() + i;
+            if (tab && (!sel || (pos >= from && pos < to))) reps.emplace_back(i, w);
             col += w;
         }
         for (auto it = reps.rbegin(); it != reps.rend(); ++it)
@@ -109,16 +112,16 @@ void TextBlankOps::trim(bool leading, bool trailing)
 void TextBlankOps::forEachLine(const std::function<void(QTextCursor &, const QTextBlock &)> &fn)
 {
     QTextDocument *doc = mCursor.document();
-    QTextBlock b = doc->findBlock(mCursor.selectionStart());
+    const QTextBlock first = doc->findBlock(mCursor.selectionStart());
     QTextBlock last = doc->findBlock(mCursor.selectionEnd());
-    if (mCursor.hasSelection() && last != b && mCursor.selectionEnd() == last.position())
+    if (mCursor.hasSelection() && last != first && mCursor.selectionEnd() == last.position())
         last = last.previous();
 
     QTextCursor edit(mCursor);
     edit.beginEditBlock();
-    for (;; b = b.next()) {
+    for (QTextBlock b = last;; b = b.previous()) {
         fn(edit, b);
-        if (b == last) break;
+        if (b == first) break;
     }
     edit.endEditBlock();
 }
