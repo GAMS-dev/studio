@@ -670,7 +670,7 @@ void FileMeta::processBlankOps(TextBlankOps::Flags ops)
     if (!mDocument || mEditors.isEmpty()) return;
     CodeEdit *ce = ViewHelper::toCodeEdit(mEditors.first());
     if (!ce) return;
-    TextBlankOps worker(ce->textCursor());
+    TextBlankOps worker(ce->textCursor(), Settings::settings()->toInt(skEdTabSize));
     worker.apply(ops);
 }
 
