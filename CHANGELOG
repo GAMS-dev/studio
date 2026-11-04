@@ -20,6 +20,7 @@ Version 1.26.0  *
 - The attribute values of variables and equations can now be dragged between rows and columns in the GDX Viewer's Table View, just like any other dimension.
 - Improved auto indentation after adding a new line to the Code Editor.
 - Added auto-select current line when cut or copy without selected text.
+- Fixed a missing or corrupted library file hiding all models in the Model Library Explorer.
 
 Version 1.25.8
 ==================
