@@ -73,7 +73,6 @@ ModelDialog::ModelDialog(const QString &userLibPath, QWidget *parent)
 
     QStringList gamsGlbFiles;
     gamsGlbFiles << "gamslib_ml/gamslib.glb"
-                 << "testlib_ml/testlib.glb"
                  << "apilib_ml/apilib.glb"
                  << "datalib_ml/datalib.glb"
                  << "emplib_ml/emplib.glb"
@@ -83,7 +82,6 @@ ModelDialog::ModelDialog(const QString &userLibPath, QWidget *parent)
 
     QStringList gamsLibNames;
     gamsLibNames << "Model Library"
-                 << "Test Library"
                  << "API Library"
                  << "Data Utilities Library"
                  << "EMP Library"
