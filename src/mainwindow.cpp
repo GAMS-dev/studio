@@ -103,6 +103,10 @@ static const int CMaxOpenFiles = 25;
 static const QString CGamsSnippetFile("/gams_snippets.json");
 static const QString CUserSnippetFile("/user_snippets.json");
 
+static const QStringList CNewAltText {"&New File in New Project...",
+                                      "&New File in Current Project...",
+                                      "Create the file in a new project",
+                                      "Create the file in the current project"};
 static const QStringList COpenAltText {"&Open in New Project...",
                                        "&Open in Current Project...",
                                        "Open the file(s) in a new project",
@@ -731,6 +735,8 @@ void MainWindow::initSettingsDialog()
         if (mSettingsDialog->hasDelayedBaseThemeChange()) {
             mSettingsDialog->delayBaseThemeChange(false);
         }
+        ui->actionNewAlternative->setText(CNewAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
+        ui->actionNewAlternative->setToolTip(CNewAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
         ui->actionOpenAlternative->setText(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
         ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
         mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
@@ -2005,6 +2011,14 @@ void MainWindow::on_actionNew_triggered()
 {
     QList<PExProjectNode*> project;
     if (Settings::settings()->toBool(skOpenInCurrent) && mRecent.project())
+        project << mRecent.project();
+    newFileDialogPrepare(project, currentPath(opFile));
+}
+
+void MainWindow::on_actionNewAlternative_triggered()
+{
+    QList<PExProjectNode*> project;
+    if (!Settings::settings()->toBool(skOpenInCurrent) && mRecent.project())
         project << mRecent.project();
     newFileDialogPrepare(project, currentPath(opFile));
 }
@@ -3429,6 +3443,8 @@ void MainWindow::restoreFromSettings()
     }
     ui->actionFull_Screen->setChecked(settings->toBool(skWinFullScreen));
     restoreState(settings->toByteArray(skWinState));
+    ui->actionNewAlternative->setText(CNewAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
+    ui->actionNewAlternative->setToolTip(CNewAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
     ui->actionOpenAlternative->setText(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
     ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
 

@@ -290,6 +290,7 @@ private slots:
     // File
     void on_menuFile_aboutToShow();
     void on_actionNew_triggered();
+    void on_actionNewAlternative_triggered();
     void on_actionOpen_triggered();
     void on_actionOpenAlternative_triggered();
     void on_actionOpen_Folder_triggered();
