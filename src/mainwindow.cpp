@@ -7489,9 +7489,7 @@ void MainWindow::updateTabIcon(PExAbstractNode *node, int tabIndex)
     int alpha = tabIndex == mainTabs()->currentIndex() ? 100 : 40;
     if (node && node->assignedProject() == mRecent.project(false)) alpha = 100;
     QIcon icon = node->icon(QIcon::Normal, alpha);
-#ifndef __APPLE__
     ui->mainTabs->setTabIcon(tabIndex, icon);
-#endif
 }
 
 void MainWindow::mainFileChanged()
