@@ -164,34 +164,47 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
             }
             // tab text
             if (element == CE_TabBarTabLabel) {
-                QStyleOptionTab opt(*tab);
-                TabState state = tsNormal;
+                const bool selected = tab->state.testFlag(State_Selected);
+                const TabState state = getState(tabWidget->widget(tab->tabIndex), selected);
 
-                state = getState(tabWidget->widget(tab->tabIndex), opt.state.testFlag(State_Selected));
-                opt.text = "";
-
-                QProxyStyle::drawControl(element, &opt, painter, widget);
+                QRect textRect = tab->rect.marginsRemoved(QMargins(12, 0, 12, 0));
+                if (int dy = platformGetDyLifter(tabWidget->tabPosition(), selected))
+                    textRect.translate(0, dy);
+                if (tab->leftButtonSize.width() > 0)
+                    textRect.setLeft(textRect.left() + tab->leftButtonSize.width() + 4);
+                if (tab->rightButtonSize.width() > 0)
+                    textRect.setRight(textRect.right() - tab->rightButtonSize.width() - 4);
 
                 painter->save();
-                painter->setPen(platformGetTextColor(state, opt.state.testFlag(State_Selected)));
-                opt.rect = opt.rect.marginsRemoved(QMargins(12,0,12,0));
-                opt.text = platformGetText(tab->text, tabWidget->widget(tab->tabIndex));
-                if (tabWidget && widget == mLogTabs->tabBar()) {
-                   if (RexSystemLog.match(opt.text).hasMatch()) {
-                       QFont font = qApp->font();
-                       font.setBold(true);
-                       painter->setFont(font);
-                   }
+                if (!tab->icon.isNull()) {
+                    const bool closeLeft = styleHint(SH_TabBar_CloseButtonPosition, nullptr, widget)
+                    == QTabBar::LeftSide;
+                    QRect iconRect(QPoint(), tab->iconSize);
+                    iconRect.moveCenter(textRect.center());
+                    if (closeLeft) {
+                        iconRect.moveRight(textRect.right());
+                        textRect.setRight(iconRect.left() - 4);
+                    } else {
+                        iconRect.moveLeft(textRect.left());
+                        textRect.setLeft(iconRect.right() + 1 + 4);
+                    }
+                    const QIcon::Mode mode = tab->state.testFlag(State_Enabled) ? QIcon::Normal : QIcon::Disabled;
+                    tab->icon.paint(painter, iconRect, Qt::AlignCenter, mode, selected ? QIcon::On : QIcon::Off);
                 }
-                if (int dy = platformGetDyLifter(tabWidget->tabPosition(), opt.state.testFlag(State_Selected))) {
-                    opt.rect.moveTop(opt.rect.top() + dy);
+
+                // Text
+                QString text = platformGetText(tab->text, tabWidget->widget(tab->tabIndex));
+                if (widget == mLogTabs->tabBar() && RexSystemLog.match(text).hasMatch()) {
+                    QFont font = painter->font();
+                    font.setBold(true);
+                    painter->setFont(font);
                 }
-                if (opt.leftButtonSize.width() > 0) opt.rect.setLeft(opt.rect.left() + opt.leftButtonSize.width() + 4);
-                if (opt.rightButtonSize.width() > 0) opt.rect.setRight(opt.rect.right() - opt.rightButtonSize.width() - 4);
-                if (!opt.icon.isNull()) {
-                    opt.rect.setLeft(opt.rect.left() + opt.iconSize.width() + 4);
-                }
-                QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, opt.text);
+                if (const auto *bar = qobject_cast<const QTabBar *>(widget))
+                    text = painter->fontMetrics().elidedText(text, bar->elideMode(), textRect.width());
+
+                painter->setPen(platformGetTextColor(state, selected));
+                QProxyStyle::drawItemText(painter, textRect, Qt::AlignVCenter | Qt::AlignLeft,
+                                          tab->palette, true, text);
                 painter->restore();
                 return;
             }
