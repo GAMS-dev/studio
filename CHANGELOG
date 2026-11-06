@@ -22,6 +22,7 @@ Version 1.26.0  *
 - Added auto-select current line when cut or copy without selected text.
 - Fixed a missing or corrupted library file hiding all models in the Model Library Explorer.
 - Added icons to the main tabs now also for macOS.
+- Added Blank Operations to the code editor: trim spaces, join lines, and convert tabs to spaces.
 
 Version 1.25.8
 ==================
