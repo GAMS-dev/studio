@@ -2,6 +2,7 @@ stages:
   - fetch-scripts
   - quality
   - build
+  - symbols
   - test
   - pack
   - deploy

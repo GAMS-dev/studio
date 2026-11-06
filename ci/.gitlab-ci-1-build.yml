@@ -1,3 +1,7 @@
+.symbols-flag:
+  - QMAKE_SYMBOLS=""
+  - if [ -n "$CI_COMMIT_TAG" ] || echo "$CI_COMMIT_BRANCH" | grep -q 'watchdog$'; then QMAKE_SYMBOLS="CONFIG+=with_symbols"; fi
+
 build-deg:
   stage: build
   tags: [macos]
@@ -7,16 +11,19 @@ build-deg:
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-deg]
+    - !reference [.symbols-flag]
     - printf "GAMS_DISTRIB=$HOME/cache/gams-installs/`cat gams_folder_deg.txt`\n" > gamsinclude.pri
     - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
     - printf "GAMS_DISTRIB_CPP_API=\$\$GAMS_DISTRIB/apifiles/C++/api\n" >> gamsinclude.pri
     - mkdir build && cd build
     - PATH="${qtpath}:${PATH}"
-    - qmake ../gams-studio.pro CONFIG+=release && make -j4
+    - qmake ../gams-studio.pro CONFIG+=release $QMAKE_SYMBOLS && make -j4
+    - mkdir -p ../symbols
+    - find . -name "*.dSYM" -type d -prune -exec mv {} ../symbols/ \;
   artifacts:
     name: studio-deg
     expire_in: 2 hours
-    paths: [build/*]
+    paths: [build/*, symbols/]
     exclude: ["build/**/*.pch", "build/**/*.pch/**", "build/**/*.gch/**"]  # precompiled headers
 
 build-dac:
@@ -28,16 +35,19 @@ build-dac:
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-dac]
+    - !reference [.symbols-flag]
     - printf "GAMS_DISTRIB=$HOME/cache/gams-installs/`cat gams_folder_dac.txt`\n" > gamsinclude.pri
     - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
     - printf "GAMS_DISTRIB_CPP_API=\$\$GAMS_DISTRIB/apifiles/C++/api\n" >> gamsinclude.pri
     - mkdir build && cd build
     - PATH="${qtpath}:${PATH}"
-    - qmake ../gams-studio.pro CONFIG+=release && make -j4
+    - qmake ../gams-studio.pro CONFIG+=release $QMAKE_SYMBOLS && make -j4
+    - mkdir -p ../symbols
+    - find . -name "*.dSYM" -type d -prune -exec mv {} ../symbols/ \;
   artifacts:
     name: studio-dac
     expire_in: 2 hours
-    paths: [build/*]
+    paths: [build/*, symbols/]
     exclude: ["build/**/*.pch", "build/**/*.pch/**", "build/**/*.gch/**"]  # precompiled headers
 
 build-leg:
@@ -52,15 +62,18 @@ build-leg:
   script:
     - !reference [.get-gams]
     - !reference [.gams-folder-leg]
+    - !reference [.symbols-flag]
     - echo "GAMS_DISTRIB=/cache/gams-installs/`cat gams_folder_leg.txt`" > gamsinclude.pri
     - echo "GAMS_DISTRIB_C_API=$DOLLAR_GAMS/apifiles/C/api" >> gamsinclude.pri
     - echo "GAMS_DISTRIB_CPP_API=$DOLLAR_GAMS/apifiles/C++/api" >> gamsinclude.pri
     - mkdir build && cd build
-    - qmake ../gams-studio.pro CONFIG+=release && make -j4
+    - qmake ../gams-studio.pro CONFIG+=release $QMAKE_SYMBOLS && make -j4
+    - mkdir -p ../symbols
+    - find . -name "*.debug" -type f -exec mv {} ../symbols/ \;
   artifacts:
     name: studio-leg
     expire_in: 2 hours
-    paths: [build/*]
+    paths: [build/*, symbols/]
     exclude: ["build/**/*.pch", "build/**/*.pch/**", "build/**/*.gch/**"]  # precompiled headers
 
 build-wei:
@@ -87,12 +100,54 @@ build-wei:
     - $data | out-file -encoding ascii gamsinclude.pri
     - New-Item -ItemType Directory -Path build -Force | Out-Null
     - Set-Location build
-    - $env:PATH="C:\Qt\Tools\icu\bin64;$env:PATH"; & { qmake.exe ..\gams-studio.pro "CONFIG+=release" "QMAKE_CFLAGS+=-MP" "QMAKE_CXXFLAGS+=-MP" }
+    - $qmakeArgs = @("..\gams-studio.pro", "CONFIG+=release", "QMAKE_CFLAGS+=-MP", "QMAKE_CXXFLAGS+=-MP")
+    - if ($env:CI_COMMIT_TAG -or $env:CI_COMMIT_BRANCH -like '*watchdog') { $qmakeArgs += "CONFIG+=with_symbols" }
+    - $env:PATH="C:\Qt\Tools\icu\bin64;$env:PATH"; & qmake.exe @qmakeArgs
     - Copy-Item "$gpath\libssl-3-x64.dll" .
     - Copy-Item "$gpath\libcrypto-3-x64.dll" .
     - nmake.exe
+    - New-Item -ItemType Directory -Path ..\symbols -Force | Out-Null
+    - Get-ChildItem -Recurse -Filter *.pdb | Where-Object { (Test-Path ($_.FullName -replace '\.pdb$','.exe')) -or (Test-Path ($_.FullName -replace '\.pdb$','.dll')) } | Move-Item -Destination ..\symbols
   artifacts:
     name: studio-wei
     expire_in: 2 hours
-    paths: [build/*]
+    paths: [build/*, symbols/]
     exclude: ["build/**/*.pch", "build/**/*.pch/**", "build/**/*.gch/**"]  # precompiled headers
+
+.symbols:
+  stage: symbols
+  tags: [linux]
+  image: alpine:3.20
+  rules:
+    - if: $CI_COMMIT_TAG || $CI_COMMIT_BRANCH =~ /watchdog$/
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - ls -R symbols
+  artifacts:
+    expire_in: 6 months
+    paths: [symbols/]
+
+symbols-deg:
+  extends: .symbols
+  needs: [build-deg]
+  artifacts:
+    name: studio-deg-symbols-$CI_COMMIT_REF_SLUG
+
+symbols-dac:
+  extends: .symbols
+  needs: [build-dac]
+  artifacts:
+    name: studio-dac-symbols-$CI_COMMIT_REF_SLUG
+
+symbols-leg:
+  extends: .symbols
+  needs: [build-leg]
+  artifacts:
+    name: studio-leg-symbols-$CI_COMMIT_REF_SLUG
+
+symbols-wei:
+  extends: .symbols
+  needs: [build-wei]
+  artifacts:
+    name: studio-wei-symbols-$CI_COMMIT_REF_SLUG

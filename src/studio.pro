@@ -4,7 +4,6 @@ TARGET = studio
 TEMPLATE = app
 DESTDIR = bin
 CONFIG += c++20
-CONFIG += force_debug_info
 CONFIG -= qml_debug
 
 # Precompiled header, can be switched off with qmake CONFIG+=no_pch
@@ -12,6 +11,11 @@ CONFIG -= qml_debug
     CONFIG += precompile_header
     PRECOMPILED_HEADER = pch.h
     PRECOMPILED_DIR = ../objects   # tests/tests.pri links studio_pch.obj from here (MSVC)
+}
+# Generate symbols can be switched on/off
+with_symbols {
+    CONFIG += force_debug_info
+    unix: CONFIG += separate_debug_info
 }
 
 # Setup and include the GAMS distribution
@@ -47,7 +51,6 @@ macx {
 }
 unix {
     LIBS += -ldl -lpthread
-    CONFIG += separate_debug_info
 }
 win32 {
     RC_FILE += ../platform/windows/studio.rc
