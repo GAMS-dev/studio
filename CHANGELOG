@@ -21,6 +21,7 @@ Version 1.26.0  *
 - Improved auto indentation after adding a new line to the Code Editor.
 - Added auto-select current line when cut or copy without selected text.
 - Fixed a missing or corrupted library file hiding all models in the Model Library Explorer.
+- Added icons to the main tabs now also for macOS.
 
 Version 1.25.8
 ==================
