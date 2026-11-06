@@ -98,56 +98,6 @@ TabBarStyle::TabState TabBarStyle::getState(const QWidget *tabWidget, bool selec
     return TabState(res);
 }
 
-// QSize TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const
-// {
-//     QSize res = QProxyStyle::sizeFromContents(type, option, size, widget);
-//     QTabWidget *tabWidget = widget == mMainTabs->tabBar() ? mMainTabs : widget == mLogTabs->tabBar() ? mLogTabs : nullptr;
-//     if (tabWidget) {
-//         if (widget == mMainTabs->tabBar()) {
-//             if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
-//                 if (QWidget *wid = tabWidget->widget(tab->tabIndex)) {
-//                     QStyleOptionTab opt(*tab);
-//                     QSize newSize = size;
-//                     opt.text = platformGetText(opt.text, wid);
-//                     if (opt.text != tab->text) {
-//                         const QFont &f = widget->font();
-//                         int diff = QFontMetrics(f).horizontalAdvance(opt.text) - tab->fontMetrics.horizontalAdvance(tab->text);
-//                         newSize.setWidth(newSize.width() + diff);
-//                         res = QProxyStyle::sizeFromContents(type, &opt, newSize, widget);
-//                     }
-//                 }
-//             }
-//         } else if (widget == mLogTabs->tabBar()) {
-//             if (type == CT_TabBarTab) {
-//                 if (const QStyleOptionTab *tabOption = qstyleoption_cast<const QStyleOptionTab *>(option)) {
-//                     const QTabBar *tabBar = qobject_cast<const QTabBar *>(widget);
-//                     if (tabBar) {
-//                         int tabIndex = tabBar->tabAt(tabOption->rect.center());
-//                        if (tabIndex == 0) {
-//                             QString text = tabBar->tabText(tabIndex);
-//                             if (RexSystemLog.match(text).hasMatch()) {
-//                                 // To fix the truncated text of the tab because the bounded box of the bold font
-//                                 // has been calculated beforehand during drawControl(),
-//                                 // suggesting the amount of pixels needed to fit the bold layout.
-//                                 QFont font = qApp->font();
-//                                 QFontMetrics fontMetrics(font);
-//                                 font.setBold(true);
-//                                 QFontMetrics boldMetrics(font);
-//                                 int textWidthNormal = fontMetrics.horizontalAdvance(tabOption->text);
-//                                 int textWidthBold = boldMetrics.horizontalAdvance(tabOption->text);
-//                                 int extraWidth = textWidthBold - textWidthNormal;
-//                                 res.setWidth(res.width() + extraWidth);
-//                             }
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-//     return res;
-// }
-
-
 QSize TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option,
                                     const QSize &size, const QWidget *widget) const
 {
