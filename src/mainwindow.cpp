@@ -84,7 +84,7 @@
 #include "file/gprimporter.h"
 #include "tooltipproxystyle.h"
 #include "palettestylemanager.h"
-#include "crashtests.h"
+#include "crash/crashtests.h"
 
 #ifdef __APPLE__
 # include "../platform/macos/macoscocoabridge.h"

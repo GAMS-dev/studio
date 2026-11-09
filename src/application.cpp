@@ -20,11 +20,10 @@
 #include "application.h"
 #include "support/distributionvalidator.h"
 #include "exception.h"
-#include "qstylefactory.h"
-#include "palettestylemanager.h"
 #include "version.h"
 #include "settings.h"
 #include "commonpaths.h"
+#include "crash/crashreport.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "logger.h"
@@ -121,6 +120,10 @@ bool Application::init()
     else if (!mCmdParser.logFile().isEmpty() && mCmdParser.logFile() != "-")
         vCustomLogFile = mCmdParser.logFile();
 
+    CrashReport::PreviousRun crashReport;
+    if (!vCustomLogFile.isEmpty())
+        crashReport = CrashReport::checkPreviousRun(vCustomLogFile);
+
     if (!vCustomLogFile.isEmpty()) {
         if (QFile::exists(vCustomLogFile)) {
             if (QFile::exists(vCustomLogFile + "~"))
@@ -154,7 +157,8 @@ bool Application::init()
     if (Settings::settings()->toBool(skCleanUpWorkspace)) {
         auto list = mMainWindow->settingsDialog()->cleanupWorkspaces(true);
         if (!list.isEmpty()) {
-            QString msg = QString("Remove %1 files?\n\nThe automatic cleanup would affect %1 files in the chosen directories according to the setting.").arg(list.size());
+            QString msg = QString("Remove %1 files?\n\nThe automatic cleanup would affect %1 files "
+                                  "in the chosen directories according to the setting.").arg(list.size());
             QString msgDetail(list.join("\n"));
             int choice = MsgBox::question("Clean Workspace on startup", msg, "", msgDetail, mMainWindow.get(), "Ok", "Cancel");
             if (choice == 0)
@@ -162,6 +166,9 @@ bool Application::init()
         }
     }
     mMainWindow->appendSystemLogInfo("Started: " + QCoreApplication::arguments().join(" "));
+    if (crashReport.failed)
+        mMainWindow->appendSystemLogWarning("Studio did not shut down properly last time. Consider to send the "
+                                            "crash report to GAMS support:\n" + QDir::toNativeSeparators(crashReport.zipFile));
     if (!sysDirMessage.isEmpty())
         mMainWindow->appendSystemLogWarning(sysDirMessage);
     mMainWindow->appendSystemLogInfo("GAMS System Directory: " + QDir::toNativeSeparators(CommonPaths::systemDir()));

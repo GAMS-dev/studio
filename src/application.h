@@ -132,6 +132,7 @@ private:
     QString mOpenPathOnInit;
     QString mServerName;
     QLocalServer mServer;
+    QString mCrashReport;
 };
 
 } // namespace studio

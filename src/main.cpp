@@ -19,7 +19,8 @@
  */
 #include "application.h"
 #include "exception.h"
-#include "crashhandler.h"
+#include "crash/crashhandler.h"
+#include "crash/crashreport.h"
 
 #include <QSystemSemaphore>
 

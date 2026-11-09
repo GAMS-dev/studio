@@ -95,8 +95,9 @@ SOURCES += \
     connect/schemadefinitionmodel.cpp \
     connect/schemalistmodel.cpp \
     connect/treecellresizer.cpp \
-    crashhandler.cpp \
-    crashtests.cpp \
+    crash/crashhandler.cpp \
+    crash/crashreport.cpp \
+    crash/crashtests.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
     editors/chunktextmapper.cpp \
@@ -345,8 +346,9 @@ HEADERS += \
     connect/schemadefinitionmodel.h \
     connect/schemalistmodel.h \
     connect/treecellresizer.h \
-    crashhandler.h \
-    crashtests.h \
+    crash/crashhandler.h \
+    crash/crashreport.h \
+    crash/crashtests.h \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
     editors/abstracttextmapper.h \
