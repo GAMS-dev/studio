@@ -19,15 +19,13 @@
  */
 #ifndef CRASHREPORT_H
 #define CRASHREPORT_H
-#include <QStringList>
-#include <functional>
-
-class QObject;
+#include <QString>
 
 namespace gams {
 namespace studio {
 
-// Detects whether the previous run ended without a clean exit and packs the crash data.
+// Detects whether the previous run ended without a clean exit and immediately
+// zips its log (plus the newest dump younger than the lock file) next to the log.
 class CrashReport
 {
 public:
@@ -36,19 +34,14 @@ public:
     struct PreviousRun
     {
         bool failed = false; // last run did not exit cleanly
-        QString dumpFile;    // newest dump younger than the lock file, may be empty
-        QString zipFile;     // archive path next to the log
+        bool zipped = false; // zipFile was written
+        QString dumpFile;    // dump included in the zip, may be empty
+        QString zipFile;
     };
 
-    // Call once at startup, after CrashHandler::install() and before the log file is renamed or opened.
-    // Dumps are taken from CrashHandler::dumpDirectory().
+    // Call once at startup, after CrashHandler::install() and setSystemDirectory()
+    // (gmszip), and BEFORE the log file is renamed or opened. Blocks until gmszip is done.
     static PreviousRun checkPreviousRun(const QString& logFile);
-
-    // Zips logFile (if it exists) and run.dumpFile (if any) into run.zipFile using gmszip.
-    // Needs the GAMS system directory. Returns false if there is nothing to zip;
-    // otherwise done(success) is called when gmszip has finished.
-    static bool createZip(const PreviousRun& run, const QString& logFile, QObject* parent,
-                          const std::function<void(bool)>& done = nullptr);
 };
 
 } // namespace studio

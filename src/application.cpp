@@ -114,6 +114,10 @@ bool Application::init()
                              mCmdParser.resetSettings(),
                              mCmdParser.resetView());
 
+    // Set GAMS system directory
+    QString sysDirMessage;
+    SysDirSelector sds = setSystemDirectory(sysDirMessage);
+
     // Init Studio log file
     if (Settings::settings()->toBool(skEnableLog) && mCmdParser.logFile().isEmpty())
         vCustomLogFile = CommonPaths::studioDocumentsDir() + "/studio.log";
@@ -138,9 +142,7 @@ bool Application::init()
             DEB() << "Error: Couldn't register log file in missing path " << log.absolutePath();
     }
 
-    // Set and check GAMS system directory
-    QString sysDirMessage;
-    SysDirSelector sds = setSystemDirectory(sysDirMessage);
+    // Check GAMS libraries
     if (!check4Libs())
         return false;
     DEB() << sdsToString(sds);
@@ -168,13 +170,11 @@ bool Application::init()
     mMainWindow->appendSystemLogInfo("Started: " + QCoreApplication::arguments().join(" "));
     if (previousRun.failed) {
         const QString zipFile = QDir::toNativeSeparators(previousRun.zipFile);
-        CrashReport::createZip(previousRun, vCustomLogFile + "~", this, [this, zipFile](bool ok) {
-            if (ok)
-                mMainWindow->appendSystemLogWarning("Studio did not shut down properly last time. Consider to send the "
-                                                    "crash report to GAMS support:\n" + zipFile);
-            else
-                mMainWindow->appendSystemLogError("Could not create crash report " + zipFile);
-        });
+        if (previousRun.zipped)
+            mMainWindow->appendSystemLogWarning("Studio did not shut down properly last time. You can send the "
+                                                "following crash report to GAMS support:\n" + zipFile);
+        else
+            mMainWindow->appendSystemLogError("Could not create crash report " + zipFile);
     }
     if (!sysDirMessage.isEmpty())
         mMainWindow->appendSystemLogWarning(sysDirMessage);

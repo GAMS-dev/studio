@@ -22,10 +22,13 @@
 #include "process/gmszipprocess.h"
 
 #include <QCoreApplication>
+#include <QDebug>
 #include <QDateTime>
 #include <QDir>
+#include <QEventLoop>
 #include <QFileInfo>
 #include <QLockFile>
+#include <QTimer>
 
 namespace gams {
 namespace studio {
@@ -47,6 +50,30 @@ QStringList dumpFilters()
 #endif
 }
 
+// Runs gmszip and waits for it (max. 10 s).
+bool zipFiles(const QString& zipFile, const QString& workDir, const QStringList& files)
+{
+    GmszipProcess zipProc;
+    QEventLoop loop;
+    bool finished = false;
+    bool ok = false;
+    QObject::connect(&zipProc, QOverload<int, QProcess::ExitStatus>::of(&GmszipProcess::finished), &loop,
+                     [&](int exitCode, QProcess::ExitStatus status) {
+                         finished = true;
+                         ok = status == QProcess::NormalExit && exitCode == 0;
+                         loop.quit();
+                     });
+    QTimer::singleShot(10000, &loop, &QEventLoop::quit);
+
+    // -j: store without paths (the dump lives in another folder)
+    zipProc.setWorkingDirectory(workDir);
+    zipProc.setParameters(QStringList{"-8", "-j", zipFile} + files);
+    zipProc.execute();
+    if (!finished)
+        loop.exec();
+    return ok && QFile::exists(zipFile);
+}
+
 } // namespace
 
 CrashReport::PreviousRun CrashReport::checkPreviousRun(const QString& logFile)
@@ -60,7 +87,11 @@ CrashReport::PreviousRun CrashReport::checkPreviousRun(const QString& logFile)
     // A lock file left over from a dead process means the last run did not exit cleanly.
     const QFileInfo lockInfo(lockPath);
     const bool leftOver = lockInfo.exists();
-    const QDateTime lastStart = lockInfo.lastModified();
+    QDateTime lastStart = lockInfo.lastModified();
+    if (!lastStart.isValid())
+        lastStart = lockInfo.birthTime();
+    if (!lastStart.isValid())
+        qWarning() << "CrashReport: no timestamp for" << lockPath;
 
     static QLockFile lock(lockPath); // removed by its destructor on clean exit only
     lock.setStaleLockTime(0);        // stale only if the owning process is gone
@@ -68,43 +99,34 @@ CrashReport::PreviousRun CrashReport::checkPreviousRun(const QString& logFile)
         return result;
 
     result.failed = true;
-    result.zipFile = log.absolutePath() + QStringLiteral("/studio_report_")
-                     + lastStart.toString(QStringLiteral("yyyyMMdd_HHmmss")) + QStringLiteral(".zip");
+    QStringList files;
+    if (log.exists())
+        files << log.fileName();
 
     const QString dumpDirectory = CrashHandler::dumpDirectory();
-    if (!dumpDirectory.isEmpty()) {
+    if (!dumpDirectory.isEmpty() && lastStart.isValid()) {
         const QFileInfoList dumps =
             QDir(dumpDirectory).entryInfoList(dumpFilters(), QDir::Files, QDir::Time);
-        if (!dumps.isEmpty() && dumps.first().lastModified() > lastStart)
+        if (!dumps.isEmpty() && dumps.first().lastModified() > lastStart) {
             result.dumpFile = dumps.first().absoluteFilePath();
+            files << result.dumpFile;
+        }
     }
+
+    // Get the optimal date/time for the zip file name
+    QDateTime crashTime = result.dumpFile.isEmpty() ? log.lastModified()
+                                                    : QFileInfo(result.dumpFile).lastModified();
+    if (!crashTime.isValid()) {
+        crashTime = result.dumpFile.isEmpty() ? log.birthTime()
+                                              : QFileInfo(result.dumpFile).birthTime();
+        if (!crashTime.isValid())
+            crashTime = QDateTime::currentDateTime();
+    }
+    result.zipFile = log.absolutePath() + QStringLiteral("/studio_report_")
+                     + crashTime.toString(QStringLiteral("yyyyMMdd_HHmmss")) + QStringLiteral(".zip");
+
+    result.zipped = !files.isEmpty() && zipFiles(result.zipFile, log.absolutePath(), files);
     return result;
-}
-
-bool CrashReport::createZip(const PreviousRun& run, const QString& logFile, QObject* parent,
-                            const std::function<void(bool)>& done)
-{
-    QStringList files;
-    if (QFile::exists(logFile))
-        files << logFile;
-    if (!run.dumpFile.isEmpty())
-        files << run.dumpFile;
-    if (!run.failed || files.isEmpty())
-        return false;
-
-    const QString zipFile = run.zipFile;
-    auto* subProc = new GmszipProcess(parent);
-    QObject::connect(subProc, QOverload<int, QProcess::ExitStatus>::of(&GmszipProcess::finished), subProc,
-                     [subProc, zipFile, done](int exitCode, QProcess::ExitStatus status) {
-                         if (done)
-                             done(status == QProcess::NormalExit && exitCode == 0 && QFile::exists(zipFile));
-                         subProc->deleteLater();
-                     });
-
-    subProc->setWorkingDirectory(QFileInfo(zipFile).absolutePath());
-    subProc->setParameters(QStringList{"-8", "-j", QFileInfo(zipFile).fileName()} + files);
-    subProc->execute();
-    return true;
 }
 
 } // namespace studio
