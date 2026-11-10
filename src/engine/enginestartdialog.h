@@ -123,6 +123,7 @@ protected:
                              const QString &ssoName, int authExpireMinutes, bool selfCert, const QString &_nSpace,
                              const QString &_userInst, bool _forceGdx);
     void addSelectorFromCurrent();
+    void clearFields();
 
 private slots:
     void updateSelector();
@@ -193,6 +194,7 @@ private:
     bool mResume = false;
     int mInstanceListsLoaded = 0;
     QStringList mInvitees;
+    QString mLastNamespace;
     QTimer mConnectStateUpdater;
     QTimer mUrlChangedTimer;
     QString mEngineVersion;

@@ -5167,6 +5167,13 @@ void MainWindow::initEngineStartDialog(bool resume)
         mEngineJobTag = jobTag;
     });
 
+    dialog->setModal(true);
+    dialog->setProcess(proc);
+    dialog->setResume(resume);
+    dialog->setHiddenMode(mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier));
+    if (Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert))
+        dialog->setAcceptCert();
+
     connect(proc, &engine::EngineProcess::authorized, this, [this, dialog](const QString &token) {
         mEngineAuthToken = token;
         mEngineJobTag = dialog->jobTag();
@@ -5182,13 +5189,6 @@ void MainWindow::initEngineStartDialog(bool resume)
         Settings::settings()->setList(SettingsKey::skEngineRecent, dialog->recent());
         updateAndSaveSettings();
     });
-
-    dialog->setModal(true);
-    dialog->setProcess(proc);
-    dialog->setResume(resume);
-    dialog->setHiddenMode(mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier));
-    if (Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert))
-        dialog->setAcceptCert();
     connect(dialog, &engine::EngineStartDialog::submit, this, &MainWindow::engineSubmit);
     connect(dialog, &engine::EngineStartDialog::loginDataChanged, this, [this, dialog]() {
         Settings::settings()->setString(SettingsKey::skEngineUrl, dialog->url());

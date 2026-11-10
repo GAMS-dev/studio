@@ -23,6 +23,7 @@
 #include "logger.h"
 #include "engineprocess.h"
 #include "comboboxremovedelegate.h"
+#include "settings.h"
 #include "theme.h"
 
 #include <QPushButton>
@@ -266,7 +267,9 @@ void EngineStartDialog::initData(const QVariantHash &data)
         ui->cbAcceptCert->setChecked(true);
     }
     mAuthExpireMinutes = data.value("authExpire").toInt();
-    ui->cbNamespace->addItem(data.value("namespace").toString().trimmed());
+    if (!mAuthExpireMinutes)
+        mAuthExpireMinutes = Settings::settings()->toInt(skEngineAuthExpire);
+    mLastNamespace = data.value("namespace").toString().trimmed();
     mLastValidInstance = data.value("userInstance").toString().trimmed();
     ui->cbForceGdx->setChecked(data.value("forceGdx").toBool());
     getVersionAndIP();
@@ -403,7 +406,10 @@ QVariantList EngineStartDialog::recent()
 {
     QVariantList res;
     for (int i = 0; i < ui->cbSelector->count() - 1; ++i) {
-        res << ui->cbSelector->itemData(i);
+        QVariantHash hash = ui->cbSelector->itemData(i).toHash();
+        if (!Settings::settings()->toBool(skEngineStoreUserToken))
+            hash.remove("userToken");
+        res << hash;
     }
     return res;
 }
@@ -513,11 +519,12 @@ void EngineStartDialog::ensureOpened()
 
 void EngineStartDialog::bLogoutClicked()
 {
-    ui->edPassword->setText("");
-    ui->edToken->document()->clear();
-    mProc->setAuthToken("");
-    mProc->initUsername("");
-    ui->ssoPane->hide();
+    if (ui->cbSelector->count()) {
+        QVariantHash hash = ui->cbSelector->itemData(0).toHash();
+        hash.remove("userToken");
+        ui->cbSelector->setItemData(0, hash);
+    }
+    clearFields();
     emit mProc->authorized("");
     showLogin();
 }
@@ -664,6 +671,7 @@ void EngineStartDialog::hideCert()
 void EngineStartDialog::on_cbSelector_activated(int index)
 {
     if (index >= 0) {
+        clearFields();
         initData(ui->cbSelector->itemData(index).toHash());
         showLogin();
     }
@@ -725,28 +733,29 @@ void EngineStartDialog::reListJobsError(const QString &error)
 
 void EngineStartDialog::reListNamespaces(const QStringList &list)
 {
-    QString text = ui->cbNamespace->currentText().trimmed();
     ui->cbNamespace->clear();
     if (list.isEmpty()) {
-        ui->cbNamespace->addItem("-no namespace-", "SKIP");
+        ui->cbNamespace->setPlaceholderText("-no namespace-");
+        ui->cbNamespace->setCurrentIndex(-1);
         ui->cbNamespace->setToolTip("");
         return;
     }
     ui->cbNamespace->addItems(list);
-    if (!text.isEmpty() && list.contains(text))
-        ui->cbNamespace->setCurrentIndex(int(list.indexOf(text)));
-    else
-        ui->cbNamespace->setCurrentIndex(0);
+
+    int index = list.indexOf(mLastNamespace);
+    ui->cbNamespace->setCurrentIndex(index >= 0 ? index : 0);
+
     if (list.size() == 1)
         ui->cbNamespace->setToolTip("This is the only namespace with permissions");
     else
-        ui->cbNamespace->setToolTip(QString::number(list.size())+" namespaces with permissions");
+        ui->cbNamespace->setToolTip(QString::number(list.size()) + " namespaces with permissions");
 }
 
 void EngineStartDialog::reListNamespacesError(const QString &error)
 {
     ui->cbNamespace->clear();
-    ui->cbNamespace->addItem("-no namespace-", "SKIP");
+    ui->cbNamespace->setPlaceholderText("-no namespace-");
+    ui->cbNamespace->setCurrentIndex(-1);
     ui->cbNamespace->setToolTip("");
     ui->laWarn->setText("Could not read namespaces" + error.trimmed());
     ui->laWarn->setToolTip("Try to login again or contact your administrator");
@@ -1015,7 +1024,6 @@ void EngineStartDialog::updateConnectStateAppearance()
                 // hidden start
                 if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
                 mAlways = true;
-                //                mProc->setNamespace(ui->cbNamespace->currentText().trimmed());
                 emit submit(true);
             }
         } else {
@@ -1243,6 +1251,17 @@ void EngineStartDialog::addSelectorFromCurrent()
     ui->cbSelector->blockSignals(true);
     ui->cbSelector->setCurrentIndex(0);
     ui->cbSelector->blockSignals(false);
+}
+
+void EngineStartDialog::clearFields()
+{
+    ui->edUrl->clear();
+    ui->edUser->clear();
+    ui->edPassword->setText("");
+    ui->edToken->document()->clear();
+    mProc->setAuthToken("");
+    mProc->initUsername("");
+    ui->ssoPane->hide();
 }
 
 void EngineStartDialog::updateSelector()
