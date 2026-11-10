@@ -122,7 +122,7 @@ CrashReport::PreviousRun CrashReport::checkPreviousRun(const QString& logFile)
         if (!crashTime.isValid())
             crashTime = QDateTime::currentDateTime();
     }
-    result.zipFile = log.absolutePath() + QStringLiteral("/studio_report_")
+    result.zipFile = log.absolutePath() + QStringLiteral("/studio_dump_")
                      + crashTime.toString(QStringLiteral("yyyyMMdd_HHmmss")) + QStringLiteral(".zip");
 
     result.zipped = !files.isEmpty() && zipFiles(result.zipFile, log.absolutePath(), files);
