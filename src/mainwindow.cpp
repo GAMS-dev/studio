@@ -103,8 +103,8 @@ static const int CMaxOpenFiles = 25;
 static const QString CGamsSnippetFile("/gams_snippets.json");
 static const QString CUserSnippetFile("/user_snippets.json");
 
-static const QStringList CNewAltText {"&New File in New Project...",
-                                      "&New File in Current Project...",
+static const QStringList CNewAltText {"&New in New Project...",
+                                      "&New in Current Project...",
                                       "Create the file in a new project",
                                       "Create the file in the current project"};
 static const QStringList COpenAltText {"&Open in New Project...",
