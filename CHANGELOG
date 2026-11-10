@@ -23,6 +23,7 @@ Version 1.26.0  *
 - Fixed a missing or corrupted library file hiding all models in the Model Library Explorer.
 - Added icons to the main tabs now also for macOS.
 - Added Blank Operations to the code editor: trim spaces, join lines, and convert tabs to spaces.
+- Added an alternative menu entry for "New File", matching the existing one for "Open File".
 
 Version 1.25.8
 ==================
