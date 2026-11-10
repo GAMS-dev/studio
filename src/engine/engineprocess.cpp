@@ -637,11 +637,13 @@ const QHash<QString, EngineProcess::JobStatusEnum> EngineProcess::CJobStatus {
 void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
 {
     EngineManager::StatusCode engineStatus = EngineManager::StatusCode(status);
+    mPollErrors = 0;
 
     if (engineStatus > EngineManager::Queued && mProcState == Proc3Queued) {
         setProcState(Proc4Monitor);
     }
-    if ((engineStatus == EngineManager::Finished || engineStatus == EngineManager::Cancelled)
+    if ((engineStatus == EngineManager::Finished || engineStatus == EngineManager::Cancelled
+         || engineStatus == EngineManager::Corrupted)
         && (mProcState == Proc4Monitor || mProcState == Proc3Queued)) {
         mManager->getLog();
         if (gamsExitCode) {
@@ -653,7 +655,10 @@ void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
             setProcState(Proc5GetResult);
             mManager->getOutputFile();
         } else {
-            emit newStdChannelData("\nThe job has been canceled.\n");
+            if (engineStatus == EngineManager::Corrupted)
+                emit newStdChannelData("\nThe job is corrupted.\n");
+            else
+                emit newStdChannelData("\nThe job has been canceled.\n");
             setProcState(ProcIdle);
         }
     } else if (mProcState >= Proc3Queued) {
@@ -670,6 +675,7 @@ void EngineProcess::reKillJob(const QString &text)
 
 void EngineProcess::reGetLog(const QByteArray &data)
 {
+    mPollErrors = 0;
     if (mQueuedTimer.isValid()) {
         emit newStdChannelData("\n");
         mQueuedTimer.invalidate();

@@ -5238,6 +5238,7 @@ void MainWindow::engineSubmit(bool start)
         Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
         Settings::settings()->setString(SettingsKey::skEngineUserInstance, dialog->userInstance());
         Settings::settings()->setBool(SettingsKey::skEngineForceGdx, dialog->forceGdx());
+        Settings::settings()->setList(SettingsKey::skEngineRecent, dialog->recent());
         mEngineNoDialog = dialog->isAlways();
         prepareEngineProcess();
     } else {

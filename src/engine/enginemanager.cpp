@@ -329,10 +329,10 @@ EngineManager::EngineManager(QObject* parent)
     });
 
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignal, this, [this](const OAILog_piece &summary) {
-        if (!mQueueFinished) {
-            mQueueFinished = summary.isQueueFinished();
+        if (!mQueueFinished || !summary.getMessage().isEmpty())
             emit reGetLog(summary.getMessage().toUtf8());
-        }
+        if (summary.isQueueFinished())
+            mQueueFinished = true;
         if (summary.is_gams_return_code_Set() || mQueueFinished)
             getJobStatus();
     });

@@ -43,6 +43,7 @@ namespace engine {
 
 const QString EngineStartDialog::CUnavailable("-");
 const QString CDefaultClearEntry("-new-");
+const int CMaxRecentLogins = 10;
 
 EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
@@ -91,6 +92,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     connect(ui->edUrl, &QLineEdit::textEdited, this, [this]() { mUrlChangedTimer.start(); });
     connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->cbNamespace, &QComboBox::currentTextChanged, this, &EngineStartDialog::updateSubmitStates);
+    connect(ui->cbNamespace, &QComboBox::activated, this, &EngineStartDialog::storeSelectedNamespace);
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->edSsoName, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
@@ -205,7 +207,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::sslSelfSigned, this, &EngineStartDialog::selfSignedCertFound);
     mProc->setForceGdx(ui->cbForceGdx->isChecked());
     mProc->initUsername(user());
-    mProc->setNamespace(ui->cbNamespace->currentText());
+    mProc->setNamespace(nSpace());
     mProc->setPriority(ui->cbPriority->isVisible() ? ui->cbPriority->currentText() : "");
 }
 
@@ -241,6 +243,10 @@ void EngineStartDialog::init(const QString &_url, const int authMethod, const QS
 
 void EngineStartDialog::initData(const QVariantHash &data)
 {
+    if (mProc) {
+        mUrlChangedTimer.stop();
+        mProc->abortRequests();
+    }
     mUrl = cleanUrl(data.value("page").toString());
     ui->edUrl->setText(mUrl);
     ui->nUrl->setText(mUrl);
@@ -251,8 +257,11 @@ void EngineStartDialog::initData(const QVariantHash &data)
     ui->cbLoginMethod->setCurrentIndex(qMin(mAuthMethod, 2));
     mLockAuthMethod = false;
     ui->stackLoginInput->setCurrentIndex(qMin(mAuthMethod, 2));
-    if (mProc && mAuthMethod == 0) mProc->initUsername(data.value("user").toString().trimmed());
-    if (mProc && mAuthMethod == 1) mProc->setAuthToken(data.value("userToken").toString().trimmed());
+    if (mProc) {
+        if (mAuthMethod == 0) mProc->initUsername(data.value("user").toString().trimmed());
+        // the stored token is valid for every login method (username, token and SSO)
+        mProc->setAuthToken(data.value("userToken").toString().trimmed());
+    }
     if (mProc && mAuthMethod >= 2) {
         ui->edSsoName->setText(data.value("ssoName").toString().trimmed());
         showVerificationCode(QString(), QString(), QString());
@@ -272,6 +281,8 @@ void EngineStartDialog::initData(const QVariantHash &data)
     mLastNamespace = data.value("namespace").toString().trimmed();
     mLastValidInstance = data.value("userInstance").toString().trimmed();
     ui->cbForceGdx->setChecked(data.value("forceGdx").toBool());
+    if (mProc && !mUrl.isEmpty())
+        initUrlAndChecks(mUrl);
     getVersionAndIP();
 }
 
@@ -318,6 +329,10 @@ void EngineStartDialog::insertSelector(const QVariantHash &data, bool atStart)
             ui->cbSelector->removeItem(i);
     }
     ui->cbSelector->insertItem(atStart ? 0 : ui->cbSelector->count()-1, name, data);
+
+    // keep only the newest entries (the last item is always the -new- entry)
+    while (ui->cbSelector->count() - 1 > CMaxRecentLogins)
+        ui->cbSelector->removeItem(ui->cbSelector->count() - 2);
 }
 
 bool EngineStartDialog::isAlways()
@@ -332,7 +347,8 @@ QString EngineStartDialog::url() const
 
 QString EngineStartDialog::nSpace() const
 {
-    return ui->cbNamespace->currentText();
+    QString res = ui->cbNamespace->currentText().trimmed();
+    return res.isEmpty() ? mLastNamespace : res;
 }
 
 QString EngineStartDialog::userInstance() const
@@ -420,13 +436,10 @@ bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
         updateUrlEdit();
     } else if (watched == ui->laSsoLink && event->type() == QEvent::MouseButtonRelease) {
         openInBrowser(ui->laSsoLink->text());
-    } else if (watched == ui->cbSelector && event->type() == QEvent::ShowToParent) {
-        QWidget* container = ui->cbSelector->view()->parentWidget();
-        if (container) {
-            int buttonWidth = 24;
-            int newWidth = ui->cbSelector->width() - buttonWidth;
-            container->setFixedWidth(newWidth);
-        }
+    } else if (watched == ui->cbSelector && (event->type() == QEvent::ShowToParent || event->type() == QEvent::Resize)) {
+        // keep the down-triangle of the combobox visible
+        if (QWidget* container = ui->cbSelector->view()->parentWidget())
+            container->setFixedWidth(ui->cbSelector->width() - ui->cbSelector->height());
     }
     return QDialog::eventFilter(watched, event);
 }
@@ -524,7 +537,10 @@ void EngineStartDialog::bLogoutClicked()
         hash.remove("userToken");
         ui->cbSelector->setItemData(0, hash);
     }
-    clearFields();
+    ui->edUrl->clear();
+    ui->edUser->clear();
+    ui->cbAcceptCert->setChecked(false);
+    clearPrivateFields();
     emit mProc->authorized("");
     showLogin();
 }
@@ -610,7 +626,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
             mProc->setSelectedInstance(data.first().toString());
     }
     mProc->setJobTag(ui->edJobTag->text().trimmed());
-    mProc->setNamespace(ui->cbNamespace->currentText());
+    mProc->setNamespace(nSpace());
     mProc->setPriority(ui->cbPriority->isVisible() ? ui->cbPriority->currentText() : "");
     emit submit(start);
 }
@@ -671,7 +687,7 @@ void EngineStartDialog::hideCert()
 void EngineStartDialog::on_cbSelector_activated(int index)
 {
     if (index >= 0) {
-        clearFields();
+        clearPrivateFields();
         initData(ui->cbSelector->itemData(index).toHash());
         showLogin();
     }
@@ -744,6 +760,7 @@ void EngineStartDialog::reListNamespaces(const QStringList &list)
 
     int index = list.indexOf(mLastNamespace);
     ui->cbNamespace->setCurrentIndex(index >= 0 ? index : 0);
+    storeSelectedNamespace();
 
     if (list.size() == 1)
         ui->cbNamespace->setToolTip("This is the only namespace with permissions");
@@ -1023,6 +1040,7 @@ void EngineStartDialog::updateConnectStateAppearance()
             if (!isVisible() && mHiddenMode && !mResume) {
                 // hidden start
                 if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
+                if (mProc) mProc->setNamespace(nSpace());
                 mAlways = true;
                 emit submit(true);
             }
@@ -1222,7 +1240,7 @@ void EngineStartDialog::updatePoolControls(bool adaptCheckBox, bool adaptSize)
 QVariantHash EngineStartDialog::getVariantHashForCurrentFields()
 {
     QVariantHash hash = toVariantHash(mUrl, mAuthMethod, ui->edUser->text(), mProc->authToken(), ui->edSsoName->text(),
-                                      mAuthExpireMinutes, ui->cbAcceptCert->isChecked(), ui->cbNamespace->currentText(),
+                                      mAuthExpireMinutes, ui->cbAcceptCert->isChecked(), nSpace(),
                                       mLastValidInstance, ui->cbForceGdx->isChecked());
     return hash;
 }
@@ -1253,15 +1271,28 @@ void EngineStartDialog::addSelectorFromCurrent()
     ui->cbSelector->blockSignals(false);
 }
 
-void EngineStartDialog::clearFields()
+void EngineStartDialog::clearPrivateFields()
 {
-    ui->edUrl->clear();
-    ui->edUser->clear();
     ui->edPassword->setText("");
     ui->edToken->document()->clear();
     mProc->setAuthToken("");
     mProc->initUsername("");
     ui->ssoPane->hide();
+    ui->cbNamespace->clear();
+}
+
+void EngineStartDialog::storeSelectedNamespace()
+{
+    if (!mProc) return;
+    QString nSpace = ui->cbNamespace->currentText().trimmed();
+    if (nSpace.isEmpty()) return;
+    mLastNamespace = nSpace;
+    int index = ui->cbSelector->findText(generateSelectorName(getVariantHashForCurrentFields()));
+    if (index < 0) return;
+    QVariantHash hash = ui->cbSelector->itemData(index).toHash();
+    if (hash.isEmpty()) return;
+    hash.insert("namespace", nSpace);
+    ui->cbSelector->setItemData(index, hash);
 }
 
 void EngineStartDialog::updateSelector()

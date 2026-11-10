@@ -123,7 +123,8 @@ protected:
                              const QString &ssoName, int authExpireMinutes, bool selfCert, const QString &_nSpace,
                              const QString &_userInst, bool _forceGdx);
     void addSelectorFromCurrent();
-    void clearFields();
+    void clearPrivateFields();
+    void storeSelectedNamespace();
 
 private slots:
     void updateSelector();
