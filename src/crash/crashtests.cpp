@@ -27,7 +27,6 @@
 #include <QMutex>
 
 #include <cstdlib>
-#include <cstring>
 #include <stdexcept>
 #include <thread>
 
@@ -171,13 +170,16 @@ const Test kTests[] = {
     { "fastfail",     "__fastfail (only WER LocalDumps)",                   fastFail,
      "WEI:\t dump NOT created, WER necessary" },
 #endif
-    { "dump",         "Write dump, keep running",           [] { CrashHandler::writeDump(); },
+    { "dump",         "Write dump, keep running",           [] { ::gams::studio::CrashHandler::writeDump(); },
      "WEI: dump created\nDAC:\t todo\nLEG:\t todo" },
     // { "hang",         "Hang: endless loop",                 infiniteLoop,        "Only with watchdog" },
     // { "deadlock",     "Hang: deadlock",                     selfDeadlock,        "Only with watchdog" },
 };
 
 } // namespace
+
+namespace gams {
+namespace studio {
 
 void CrashTests::addToMenu(QMenu* menu)
 {
@@ -213,4 +215,7 @@ QStringList CrashTests::ids()
     for (const Test& test : kTests)
         result << QString::fromLatin1(test.id);
     return result;
+}
+
+}
 }

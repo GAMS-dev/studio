@@ -21,9 +21,10 @@
 #define CRASHHANDLER_H
 #include <QString>
 
-// Writes minidumps on crashes (Windows). On Linux/macOS the OS handles crashes;
-// dumpDirectory() then returns the OS location for core dumps / crash reports.
-// Static only: handlers must stay active until process exit.
+namespace gams {
+namespace studio {
+
+// Writes minidumps on crashes (Windows). On Linux/macOS the OS handles crashes.
 class CrashHandler
 {
 public:
@@ -35,5 +36,7 @@ public:
     static bool writeDump(const QString& namePrefix = QStringLiteral("dump")); // keeps running; Windows only
 };
 
+}
+}
 
 #endif // CRASHHANDLER_H

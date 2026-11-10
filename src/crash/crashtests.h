@@ -17,12 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#ifndef CRASHTESTS_H
+#define CRASHTESTS_H
 #include <QStringList>
 
 class QMenu;
 
-// Deliberate crashes and hangs for testing CrashHandler.
+namespace gams {
+namespace studio {
+
 class CrashTests
 {
 public:
@@ -32,3 +35,8 @@ public:
     static bool run(const QString& id); // false if id is unknown
     static QStringList ids();
 };
+
+}
+}
+
+#endif // CRASHTESTS_H

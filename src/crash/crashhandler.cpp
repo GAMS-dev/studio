@@ -18,18 +18,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "crashhandler.h"
+#include "commonpaths.h"
 
 #include <QDebug>
 #include <QDir>
-#include <QStandardPaths>
 
 #ifdef Q_OS_WIN
 #  include <windows.h>
 #  include <dbghelp.h>
 #  include <csignal>
-#  include <cstdio>
-#  include <cstdlib>
-#  include <cwchar>
 #  include <exception>
 #endif
 
@@ -151,6 +148,9 @@ void onQtMessage(QtMsgType type, const QMessageLogContext& context, const QStrin
 
 } // namespace
 
+namespace gams {
+namespace studio {
+
 bool CrashHandler::install(const QString& dumpDirectory)
 {
     if (gInstalled)
@@ -158,7 +158,7 @@ bool CrashHandler::install(const QString& dumpDirectory)
 
 #ifdef Q_OS_WIN
     const QString dir = dumpDirectory.isEmpty()
-        ? QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + QStringLiteral("/CrashDumps")
+        ? gams::studio::CommonPaths::studioDocumentsDir() + QStringLiteral("/Dumps")
         : dumpDirectory;
     const QString native = QDir::toNativeSeparators(QDir(dir).absolutePath());
     if (!QDir().mkpath(dir) || native.size() >= MAX_PATH) {
@@ -226,4 +226,7 @@ bool CrashHandler::writeDump(const QString& namePrefix)
     Q_UNUSED(namePrefix);
     return false;
 #endif
+}
+
+}
 }
