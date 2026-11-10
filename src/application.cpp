@@ -120,9 +120,9 @@ bool Application::init()
     else if (!mCmdParser.logFile().isEmpty() && mCmdParser.logFile() != "-")
         vCustomLogFile = mCmdParser.logFile();
 
-    CrashReport::PreviousRun crashReport;
+    CrashReport::PreviousRun previousRun;
     if (!vCustomLogFile.isEmpty())
-        crashReport = CrashReport::checkPreviousRun(vCustomLogFile);
+        previousRun = CrashReport::checkPreviousRun(vCustomLogFile);
 
     if (!vCustomLogFile.isEmpty()) {
         if (QFile::exists(vCustomLogFile)) {
@@ -166,9 +166,16 @@ bool Application::init()
         }
     }
     mMainWindow->appendSystemLogInfo("Started: " + QCoreApplication::arguments().join(" "));
-    if (crashReport.failed)
-        mMainWindow->appendSystemLogWarning("Studio did not shut down properly last time. Consider to send the "
-                                            "crash report to GAMS support:\n" + QDir::toNativeSeparators(crashReport.zipFile));
+    if (previousRun.failed) {
+        const QString zipFile = QDir::toNativeSeparators(previousRun.zipFile);
+        CrashReport::createZip(previousRun, vCustomLogFile + "~", this, [this, zipFile](bool ok) {
+            if (ok)
+                mMainWindow->appendSystemLogWarning("Studio did not shut down properly last time. Consider to send the "
+                                                    "crash report to GAMS support:\n" + zipFile);
+            else
+                mMainWindow->appendSystemLogError("Could not create crash report " + zipFile);
+        });
+    }
     if (!sysDirMessage.isEmpty())
         mMainWindow->appendSystemLogWarning(sysDirMessage);
     mMainWindow->appendSystemLogInfo("GAMS System Directory: " + QDir::toNativeSeparators(CommonPaths::systemDir()));
