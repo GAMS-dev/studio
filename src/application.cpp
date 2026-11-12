@@ -172,6 +172,8 @@ bool Application::init()
     }
     mMainWindow->appendSystemLogInfo("Started: " + QCoreApplication::arguments().join(" "));
     if (previousRun.failed) {
+        if (!previousRun.dumpInfo.isEmpty())
+            mMainWindow->appendSystemLogWarning("Crash report without dump: " + previousRun.dumpInfo);
         const QString zipFile = QDir::toNativeSeparators(previousRun.zipFile);
         if (previousRun.zipped) {
             const QString intro = "Studio closed unexpectedly during your last session. To help us resolve this issue, "

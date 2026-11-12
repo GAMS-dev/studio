@@ -169,9 +169,9 @@ const Test kTests[] = {
      "WEI:\t dump created" },
     { "fastfail",     "__fastfail (only WER LocalDumps)",                   fastFail,
      "WEI:\t dump NOT created, WER necessary" },
-#endif
     { "dump",         "Write dump, keep running",           [] { ::gams::studio::CrashHandler::writeDump(); },
-     "WEI: dump created\nDAC:\t todo\nLEG:\t todo" },
+     "WEI: dump(s) created on Studio exit" },
+#endif
     // { "hang",         "Hang: endless loop",                 infiniteLoop,        "Only with watchdog" },
     // { "deadlock",     "Hang: deadlock",                     selfDeadlock,        "Only with watchdog" },
 };

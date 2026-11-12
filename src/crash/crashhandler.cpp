@@ -34,6 +34,7 @@ namespace {
 
 QString gDumpDirectory;
 bool gInstalled = false;
+QStringList gSessionDumps;
 
 #ifdef Q_OS_WIN
 
@@ -45,6 +46,7 @@ constexpr DWORD kCodeQtFatal          = 0xE0000005;
 
 wchar_t gDumpDir[MAX_PATH] = L".";
 wchar_t gPrefix[32] = L"crash";
+wchar_t gLastPath[MAX_PATH + 64] = L"";
 HANDLE gRequestEvent = nullptr;
 HANDLE gDoneEvent = nullptr;
 EXCEPTION_POINTERS* gExceptionPointers = nullptr;
@@ -66,6 +68,7 @@ DWORD WINAPI writerThread(LPVOID)
         swprintf_s(path, L"%ls\\%ls_%04u%02u%02u_%02u%02u%02u_%03u.dmp", gDumpDir, gPrefix,
                    t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
 
+        wcsncpy_s(gLastPath, path, _TRUNCATE);
         gLastResult = FALSE;
         HANDLE file = CreateFileW(path, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS,
                                   FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -158,7 +161,7 @@ bool CrashHandler::install(const QString& dumpDirectory)
 
 #ifdef Q_OS_WIN
     const QString dir = dumpDirectory.isEmpty()
-        ? gams::studio::CommonPaths::studioDocumentsDir() + QStringLiteral("/Dumps")
+        ? gams::studio::CommonPaths::studioDocumentsDir() + QStringLiteral("/core_dumps")
         : dumpDirectory;
     const QString native = QDir::toNativeSeparators(QDir(dir).absolutePath());
     if (!QDir().mkpath(dir) || native.size() >= MAX_PATH) {
@@ -220,12 +223,19 @@ bool CrashHandler::writeDump(const QString& namePrefix)
     wchar_t prefix[32] = {};
     namePrefix.left(31).toWCharArray(prefix);
     const bool ok = requestDump(nullptr, prefix[0] ? prefix : L"dump");
+    if (ok)
+        gSessionDumps << QString::fromWCharArray(gLastPath);
     InterlockedExchange(&gBusy, 0);
     return ok;
 #else
     Q_UNUSED(namePrefix);
     return false;
 #endif
+}
+
+QStringList CrashHandler::sessionDumps()
+{
+    return gSessionDumps;
 }
 
 }

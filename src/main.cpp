@@ -77,7 +77,9 @@ int main(int argc, char *argv[])
 
     try {
         app.mainWindow()->show();
-        return app.exec();
+        const int res = app.exec();
+        gams::studio::CrashReport::zipSessionDumps();
+        return res;
     } catch (gams::studio::FatalException &e) {
         Application::showExceptionMessage(QObject::tr("fatal exception"), e.what());
         return EXIT_FATAL;

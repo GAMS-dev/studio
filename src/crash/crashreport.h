@@ -36,12 +36,17 @@ public:
         bool failed = false; // last run did not exit cleanly
         bool zipped = false; // zipFile was written
         QString dumpFile;    // dump included in the zip, may be empty
+        QString dumpInfo;    // why no dump was found (where it was searched), empty if found
         QString zipFile;
     };
 
     // Call once at startup, after CrashHandler::install() and setSystemDirectory()
     // (gmszip), and BEFORE the log file is renamed or opened. Blocks until gmszip is done.
     static PreviousRun checkPreviousRun(const QString& logFile);
+
+    // Call on regular exit: zips the log and the dumps written by CrashHandler::writeDump() in
+    // this session next to the log. Returns the zip file or an empty string if there were no dumps.
+    static QString zipSessionDumps();
 };
 
 } // namespace studio

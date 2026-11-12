@@ -20,6 +20,7 @@
 #ifndef CRASHHANDLER_H
 #define CRASHHANDLER_H
 #include <QString>
+#include <QStringList>
 
 namespace gams {
 namespace studio {
@@ -34,6 +35,7 @@ public:
     static bool isInstalled();
     static QString dumpDirectory();
     static bool writeDump(const QString& namePrefix = QStringLiteral("dump")); // keeps running; Windows only
+    static QStringList sessionDumps(); // dumps written by writeDump() in this session
 };
 
 }
