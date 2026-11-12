@@ -114,6 +114,7 @@ enum SettingsKey {
     skOptionsPerMainFile,
     skDynamicMainFile,
     skEnableLog,
+    skHideCrashPopup,
 
     // project settings page
     skProSingleProject,

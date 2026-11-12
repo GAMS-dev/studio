@@ -36,6 +36,9 @@
 #include <iostream>
 #include <QDir>
 #include <QMessageBox>
+#include <QCheckBox>
+#include <QLabel>
+#include <QGridLayout>
 #include <QFileOpenEvent>
 #include <QLocalSocket>
 #include <QWindow>
@@ -170,11 +173,20 @@ bool Application::init()
     mMainWindow->appendSystemLogInfo("Started: " + QCoreApplication::arguments().join(" "));
     if (previousRun.failed) {
         const QString zipFile = QDir::toNativeSeparators(previousRun.zipFile);
-        if (previousRun.zipped)
-            mMainWindow->appendSystemLogWarning("Studio did not shut down properly last time. You can send the "
-                                                "following crash report to GAMS support:\n" + zipFile);
-        else
-            mMainWindow->appendSystemLogError("Could not create crash report " + zipFile);
+        if (previousRun.zipped) {
+            const QString intro = "Studio closed unexpectedly during your last session. To help us resolve this issue, "
+                                  "you can send the generated crash report to GAMS Support:";
+            const QString privacy = "We are strictly committed to data privacy. While this archive may contain local "
+                                    "session data, it will be treated with the utmost confidentiality and used "
+                                    "exclusively for diagnostics.";
+            mMainWindow->appendSystemLogWarning(intro + "\n" + zipFile + "\n" + privacy);
+            showCrashPopup("<body>" + intro + "<br><br><nobr>" + zipFile.toHtmlEscaped() + "</nobr><br><br>"
+                           + privacy + "</body>", zipFile);
+        } else {
+            const QString text = "Could not create crash report " + zipFile;
+            mMainWindow->appendSystemLogError(text);
+            showCrashPopup(text);
+        }
     }
     if (!sysDirMessage.isEmpty())
         mMainWindow->appendSystemLogWarning(sysDirMessage);
@@ -189,6 +201,35 @@ bool Application::init()
     DEB() << GAMS_PRODUCTNAME_STR << " " << applicationVersion() << " on " << QSysInfo::prettyProductName() << " "
           << QSysInfo::currentCpuArchitecture() << " build " << QSysInfo::kernelVersion();
     return true;
+}
+
+void Application::showCrashPopup(const QString &crashText, const QString &noWrapText)
+{
+    if (Settings::settings()->toBool(skHideCrashPopup))
+        return;
+    QMessageBox box(QMessageBox::Warning, "Previous session crashed",
+                    "Studio did not shut down properly last time.", QMessageBox::Ok, mMainWindow.get());
+    box.setInformativeText(crashText);
+    box.setTextInteractionFlags(Qt::TextSelectableByMouse);
+    QCheckBox *cbHide = new QCheckBox("Don't show this message again", &box);
+    box.setCheckBox(cbHide);
+
+    // Adding a spacer to the informative text to widen the box to avoid wrap of noWrapText
+    QLabel *infoLabel = box.findChild<QLabel*>("qt_msgbox_informativelabel");
+    QGridLayout *grid = qobject_cast<QGridLayout*>(box.layout());
+    if (!noWrapText.isEmpty() && infoLabel && grid) {
+        int index = grid->indexOf(infoLabel);
+        int row, col, rowSpan, colSpan;
+        grid->getItemPosition(index, &row, &col, &rowSpan, &colSpan);
+        const QFontMetrics fm(infoLabel->font());
+        const int width = fm.horizontalAdvance(noWrapText) + 2 * fm.averageCharWidth();
+        grid->addItem(new QSpacerItem(width, 0, QSizePolicy::Minimum, QSizePolicy::Fixed),
+                      grid->rowCount(), col, 1, colSpan);
+    }
+
+    box.exec();
+    if (cbHide->isChecked())
+        Settings::settings()->setBool(skHideCrashPopup, true);
 }
 
 void Application::initEnvironment()

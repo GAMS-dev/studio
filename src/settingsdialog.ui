@@ -128,6 +128,16 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="1">
+           <widget class="QCheckBox" name="cb_hideCrashPopup">
+            <property name="toolTip">
+             <string>Do not show a popup on startup when the previous session did not shut down properly. The warning is still written to the system log.</string>
+            </property>
+            <property name="text">
+             <string>Do not show crash popup on startup</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

@@ -368,6 +368,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skDynamicMainFile, scUser, {"dynamicMainFile"}, false);
     safelyAdd(res, skHistorySize, scUser, {"historySize"}, 20);
     safelyAdd(res, skEnableLog, scUser, {"enableLog"}, true);
+    safelyAdd(res, skHideCrashPopup, scUser, {"hideCrashPopup"}, false);
 
     // project settings page
     safelyAdd(res, skProSingleProject, scUser, {"project","singleProject"}, false);

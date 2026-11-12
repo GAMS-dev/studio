@@ -147,6 +147,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     // connections to track modified status
     connect(ui->txt_workspace, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
     connect(ui->cb_skipwelcome, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_hideCrashPopup, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_restoretabs, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_autosave, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -252,6 +253,7 @@ void SettingsDialog::loadSettings()
     // general tab page
     ui->txt_workspace->setText(mSettings->toString(skDefaultWorkspace));
     ui->cb_skipwelcome->setChecked(mSettings->toBool(skSkipWelcomePage));
+    ui->cb_hideCrashPopup->setChecked(mSettings->toBool(skHideCrashPopup));
     ui->cb_restoretabs->setChecked(mSettings->toBool(skRestoreTabs));
     ui->cb_autosave->setChecked(mSettings->toBool(skAutosaveOnRun));
     ui->cb_openlst->setChecked(mSettings->toBool(skOpenLst));
@@ -428,6 +430,7 @@ void SettingsDialog::saveSettings()
         workspace.mkpath(".");
 
     mSettings->setBool(skSkipWelcomePage, ui->cb_skipwelcome->isChecked());
+    mSettings->setBool(skHideCrashPopup, ui->cb_hideCrashPopup->isChecked());
     mSettings->setBool(skRestoreTabs, ui->cb_restoretabs->isChecked());
     mSettings->setBool(skAutosaveOnRun, ui->cb_autosave->isChecked());
     mSettings->setBool(skOpenLst, ui->cb_openlst->isChecked());
