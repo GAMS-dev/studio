@@ -40,6 +40,12 @@ variables:
       - "0"
       - "1"
     description: "Select to '1' to force Apple/Window notarization on branches that normally skip it."
+  WITH_SYMBOLS:
+    value: "0"
+    options:
+      - "0"
+      - "1"
+    description: "Select to '1' to build with debug symbols and publish them as artifacts (always enabled for tags)."
   PF_CUSTOM_BRANCH:
     value: 0
     description: "Name of custom branch, or X.Y.Z for published distribution, or 0 if version is specified in text file with lines GAMS_DISTRIB_MAJOR=X, GAMS_DISTRIB_MINOR=Y, GAMS_DISTRIB_GOLD=Z"
