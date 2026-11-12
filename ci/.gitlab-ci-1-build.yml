@@ -1,6 +1,7 @@
 .symbols-flag:
   - QMAKE_SYMBOLS=""
   - if [ -n "$CI_COMMIT_TAG" ] || [ "$WITH_SYMBOLS" = "1" ]; then QMAKE_SYMBOLS="CONFIG+=with_symbols"; fi
+  - STUDIO_VERSION=$(grep ^STUDIO_MAJOR_VERSION= version | cut -f2 -d=).$(grep ^STUDIO_MINOR_VERSION= version | cut -f2 -d=).$(grep ^STUDIO_PATCH_LEVEL= version | cut -f2 -d=)
 
 build-deg:
   stage: build
@@ -19,7 +20,7 @@ build-deg:
     - PATH="${qtpath}:${PATH}"
     - qmake ../gams-studio.pro CONFIG+=release $QMAKE_SYMBOLS && make -j4
     - mkdir -p ../symbols
-    - find . -name "*.dSYM" -type d -prune -exec mv {} ../symbols/ \;
+    - find . -name "*.dSYM" -type d -prune -exec ditto -c -k --keepParent {} ../symbols/GAMS_Studio-$STUDIO_VERSION-macos-x86_64.dSYM.zip \;
   artifacts:
     name: studio-deg
     expire_in: 2 hours
@@ -43,7 +44,7 @@ build-dac:
     - PATH="${qtpath}:${PATH}"
     - qmake ../gams-studio.pro CONFIG+=release $QMAKE_SYMBOLS && make -j4
     - mkdir -p ../symbols
-    - find . -name "*.dSYM" -type d -prune -exec mv {} ../symbols/ \;
+    - find . -name "*.dSYM" -type d -prune -exec ditto -c -k --keepParent {} ../symbols/GAMS_Studio-$STUDIO_VERSION-macos-arm_64.dSYM.zip \;
   artifacts:
     name: studio-dac
     expire_in: 2 hours
@@ -69,7 +70,7 @@ build-leg:
     - mkdir build && cd build
     - qmake ../gams-studio.pro CONFIG+=release $QMAKE_SYMBOLS && make -j4
     - mkdir -p ../symbols
-    - find . -name "*.debug" -type f -exec mv {} ../symbols/ \;
+    - find . -name "*.debug" -type f -exec mv {} ../symbols/GAMS_Studio-$STUDIO_VERSION-linux-x86_64.debug \;
   artifacts:
     name: studio-leg
     expire_in: 2 hours
@@ -107,7 +108,8 @@ build-wei:
     - Copy-Item "$gpath\libcrypto-3-x64.dll" .
     - nmake.exe
     - New-Item -ItemType Directory -Path ..\symbols -Force | Out-Null
-    - Get-ChildItem -Recurse -Filter *.pdb | Where-Object { (Test-Path ($_.FullName -replace '\.pdb$','.exe')) -or (Test-Path ($_.FullName -replace '\.pdb$','.dll')) } | Move-Item -Destination ..\symbols
+    - $studioVersion = (Select-String -Path ..\version -Pattern '^STUDIO_(MAJOR_VERSION|MINOR_VERSION|PATCH_LEVEL)=' | ForEach-Object { $_.Line.Split('=')[1] }) -join '.'
+    - Get-ChildItem -Recurse -Filter studio.pdb | Where-Object { Test-Path ($_.FullName -replace '\.pdb$','.exe') } | Move-Item -Destination "..\symbols\GAMS_Studio-$studioVersion-windows-x86_64.pdb"
   artifacts:
     name: studio-wei
     expire_in: 2 hours

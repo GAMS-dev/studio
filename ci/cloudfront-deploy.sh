@@ -22,6 +22,8 @@ mkdir -p $FOLDER_NAME
 
 ## move artifacts to correct location
 mv *.dmg *.AppImage *.zip $FOLDER_NAME
+## move debug symbols to the symbols subfolder
+mv ../symbols $FOLDER_NAME/
 
 ## URL to S3 studio
 URL=${S3_URL}/studio/
