@@ -1230,7 +1230,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     if (act & Qt::MoveAction) {
         for (const NodeId &nodeId: std::as_const(knownIds)) {
             PExAbstractNode* aNode = node(nodeId);
-            PExFileNode* file = aNode->toFile();
+            PExFileNode* file = aNode ? aNode->toFile() : nullptr;
             if (!file) continue;
             if (file->parentNode() != project)
                 closeNode(file);

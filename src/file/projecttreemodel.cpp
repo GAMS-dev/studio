@@ -355,31 +355,36 @@ QModelIndex ProjectTreeModel::asIndex(const NodeId &id) const
     if (mRoot->id() == id)
         return createIndex(0, 0, mRoot);
     PExAbstractNode *node = mRoot->projectRepo()->node(id);
-    if (!node)
+    if (!node || !node->parentNode())
         return QModelIndex();
-    for (int i = 0; i < node->parentNode()->childCount(); ++i) {
-        if (node->parentNode()->childNode(i) == node) {
-            return createIndex(i, 0, node);
-        }
-    }
-    return QModelIndex();
+    int row = node->parentNode()->indexOf(node);
+    return row < 0 ? QModelIndex() : createIndex(row, 0, node);
 }
 
 QStringList internConfigPaths;
 
+int configPathIndex(const QString &location)
+{
+    QString path = QFileInfo(location).path();
+    for (int i = 0; i < internConfigPaths.size(); ++i) {
+        if (path.compare(internConfigPaths.at(i), FileType::fsCaseSense()) == 0)
+            return i;
+    }
+    return internConfigPaths.size();
+}
+
+// std::sort requires a strict weak ordering, isBefore(n, n) must be false
 bool isBefore(PExAbstractNode*n1, PExAbstractNode*n2)
 {
     int cmp = n1->name().compare(n2->name(), Qt::CaseInsensitive);
     if (cmp != 0) return cmp < 0;
-    QFileInfo fi1(n1->toFile()->location());
-    QFileInfo fi2(n2->toFile()->location());
-    for (int i = 0; i < internConfigPaths.size(); ++i) {
-        if (fi1.path().compare(internConfigPaths.at(i), FileType::fsCaseSense()) == 0)
-            return true;
-        if (fi2.path().compare(internConfigPaths.at(i), FileType::fsCaseSense()) == 0)
-            return false;
-    }
-    return true;
+    PExFileNode *f1 = n1->toFile();
+    PExFileNode *f2 = n2->toFile();
+    if (!f1 || !f2) return !f1 && f2;
+    int i1 = configPathIndex(f1->location());
+    int i2 = configPathIndex(f2->location());
+    if (i1 != i2) return i1 < i2;
+    return f1->location().compare(f2->location(), FileType::fsCaseSense()) < 0;
 }
 
 void ProjectTreeModel::sortGamsProject(PExProjectNode *project, QList<PExAbstractNode *> &order)

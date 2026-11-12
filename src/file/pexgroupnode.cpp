@@ -184,7 +184,7 @@ PExProjectNode *PExGroupNode::findProject(const AbstractProcess *process) const
             return project;
         const PExGroupNode* group = node->toGroup();
         if (group) {
-            project = findProject(process);
+            project = group->findProject(process);
             if (project) return project;
         }
     }
@@ -195,11 +195,11 @@ PExProjectNode *PExGroupNode::findProject(const FileId &runId) const
 {
     for (PExAbstractNode* node: childNodes()) {
         PExProjectNode* project = node->toProject();
-        if (project && project->mainFile()->id() == runId)
+        if (project && project->mainFile() && project->mainFile()->id() == runId)
             return project;
         const PExGroupNode* group = node->toGroup();
         if (group) {
-            project = findProject(runId);
+            project = group->findProject(runId);
             if (project) return project;
         }
     }

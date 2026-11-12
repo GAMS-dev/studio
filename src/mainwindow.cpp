@@ -3668,8 +3668,9 @@ void MainWindow::moveProjectCollideDialog(MultiCopyCheck mcs, PExProjectNode *pr
 
 void MainWindow::on_cbFocusProject_currentIndexChanged(int index)
 {
-    if (index < 0) return;
-    mActFocusProject->actions().at(ui->cbFocusProject->currentIndex())->trigger();
+    const QList<QAction*> acts = mActFocusProject->actions();
+    if (index < 0 || index >= acts.size()) return;
+    acts.at(index)->trigger();
 }
 
 void MainWindow::copyFiles(const QStringList &srcFiles, const QStringList &dstFiles, PExProjectNode *project)
@@ -3717,12 +3718,14 @@ void MainWindow::closePinView()
 
 void MainWindow::updateProjectList()
 {
-    PExProjectNode *focusProject = mProjectRepo.focussedProject();
-    int proId = focusProject ? int(focusProject->id()) : -1;
+    PExProjectNode *focusPro = mProjectRepo.focussedProject();
+    int proId = focusPro ? int(focusPro->id()) : -1;
 
     QList<PExProjectNode *> projects = mProjectRepo.projects();
     projects.prepend(nullptr);
 
+    // block to avoid focus interfering
+    QSignalBlocker blocker(ui->cbFocusProject);
     const QList<QAction*> acts = mActFocusProject->actions();
     // clear the list
     for (QAction *act : acts) {
@@ -3758,6 +3761,10 @@ void MainWindow::updateProjectList()
     if (!found)
         ui->cbFocusProject->setCurrentIndex(0);
     ui->menuFocus_Project->addActions(mActFocusProject->actions());
+    blocker.unblock();
+
+    if (focusPro && !found)
+        focusProject(nullptr);
 }
 
 QString MainWindow::currentPath(OpenPathScope scope)
@@ -5870,8 +5877,13 @@ void MainWindow::focusProject(PExProjectNode *project)
     } else if (ui->mainTabs->count()) {
         if (project->mainFile()) {
             openFile(project->mainFile());
-            int idx = ui->mainTabs->indexOf(project->mainFile()->editors().first());
-            visibleList.insert(idx, true);
+            // openFile fails e.g. for a missing main file, then there is no editor
+            int idx = project->mainFile()->editors().isEmpty() ? -1
+                                    : ui->mainTabs->indexOf(project->mainFile()->editors().constFirst());
+            if (idx >= 0 && idx <= visibleList.size())
+                visibleList.insert(idx, true);
+            else
+                ui->mainTabs->setCurrentIndex(0);
         } else
             ui->mainTabs->setCurrentIndex(0);
     }
@@ -5919,10 +5931,12 @@ void MainWindow::closeProject(PExProjectNode* project)
                 if (index >= 0) ui->logTabs->removeTab(index);
             }
         }
-        if (delay)
-            QTimer::singleShot(500, this, [this, project, openFiles]() {
-                internalCloseProject(project, openFiles);
+        if (delay) {
+            QPointer<PExProjectNode> pro(project);
+            QTimer::singleShot(500, this, [this, pro, openFiles]() {
+                if (pro) internalCloseProject(pro, openFiles);
             });
+        }
         else
             internalCloseProject(project, openFiles);
     }
@@ -7169,8 +7183,8 @@ void MainWindow::setForeground()
 {
 #if defined (WIN32)
    HWND WinId= HWND(winId());
-   if (this->windowState() & Qt::WindowMinimized) {
-       this->setWindowState((windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+   if (windowState() & Qt::WindowMinimized) {
+       setWindowState((windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
    }
    DWORD foregroundThreadPId = GetWindowThreadProcessId(GetForegroundWindow(),nullptr);
    DWORD mwThreadPId = GetWindowThreadProcessId(WinId,nullptr);
@@ -7182,9 +7196,9 @@ void MainWindow::setForeground()
        SetForegroundWindow(WinId);
    }
 #else
-    this->show();
-    this->raise();
-    this->activateWindow();
+    show();
+    raise();
+    activateWindow();
 #endif
 }
 

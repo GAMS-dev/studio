@@ -468,11 +468,14 @@ void ProjectContextMenu::onCloseGroup()
 
 void ProjectContextMenu::onCloseProject()
 {
+    QList<PExProjectNode*> projects;
     for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
-        if (project) emit closeProject(project);
+        if (project && !projects.contains(project)) projects << project;
     }
+    for (PExProjectNode *project: std::as_const(projects))
+        emit closeProject(project);
 }
 
 void ProjectContextMenu::onCloseDelProject()
@@ -483,7 +486,7 @@ void ProjectContextMenu::onCloseDelProject()
     for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
-        if (project) {
+        if (project && !pro2close.contains(project)) {
             pro2close << project;
             QString gsp = project->fileName();
             if (project->type() == PExProjectNode::tCommon && QFile::exists(gsp)) {
@@ -501,9 +504,9 @@ void ProjectContextMenu::onCloseDelProject()
         if (choice == 1) return;
     }
 
-    for (PExProjectNode *pro : pro2close)
+    for (PExProjectNode *pro : std::as_const(pro2close))
         emit closeProject(pro);
-    for (const QString &gsp : pro2del) {
+    for (const QString &gsp : std::as_const(pro2del)) {
         bool ok = QFile::remove(gsp);
         if (!ok) SysLogLocator::systemLog()->append("Couldn't remove " + gsp);
     }
