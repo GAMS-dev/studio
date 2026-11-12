@@ -62,7 +62,6 @@ int main(int argc, char *argv[])
     app.setStyle(QStyleFactory::create(PaletteStyleManager::uniformStyleKey()));
     app.setAttribute(Qt::AA_DontShowIconsInMenus, false);
     gams::studio::CrashHandler::install();
-    DEB() << "StackTrace path: " << gams::studio::CrashHandler::dumpDirectory();
 
     QSystemSemaphore sem(app.serverName(), 1, QSystemSemaphore::Open);
     sem.acquire();
