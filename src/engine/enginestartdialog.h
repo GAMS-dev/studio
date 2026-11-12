@@ -125,6 +125,7 @@ protected:
     void addSelectorFromCurrent();
     void clearPrivateFields();
     void storeSelectedNamespace();
+    void storeSessionToken();
 
 private slots:
     void updateSelector();

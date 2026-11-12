@@ -421,12 +421,8 @@ void EngineStartDialog::setJobTag(const QString &jobTag)
 QVariantList EngineStartDialog::recent()
 {
     QVariantList res;
-    for (int i = 0; i < ui->cbSelector->count() - 1; ++i) {
-        QVariantHash hash = ui->cbSelector->itemData(i).toHash();
-        if (!Settings::settings()->toBool(skEngineStoreUserToken))
-            hash.remove("userToken");
-        res << hash;
-    }
+    for (int i = 0; i < ui->cbSelector->count() - 1; ++i)
+        res << ui->cbSelector->itemData(i).toHash();
     return res;
 }
 
@@ -532,10 +528,11 @@ void EngineStartDialog::ensureOpened()
 
 void EngineStartDialog::bLogoutClicked()
 {
-    if (ui->cbSelector->count()) {
-        QVariantHash hash = ui->cbSelector->itemData(0).toHash();
+    int index = ui->cbSelector->findText(generateSelectorName(getVariantHashForCurrentFields()));
+    QVariantHash hash = ui->cbSelector->itemData(index).toHash();
+    if (index >= 0 && !hash.isEmpty()) {
         hash.remove("userToken");
-        ui->cbSelector->setItemData(0, hash);
+        ui->cbSelector->setItemData(index, hash);
     }
     ui->edUrl->clear();
     ui->edUser->clear();
@@ -687,6 +684,7 @@ void EngineStartDialog::hideCert()
 void EngineStartDialog::on_cbSelector_activated(int index)
 {
     if (index >= 0) {
+        storeSessionToken();
         clearPrivateFields();
         initData(ui->cbSelector->itemData(index).toHash());
         showLogin();
@@ -1292,6 +1290,17 @@ void EngineStartDialog::storeSelectedNamespace()
     QVariantHash hash = ui->cbSelector->itemData(index).toHash();
     if (hash.isEmpty()) return;
     hash.insert("namespace", nSpace);
+    ui->cbSelector->setItemData(index, hash);
+}
+
+void EngineStartDialog::storeSessionToken()
+{
+    if (!mProc || mProc->authToken().isEmpty()) return;
+    int index = ui->cbSelector->findText(generateSelectorName(getVariantHashForCurrentFields()));
+    if (index < 0) return;
+    QVariantHash hash = ui->cbSelector->itemData(index).toHash();
+    if (hash.isEmpty()) return;
+    hash.insert("userToken", mProc->authToken());
     ui->cbSelector->setItemData(index, hash);
 }
 

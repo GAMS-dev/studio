@@ -404,6 +404,7 @@ MainWindow::MainWindow(QWidget *parent)
     CommonPaths::setDefaultWorkingDir(Settings::settings()->toString(SettingsKey::skDefaultWorkspace));
     engine::EngineProcess::startupInit();
     mEngineAuthToken = Settings::settings()->toString(SettingsKey::skEngineUserToken);
+    mEngineRecent = Settings::settings()->toList(SettingsKey::skEngineRecent);
     mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, qApp->style()->objectName());
     initIcons();
     restoreFromSettings();
@@ -729,6 +730,7 @@ void MainWindow::initSettingsDialog()
     });
     connect(mSettingsDialog, &SettingsDialog::persistToken, this, [this]() {
         Settings::settings()->setString(skEngineUserToken, mEngineAuthToken);
+        storeEngineRecent(mEngineRecent);
     });
     connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
         updateAndSaveSettings();
@@ -5136,6 +5138,20 @@ void MainWindow::checkForEngineJob()
     }
 }
 
+void MainWindow::storeEngineRecent(const QVariantList &recent)
+{
+    mEngineRecent = recent;
+    QVariantList persistent = recent;
+    if (!Settings::settings()->toBool(skEngineStoreUserToken)) {
+        for (QVariant &item : persistent) {
+            QVariantHash hash = item.toHash();
+            hash.remove("userToken");
+            item = hash;
+        }
+    }
+    Settings::settings()->setList(skEngineRecent, persistent);
+}
+
 void MainWindow::initEngineStartDialog(bool resume)
 {
     // prepare process
@@ -5148,14 +5164,14 @@ void MainWindow::initEngineStartDialog(bool resume)
     dialog->init(Settings::settings()->toString(SettingsKey::skEngineUrl),
                      Settings::settings()->toInt(SettingsKey::skEngineAuthMethod),
                      Settings::settings()->toString(SettingsKey::skEngineUser),
-                     Settings::settings()->toString(SettingsKey::skEngineUserToken),
+                     mEngineAuthToken,
                      Settings::settings()->toString(SettingsKey::skEngineSsoName),
                      Settings::settings()->toInt(SettingsKey::skEngineAuthExpire),
                      Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert),
                      Settings::settings()->toString(SettingsKey::skEngineNamespace),
                      Settings::settings()->toString(SettingsKey::skEngineUserInstance),
                      Settings::settings()->toBool(SettingsKey::skEngineForceGdx),
-                     Settings::settings()->toList(SettingsKey::skEngineRecent));
+                     mEngineRecent);
     dialog->setJobTag(mEngineJobTag);
 
     connect(dialog, &engine::EngineStartDialog::storeInstanceSelection, dialog, [dialog]() {
@@ -5186,7 +5202,7 @@ void MainWindow::initEngineStartDialog(bool resume)
             Settings::settings()->setString(SettingsKey::skEngineUserToken, mEngineAuthToken);
         else
             Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
-        Settings::settings()->setList(SettingsKey::skEngineRecent, dialog->recent());
+        storeEngineRecent(dialog->recent());
         updateAndSaveSettings();
     });
     connect(dialog, &engine::EngineStartDialog::submit, this, &MainWindow::engineSubmit);
@@ -5200,11 +5216,11 @@ void MainWindow::initEngineStartDialog(bool resume)
             Settings::settings()->setString(SettingsKey::skEngineUserToken, mEngineAuthToken);
         else
             Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
-        Settings::settings()->setList(SettingsKey::skEngineRecent, dialog->recent());
+        storeEngineRecent(dialog->recent());
         updateAndSaveSettings();
     });
     connect(dialog, &engine::EngineStartDialog::rejected, this, [this, dialog]() {
-        Settings::settings()->setList(SettingsKey::skEngineRecent, dialog->recent());
+        storeEngineRecent(dialog->recent());
         updateAndSaveSettings();
     });
     if (resume) {
@@ -5238,7 +5254,7 @@ void MainWindow::engineSubmit(bool start)
         Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
         Settings::settings()->setString(SettingsKey::skEngineUserInstance, dialog->userInstance());
         Settings::settings()->setBool(SettingsKey::skEngineForceGdx, dialog->forceGdx());
-        Settings::settings()->setList(SettingsKey::skEngineRecent, dialog->recent());
+        storeEngineRecent(dialog->recent());
         mEngineNoDialog = dialog->isAlways();
         prepareEngineProcess();
     } else {

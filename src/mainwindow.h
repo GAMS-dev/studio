@@ -421,6 +421,7 @@ private slots:
     void showNeosStartDialog();
     void prepareNeosProcess();
     void initEngineStartDialog(bool resume = false);
+    void storeEngineRecent(const QVariantList &recent);
     void engineSubmit(bool start);
     engine::EngineProcess *createEngineProcess();
     void prepareEngineProcess();
@@ -629,6 +630,7 @@ private:
     QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
     bool mMiroRunning = false;
     QString mEngineAuthToken;
+    QVariantList mEngineRecent; // recent logins incl. their tokens of this session
     QString mEngineJobTag;
     bool mEngineNoDialog = false;
 

@@ -477,6 +477,13 @@ void SettingsDialog::saveSettings()
     if (mEngineInitialExpire != mSettings->toInt(skEngineAuthExpire) || !ui->cbEngineStoreToken->isChecked()) {
         mEngineInitialExpire = mSettings->toInt(skEngineAuthExpire);
         mSettings->setString(skEngineUserToken, QString());
+        QVariantList recent = mSettings->toList(skEngineRecent);
+        for (QVariant &item : recent) {
+            QVariantHash hash = item.toHash();
+            hash.remove("userToken");
+            item = hash;
+        }
+        mSettings->setList(skEngineRecent, recent);
     } else
         emit persistToken();
     int factor = ui->cbEngineExpireType->currentIndex() ? ui->cbEngineExpireType->currentIndex()>1 ? (60*24) : 60 : 1;
