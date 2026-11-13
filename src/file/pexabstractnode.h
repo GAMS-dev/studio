@@ -23,7 +23,6 @@
 #include <QObject>
 
 #include "lxiviewer/lxiviewer.h"
-#include "gdxviewer/gdxviewer.h"
 #include "editors/codeedit.h"
 #include "common.h"
 

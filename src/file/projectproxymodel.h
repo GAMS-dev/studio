@@ -21,6 +21,7 @@
 #define PROJECTPROXYMODEL_H
 
 #include <QSortFilterProxyModel>
+#include <QItemSelection>
 #include "common.h"
 
 namespace gams {

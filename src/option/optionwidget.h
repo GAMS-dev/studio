@@ -23,6 +23,7 @@
 #include <QMenu>
 #include <QToolBar>
 #include <QStandardItemModel>
+#include <QItemSelection>
 
 #include "abstractview.h"
 #include "editors/systemlogedit.h"

@@ -21,6 +21,7 @@
 #define FILEREFERENCEWIDGET_H
 
 #include <QWidget>
+#include <QItemSelection>
 
 #include "reference.h"
 #include "referenceviewer.h"

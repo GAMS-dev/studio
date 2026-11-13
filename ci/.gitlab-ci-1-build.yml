@@ -17,6 +17,7 @@ build-deg:
     name: studio-deg
     expire_in: 2 hours
     paths: [build/*]
+    exclude: ["build/**/*.pch", "build/**/*.pch/**", "build/**/*.gch/**"]  # precompiled headers
 
 build-dac:
   stage: build
@@ -37,6 +38,7 @@ build-dac:
     name: studio-dac
     expire_in: 2 hours
     paths: [build/*]
+    exclude: ["build/**/*.pch", "build/**/*.pch/**", "build/**/*.gch/**"]  # precompiled headers
 
 build-leg:
   stage: build
@@ -59,6 +61,7 @@ build-leg:
     name: studio-leg
     expire_in: 2 hours
     paths: [build/*]
+    exclude: ["build/**/*.pch", "build/**/*.pch/**", "build/**/*.gch/**"]  # precompiled headers
 
 build-wei:
   stage: build
@@ -84,7 +87,7 @@ build-wei:
     - $data | out-file -encoding ascii gamsinclude.pri
     - New-Item -ItemType Directory -Path build -Force | Out-Null
     - Set-Location build
-    - $env:PATH="C:\Qt\Tools\icu\bin64;$env:PATH"; & { qmake.exe ..\gams-studio.pro "CONFIG+=release" }
+    - $env:PATH="C:\Qt\Tools\icu\bin64;$env:PATH"; & { qmake.exe ..\gams-studio.pro "CONFIG+=release" "QMAKE_CFLAGS+=-MP" "QMAKE_CXXFLAGS+=-MP" }
     - Copy-Item "$gpath\libssl-3-x64.dll" .
     - Copy-Item "$gpath\libcrypto-3-x64.dll" .
     - nmake.exe
@@ -92,3 +95,4 @@ build-wei:
     name: studio-wei
     expire_in: 2 hours
     paths: [build/*]
+    exclude: ["build/**/*.pch", "build/**/*.pch/**", "build/**/*.gch/**"]  # precompiled headers

@@ -22,6 +22,7 @@
 
 #include <QAbstractItemModel>
 #include <QSortFilterProxyModel>
+#include <QItemSelection>
 #include "pexgroupnode.h"
 
 namespace gams {

@@ -5,6 +5,13 @@ TEMPLATE = app
 DESTDIR = bin
 CONFIG += c++20
 
+# Precompiled header, can be switched off with qmake CONFIG+=no_pch
+!no_pch {
+    CONFIG += precompile_header
+    PRECOMPILED_HEADER = pch.h
+    PRECOMPILED_DIR = ../objects   # tests/tests.pri links studio_pch.obj from here (MSVC)
+}
+
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)
 

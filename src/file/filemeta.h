@@ -28,7 +28,6 @@
 #include "editors/codeedit.h"
 #include "editors/textblankops.h"
 #include "editors/textview.h"
-#include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
 #include "reference/referenceviewer.h"
 
