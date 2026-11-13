@@ -25,6 +25,7 @@ Version 1.26.0  *
 - Added Blank Operations to the code editor: trim spaces, join lines, and convert tabs to spaces.
 - Added an alternative menu entry for "New File", matching the existing one for "Open File".
 - GAMS Engine servers that have been used are remembered to make logging in easier.
+- Added crash report that can be send to our support to improve stability.
 
 Version 1.25.8
 ==================
