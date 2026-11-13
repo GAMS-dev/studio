@@ -40,6 +40,10 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QTimer>
+#include <QUrl>
+#include <QDesktopServices>
+#include <QProcess>
+#include <QFileInfo>
 #include <QFileOpenEvent>
 #include <QLocalSocket>
 #include <QWindow>
@@ -103,6 +107,20 @@ Application::~Application()
     NetworkManager::cleanup();
     Settings::releaseSettings();
     delete mDistribValidator;
+}
+
+static QString crashMailUrl()
+{
+    return "mailto:support@gams.com?subject=" + QUrl::toPercentEncoding("GAMS Studio crash report");
+}
+
+static void showFileInFolder(const QString &file)
+{
+#ifdef _WIN32
+    QProcess::startDetached("explorer.exe", {"/select,", QDir::toNativeSeparators(file)});
+#else
+    QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file).absolutePath()));
+#endif
 }
 
 bool Application::init()
@@ -180,19 +198,22 @@ bool Application::init()
         const QString zipFile = QDir::toNativeSeparators(previousRun.zipFile);
         if (previousRun.zipped) {
             const QString intro = "To help us resolve this issue, you can send the generated crash report to GAMS Support:";
-            const QString privacy = "The report may contain your confidential data. Only send it to GAMS Support.";
+            const QString privacy = "The report may contain your confidential data. Only send it to support@gams.com.";
             mMainWindow->appendSystemLogWarning("Studio did not shut down properly last time." + intro + "\n"
                                                 + zipFile + "\n" + privacy);
-            popupText = "<body>" + intro + "<br><br><nobr>" + zipFile.toHtmlEscaped() + "</nobr><br><br>"
-                        + privacy + "</body>";
+            QString privacyHtml = privacy.toHtmlEscaped();
+            privacyHtml.replace("support@gams.com", "<a href=\"" + crashMailUrl().toHtmlEscaped()
+                                + "\">support@gams.com</a>");
+            popupText = "<body>" + intro + "<br><br><nobr><a href=\"showfile:\">" + zipFile.toHtmlEscaped() + "</a></nobr><br><br>"
+                        + privacyHtml + "</body>";
             popupNoWrap = zipFile;
         } else {
             popupText = "Studio did not shut down properly last time. Could not create crash report " + zipFile;
             mMainWindow->appendSystemLogError(popupText);
         }
         // delayed until the event loop runs: the MainWindow is shown then and the box gets centered on it
-        QTimer::singleShot(0, this, [this, popupText, popupNoWrap]() {
-            showCrashPopup(popupText, popupNoWrap);
+        QTimer::singleShot(0, this, [this, popupText, popupNoWrap, zip = previousRun.zipFile]() {
+            showCrashPopup(popupText, popupNoWrap, zip);
         });
     }
     if (!sysDirMessage.isEmpty())
@@ -210,20 +231,30 @@ bool Application::init()
     return true;
 }
 
-void Application::showCrashPopup(const QString &crashText, const QString &noWrapText)
+void Application::showCrashPopup(const QString &crashText, const QString &noWrapText, const QString &zipFile)
 {
     if (Settings::settings()->toBool(skHideCrashPopup))
         return;
     QMessageBox box(QMessageBox::Warning, "Previous session crashed",
                     "Studio did not shut down properly last time.", QMessageBox::Ok, mMainWindow.get());
     box.setInformativeText(crashText);
-    box.setTextInteractionFlags(Qt::TextSelectableByMouse);
+    // selectable path and clickable mailto link (the label opens external links)
+    box.setTextInteractionFlags(Qt::TextBrowserInteraction);
     QCheckBox *cbHide = new QCheckBox("Don't show this message again", &box);
     box.setCheckBox(cbHide);
 
     // Adding a spacer to the informative text to widen the box to avoid wrap of noWrapText
     QLabel *infoLabel = box.findChild<QLabel*>("qt_msgbox_informativelabel");
     QGridLayout *grid = qobject_cast<QGridLayout*>(box.layout());
+    if (infoLabel) {
+        infoLabel->setOpenExternalLinks(false);
+        connect(infoLabel, &QLabel::linkActivated, &box, [zipFile](const QString &link) {
+            if (link.startsWith("showfile:"))
+                showFileInFolder(zipFile);
+            else
+                QDesktopServices::openUrl(QUrl(link));
+        });
+    }
     if (!noWrapText.isEmpty() && infoLabel && grid) {
         int index = grid->indexOf(infoLabel);
         int row, col, rowSpan, colSpan;

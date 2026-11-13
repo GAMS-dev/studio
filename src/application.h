@@ -74,7 +74,8 @@ public:
     /// \brief Initialize the PATH environment variable
     ///
     void initEnvironment();
-    void showCrashPopup(const QString &crashText, const QString &noWrapText = QString());
+    void showCrashPopup(const QString &crashText, const QString &noWrapText = QString(),
+                        const QString &zipFile = QString());
 
     ///
     /// \brief Get the server name.
