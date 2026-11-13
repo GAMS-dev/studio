@@ -1,6 +1,6 @@
 **BETA-Release Steps**
 
-- [ ] ensure `#.##.x-release` exists
+- [ ] check if last changes from current `#.##.x-release` needs to be merged
 - [ ] proofread `CHANGELOG` - remove `*`
 - [ ] update `version` 
   - ++studio
@@ -10,7 +10,7 @@
   - [ ] LEG
   - [ ] DEG
 - [ ] create TAG for `develop` branch
-- [ ] merge release into master
+- [ ] merge `develop` into `master`
 - [ ] email to staff about the release
 - [ ] Inform @aalqershi about the new release
 - [ ] proceed with products release MR
