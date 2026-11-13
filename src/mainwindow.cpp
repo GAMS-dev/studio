@@ -180,11 +180,11 @@ MainWindow::MainWindow(QWidget *parent)
     actionFlags << ui->action3_Profiling;
     ui->menu_GAMs->addCheckActions(1, actionFlags);
 
-    { // FOR TESTS ONLY !!! Remove after finished
-        QMenu *crashMenu = new QMenu("CRASH-TESTS", this);
-        CrashTests::addToMenu(crashMenu);
-        ui->menuBar->addMenu(crashMenu);
-    }
+    // { // FOR TESTS ONLY !!! Remove after finished
+    //     QMenu *crashMenu = new QMenu("CRASH-TESTS", this);
+    //     CrashTests::addToMenu(crashMenu);
+    //     ui->menuBar->addMenu(crashMenu);
+    // }
 
     // PinView
     ui->splitter->setCollapsible(0, false);

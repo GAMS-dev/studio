@@ -97,7 +97,6 @@ SOURCES += \
     connect/treecellresizer.cpp \
     crash/crashhandler.cpp \
     crash/crashreport.cpp \
-    crash/crashtests.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
     editors/chunktextmapper.cpp \
@@ -348,7 +347,6 @@ HEADERS += \
     connect/treecellresizer.h \
     crash/crashhandler.h \
     crash/crashreport.h \
-    crash/crashtests.h \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
     editors/abstracttextmapper.h \
