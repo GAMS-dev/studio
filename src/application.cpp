@@ -39,6 +39,7 @@
 #include <QCheckBox>
 #include <QLabel>
 #include <QGridLayout>
+#include <QTimer>
 #include <QFileOpenEvent>
 #include <QLocalSocket>
 #include <QWindow>
@@ -172,23 +173,27 @@ bool Application::init()
     }
     mMainWindow->appendSystemLogInfo("Started: " + QCoreApplication::arguments().join(" "));
     if (previousRun.failed) {
+        QString popupText;
+        QString popupNoWrap;
         if (!previousRun.dumpInfo.isEmpty())
             mMainWindow->appendSystemLogWarning("Crash report without dump: " + previousRun.dumpInfo);
         const QString zipFile = QDir::toNativeSeparators(previousRun.zipFile);
         if (previousRun.zipped) {
-            const QString intro = "Studio closed unexpectedly during your last session. To help us resolve this issue, "
-                                  "you can send the generated crash report to GAMS Support:";
-            const QString privacy = "We are strictly committed to data privacy. While this archive may contain local "
-                                    "session data, it will be treated with the utmost confidentiality and used "
-                                    "exclusively for diagnostics.";
-            mMainWindow->appendSystemLogWarning(intro + "\n" + zipFile + "\n" + privacy);
-            showCrashPopup("<body>" + intro + "<br><br><nobr>" + zipFile.toHtmlEscaped() + "</nobr><br><br>"
-                           + privacy + "</body>", zipFile);
+            const QString intro = "To help us resolve this issue, you can send the generated crash report to GAMS Support:";
+            const QString privacy = "The report may contain your confidential data. Only send it to GAMS Support.";
+            mMainWindow->appendSystemLogWarning("Studio did not shut down properly last time." + intro + "\n"
+                                                + zipFile + "\n" + privacy);
+            popupText = "<body>" + intro + "<br><br><nobr>" + zipFile.toHtmlEscaped() + "</nobr><br><br>"
+                        + privacy + "</body>";
+            popupNoWrap = zipFile;
         } else {
-            const QString text = "Could not create crash report " + zipFile;
-            mMainWindow->appendSystemLogError(text);
-            showCrashPopup(text);
+            popupText = "Studio did not shut down properly last time. Could not create crash report " + zipFile;
+            mMainWindow->appendSystemLogError(popupText);
         }
+        // delayed until the event loop runs: the MainWindow is shown then and the box gets centered on it
+        QTimer::singleShot(0, this, [this, popupText, popupNoWrap]() {
+            showCrashPopup(popupText, popupNoWrap);
+        });
     }
     if (!sysDirMessage.isEmpty())
         mMainWindow->appendSystemLogWarning(sysDirMessage);
