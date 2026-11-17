@@ -57,14 +57,13 @@ void TextBlankOps::apply(Flags flags)
 
 void TextBlankOps::eolToSpace()
 {
-    QTextDocument *doc = mCursor.document();
-    const QTextBlock first = doc->findBlock(mCursor.selectionStart());
-    const QTextBlock last = mCursor.hasSelection() ? doc->findBlock(mCursor.selectionEnd()) : first.next();
-    if (!last.isValid() || first == last) return;
+    auto lines = selectedLines();
+    if (lines.first == lines.second) lines.second = lines.first.next();
+    if (!lines.second.isValid()) return;
 
     QTextCursor edit(mCursor);
     edit.beginEditBlock();
-    for (QTextBlock b = last.previous(); b.isValid() && b.position() >= first.position(); b = b.previous()) {
+    for (QTextBlock b = lines.second.previous(); b.isValid() && b.position() >= lines.first.position(); b = b.previous()) {
         const QString t = b.text();
         const QString nt = b.next().text();
         int trail = 0, lead = 0;
@@ -111,19 +110,26 @@ void TextBlankOps::trim(bool leading, bool trailing)
 
 void TextBlankOps::forEachLine(const std::function<void(QTextCursor &, const QTextBlock &)> &fn)
 {
+    const auto lines = selectedLines();
+
+    QTextCursor edit(mCursor);
+    edit.beginEditBlock();
+    for (QTextBlock b = lines.second;; b = b.previous()) {
+        fn(edit, b);
+        if (b == lines.first) break;
+    }
+    edit.endEditBlock();
+}
+
+QPair<QTextBlock, QTextBlock> TextBlankOps::selectedLines() const
+{
+    // A selection ending at the start of a line doesn't include that line
     QTextDocument *doc = mCursor.document();
     const QTextBlock first = doc->findBlock(mCursor.selectionStart());
     QTextBlock last = doc->findBlock(mCursor.selectionEnd());
     if (mCursor.hasSelection() && last != first && mCursor.selectionEnd() == last.position())
         last = last.previous();
-
-    QTextCursor edit(mCursor);
-    edit.beginEditBlock();
-    for (QTextBlock b = last;; b = b.previous()) {
-        fn(edit, b);
-        if (b == first) break;
-    }
-    edit.endEditBlock();
+    return QPair(first, last);
 }
 
 }

@@ -20,6 +20,7 @@
 #pragma once
 
 #include <QFlags>
+#include <QPair>
 #include <QTextBlock>
 #include <QTextCursor>
 #include <functional>
@@ -49,6 +50,7 @@ private:
     void eolToSpace();
     void tabToSpace();
     void forEachLine(const std::function<void(QTextCursor &, const QTextBlock &)> &fn);
+    QPair<QTextBlock, QTextBlock> selectedLines() const;
 
     QTextCursor mCursor;
     int mTabWidth;
