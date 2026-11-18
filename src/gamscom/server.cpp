@@ -36,6 +36,7 @@ namespace gamscom {
 const quint16 CFirstDebugPort = 3563;
 const quint16 CLastDebugPort = 4563;
 const int CMaxOpenPorts = 100;
+const int CMaxPacketLength = 255;
 QSet<int> Server::mPortsInUse;
 
 Server::Server(const QString &path, QObject *parent) : QObject(parent), mPath(path)
@@ -198,25 +199,19 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
                    + (arguments.isEmpty() ? "'" : (":" + arguments.at(0) + "'" + additionals)));
         return;
     }
+    // pack as many arguments (data lines) as fit into a packet, send further packets for the remaining arguments
     QStringList remain(arguments);
-    QString ready = keyword;
-    bool progress = true;
-    while (!remain.isEmpty() || progress) {
-        if (!remain.isEmpty() && ready.length() + 2 + remain.first().length() < 255) {
-            ready += '\n' + remain.takeFirst();
-            progress = true;
+    do {
+        QString packet = keyword;
+        while (!remain.isEmpty() && packet.length() + 2 + remain.first().length() < CMaxPacketLength)
+            packet += '\n' + remain.takeFirst();
+        if (packet.length() == keyword.length() && !remain.isEmpty()) {
+            logMessage("GAMScom-Server: Call line too long. Can't send more than " + QString::number(CMaxPacketLength)
+                       + " characters at once '" + keyword + ":" + remain.first() + "'");
+            return;
         }
-        if (!progress) {
-            logMessage("GAMScom-Server: Call line too long. Can't send more than 255 characters at once '"
-                       + QString::number(int(call)) + ":" + remain.first() + "'");
-            break;
-        }
-        if (remain.isEmpty() || ready.length() + 2 + remain.first().length() >= 255) {
-            mSocket->write(ready.toUtf8() + '\t');
-            ready = keyword;
-            progress = false;
-        }
-    }
+        mSocket->write(packet.toUtf8() + '\t');
+    } while (!remain.isEmpty());
 }
 
 Server::ParseResult Server::handleReply(const QString &replyData)
@@ -326,15 +321,23 @@ Server::ParseResult Server::handleReply(const QString &replyData)
     return prOk;
 }
 
-QString Server::toBpString(const QList<int> &lines)
+QStringList Server::toBpStrings(const QList<int> &lines, int maxLength)
 {
-    if (lines.isEmpty()) return QString();
-    QString res;
+    // joins the lines by '|', split into strings that don't exceed maxLength
+    QStringList res;
+    QString part;
     for (int line : lines) {
-        if (!res.isEmpty())
-            res += '|';
-        res += QString::number(line);
+        const QString num = QString::number(line);
+        if (!part.isEmpty() && part.length() + 1 + num.length() > maxLength) {
+            res << part;
+            part.clear();
+        }
+        if (!part.isEmpty())
+            part += '|';
+        part += num;
     }
+    if (!part.isEmpty())
+        res << part;
     return res;
 }
 
@@ -621,8 +624,11 @@ void Server::addBreakpoint(int contLine)
 
 void Server::addBreakpoints(const QList<int> &contLines)
 {
-    QString bps = toBpString(contLines);
-    if (!bps.isEmpty())
+    // the longest data line that callProcedure accepts in an addBP packet
+    const int maxLength = CMaxPacketLength - 3 - mCalls.value(addBP).length();
+    // one call per part to keep the documented single data line "contLN[|contLN]" of addBP
+    const QStringList parts = toBpStrings(contLines, maxLength);
+    for (const QString &bps : parts)
         callProcedure(addBP, {bps});
 }
 

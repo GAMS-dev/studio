@@ -166,7 +166,7 @@ private:
     void deleteSocket();
     void callProcedure(CallReply call, const QStringList &arguments = QStringList());
     ParseResult handleReply(const QString &replyData);
-    QString toBpString(const QList<int> &lines);
+    QStringList toBpStrings(const QList<int> &lines, int maxLength);
     void parseLinesMap(const QString &breakData);
     ParseResult parseProfileData(const QString &rawData);
     bool getPair(const QString &assignment, QList<int> &lines, QList<int> &coLNs, QList<int> &incLines, QList<int> &firstLines, QList<int> &retLines);
