@@ -199,18 +199,26 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
                    + (arguments.isEmpty() ? "'" : (":" + arguments.at(0) + "'" + additionals)));
         return;
     }
-    // pack as many arguments (data lines) as fit into a packet, send further packets for the remaining arguments
+    // Pack as many arguments (data lines) as fit into a packet, send further packets for the remaining arguments.
+    // GAMS doesn't join a call that is split over two reads. When several packets are written in a row they arrive
+    // as one stream, so each packet is padded by '\t' to CMaxPacketLength bytes, keeings every call aligned with GAMS.
+    const QByteArray keywordUtf8 = keyword.toUtf8();
     QStringList remain(arguments);
     do {
-        QString packet = keyword;
-        while (!remain.isEmpty() && packet.length() + 2 + remain.first().length() < CMaxPacketLength)
-            packet += '\n' + remain.takeFirst();
-        if (packet.length() == keyword.length() && !remain.isEmpty()) {
+        QByteArray packet = keywordUtf8;
+        while (!remain.isEmpty()) {
+            const QByteArray line = remain.first().toUtf8();
+            if (packet.length() + 2 + line.length() > CMaxPacketLength) break;
+            packet += '\n' + line;
+            remain.removeFirst();
+        }
+        if (packet.length() == keywordUtf8.length() && !remain.isEmpty()) {
             logMessage("GAMScom-Server: Call line too long. Can't send more than " + QString::number(CMaxPacketLength)
-                       + " characters at once '" + keyword + ":" + remain.first() + "'");
+                       + " bytes at once '" + keyword + ":" + remain.first() + "'");
             return;
         }
-        mSocket->write(packet.toUtf8() + '\t');
+        packet.append(CMaxPacketLength - packet.length(), '\t');
+        mSocket->write(packet);
     } while (!remain.isEmpty());
 }
 
@@ -624,8 +632,8 @@ void Server::addBreakpoint(int contLine)
 
 void Server::addBreakpoints(const QList<int> &contLines)
 {
-    // the longest data line that callProcedure accepts in an addBP packet
-    const int maxLength = CMaxPacketLength - 3 - mCalls.value(addBP).length();
+    // the longest data line that callProcedure accepts in an addBP packet (keyword + '\n' + data + '\t')
+    const int maxLength = CMaxPacketLength - 2 - mCalls.value(addBP).length();
     // one call per part to keep the documented single data line "contLN[|contLN]" of addBP
     const QStringList parts = toBpStrings(contLines, maxLength);
     for (const QString &bps : parts)
