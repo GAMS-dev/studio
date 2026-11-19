@@ -89,6 +89,13 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
         horizontalScrollBar()->setValue(horizontalScrollBar()->value() + columns);
     });
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::selectionChanged);
+    connect(mEdit, &TextViewEdit::positionedByMouse, this, [this]() {
+        // mouse released on a line that ends left of the view places the cursor at the line end
+        if (mDocChanging) return;
+        QPoint pos = mMapper->position(true);
+        if (pos.y() < 0 || pos.x() >= mColumnOffset) return;
+        horizontalScrollBar()->setValue(qMax(0, pos.x() - mEdit->columnCount() * 3 / 4));
+    });
     connect(mEdit, &TextViewEdit::continueFindPressed, this, &TextView::continueFindPressed);
     connect(mEdit, &TextViewEdit::continueSearchPressed, this, &TextView::continueSearchPressed);
     connect(mEdit, &TextViewEdit::hasHRef, this, &TextView::hasHRef);
@@ -831,7 +838,7 @@ void TextView::topLineMoved()
             if (maxLineLength > columnCount || mColumnOffset > 0) {
                 QStringList visibleParts;
                 visibleParts.reserve(lines.size());
-                for (const QStringView &line : lines)
+                for (const QStringView &line : std::as_const(lines))
                     visibleParts << line.mid(mColumnOffset, columnCount).toString();
                 mEdit->setPlainText(visibleParts.join('\n'));
             } else {

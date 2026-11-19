@@ -342,6 +342,9 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
     }
     CodeEdit::mousePressEvent(e);
     updateExtraSelections();
+    // after clicking on a line that ends left of the view
+    if (e->buttons() == Qt::LeftButton)
+        emit positionedByMouse();
 }
 
 void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
@@ -352,7 +355,6 @@ void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
         mHScrollDelta = e->position().x() < 0 ? e->position().x() : (e->position().x() < viewport()->width() ? 0 : e->position().x() - viewport()->width());
         if (mScrollDelta || mHScrollDelta) {
             // the timer repeats scrolling and extending the selection until the mouse is back or released
-            // Don't delay a running timer on mouse moves, only shorten it when the mouse moved further away
             int msec = autoScrollMs();
             if (!mScrollTimer.isActive())
                 mScrollTimer.start(0);
@@ -379,6 +381,9 @@ void TextViewEdit::mouseReleaseEvent(QMouseEvent *e)
     mScrollDelta = 0;
     mHScrollDelta = 0;
     mScrollTimer.stop();
+    // after drag-selecting to a line that ends left of the view
+    if (e->button() == Qt::LeftButton)
+        emit positionedByMouse();
 }
 
 void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)

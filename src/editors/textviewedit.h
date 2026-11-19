@@ -50,6 +50,7 @@ signals:
     void keyPressed(QKeyEvent *event);
     void updatePosAndAnchor(bool toWordStart = false);
     void scrollColumns(int columns);
+    void positionedByMouse();
     void recalcVisibleLines();
     void topLineMoved();
     void findClosestLstRef(const QTextCursor &cursor);
