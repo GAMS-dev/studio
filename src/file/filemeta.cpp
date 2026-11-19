@@ -1045,8 +1045,12 @@ bool FileMeta::save(const QString &newLocation)
             mFileRepo->watch(this);
         });
     }
-    if (res)
+    if (res) {
         mTimestamp = QDateTime::currentDateTime();
+        const QString snippetFile = CommonPaths::studioUserSnippets();
+        if (FileMetaRepo::equals(QFileInfo(location), QFileInfo(snippetFile)))
+            mFileRepo->completer()->loadSnippets(snippetFile);
+    }
     return res;
 }
 

@@ -53,24 +53,26 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
 
 void CodeCompleterModel::setSnippets(const QList<Snippet> &snippets)
 {
-    if (snippets.isEmpty()) return;
-
+    mSnippets = snippets;
     beginResetModel();
-    if (mTempDataStart >= 0 && mTempDataStart < mData.size()) {
-        mData = mData.mid(0, mTempDataStart);
-        mDescription = mDescription.mid(0, mTempDataStart);
-        mDescriptIndex = mDescriptIndex.mid(0, mTempDataStart);
-        auto it = mType.end();
-        while (it != mType.begin()) {
-            --it;
-            if (it.key() >= mTempDataStart)
-                it = mType.erase(it);
-            else break;
-        }
-    }
+    rebuildData();
+    endResetModel();
+}
 
+void CodeCompleterModel::rebuildData()
+{
+    initData();
+    if (mCasing == caseDynamic)
+        addDynamicData();
+    appendSnippets();
+    mTempDataIndicees.clear();
+    mLastNameSuffix.clear();
+}
+
+void CodeCompleterModel::appendSnippets()
+{
     QStringList deb;
-    for (const Snippet &s : snippets) {
+    for (const Snippet &s : std::as_const(mSnippets)) {
         mData << s.trigger;
         const QString desc = (s.trigger.size() && s.trigger.last(1) >= '0' && s.trigger.last(1) <= '9'
                                   ? s.trigger.left(s.trigger.size() - 1).trimmed()
@@ -81,12 +83,10 @@ void CodeCompleterModel::setSnippets(const QList<Snippet> &snippets)
         mDescriptIndex << int(mDescription.size()) - 1;
     }
     std::sort(deb.begin(), deb.end());
-    DEB() << deb.join(", ");
-    if (!snippets.isEmpty())
+    if (!mSnippets.isEmpty())
         mType.insert(int(mData.size()) - 1, ccSnippet);
 
     mTempDataStart = int(mData.size());
-    endResetModel();
 }
 
 void CodeCompleterModel::initData()
@@ -466,9 +466,7 @@ void CodeCompleterModel::setCasing(CodeCompleterCasing casing)
     mCasing = casing;
     if (isDynamic != (casing == caseDynamic)) {
         beginResetModel();
-        initData();
-        if (casing == caseDynamic)
-            addDynamicData();
+        rebuildData();
         endResetModel();
     }
 }
@@ -1044,7 +1042,7 @@ void CodeCompleter::loadSnippets(const QString &userSnippetFile)
         for (const Snippet &snip : parseData(data))
             list.insert(snip.trigger, snip);
     }
-    mSnippets.append(list.values());
+    mSnippets = list.values();
     mModel->setSnippets(mSnippets);
 }
 

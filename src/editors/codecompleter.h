@@ -100,6 +100,7 @@ private:
     int mDollarGroupRow = -1;
     int mPercentGroupRow = -1;
     int mTempDataStart = -1;
+    QList<Snippet> mSnippets;
     QString mLastNameSuffix;
     QMap<QChar, QStringList> mNameSuffixAssignments;
     Q_OBJECT
@@ -119,6 +120,8 @@ public:
 private:
     void initData();
     void addDynamicData();
+    void rebuildData();
+    void appendSnippets();
     void removeTempData(CodeCompleterType type);
 };
 
