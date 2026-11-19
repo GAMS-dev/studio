@@ -30,6 +30,7 @@
 #include "logger.h"
 #include "syntax.h"
 #include "option/option.h"
+#include "option/gamsuserconfig.h"
 #include "editors/sysloglocator.h"
 #include "projectedit.h"
 #include "settings.h"
@@ -1113,6 +1114,43 @@ QStringList PExProjectNode::getRunParametersHistory() const
 }
 
 ///
+/// \brief Reads the commandLineParameters of the gamsconfig.yaml files to locate the output files of a GAMS run.
+/// \param opt OptionItem to resolve the parameter ids
+/// \return the parameters ordered by ascending priority
+///
+QList<option::OptionItem> PExProjectNode::gamsConfigParameters(option::Option *opt)
+{
+    QList<option::OptionItem> res;
+    if (!opt) return res;
+    const QList<int> relevantIds { opt->getOrdinalNumber("curdir"), opt->getOrdinalNumber("workdir"),
+                                   opt->getOrdinalNumber("filestem"), opt->getOrdinalNumber("output"),
+                                   opt->getOrdinalNumber("GDX"), opt->getOrdinalNumber("Reference") };
+
+    // The first standard config path has the highest priority, the system directory the lowest
+    QStringList paths = CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath);
+    const QString sysDir = QDir::fromNativeSeparators(CommonPaths::systemDir());
+    if (!sysDir.isEmpty() && !paths.contains(sysDir, FileType::fsCaseSense()))
+        paths << sysDir;
+    for (int i = paths.size() - 1; i >= 0; --i) {
+        const QString file = paths.at(i) + "/" + CommonPaths::gamsUserConfigFileName();
+        if (!QFileInfo::exists(file)) continue;
+        option::GamsUserConfig guc(file);
+        if (!guc.isAvailable()) continue;
+        const QList<option::ConfigItem *> items = guc.readCommandLineParameters();
+        for (const option::ConfigItem *item : items) {
+            QString key = item->key;
+            if (opt->isASynonym(key))
+                key = opt->getNameFromSynonym(key);
+            const int id = opt->getOrdinalNumber(key);
+            if (id >= 0 && relevantIds.contains(id))
+                res << option::OptionItem(id, item->key, item->value);
+        }
+        qDeleteAll(items);
+    }
+    return res;
+}
+
+///
 /// \brief PExProjectNode::analyzeParameters translates the gms file and an OptionItem list into a single QStringList, while also setting all extracted parameters for this project
 /// \param gmsLocation gms file to be run
 /// \param defaultParameters additional default parameters
@@ -1165,6 +1203,15 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
         defaultArgumentIdList << opt->getOrdinalNumber(list[0]);
     }
 
+    // Parameters from the gamsconfig.yaml files are applied by GAMS itself. They are not passed on the command
+    // line, but they are needed to locate output files (e.g. GDX, REF). Parameters from the itemList override them.
+    QList<option::OptionItem> configItems = gamsConfigParameters(opt);
+    QList<const option::OptionItem*> pathItems;
+    for (const option::OptionItem &item : std::as_const(configItems))
+        pathItems << &item;
+    for (const option::OptionItem* item : itemList)
+        pathItems << item;
+
     // find directory changes first
     QString path = "";
     QString cdir = "";
@@ -1178,6 +1225,8 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
         argumentIdList    << item->optionId;
         argumentValueList << item->value;
         gamsArguments.insert(item->optionId, item->value);
+    }
+    for (const option::OptionItem* item : std::as_const(pathItems)) {
         if (item->optionId == opt->getOrdinalNumber("curdir")) {
             cdir = item->value;
         } else if (item->optionId == opt->getOrdinalNumber("workdir")) {
@@ -1217,7 +1266,9 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
 
     bool defaultOverride = false;
     // iterate options
-    for (const option::OptionItem* item : itemList) {
+    for (int i = 0; i < pathItems.size(); ++i) {
+        const option::OptionItem* item = pathItems.at(i);
+        const bool isConfigItem = i < configItems.size();
         // convert to native seperator
         QString value = item->value;
         value = value.replace('\\', '/');
@@ -1258,7 +1309,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
                 setLogLocation(cleanPath(path, value));
             }
 
-            if (defaultArgumentIdList.contains(item->optionId))
+            if (!isConfigItem && defaultArgumentIdList.contains(item->optionId))
                 defaultOverride = true;
         }
     }

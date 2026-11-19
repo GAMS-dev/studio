@@ -93,6 +93,7 @@ public:
 
     static QString gamsUserConfigDir();
     static QString defaultGamsUserConfigFile();
+    static QString gamsUserConfigFileName();
     static QString studioUserSnippets();
 
     static void setGamsStandardPaths(const QStringList &gamsPaths, StandardPathType pathType);

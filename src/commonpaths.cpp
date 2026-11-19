@@ -199,6 +199,11 @@ QString CommonPaths::defaultGamsUserConfigFile()
     return QDir::cleanPath(gamsUserConfigDir() + "/" + GamsUserConfigFile);
 }
 
+QString CommonPaths::gamsUserConfigFileName()
+{
+    return GamsUserConfigFile;
+}
+
 QString CommonPaths::studioUserSnippets()
 {
     return QDir::cleanPath(gamsUserConfigDir() + "/" + UserSnippetsFile);

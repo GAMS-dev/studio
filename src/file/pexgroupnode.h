@@ -135,6 +135,7 @@ public:
     QStringList mainFileParameterHistory(FileId fileId) const;
     void addRunParametersHistory(const QString &option);
     QStringList getRunParametersHistory() const;
+    static QList<option::OptionItem> gamsConfigParameters(option::Option *opt);
     QStringList analyzeParameters(const QString &gmsLocation, const QStringList &defaultParameters
                                   , const QList<option::OptionItem*> &itemList, option::Option *opt
                                   , gamscom::ComFeatures comMode, int &logOption);
