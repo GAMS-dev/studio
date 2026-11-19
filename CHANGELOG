@@ -1,6 +1,7 @@
 Version 1.26.1  *
 ==================
 - Improved stability of the Project Explorer
+- Fixed GAMS hanging or exiting unexpectedly when debugging with many breakpoints.
 
 Version 1.26.0
 ==================
