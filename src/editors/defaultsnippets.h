@@ -505,7 +505,7 @@ static const char *defaultJson = R"([
     "body": "smin(${1:a}, ${2:b})${0}"
   },
   {
-    "trigger": "samd",
+    "trigger": "sand",
     "description": "",
     "body": "sand(${1:a}, ${2:b})${0}"
   },
