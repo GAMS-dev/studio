@@ -28,6 +28,7 @@
 #include <QPlainTextEdit>
 #include <QStringBuilder>
 #include <QScrollBar>
+#include <QTextBlock>
 
 namespace gams {
 namespace studio {
@@ -110,7 +111,7 @@ public slots:
 
 private slots:
     void outerScrollAction(int action);
-    void horizontalScrollAction(int action);
+    void horizontalScrollChanged(int value);
     void editKeyPressEvent(QKeyEvent *event);
     void updatePosAndAnchor(bool toWordStart = false);
     void findClosestLstRef(const QTextCursor &cursor);
@@ -132,13 +133,21 @@ protected:
 
 private:
     void init();
+    void updateMargins();
     void adjustSearchSelection();
+    void updateHScrollZone(int maxLineLength);
+    bool ensureCursorColumnVisible();
+    int toDocColumn(int column, const QTextBlock &block) const;
 
 private:
     TextKind mTextKind;
     const int mDocChanging = 0;
     bool mInit = true;
-    int mHScrollValue = 0;
+    int mColumnOffset = 0;                  // first line column shown in the document (value of the fake h-scrollbar)
+    int mCurrentColumnOffset = -1;
+    int mCurrentColumnCount = -1;
+    QList<int> mLineLengths;                // full length of the lines in the document
+    qreal mPartialHScroll = 0.0;
 
     AbstractTextMapper *mMapper = nullptr;
     TextViewEdit *mEdit;

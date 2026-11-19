@@ -204,6 +204,11 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
             if (m->blockStart() < 0) continue;
             int start = m->blockStart();
             int end = m->size() ? (m->size() < 0 ? block.length() : m->blockEnd()+1) : 0;
+            if (int colOffset = textColumnOffset()) {
+                // the document may only contain a part of the line, starting at colOffset
+                start = qBound(0, start - colOffset, block.length()-1);
+                if (m->size() > 0) end = qBound(0, end - colOffset, block.length()-1);
+            }
             if (block.position() + start > max)
                 DEB() << "TextMark " << m->line() << "," << m->column() << " w" << m->size() << " start beyond EOF";
             selection.cursor.setPosition(qMin(block.position() + start, max));

@@ -39,12 +39,17 @@ public:
     void disconnectTimers() override;
     EditorType type() const override;
     int lineCount();
+    int columnCount() const;
+    qreal charWidth() const;
+    void setColumnOffset(int columnOffset);
+    int columnOffset() const;
     void setLineMarked(const QList<bool> &newLineMarked);
     QStringList getEnabledContextActions() override;
 
 signals:
     void keyPressed(QKeyEvent *event);
     void updatePosAndAnchor(bool toWordStart = false);
+    void scrollColumns(int columns);
     void recalcVisibleLines();
     void topLineMoved();
     void findClosestLstRef(const QTextCursor &cursor);
@@ -64,6 +69,7 @@ protected:
     void recalcWordUnderCursor(bool select = false) override;
     int absoluteBlockNr(const int &localBlockNr) const override;
     int localBlockNr(const int &absoluteBlockNr) const override;
+    int textColumnOffset() const override;
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;
     void extraSelLineMarks(QList<QTextEdit::ExtraSelection>& selections) override;
     void mousePressEvent(QMouseEvent *e) override;
@@ -79,6 +85,7 @@ protected:
 private:
     int topVisibleLine() override;
     int scrollMs(int delta);
+    int autoScrollMs();
 
 private:
     AbstractTextMapper &mMapper;
@@ -88,6 +95,9 @@ private:
     bool mClickStart = false;
     QTimer mScrollTimer;
     int mScrollDelta = 0;
+    int mHScrollDelta = 0;
+    QPoint mDragPos;
+    int mColumnOffset = 0;
     int mSubOffset = 0;
     int mDigits = 3;
     bool mKeepWordUnderCursor = false;

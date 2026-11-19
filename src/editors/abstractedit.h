@@ -128,6 +128,7 @@ protected:
     virtual int absoluteBlockNr(const int &localBlockNr) const;
     virtual int localBlockNr(const int &absoluteBlockNr) const;
     virtual int topVisibleLine();
+    virtual int textColumnOffset() const { return 0; }
     virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelMarks(QList<QTextEdit::ExtraSelection> &selections);
     virtual void extraSelLineMarks(QList<QTextEdit::ExtraSelection>& selections) { Q_UNUSED(selections) }

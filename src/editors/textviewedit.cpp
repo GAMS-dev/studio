@@ -40,7 +40,7 @@ TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
     setAllowBlockEdit(false);
     setLineWrapMode(QPlainTextEdit::NoWrap);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     disconnect(&wordDelayTimer(), &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     setMouseTracking(true);
     connect(&mScrollTimer, &QTimer::timeout, this, &TextViewEdit::scrollStep);
@@ -79,6 +79,32 @@ int TextViewEdit::lineCount()
     return qFloor(qreal(viewport()->height()) / lineHeight);
 }
 
+qreal TextViewEdit::charWidth() const
+{
+    return qMax(1.0, QFontMetricsF(font()).horizontalAdvance(' '));
+}
+
+int TextViewEdit::columnCount() const
+{
+    qreal width = viewport()->width() - 2 * document()->documentMargin();
+    return qMax(1, qCeil(width / charWidth()));
+}
+
+void TextViewEdit::setColumnOffset(int columnOffset)
+{
+    mColumnOffset = columnOffset;
+}
+
+int TextViewEdit::columnOffset() const
+{
+    return mColumnOffset;
+}
+
+int TextViewEdit::textColumnOffset() const
+{
+    return mColumnOffset;
+}
+
 void TextViewEdit::copySelection()
 {
     int selSize = mMapper.selectionSize();
@@ -110,21 +136,34 @@ void TextViewEdit::selectAllText()
 
 void TextViewEdit::scrollStep()
 {
-    if (!mScrollDelta) {
+    if (!mScrollDelta && !mHScrollDelta) {
         mScrollTimer.stop();
         return;
     }
-    int step = mScrollDelta > 0 ? 1 : -1;
-    step = step + mScrollDelta / 10;
-    mMapper.moveVisibleTopLine(step);
-    QTextCursor cursor = QTextCursor(document());
-    if (mScrollDelta > 0) {
-        cursor.movePosition(QTextCursor::End);
-        cursor.movePosition(QTextCursor::Left);
+    if (mScrollDelta) {
+        int step = mScrollDelta > 0 ? 1 : -1;
+        step = step + mScrollDelta / 10;
+        mMapper.moveVisibleTopLine(step);
     }
-    mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), QTextCursor::KeepAnchor);
-    emit topLineMoved();
-    int msec = scrollMs(mScrollDelta);
+    if (mHScrollDelta) {
+        qreal overshoot = qAbs(mHScrollDelta) / 4;
+        int columns = qMax(1, qRound(overshoot * overshoot));
+        emit scrollColumns(mHScrollDelta > 0 ? columns : -columns);
+        emit topLineMoved(); // rebuilds the document if not done by scrollColumns (e.g. when only scrolled vertically)
+        QPoint pos(qBound(0, mDragPos.x(), viewport()->width() - 1), qBound(0, mDragPos.y(), viewport()->height() - 1));
+        QTextCursor cursor = cursorForPosition(pos);
+        mMapper.setPosRelative(cursor.blockNumber(), mColumnOffset + cursor.positionInBlock(), QTextCursor::KeepAnchor);
+        emit updatePosAndAnchor();
+    } else {
+        QTextCursor cursor = QTextCursor(document());
+        if (mScrollDelta > 0) {
+            cursor.movePosition(QTextCursor::End);
+            cursor.movePosition(QTextCursor::Left);
+        }
+        mMapper.setPosRelative(cursor.blockNumber(), mColumnOffset + cursor.positionInBlock(), QTextCursor::KeepAnchor);
+        emit topLineMoved();
+    }
+    int msec = autoScrollMs();
     if (msec != mScrollTimer.interval())
         mScrollTimer.setInterval(msec);
 }
@@ -132,6 +171,14 @@ void TextViewEdit::scrollStep()
 int TextViewEdit::scrollMs(int delta)
 {
     int msec = 500 - qMin(delta*delta, 495);
+    return msec;
+}
+
+int TextViewEdit::autoScrollMs()
+{
+    const int CHorizontalScrollMs = 100;
+    int msec = mScrollDelta ? scrollMs(mScrollDelta) : CHorizontalScrollMs;
+    if (mHScrollDelta) msec = qMin(msec, CHorizontalScrollMs);
     return msec;
 }
 
@@ -288,7 +335,7 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
         }
         if (e->buttons() == Qt::LeftButton) {
             QTextCursor::MoveMode moveMode = mClickStart ? QTextCursor::MoveAnchor : QTextCursor::KeepAnchor;
-            mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), moveMode);
+            mMapper.setPosRelative(cursor.blockNumber(), mColumnOffset + cursor.positionInBlock(), moveMode);
             recalcWordUnderCursor();
             emit updatePosAndAnchor();
         }
@@ -300,14 +347,17 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
 void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
 {
     if (e->buttons() == Qt::LeftButton && !(e->modifiers() & CAnyModifier)) {
+        mDragPos = e->pos();
         mScrollDelta = e->position().y() < 0 ? e->position().y() : (e->position().y() < viewport()->height() ? 0 : e->position().y() - viewport()->height());
-        if (mScrollDelta) {
-            if (!mScrollTimer.isActive()) {
+        mHScrollDelta = e->position().x() < 0 ? e->position().x() : (e->position().x() < viewport()->width() ? 0 : e->position().x() - viewport()->width());
+        if (mScrollDelta || mHScrollDelta) {
+            // the timer repeats scrolling and extending the selection until the mouse is back or released
+            // Don't delay a running timer on mouse moves, only shorten it when the mouse moved further away
+            int msec = autoScrollMs();
+            if (!mScrollTimer.isActive())
                 mScrollTimer.start(0);
-            } else {
-                int remain = qMax(0, scrollMs(mScrollDelta) - mScrollTimer.interval() + mScrollTimer.remainingTime());
-                mScrollTimer.start(remain);
-            }
+            else if (mScrollTimer.remainingTime() > msec)
+                mScrollTimer.start(msec);
         } else {
             mScrollTimer.stop();
             bool valid = mClickStart && (linkClickPos() - e->pos()).manhattanLength() < 4;
@@ -315,7 +365,7 @@ void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
             viewport()->setCursor((e->pos().x() < 0) ? Qt::ArrowCursor : Qt::IBeamCursor);
             mClickStart = false;
             QTextCursor cursor = cursorForPosition(e->pos());
-            mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), QTextCursor::KeepAnchor);
+            mMapper.setPosRelative(cursor.blockNumber(), mColumnOffset + cursor.positionInBlock(), QTextCursor::KeepAnchor);
             emit updatePosAndAnchor();
         }
     } else {
@@ -327,6 +377,7 @@ void TextViewEdit::mouseReleaseEvent(QMouseEvent *e)
 {
     CodeEdit::mouseReleaseEvent(e);
     mScrollDelta = 0;
+    mHScrollDelta = 0;
     mScrollTimer.stop();
 }
 
@@ -338,7 +389,7 @@ void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)
         cur.movePosition(QTextCursor::StartOfWord);
         int from = cur.positionInBlock();
         cur.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
-        emit selectWord(cur.blockNumber(), from, cur.positionInBlock());
+        emit selectWord(cur.blockNumber(), mColumnOffset + from, mColumnOffset + cur.positionInBlock());
     } else {
         QRect rect = cursorRect(cursor);
         if (event->pos().x() - rect.right() < 3 && !resolveHRef(cursor.charFormat().anchorHref()).isEmpty()) return;
