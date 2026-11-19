@@ -808,11 +808,12 @@ void TextView::topLineMoved()
         QString dat = mMapper->lines(0, mMapper->visibleLineCount()+1, formats);
 
         // Only visible columns. As the font is monospace, the horizontal scrolling can be handled by cutting the lines.
-        const QList<QStringView> lines = QStringView(dat).split(u'\n');
+        QList<QStringView> lines = QStringView(dat).split(u'\n');
         QList<int> lineLengths;
         lineLengths.reserve(lines.size());
         int maxLineLength = 0;
-        for (const QStringView &line : lines) {
+        for (QStringView &line : lines) {
+            if (line.endsWith(u'\r')) line.chop(1);
             lineLengths << line.length();
             maxLineLength = qMax(maxLineLength, int(line.length()));
         }
