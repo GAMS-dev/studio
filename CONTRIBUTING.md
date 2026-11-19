@@ -24,6 +24,8 @@ source .venv/bin/activate
 
 Please check the information about the pre-commit tool and follow the install steps given on the [project page](https://pre-commit.com/). Also check the `.pre-commit-config.yaml` to see which checks are currently used.
 
-## Install detect-secrets
+## Secret detection with betterleaks
 
-Please check the information about the detect-secrets tool and follow the install steps given on the [project page](hhttps://github.com/Yelp/detect-secrets).
+The pre-commit hook uses [betterleaks](https://github.com/betterleaks/betterleaks) to scan staged changes for secrets. pre-commit builds the tool automatically, a separate installation isn't needed.
+
+If betterleaks reports a false positive, either add a `betterleaks:allow` comment to the line or add the fingerprint of the finding to the `.betterleaksignore` file in the repository root.
