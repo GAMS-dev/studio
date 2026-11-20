@@ -37,6 +37,7 @@ const quint16 CFirstDebugPort = 3563;
 const quint16 CLastDebugPort = 4563;
 const int CMaxOpenPorts = 100;
 const int CMaxPacketLength = 255;
+const int CDataLineOverhead = 2;   // '\n' in front of a data line plus at least one '\t' terminating the packet
 QSet<int> Server::mPortsInUse;
 
 Server::Server(const QString &path, QObject *parent) : QObject(parent), mPath(path)
@@ -208,7 +209,7 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
         QByteArray packet = keywordUtf8;
         while (!remain.isEmpty()) {
             const QByteArray line = remain.first().toUtf8();
-            if (packet.length() + 2 + line.length() > CMaxPacketLength) break;
+            if (packet.length() + CDataLineOverhead + line.length() > CMaxPacketLength) break;
             packet += '\n' + line;
             remain.removeFirst();
         }
@@ -633,7 +634,7 @@ void Server::addBreakpoint(int contLine)
 void Server::addBreakpoints(const QList<int> &contLines)
 {
     // the longest data line that callProcedure accepts in an addBP packet (keyword + '\n' + data + '\t')
-    const int maxLength = CMaxPacketLength - 2 - mCalls.value(addBP).length();
+    const int maxLength = CMaxPacketLength - CDataLineOverhead - mCalls.value(addBP).length();
     // one call per part to keep the documented single data line "contLN[|contLN]" of addBP
     const QStringList parts = toBpStrings(contLines, maxLength);
     for (const QString &bps : parts)
