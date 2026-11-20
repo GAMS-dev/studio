@@ -1,4 +1,8 @@
-Version 1.26.0  *
+Version 1.26.1  *
+==================
+- Improved stability of the Project Explorer
+
+Version 1.26.0
 ==================
 - Added quick select support for GDX attribute checkboxes.
 - Improved quick select responsiveness for GDX filters by transitioning triggers from mouse release to mouse press events.
