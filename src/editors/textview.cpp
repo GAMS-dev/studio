@@ -36,6 +36,7 @@
 #include <QPlainTextDocumentLayout>
 #include <QBoxLayout>
 #include <QtMath>
+#include <limits>
 
 namespace gams {
 namespace studio {
@@ -433,11 +434,8 @@ void TextView::horizontalScrollChanged(int value)
 
 void TextView::scrollHPixels(qreal dx)
 {
-    qreal charWidth = mEdit->charWidth();
-    qreal maxPixels = horizontalScrollBar()->maximum() * charWidth;
-    qreal pixels = qBound(0.0, mColumnOffset * charWidth + mSubPixel + dx, maxPixels);
-    int column = qFloor(pixels / charWidth);
-    mSubPixel = qMax(0.0, pixels - column * charWidth);
+    int column = EditorHelper::scrollByPixels(mColumnOffset, mSubPixel, dx, mEdit->charWidth(),
+                                              horizontalScrollBar()->maximum());
     if (column == mColumnOffset) {
         applyInnerHScroll();
     } else {
@@ -449,11 +447,10 @@ void TextView::scrollHPixels(qreal dx)
 
 void TextView::scrollVPixels(qreal dy)
 {
-    qreal lineHeight = mEdit->lineHeight();
     if (mSubLineTop != mMapper->visibleTopLine()) mSubLine = 0.0; // scrolled otherwise, e.g. by keys or scrollbar
-    qreal pixels = mSubLine + dy;
-    int delta = qFloor(pixels / lineHeight);
-    mSubLine = pixels - delta * lineHeight;
+    // The line count may be an estimate, so the end is left to the mapper
+    int top = qAbs(mMapper->visibleTopLine());
+    int delta = EditorHelper::scrollByPixels(top, mSubLine, dy, mEdit->lineHeight(), std::numeric_limits<int>::max()) - top;
     if (delta) {
         int before = qAbs(mMapper->visibleTopLine());
         mMapper->moveVisibleTopLine(delta);
@@ -562,15 +559,7 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
     if (event->type() == QEvent::Wheel) {
         QWheelEvent *wheelEvent = static_cast<QWheelEvent*>(event);
         QPoint pixels = wheelEvent->hasPixelDelta() ? wheelEvent->pixelDelta() : wheelEvent->angleDelta() / 4;
-        // Keeps the start axis for touchpad to avoid the view jumping back and forth.
-        Qt::ScrollPhase phase = wheelEvent->phase();
-        if (phase == Qt::ScrollBegin || phase == Qt::NoScrollPhase)
-            mWheelAxis = 0;
-        if (!mWheelAxis && !pixels.isNull())
-            mWheelAxis = qAbs(pixels.x()) > qAbs(pixels.y()) ? Qt::Horizontal : Qt::Vertical;
-        int axis = mWheelAxis;
-        if (phase == Qt::ScrollEnd)
-            mWheelAxis = 0;
+        int axis = EditorHelper::wheelAxis(mWheelAxis, wheelEvent->phase(), pixels);
         if (axis == Qt::Horizontal) {
             if (pixels.x()) scrollHPixels(-pixels.x());
             return true;
@@ -786,7 +775,7 @@ void TextView::updateMargins()
 
 int TextView::toDocColumn(int column, const QTextBlock &block) const
 {
-    return qBound(0, column - mDocColumn, qMax(0, block.length()-1));
+    return EditorHelper::toDocColumn(column, mDocColumn, block.length() - 1);
 }
 
 void TextView::adjustSearchSelection()
@@ -880,23 +869,16 @@ void TextView::topLineMoved()
         QString dat = mMapper->lines(0, mMapper->visibleLineCount()+2, formats); // +2: partial lines at top and bottom
 
         // Only visible columns. As the font is monospace, the horizontal scrolling can be handled by cutting the lines.
-        QList<QStringView> lines = QStringView(dat).split(u'\n');
+        QList<QStringView> lines;
         QList<int> lineLengths;
-        lineLengths.reserve(lines.size());
-        int maxLineLength = 0;
-        for (QStringView &line : lines) {
-            if (line.endsWith(u'\r')) line.chop(1);
-            lineLengths << line.length();
-            maxLineLength = qMax(maxLineLength, int(line.length()));
-        }
+        int maxLineLength = EditorHelper::splitLines(dat, lines, &lineLengths);
         updateHScrollZone(maxLineLength);
         // The document holds a buffer of columns on both sides of the visible part. Scrolling within the buffer only
         // shifts the inner edit by pixels, which allows smooth scrolling and avoids rebuilding the document.
         const int CColumnBuffer = 5;
         const int visibleColumns = mEdit->columnCount() + 1; // +1 for a partially visible column when scrolled by pixels
         const int columnCount = visibleColumns + 1 + 2 * CColumnBuffer;
-        bool inBuffer = mColumnOffset >= mCurrentDocColumn
-                        && mColumnOffset + visibleColumns <= mCurrentDocColumn + mCurrentColumnCount;
+        bool inBuffer = EditorHelper::isInColumnBuffer(mColumnOffset, visibleColumns, mCurrentDocColumn, mCurrentColumnCount);
         bool rebuild = mCurrentVisibleTopLine != mMapper->visibleTopLine() || mCurrentDataLength != dat.size()
                        || !inBuffer || mCurrentColumnCount != columnCount;
         if (rebuild) {
@@ -908,11 +890,7 @@ void TextView::topLineMoved()
             mLineLengths = lineLengths;
             mEdit->setColumnOffset(mDocColumn);
             if (maxLineLength > columnCount || mDocColumn > 0) {
-                QStringList visibleParts;
-                visibleParts.reserve(lines.size());
-                for (const QStringView &line : std::as_const(lines))
-                    visibleParts << line.mid(mDocColumn, columnCount).toString();
-                mEdit->setPlainText(visibleParts.join('\n'));
+                mEdit->setPlainText(EditorHelper::cutLines(lines, mDocColumn, columnCount));
             } else {
                 mEdit->setPlainText(dat);
             }

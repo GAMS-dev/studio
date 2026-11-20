@@ -18,9 +18,74 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "editorhelper.h"
+#include <QtMath>
 
 namespace gams {
 namespace studio {
+
+int EditorHelper::splitLines(QStringView text, QList<QStringView> &lines, QList<int> *lineLengths)
+{
+    lines = text.split(u'\n');
+    if (lineLengths) {
+        lineLengths->clear();
+        lineLengths->reserve(lines.size());
+    }
+    int maxLineLength = 0;
+    for (QStringView &line : lines) {
+        if (line.endsWith(u'\r')) line.chop(1);
+        if (lineLengths) *lineLengths << int(line.length());
+        maxLineLength = qMax(maxLineLength, int(line.length()));
+    }
+    return maxLineLength;
+}
+
+QString EditorHelper::cutLines(const QList<QStringView> &lines, int fromColumn, int columnCount)
+{
+    QStringList parts;
+    parts.reserve(lines.size());
+    for (const QStringView &line : lines)
+        parts << line.mid(fromColumn, columnCount).toString();
+    return parts.join('\n');
+}
+
+int EditorHelper::toDocColumn(int column, int docColumn, int docLineLength)
+{
+    return qBound(0, column - docColumn, qMax(0, docLineLength));
+}
+
+bool EditorHelper::isInColumnBuffer(int columnOffset, int visibleColumns, int docColumn, int docColumnCount)
+{
+    return columnOffset >= docColumn && columnOffset + visibleColumns <= docColumn + docColumnCount;
+}
+
+int EditorHelper::scrollByPixels(int position, qreal &remain, qreal dPixels, qreal unitSize, int maxPosition)
+{
+    unitSize = qMax(1.0, unitSize);
+    qreal pixels = position * unitSize + remain + dPixels;
+    if (pixels <= 0.0) {
+        remain = 0.0;
+        return 0;
+    }
+    if (pixels >= maxPosition * unitSize) {
+        remain = 0.0;
+        return maxPosition;
+    }
+    int res = qFloor(pixels / unitSize);
+    remain = qMax(0.0, pixels - res * unitSize);
+    return res;
+}
+
+int EditorHelper::wheelAxis(int &lockedAxis, Qt::ScrollPhase phase, const QPoint &pixels)
+{
+    if (phase == Qt::ScrollBegin || phase == Qt::NoScrollPhase)
+        lockedAxis = 0;
+    if (!lockedAxis && !pixels.isNull())
+        lockedAxis = qAbs(pixels.x()) > qAbs(pixels.y()) ? Qt::Horizontal : Qt::Vertical;
+    int axis = lockedAxis;
+    if (phase == Qt::ScrollEnd || phase == Qt::NoScrollPhase)
+        lockedAxis = 0;
+    return axis;
+}
 
 void EditorHelper::nextWord(int offset,int &pos, const QString &text)
 {
