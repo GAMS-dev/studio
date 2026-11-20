@@ -387,6 +387,11 @@ void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
             mMapper.setPosRelative(cursor.blockNumber(), mColumnOffset + cursor.positionInBlock(), QTextCursor::KeepAnchor);
             emit updatePosAndAnchor();
         }
+    } else if (!mDragging && e->buttons() != Qt::NoButton) {
+        // Fix jitter on horizontal touchpad scroll. Handle it as hover move only.
+        QMouseEvent hover(e->type(), e->position(), e->scenePosition(), e->globalPosition(), Qt::NoButton,
+                          Qt::NoButton, e->modifiers(), e->pointingDevice());
+        CodeEdit::mouseMoveEvent(&hover);
     } else {
         CodeEdit::mouseMoveEvent(e);
     }
