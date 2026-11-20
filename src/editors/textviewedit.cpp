@@ -26,6 +26,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QGuiApplication>
 
 namespace gams {
 namespace studio {
@@ -136,6 +137,11 @@ void TextViewEdit::selectAllText()
 
 void TextViewEdit::scrollStep()
 {
+    // stop if the release got lost (e.g. macOS touchpad tap-to-click)
+    if (!mDragging || !QGuiApplication::mouseButtons().testFlag(Qt::LeftButton)) {
+        endDrag();
+        return;
+    }
     if (!mScrollDelta && !mHScrollDelta) {
         mScrollTimer.stop();
         return;
@@ -172,6 +178,14 @@ int TextViewEdit::scrollMs(int delta)
 {
     int msec = 500 - qMin(delta*delta, 495);
     return msec;
+}
+
+void TextViewEdit::endDrag()
+{
+    mDragging = false;
+    mScrollDelta = 0;
+    mHScrollDelta = 0;
+    mScrollTimer.stop();
 }
 
 int TextViewEdit::autoScrollMs()
@@ -325,6 +339,7 @@ void TextViewEdit::extraSelLineMarks(QList<QTextEdit::ExtraSelection> &selection
 void TextViewEdit::mousePressEvent(QMouseEvent *e)
 {
     setCursorWidth(2);
+    mDragging = e->button() == Qt::LeftButton && e->buttons() == Qt::LeftButton;
     if (!marks() || marks()->isEmpty()) {
         QTextCursor cursor = cursorForPosition(e->pos());
         setLinkClickPos(e->pos());
@@ -349,7 +364,9 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
 
 void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
 {
-    if (e->buttons() == Qt::LeftButton && !(e->modifiers() & CAnyModifier)) {
+    if (mDragging && !e->buttons().testFlag(Qt::LeftButton))
+        endDrag();
+    if (mDragging && e->buttons() == Qt::LeftButton && !(e->modifiers() & CAnyModifier)) {
         mDragPos = e->pos();
         mScrollDelta = e->position().y() < 0 ? e->position().y() : (e->position().y() < viewport()->height() ? 0 : e->position().y() - viewport()->height());
         mHScrollDelta = e->position().x() < 0 ? e->position().x() : (e->position().x() < viewport()->width() ? 0 : e->position().x() - viewport()->width());
@@ -378,9 +395,7 @@ void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
 void TextViewEdit::mouseReleaseEvent(QMouseEvent *e)
 {
     CodeEdit::mouseReleaseEvent(e);
-    mScrollDelta = 0;
-    mHScrollDelta = 0;
-    mScrollTimer.stop();
+    endDrag();
     // after drag-selecting to a line that ends left of the view
     if (e->button() == Qt::LeftButton)
         emit positionedByMouse();

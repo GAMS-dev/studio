@@ -87,6 +87,7 @@ private:
     int topVisibleLine() override;
     int scrollMs(int delta);
     int autoScrollMs();
+    void endDrag();
 
 private:
     AbstractTextMapper &mMapper;
@@ -94,6 +95,7 @@ private:
     Settings *mSettings;
     qint64 mTopByte = 0;
     bool mClickStart = false;
+    bool mDragging = false;
     QTimer mScrollTimer;
     int mScrollDelta = 0;
     int mHScrollDelta = 0;
