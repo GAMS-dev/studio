@@ -77,12 +77,33 @@ int TextViewEdit::lineCount()
 {
     QFontMetricsF metric(font());
     qreal lineHeight = qCeil(qMax(metric.lineSpacing(), metric.boundingRect("Äg").height()));
-    return qFloor(qreal(viewport()->height()) / lineHeight);
+    return qFloor(qreal(viewport()->height() - mTopShift) / lineHeight);
 }
 
 qreal TextViewEdit::charWidth() const
 {
     return qMax(1.0, QFontMetricsF(font()).horizontalAdvance(' '));
+}
+
+qreal TextViewEdit::lineHeight() const
+{
+    // all blocks have the same height without wrapping
+    QTextBlock block = document()->firstBlock();
+    qreal height = block.isValid() ? blockBoundingRect(block).height() : 0.0;
+    return qMax(1.0, height > 0.0 ? height : QFontMetricsF(font()).lineSpacing());
+}
+
+void TextViewEdit::setTopShift(int pixels)
+{
+    if (pixels == mTopShift) return;
+    mTopShift = pixels;
+    QMargins margins = viewportMargins();
+    setViewportMargins(margins.left(), profilerHeaderHeight() - mTopShift, margins.right(), margins.bottom());
+}
+
+int TextViewEdit::viewportTopShift() const
+{
+    return mTopShift;
 }
 
 int TextViewEdit::columnCount() const
@@ -156,7 +177,7 @@ void TextViewEdit::scrollStep()
         int columns = qMax(1, qRound(overshoot * overshoot));
         emit scrollColumns(mHScrollDelta > 0 ? columns : -columns);
         emit topLineMoved(); // rebuilds the document if not done by scrollColumns (e.g. when only scrolled vertically)
-        QPoint pos(qBound(0, mDragPos.x(), viewport()->width() - 1), qBound(0, mDragPos.y(), viewport()->height() - 1));
+        QPoint pos(qBound(0, mDragPos.x(), viewport()->width() - 1), qBound(mTopShift, mDragPos.y(), viewport()->height() - 1));
         QTextCursor cursor = cursorForPosition(pos);
         mMapper.setPosRelative(cursor.blockNumber(), mColumnOffset + cursor.positionInBlock(), QTextCursor::KeepAnchor);
         emit updatePosAndAnchor();
@@ -368,7 +389,10 @@ void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
         endDrag();
     if (mDragging && e->buttons() == Qt::LeftButton && !(e->modifiers() & CAnyModifier)) {
         mDragPos = e->pos();
-        mScrollDelta = e->position().y() < 0 ? e->position().y() : (e->position().y() < viewport()->height() ? 0 : e->position().y() - viewport()->height());
+        // the visible part of the viewport starts at mTopShift
+        qreal y = e->position().y() - mTopShift;
+        int visibleHeight = viewport()->height() - mTopShift;
+        mScrollDelta = y < 0 ? y : (y < visibleHeight ? 0 : y - visibleHeight);
         mHScrollDelta = e->position().x() < 0 ? e->position().x() : (e->position().x() < viewport()->width() ? 0 : e->position().x() - viewport()->width());
         if (mScrollDelta || mHScrollDelta) {
             // the timer repeats scrolling and extending the selection until the mouse is back or released

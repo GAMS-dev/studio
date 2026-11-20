@@ -139,6 +139,8 @@ private:
     bool ensureCursorColumnVisible();
     void scrollHPixels(qreal dx);
     void applyInnerHScroll();
+    void scrollVPixels(qreal dy);
+    void applyInnerVScroll();
     int toDocColumn(int column, const QTextBlock &block) const;
 
 private:
@@ -152,13 +154,14 @@ private:
     int mCurrentDocColumn = -1;
     int mCurrentColumnCount = -1;
     bool mApplyingInnerHScroll = false;
+    qreal mSubLine = 0.0;                   // pixels scrolled beyond the visible top line (smooth wheel scrolling)
+    int mSubLineTop = 0;                    // the visible top line mSubLine belongs to
     QList<int> mLineLengths;                // full length of the lines in the document
     int mWheelAxis = 0;                     // Qt::Orientation locked for the current touchpad gesture, 0 if none
 
     AbstractTextMapper *mMapper = nullptr;
     TextViewEdit *mEdit;
     QPair<QPoint, int> mFindSpan;
-    qreal mPartialScroll = 0.0;
     bool *mStayAtTail = nullptr;
     bool mSliderStartedAtTail = false;
     int mSliderMouseStart = 0;

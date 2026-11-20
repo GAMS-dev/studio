@@ -41,6 +41,8 @@ public:
     int lineCount();
     int columnCount() const;
     qreal charWidth() const;
+    qreal lineHeight() const;
+    void setTopShift(int pixels);
     void setColumnOffset(int columnOffset);
     int columnOffset() const;
     void setLineMarked(const QList<bool> &newLineMarked);
@@ -71,6 +73,7 @@ protected:
     int absoluteBlockNr(const int &localBlockNr) const override;
     int localBlockNr(const int &absoluteBlockNr) const override;
     int textColumnOffset() const override;
+    int viewportTopShift() const override;
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;
     void extraSelLineMarks(QList<QTextEdit::ExtraSelection>& selections) override;
     void mousePressEvent(QMouseEvent *e) override;
@@ -101,6 +104,7 @@ private:
     int mHScrollDelta = 0;
     QPoint mDragPos;
     int mColumnOffset = 0;
+    int mTopShift = 0;                  // pixels the viewport is moved up for smooth vertical scrolling
     int mSubOffset = 0;
     int mDigits = 3;
     bool mKeepWordUnderCursor = false;

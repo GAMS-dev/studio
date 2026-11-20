@@ -447,6 +447,45 @@ void TextView::scrollHPixels(qreal dx)
     }
 }
 
+void TextView::scrollVPixels(qreal dy)
+{
+    qreal lineHeight = mEdit->lineHeight();
+    if (mSubLineTop != mMapper->visibleTopLine()) mSubLine = 0.0; // scrolled otherwise, e.g. by keys or scrollbar
+    qreal pixels = mSubLine + dy;
+    int delta = qFloor(pixels / lineHeight);
+    mSubLine = pixels - delta * lineHeight;
+    if (delta) {
+        int before = qAbs(mMapper->visibleTopLine());
+        mMapper->moveVisibleTopLine(delta);
+        if (qAbs(mMapper->visibleTopLine()) - before != delta)
+            mSubLine = 0.0; // reached the start or the end
+    }
+    QScrollBar *bar = verticalScrollBar();
+    if (!bar->maximum() || (dy > 0 && bar->value() >= bar->maximum() && qAbs(mMapper->visibleTopLine()) >= bar->maximum()))
+        mSubLine = 0.0;     // no partial line beyond the end
+    if (delta) {
+        if (bar->maximum()) {
+            bar->setSliderPosition(qAbs(mMapper->visibleTopLine())); // triggers outerScrollAction -> topLineMoved
+            bar->setValue(bar->sliderPosition());
+        } else topLineMoved();
+        if (mStayAtTail) {
+            if (delta > 0) *mStayAtTail = false;
+            else {
+                if (!*mStayAtTail) *mStayAtTail = mMapper->atTail();
+            }
+        }
+    }
+    mSubLineTop = mMapper->visibleTopLine();
+    applyInnerVScroll();
+}
+
+void TextView::applyInnerVScroll()
+{
+    // moves the viewport of the inner edit up by the partial top line
+    bool valid = mSubLineTop == mMapper->visibleTopLine();
+    mEdit->setTopShift(valid ? qRound(mSubLine) : 0);
+}
+
 void TextView::applyInnerHScroll()
 {
     if (mApplyingInnerHScroll) return;
@@ -525,8 +564,6 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
         QPoint pixels = wheelEvent->hasPixelDelta() ? wheelEvent->pixelDelta() : wheelEvent->angleDelta() / 4;
         // Keeps the start axis for touchpad to avoid the view jumping back and forth.
         Qt::ScrollPhase phase = wheelEvent->phase();
-        if (phase == Qt::ScrollBegin)
-            mPartialScroll = 0.0;
         if (phase == Qt::ScrollBegin || phase == Qt::NoScrollPhase)
             mWheelAxis = 0;
         if (!mWheelAxis && !pixels.isNull())
@@ -538,22 +575,9 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
             if (pixels.x()) scrollHPixels(-pixels.x());
             return true;
         }
-        if (axis != Qt::Vertical) return true;
-        mPartialScroll -= pixels.y() * .1;
-        int delta = int(mPartialScroll);
-        mPartialScroll -= delta;
-        if (!delta) return true;
-        mMapper->moveVisibleTopLine(delta);
-        if (verticalScrollBar()->maximum()) {
-            verticalScrollBar()->setSliderPosition(qAbs(mMapper->visibleTopLine()));
-            verticalScrollBar()->setValue(verticalScrollBar()->sliderPosition());
-        } else topLineMoved();
-        if (mStayAtTail) {
-            if (delta > 0) *mStayAtTail = false;
-            else {
-                if (!*mStayAtTail) *mStayAtTail = mMapper->atTail();
-            }
-        }
+        // keep one line per 10 pixels of the wheel, but allow smooth pixel scrolling
+        if (axis == Qt::Vertical && pixels.y())
+            scrollVPixels(-pixels.y() * .1 * mEdit->lineHeight());
         return true;
     }
     if (event->type() == QEvent::FontChange) {
@@ -853,7 +877,7 @@ void TextView::topLineMoved()
         mEdit->setTextCursor(QTextCursor(mEdit->document()));
         connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
         QList<LineFormat> formats;
-        QString dat = mMapper->lines(0, mMapper->visibleLineCount()+1, formats);
+        QString dat = mMapper->lines(0, mMapper->visibleLineCount()+2, formats); // +2: partial lines at top and bottom
 
         // Only visible columns. As the font is monospace, the horizontal scrolling can be handled by cutting the lines.
         QList<QStringView> lines = QStringView(dat).split(u'\n');
@@ -868,7 +892,7 @@ void TextView::topLineMoved()
         updateHScrollZone(maxLineLength);
         // The document holds a buffer of columns on both sides of the visible part. Scrolling within the buffer only
         // shifts the inner edit by pixels, which allows smooth scrolling and avoids rebuilding the document.
-        const int CColumnBuffer = 20;
+        const int CColumnBuffer = 5;
         const int visibleColumns = mEdit->columnCount() + 1; // +1 for a partially visible column when scrolled by pixels
         const int columnCount = visibleColumns + 1 + 2 * CColumnBuffer;
         bool inBuffer = mColumnOffset >= mCurrentDocColumn
@@ -926,6 +950,7 @@ void TextView::topLineMoved()
         if (mEdit->verticalScrollBar()->sliderPosition())
             mEdit->verticalScrollBar()->setSliderPosition(0);
         applyInnerHScroll();
+        applyInnerVScroll();
         if (wasRecording) NavigationHistoryLocator::navigationHistory()->startRecord();
     }
 }

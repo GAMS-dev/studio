@@ -206,7 +206,7 @@ void CodeEdit::updateViewportSize()
 {
     // singleShot to prevent circular call
     QTimer::singleShot(0, this, [this]() {
-        setViewportMargins(lineNumberAreaWidth() + profilerWidth(), profilerHeaderHeight(), 0, 0);
+        setViewportMargins(lineNumberAreaWidth() + profilerWidth(), profilerHeaderHeight() - viewportTopShift(), 0, 0);
         if (viewportMargins().left() != mLnAreaWidth) {
             mLineNumberArea->update();
             mLnAreaWidth = viewportMargins().left();

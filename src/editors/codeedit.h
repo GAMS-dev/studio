@@ -90,6 +90,7 @@ public:
     ~CodeEdit() override;
 
     virtual int lineNumberAreaWidth();
+    virtual int viewportTopShift() const { return 0; }
     int profilerWidth();
     int profilerHeaderHeight();
     void updateProfilerWidth();
