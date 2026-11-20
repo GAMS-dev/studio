@@ -489,19 +489,32 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
     }
     if (event->type() == QEvent::Wheel) {
         QWheelEvent *wheelEvent = static_cast<QWheelEvent*>(event);
-        QPoint angle = wheelEvent->angleDelta();
-        if (qAbs(angle.x()) > qAbs(angle.y())) {
-            int dx = wheelEvent->hasPixelDelta() ? wheelEvent->pixelDelta().x() : angle.x() / 4;
-            mPartialHScroll -= dx / mEdit->charWidth();
+        QPoint pixels = wheelEvent->hasPixelDelta() ? wheelEvent->pixelDelta() : wheelEvent->angleDelta() / 4;
+        // Keeps the start axis for touchpad to avoid the view jumping back and forth.
+        Qt::ScrollPhase phase = wheelEvent->phase();
+        if (phase == Qt::ScrollBegin) {
+            mPartialScroll = 0.0;
+            mPartialHScroll = 0.0;
+        }
+        if (phase == Qt::ScrollBegin || phase == Qt::NoScrollPhase)
+            mWheelAxis = 0;
+        if (!mWheelAxis && !pixels.isNull())
+            mWheelAxis = qAbs(pixels.x()) > qAbs(pixels.y()) ? Qt::Horizontal : Qt::Vertical;
+        int axis = mWheelAxis;
+        if (phase == Qt::ScrollEnd)
+            mWheelAxis = 0;
+        if (axis == Qt::Horizontal) {
+            mPartialHScroll -= pixels.x() / mEdit->charWidth();
             int dCols = int(mPartialHScroll);
             mPartialHScroll -= dCols;
             if (dCols) horizontalScrollBar()->setValue(horizontalScrollBar()->value() + dCols);
             return true;
         }
-        int delta = wheelEvent->hasPixelDelta() ? wheelEvent->pixelDelta().y() : wheelEvent->angleDelta().y() / 4;
-        mPartialScroll -= delta * .1;
-        delta = qFloor(mPartialScroll);
+        if (axis != Qt::Vertical) return true;
+        mPartialScroll -= pixels.y() * .1;
+        int delta = int(mPartialScroll);
         mPartialScroll -= delta;
+        if (!delta) return true;
         mMapper->moveVisibleTopLine(delta);
         if (verticalScrollBar()->maximum()) {
             verticalScrollBar()->setSliderPosition(qAbs(mMapper->visibleTopLine()));

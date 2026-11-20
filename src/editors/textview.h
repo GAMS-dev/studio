@@ -148,6 +148,7 @@ private:
     int mCurrentColumnCount = -1;
     QList<int> mLineLengths;                // full length of the lines in the document
     qreal mPartialHScroll = 0.0;
+    int mWheelAxis = 0;                     // Qt::Orientation locked for the current touchpad gesture, 0 if none
 
     AbstractTextMapper *mMapper = nullptr;
     TextViewEdit *mEdit;
