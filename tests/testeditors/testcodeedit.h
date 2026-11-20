@@ -33,6 +33,15 @@ private slots:
     void testSecondsToString2();
     void testBytesToString();
     void testBytesToString2();
+
+    void testSplitLines();
+    void testCutLines();
+    void testToDocColumn();
+    void testIsInColumnBuffer();
+    void testScrollByPixels();
+    void testScrollByPixelsSmallSteps();
+    void testWheelAxisTouchpad();
+    void testWheelAxisMouseWheel();
 };
 
 #endif // TESTCODEEDIT_H

@@ -273,4 +273,140 @@ void TestCodeEdit::testBytesToString2()
     QCOMPARE(res, "3123.123");
 }
 
+void TestCodeEdit::testSplitLines()
+{
+    QList<QStringView> lines;
+    QList<int> lengths;
+    // LF and CRLF mixed, the '\r' must not count to the line length
+    QString text("ab\r\ncdef\n\nxyz\r");
+    QCOMPARE(EditorHelper::splitLines(text, lines, &lengths), 4);
+    QCOMPARE(lines.size(), 4);
+    QCOMPARE(lines.at(0).toString(), QString("ab"));
+    QCOMPARE(lines.at(1).toString(), QString("cdef"));
+    QCOMPARE(lines.at(2).toString(), QString(""));
+    QCOMPARE(lines.at(3).toString(), QString("xyz"));
+    QCOMPARE(lengths, QList<int>({2, 4, 0, 3}));
+
+    text = "single line";
+    QCOMPARE(EditorHelper::splitLines(text, lines), 11);
+    QCOMPARE(lines.size(), 1);
+
+    text = "";
+    QCOMPARE(EditorHelper::splitLines(text, lines, &lengths), 0);
+    QCOMPARE(lines.size(), 1);
+    QCOMPARE(lengths, QList<int>({0}));
+}
+
+void TestCodeEdit::testCutLines()
+{
+    QList<QStringView> lines;
+    QString text("0123456789\r\nabc\n\nABCDEFGHIJKLMNOP");
+    EditorHelper::splitLines(text, lines);
+    QCOMPARE(EditorHelper::cutLines(lines, 2, 5), "23456\nc\n\nCDEFG");
+    QCOMPARE(EditorHelper::cutLines(lines, 0, 100), "0123456789\nabc\n\nABCDEFGHIJKLMNOP");
+    // a slice right of all lines contains only the line breaks
+    QCOMPARE(EditorHelper::cutLines(lines, 20, 5), "\n\n\n");
+}
+
+void TestCodeEdit::testToDocColumn()
+{
+    // document starts at column 5, the document line has 20 characters
+    QCOMPARE(EditorHelper::toDocColumn(10, 5, 20), 5);
+    QCOMPARE(EditorHelper::toDocColumn(5, 5, 20), 0);
+    QCOMPARE(EditorHelper::toDocColumn(3, 5, 20), 0);   // left of the document
+    QCOMPARE(EditorHelper::toDocColumn(30, 5, 20), 20); // behind the end of the document line
+    QCOMPARE(EditorHelper::toDocColumn(7, 5, 0), 0);    // empty document line (line shorter than the start)
+    QCOMPARE(EditorHelper::toDocColumn(5, 0, -1), 0);
+}
+
+void TestCodeEdit::testIsInColumnBuffer()
+{
+    // the document contains the columns 10 to 39, 20 columns are visible
+    QVERIFY(EditorHelper::isInColumnBuffer(10, 20, 10, 30));
+    QVERIFY(EditorHelper::isInColumnBuffer(20, 20, 10, 30));
+    QVERIFY(!EditorHelper::isInColumnBuffer(21, 20, 10, 30));
+    QVERIFY(!EditorHelper::isInColumnBuffer(9, 20, 10, 30));
+    // not built yet
+    QVERIFY(!EditorHelper::isInColumnBuffer(0, 20, -1, -1));
+}
+
+void TestCodeEdit::testScrollByPixels()
+{
+    qreal remain = 0.0;
+    // within a unit
+    QCOMPARE(EditorHelper::scrollByPixels(10, remain, 3.5, 7.0, 100), 10);
+    QCOMPARE(remain, 3.5);
+    // into the next unit
+    QCOMPARE(EditorHelper::scrollByPixels(10, remain, 4.0, 7.0, 100), 11);
+    QCOMPARE(remain, 0.5);
+    // back into the previous unit
+    QCOMPARE(EditorHelper::scrollByPixels(11, remain, -1.0, 7.0, 100), 10);
+    QCOMPARE(remain, 6.5);
+    // small moves back and forth don't change the unit
+    QCOMPARE(EditorHelper::scrollByPixels(10, remain, 0.25, 7.0, 100), 10);
+    QCOMPARE(EditorHelper::scrollByPixels(10, remain, -0.25, 7.0, 100), 10);
+    QCOMPARE(remain, 6.5);
+
+    // limited at the start
+    remain = 2.0;
+    QCOMPARE(EditorHelper::scrollByPixels(0, remain, -5.0, 7.0, 100), 0);
+    QCOMPARE(remain, 0.0);
+    // limited at the end, no partial unit beyond the maximum
+    remain = 0.0;
+    QCOMPARE(EditorHelper::scrollByPixels(99, remain, 3.0, 7.0, 100), 99);
+    QCOMPARE(remain, 3.0);
+    QCOMPARE(EditorHelper::scrollByPixels(99, remain, 10.0, 7.0, 100), 100);
+    QCOMPARE(remain, 0.0);
+    QCOMPARE(EditorHelper::scrollByPixels(100, remain, 1.0, 7.0, 100), 100);
+    QCOMPARE(remain, 0.0);
+    // nothing to scroll
+    QCOMPARE(EditorHelper::scrollByPixels(0, remain, 5.0, 7.0, 0), 0);
+    QCOMPARE(remain, 0.0);
+}
+
+void TestCodeEdit::testScrollByPixelsSmallSteps()
+{
+    // a slow touchpad movement: many small steps add up exactly
+    qreal remain = 0.0;
+    int pos = 0;
+    for (int i = 0; i < 1000; ++i)
+        pos = EditorHelper::scrollByPixels(pos, remain, 0.1, 7.2, 1000);
+    QCOMPARE(pos, 13); // 100 pixels = 13 * 7.2 + 6.4
+    QVERIFY(qAbs(remain - 6.4) < 1e-6);
+    for (int i = 0; i < 1000; ++i)
+        pos = EditorHelper::scrollByPixels(pos, remain, -0.1, 7.2, 1000);
+    QCOMPARE(pos, 0);
+    QVERIFY(remain < 1e-6);
+}
+
+void TestCodeEdit::testWheelAxisTouchpad()
+{
+    int lock = 0;
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::ScrollBegin, QPoint(0, 0)), 0);
+    // a horizontal swipe keeps horizontal, even if the vertical movement dominates single events
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::ScrollUpdate, QPoint(10, 2)), int(Qt::Horizontal));
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::ScrollUpdate, QPoint(1, 3)), int(Qt::Horizontal));
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::ScrollUpdate, QPoint(0, 1)), int(Qt::Horizontal));
+    // the momentum after releasing the touchpad too
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::ScrollMomentum, QPoint(1, 2)), int(Qt::Horizontal));
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::ScrollMomentum, QPoint(0, 1)), int(Qt::Horizontal));
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::ScrollEnd, QPoint(0, 0)), int(Qt::Horizontal));
+    QCOMPARE(lock, 0);
+
+    // the next gesture decides again
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::ScrollBegin, QPoint(0, 0)), 0);
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::ScrollUpdate, QPoint(1, 10)), int(Qt::Vertical));
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::ScrollUpdate, QPoint(5, 1)), int(Qt::Vertical));
+}
+
+void TestCodeEdit::testWheelAxisMouseWheel()
+{
+    // a mouse wheel has no phase, each event decides on its own
+    int lock = 0;
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::NoScrollPhase, QPoint(0, 30)), int(Qt::Vertical));
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::NoScrollPhase, QPoint(30, 0)), int(Qt::Horizontal));
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::NoScrollPhase, QPoint(0, -30)), int(Qt::Vertical));
+    QCOMPARE(EditorHelper::wheelAxis(lock, Qt::NoScrollPhase, QPoint(0, 0)), 0);
+}
+
 QTEST_MAIN(TestCodeEdit)
