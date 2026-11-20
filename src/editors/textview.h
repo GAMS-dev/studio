@@ -137,17 +137,22 @@ private:
     void adjustSearchSelection();
     void updateHScrollZone(int maxLineLength);
     bool ensureCursorColumnVisible();
+    void scrollHPixels(qreal dx);
+    void applyInnerHScroll();
     int toDocColumn(int column, const QTextBlock &block) const;
 
 private:
     TextKind mTextKind;
     const int mDocChanging = 0;
     bool mInit = true;
-    int mColumnOffset = 0;                  // first line column shown in the document (value of the fake h-scrollbar)
-    int mCurrentColumnOffset = -1;
+    int mColumnOffset = 0;                  // first visible line column (value of the fake h-scrollbar)
+    qreal mSubPixel = 0.0;                  // pixels scrolled beyond mColumnOffset (smooth wheel scrolling)
+    bool mKeepSubPixel = false;
+    int mDocColumn = 0;                     // first line column in the document (mColumnOffset minus a buffer)
+    int mCurrentDocColumn = -1;
     int mCurrentColumnCount = -1;
+    bool mApplyingInnerHScroll = false;
     QList<int> mLineLengths;                // full length of the lines in the document
-    qreal mPartialHScroll = 0.0;
     int mWheelAxis = 0;                     // Qt::Orientation locked for the current touchpad gesture, 0 if none
 
     AbstractTextMapper *mMapper = nullptr;

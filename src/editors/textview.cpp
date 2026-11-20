@@ -102,6 +102,8 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     connect(mEdit, &TextViewEdit::jumpToHRef, this, &TextView::jumpToHRef);
     connect(mEdit, &TextViewEdit::topLineMoved, this, &TextView::updateView);
     connect(mEdit, &TextViewEdit::selectWord, this, &TextView::selectWord);
+    connect(mEdit->horizontalScrollBar(), &QScrollBar::rangeChanged, this, &TextView::applyInnerHScroll);
+    connect(mEdit->horizontalScrollBar(), &QScrollBar::valueChanged, this, &TextView::applyInnerHScroll);
 
     connect(mMapper, &AbstractTextMapper::loadAmountChanged, this, &TextView::loadAmountChanged);
     connect(mMapper, &AbstractTextMapper::blockCountChanged, this, &TextView::blockCountChanged);
@@ -152,8 +154,7 @@ void TextView::print(QPagedPaintDevice *printer)
 
 void TextView::scrollSynchronize(int dx, int dy)
 {
-    int dCols = qRound(dx / mEdit->charWidth());
-    if (dCols) horizontalScrollBar()->setValue(horizontalScrollBar()->value() + dCols);
+    if (dx) scrollHPixels(dx);
     mMapper->setVisibleTopLine(mMapper->visibleTopLine() + dy);
     updateView();
 }
@@ -269,7 +270,7 @@ QString TextView::currentFindSelection(bool keep)
 
     mEdit->recalcWordUnderCursor(true);
     QPoint pos = mMapper->position(true);
-    mMapper->setPosRelative(pos.y(), mColumnOffset + mEdit->textCursor().positionInBlock());
+    mMapper->setPosRelative(pos.y(), mDocColumn + mEdit->textCursor().positionInBlock());
     updatePosAndAnchor();
     return mEdit->wordUnderCursor();
 }
@@ -420,9 +421,41 @@ void TextView::outerScrollAction(int action)
 
 void TextView::horizontalScrollChanged(int value)
 {
-    if (value == mColumnOffset) return;
+    // only the wheel scrolls by pixels, any other change aligns the view to the column
+    if (!mKeepSubPixel) mSubPixel = 0.0;
+    if (value == mColumnOffset) {
+        applyInnerHScroll();
+        return;
+    }
     mColumnOffset = value;
     topLineMoved();
+}
+
+void TextView::scrollHPixels(qreal dx)
+{
+    qreal charWidth = mEdit->charWidth();
+    qreal maxPixels = horizontalScrollBar()->maximum() * charWidth;
+    qreal pixels = qBound(0.0, mColumnOffset * charWidth + mSubPixel + dx, maxPixels);
+    int column = qFloor(pixels / charWidth);
+    mSubPixel = qMax(0.0, pixels - column * charWidth);
+    if (column == mColumnOffset) {
+        applyInnerHScroll();
+    } else {
+        mKeepSubPixel = true;
+        horizontalScrollBar()->setValue(column); // triggers horizontalScrollChanged -> topLineMoved
+        mKeepSubPixel = false;
+    }
+}
+
+void TextView::applyInnerHScroll()
+{
+    if (mApplyingInnerHScroll) return;
+    mApplyingInnerHScroll = true;
+    QScrollBar *bar = mEdit->horizontalScrollBar();
+    int pixels = qMax(0, qRound((mColumnOffset - mDocColumn) * mEdit->charWidth() + mSubPixel));
+    if (bar->maximum() < pixels) bar->setMaximum(pixels);
+    if (bar->value() != pixels) bar->setValue(pixels);
+    mApplyingInnerHScroll = false;
 }
 
 void TextView::resizeEvent(QResizeEvent *event)
@@ -492,10 +525,8 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
         QPoint pixels = wheelEvent->hasPixelDelta() ? wheelEvent->pixelDelta() : wheelEvent->angleDelta() / 4;
         // Keeps the start axis for touchpad to avoid the view jumping back and forth.
         Qt::ScrollPhase phase = wheelEvent->phase();
-        if (phase == Qt::ScrollBegin) {
+        if (phase == Qt::ScrollBegin)
             mPartialScroll = 0.0;
-            mPartialHScroll = 0.0;
-        }
         if (phase == Qt::ScrollBegin || phase == Qt::NoScrollPhase)
             mWheelAxis = 0;
         if (!mWheelAxis && !pixels.isNull())
@@ -504,10 +535,7 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
         if (phase == Qt::ScrollEnd)
             mWheelAxis = 0;
         if (axis == Qt::Horizontal) {
-            mPartialHScroll -= pixels.x() / mEdit->charWidth();
-            int dCols = int(mPartialHScroll);
-            mPartialHScroll -= dCols;
-            if (dCols) horizontalScrollBar()->setValue(horizontalScrollBar()->value() + dCols);
+            if (pixels.x()) scrollHPixels(-pixels.x());
             return true;
         }
         if (axis != Qt::Vertical) return true;
@@ -689,7 +717,7 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
             if (pos.y() >= 0) {
                 QTextCursor cur = mEdit->textCursor();
                 int lineLength = mLineLengths.value(cur.blockNumber(), cur.block().length()-1);
-                if (mColumnOffset + cur.positionInBlock() < lineLength) {
+                if (mDocColumn + cur.positionInBlock() < lineLength) {
                     mMapper->setPosRelative(pos.y(), pos.x()+1, mode);
                     if (pos.y() > mMapper->visibleLineCount()-2 && pos.y() < mMapper->position(true).y())
                         mMapper->moveVisibleTopLine(1);
@@ -734,7 +762,7 @@ void TextView::updateMargins()
 
 int TextView::toDocColumn(int column, const QTextBlock &block) const
 {
-    return qBound(0, column - mColumnOffset, qMax(0, block.length()-1));
+    return qBound(0, column - mDocColumn, qMax(0, block.length()-1));
 }
 
 void TextView::adjustSearchSelection()
@@ -838,21 +866,28 @@ void TextView::topLineMoved()
             maxLineLength = qMax(maxLineLength, int(line.length()));
         }
         updateHScrollZone(maxLineLength);
-        const int columnCount = mEdit->columnCount() + 2;
+        // The document holds a buffer of columns on both sides of the visible part. Scrolling within the buffer only
+        // shifts the inner edit by pixels, which allows smooth scrolling and avoids rebuilding the document.
+        const int CColumnBuffer = 20;
+        const int visibleColumns = mEdit->columnCount() + 1; // +1 for a partially visible column when scrolled by pixels
+        const int columnCount = visibleColumns + 1 + 2 * CColumnBuffer;
+        bool inBuffer = mColumnOffset >= mCurrentDocColumn
+                        && mColumnOffset + visibleColumns <= mCurrentDocColumn + mCurrentColumnCount;
         bool rebuild = mCurrentVisibleTopLine != mMapper->visibleTopLine() || mCurrentDataLength != dat.size()
-                       || mCurrentColumnOffset != mColumnOffset || mCurrentColumnCount != columnCount;
+                       || !inBuffer || mCurrentColumnCount != columnCount;
         if (rebuild) {
+            mDocColumn = qMax(0, mColumnOffset - CColumnBuffer);
             mCurrentVisibleTopLine = mMapper->visibleTopLine();
             mCurrentDataLength = dat.size();
-            mCurrentColumnOffset = mColumnOffset;
+            mCurrentDocColumn = mDocColumn;
             mCurrentColumnCount = columnCount;
             mLineLengths = lineLengths;
-            mEdit->setColumnOffset(mColumnOffset);
-            if (maxLineLength > columnCount || mColumnOffset > 0) {
+            mEdit->setColumnOffset(mDocColumn);
+            if (maxLineLength > columnCount || mDocColumn > 0) {
                 QStringList visibleParts;
                 visibleParts.reserve(lines.size());
                 for (const QStringView &line : std::as_const(lines))
-                    visibleParts << line.mid(mColumnOffset, columnCount).toString();
+                    visibleParts << line.mid(mDocColumn, columnCount).toString();
                 mEdit->setPlainText(visibleParts.join('\n'));
             } else {
                 mEdit->setPlainText(dat);
@@ -871,7 +906,7 @@ void TextView::topLineMoved()
                 const LineFormat &format = formats.at(row);
                 QTextBlock block = mEdit->document()->findBlockByNumber(row);
                 QTextCursor cursor(block);
-                if (format.extraLstFormat && mColumnOffset < 3) {
+                if (format.extraLstFormat && mDocColumn < 3) {
                     cursor.setPosition(block.position() + toDocColumn(3, block), QTextCursor::KeepAnchor);
                     QTextCharFormat extraFormat = *format.extraLstFormat;
                     extraFormat.setAnchor(true);
@@ -890,7 +925,7 @@ void TextView::topLineMoved()
         mEdit->protectWordUnderCursor(false);
         if (mEdit->verticalScrollBar()->sliderPosition())
             mEdit->verticalScrollBar()->setSliderPosition(0);
-        mEdit->horizontalScrollBar()->setValue(0);    // the inner edit is always at the left, even for partial lines
+        applyInnerHScroll();
         if (wasRecording) NavigationHistoryLocator::navigationHistory()->startRecord();
     }
 }
@@ -987,8 +1022,8 @@ void TextView::updatePosAndAnchor(bool toWordStart)
     disconnect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
     mEdit->setTextCursor(cursor);
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
-    // keep the inner edit unscrolled, setTextCursor may have scrolled it to show the cursor
-    mEdit->horizontalScrollBar()->setValue(0);
+    // setTextCursor may have scrolled the inner edit to show the cursor
+    applyInnerHScroll();
     if (!mMapper->hasSelection()) {
         mCurrentWord = mEdit->wordUnderCursor();
         if (toWordStart) {
