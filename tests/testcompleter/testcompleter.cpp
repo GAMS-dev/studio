@@ -182,7 +182,7 @@ QStringList loadSnippetMessages(CodeCompleter *completer, const QString &file, L
 /// writes the user snippet file into the directory, returns its path or an empty string on failure
 QString writeSnippetFile(const QTemporaryDir &dir, const QByteArray &content)
 {
-    const QString fileName = dir.filePath("user_snippets.json");
+    QString fileName = dir.filePath("user_snippets.json");
     QFile file(fileName);
     if (!dir.isValid() || !file.open(QIODevice::WriteOnly)) return QString();
     file.write(content);
