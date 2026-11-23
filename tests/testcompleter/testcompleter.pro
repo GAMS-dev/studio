@@ -4,7 +4,8 @@ include(../tests.pri)
 
 INCLUDEPATH += $$SRCPATH                        \
                $$SRCPATH/editors                \
-               $$SRCPATH/syntax
+               $$SRCPATH/syntax                 \
+               $$PWD/../../extern
 
 HEADERS +=                                      \
     syntaxsimulator.h                           \

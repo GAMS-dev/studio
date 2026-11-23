@@ -5,7 +5,7 @@ include(../tests.pri)
 INCLUDEPATH += $$SRCPATH            \
                $$SRCPATH/editors    \
                $$SRCPATH/support    \
-               $$PWD/../extern
+               $$PWD/../../extern
 include(../../extern/yaml-cpp/yaml-cpp.pri)
 
 HEADERS +=                                      \
