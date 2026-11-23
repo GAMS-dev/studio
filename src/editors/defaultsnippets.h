@@ -535,11 +535,10 @@ static const char *userJson = R"([
 
     1. 'trigger': the word you type to find the snippet in the code completer.
        - Snippets are offered where a statement can start, not inside comments or strings.
-       - A digit at the end of the trigger isn't shown in the completer. Use it to define several variants of the
-         same word, e.g. 'display1' and 'display2', and tell them apart by their description.
+       - Triggers are case-insensitive like GAMS: 'Loop' and 'loop' are the same trigger.
+       - Each trigger must be unique. To define several variants of the same word, add e.g. a digit like in
+         'display1' and 'display2', and tell them apart by their description.
        - A snippet with the same trigger as a built-in snippet replaces it (see the example 'loop').
-         Built-in triggers are e.g. Set1, Set2, Parameter1, Parameter2, Variable1, Equation1, Model, loop, if,
-         for, while, solve, sum and $onEcho.
        - Snippets whose body starts with 'Variable' are also offered as 'Free Variable'.
 
     2. 'description': shown in the completer after the trigger, e.g. 'display - levels and marginals'.

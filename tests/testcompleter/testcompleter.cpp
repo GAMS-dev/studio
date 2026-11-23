@@ -19,6 +19,7 @@
  */
 #include "testcompleter.h"
 #include "editors/codecompleter.h"
+#include "editors/snippetcontrol.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 
@@ -163,17 +164,34 @@ class LogCollector : public AbstractSystemLogger
 public:
     void append(const QString &msg, LogMsgType type) override {
         if (type == LogMsgType::Error) errors << msg;
+        if (type == LogMsgType::Info) infos << msg;
     }
     QStringList errors;
+    QStringList infos;
 };
 
-QStringList loadSnippetErrors(CodeCompleter *completer, const QString &file)
+QStringList loadSnippetMessages(CodeCompleter *completer, const QString &file, LogMsgType type)
 {
     LogCollector log;
     SysLogLocator::provide(&log);
     completer->loadSnippets(file);
     SysLogLocator::provide(nullptr);
-    return log.errors;
+    return type == LogMsgType::Info ? log.infos : log.errors;
+}
+
+/// writes the user snippet file into the directory, returns its path or an empty string on failure
+QString writeSnippetFile(const QTemporaryDir &dir, const QByteArray &content)
+{
+    const QString fileName = dir.filePath("user_snippets.json");
+    QFile file(fileName);
+    if (!dir.isValid() || !file.open(QIODevice::WriteOnly)) return QString();
+    file.write(content);
+    return fileName;
+}
+
+QStringList loadSnippetErrors(CodeCompleter *completer, const QString &file)
+{
+    return loadSnippetMessages(completer, file, LogMsgType::Error);
 }
 
 } // namespace
@@ -209,12 +227,8 @@ void TestCompleter::testSnippetErrors()
     QFETCH(QString, error);
 
     QTemporaryDir dir;
-    QVERIFY(dir.isValid());
-    const QString fileName = dir.filePath("user_snippets.json");
-    QFile file(fileName);
-    QVERIFY(file.open(QIODevice::WriteOnly));
-    file.write(content);
-    file.close();
+    const QString fileName = writeSnippetFile(dir, content);
+    QVERIFY(!fileName.isEmpty());
 
     const QStringList errors = loadSnippetErrors(mCompleter, fileName);
     if (error.isEmpty()) {
@@ -235,4 +249,62 @@ void TestCompleter::testSnippetTemplate()
     const QStringList errors = loadSnippetErrors(mCompleter, fileName);
     QVERIFY(QFile::exists(fileName));
     QVERIFY2(errors.isEmpty(), errors.join('\n').toUtf8());
+}
+
+void TestCompleter::testSnippetRedefined_data()
+{
+    QTest::addColumn<QByteArray>("content");
+    QTest::addColumn<QString>("message");     // expected end of the message, empty for no message
+
+    QTest::newRow("new trigger")
+            << QByteArray(R"([ { "trigger": "t1", "body": "x;" } ])")
+            << QString();
+    QTest::newRow("built-in trigger in other case")
+            << QByteArray(R"([ { "trigger": "LOOP", "body": "x;" } ])")
+            << QString("redefined trigger: LOOP. The last definition is used.");
+    QTest::newRow("trigger twice in other case")
+            << QByteArray(R"([ { "trigger": "t1", "body": "x;" }, { "trigger": "T1", "body": "y;" } ])")
+            << QString("redefined trigger: T1. The last definition is used.");
+    QTest::newRow("several triggers listed once")
+            << QByteArray(R"([ { "trigger": "Set1", "body": "x;" }, { "trigger": "t1", "body": "x;" },
+                               { "trigger": "t1", "body": "y;" }, { "trigger": "t1", "body": "z;" } ])")
+            << QString("redefined triggers: Set1, t1. The last definition is used.");
+    QTest::newRow("generated free variable not listed")
+            << QByteArray(R"([ { "trigger": "Variable1", "body": "Variable x;" } ])")
+            << QString("redefined trigger: Variable1. The last definition is used.");
+}
+
+void TestCompleter::testSnippetRedefined()
+{
+    QFETCH(QByteArray, content);
+    QFETCH(QString, message);
+
+    QTemporaryDir dir;
+    const QString fileName = writeSnippetFile(dir, content);
+    QVERIFY(!fileName.isEmpty());
+
+    const QStringList infos = loadSnippetMessages(mCompleter, fileName, LogMsgType::Info);
+    if (message.isEmpty()) {
+        QVERIFY2(infos.isEmpty(), infos.join('\n').toUtf8());
+    } else {
+        QCOMPARE(infos.size(), 1);
+        QVERIFY2(infos.first().startsWith("Code snippets in user_snippets.json: "), infos.first().toUtf8());
+        QVERIFY2(infos.first().endsWith(message), infos.first().toUtf8());
+    }
+}
+
+void TestCompleter::testSnippetCaseInsensitive()
+{
+    // a user snippet replaces the built-in snippet with the same trigger in other case
+    QTemporaryDir dir;
+    const QString fileName = writeSnippetFile(dir, R"([ { "trigger": "LOOP", "body": "myLoop;" } ])");
+    QVERIFY(!fileName.isEmpty());
+    loadSnippetMessages(mCompleter, fileName, LogMsgType::Info);
+
+    QStringList bodies;
+    for (const Snippet &s : mCompleter->snippets()) {
+        if (s.trigger.compare("loop", Qt::CaseInsensitive) == 0)
+            bodies << s.body;
+    }
+    QCOMPARE(bodies, QStringList {"myLoop;"});
 }

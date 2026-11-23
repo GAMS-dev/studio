@@ -48,6 +48,9 @@ private slots:
     void testSnippetErrors_data();
     void testSnippetErrors();
     void testSnippetTemplate();
+    void testSnippetRedefined_data();
+    void testSnippetRedefined();
+    void testSnippetCaseInsensitive();
 
 };
 

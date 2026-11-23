@@ -34,6 +34,7 @@
 #include <QAction>
 #include <QFile>
 #include <QFileInfo>
+#include <QSet>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -72,18 +73,11 @@ void CodeCompleterModel::rebuildData()
 
 void CodeCompleterModel::appendSnippets()
 {
-    QStringList deb;
     for (const Snippet &s : std::as_const(mSnippets)) {
         mData << s.trigger;
-        const QString desc = (s.trigger.size() && s.trigger.last(1) >= '0' && s.trigger.last(1) <= '9'
-                                  ? s.trigger.left(s.trigger.size() - 1).trimmed()
-                                  : s.trigger)
-                           + (s.description.isEmpty() ? QString() : " - " + s.description);
-        mDescription << desc;
-        deb << '`'+desc+"`";
+        mDescription << s.trigger + (s.description.isEmpty() ? QString() : " - " + s.description);
         mDescriptIndex << int(mDescription.size()) - 1;
     }
-    std::sort(deb.begin(), deb.end());
     if (!mSnippets.isEmpty())
         mType.insert(int(mData.size()) - 1, ccSnippet);
 
@@ -994,7 +988,9 @@ void CodeCompleter::loadSnippets(const QString &userSnippetFile)
     if (!QFile::exists(userSnippetFile))
         createUserSnippetFile(userSnippetFile);
 
-    auto parseData = [](const QByteArray &data, const QString &fileName) -> QHash<QString, Snippet> {
+    // triggers: the triggers defined in the data in order of appearance (without the generated 'Free' variants)
+    auto parseData = [](const QByteArray &data, const QString &fileName, QStringList &triggers)
+            -> QHash<QString, Snippet> {
         QHash<QString, Snippet> res;
         auto report = [&fileName](const QString &message) {
             // errors are only reported for the user file, the built-in snippets are expected to be valid
@@ -1033,30 +1029,51 @@ void CodeCompleter::loadSnippets(const QString &userSnippetFile)
                 report(QString("Snippet '%1' is skipped, it has no 'body'.").arg(s.trigger));
                 continue;
             }
-            res.insert(s.trigger, s);
+            // triggers are case-insensitive like GAMS: the key is the lowercase trigger
+            triggers << s.trigger;
+            res.insert(s.trigger.toLower(), s);
             if (s.body.startsWith("variable", Qt::CaseInsensitive)) {
                 QString sub = "Free ";
                 if (s.trigger.at(0).isLower()) sub = sub.toLower();
                 if (s.trigger.size() > 1 && s.trigger.at(1).isUpper()) sub = sub.toUpper();
                 s.trigger.prepend(sub);
                 s.body.prepend(sub);
-                res.insert(s.trigger, s);
+                res.insert(s.trigger.toLower(), s);
             }
         }
         DEB() << "  - Snippet count: " << res.size();
         return res;
     };
 
-    QHash<QString, Snippet> list;
-    list = parseData(getDefaultSnippets(), QString());
+    QStringList builtInTriggers;
+    QHash<QString, Snippet> list = parseData(getDefaultSnippets(), QString(), builtInTriggers);
 
     QFile file(userSnippetFile);
     if (file.open(QIODevice::ReadOnly)) {
         DEB() << "Reading user code snippets from " << userSnippetFile;
         QByteArray data = file.readAll();
         file.close();
-        for (const Snippet &snip : parseData(data, QFileInfo(userSnippetFile).fileName()))
-            list.insert(snip.trigger, snip);
+        const QString fileName = QFileInfo(userSnippetFile).fileName();
+        QStringList userTriggers;
+        const QHash<QString, Snippet> userSnippets = parseData(data, fileName, userTriggers);
+
+        // a trigger is redefined if it replaces a built-in snippet or is defined more than once in the user file
+        // (case-insensitive, it is listed in the spelling of the entry that redefines it)
+        QStringList redefined;
+        QSet<QString> seen;
+        for (const QString &trigger : std::as_const(userTriggers)) {
+            const QString key = trigger.toLower();
+            if ((list.contains(key) || seen.contains(key)) && !redefined.contains(trigger, Qt::CaseInsensitive))
+                redefined << trigger;
+            seen << key;
+        }
+        if (!redefined.isEmpty())
+            SysLogLocator::systemLog()->append("Code snippets in " + fileName + ": redefined trigger"
+                                                   + (redefined.size() > 1 ? "s: " : ": ") + redefined.join(", ")
+                                                   + ". The last definition is used.", LogMsgType::Info);
+
+        for (auto it = userSnippets.constBegin(); it != userSnippets.constEnd(); ++it)
+            list.insert(it.key(), it.value());
     }
     mSnippets = list.values();
     mModel->setSnippets(mSnippets);
