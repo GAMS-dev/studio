@@ -33,6 +33,7 @@
 #include <QScreen>
 #include <QAction>
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -990,38 +991,53 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
 
 void CodeCompleter::loadSnippets(const QString &userSnippetFile)
 {
-    // create user dummy file if missing
     if (!QFile::exists(userSnippetFile))
         createUserSnippetFile(userSnippetFile);
 
-    auto parseData = [](const QByteArray &data) -> QHash<QString, Snippet> {
+    auto parseData = [](const QByteArray &data, const QString &fileName) -> QHash<QString, Snippet> {
         QHash<QString, Snippet> res;
+        auto report = [&fileName](const QString &message) {
+            // errors are only reported for the user file, the built-in snippets are expected to be valid
+            if (fileName.isEmpty())
+                DEB() << "  - Built-in snippets: " << message;
+            else
+                SysLogLocator::systemLog()->append("Code snippets in " + fileName + ": " + message, LogMsgType::Error);
+        };
         QJsonParseError err;
         QJsonDocument doc = QJsonDocument::fromJson(data, &err);
-        if (err.error != QJsonParseError::NoError || !doc.isArray()) {
-            int line = 1;
-            int col = 1;
-            for (int i = 0; i < err.offset; ++i) {
-                if (data.at(i) == '\n') {
-                    line++;
-                    col = 1;
-                } else col++;
-            }
-            DEB() << "  - JSON parse error " << err.error << " at " << line << "," << col;
+        if (err.error != QJsonParseError::NoError) {
+            const QByteArray head = data.left(err.offset);
+            const int line = int(head.count('\n')) + 1;
+            const int col = int(QString::fromUtf8(head.mid(head.lastIndexOf('\n') + 1)).length()) + 1;
+            report(QString("%1 in line %2, column %3. No snippets of this file are loaded.")
+                       .arg(err.errorString()).arg(line).arg(col));
             return res;
         }
-        for (const QJsonValue &v : doc.array()) {
-            const QJsonObject obj = v.toObject();
+        if (!doc.isArray()) {
+            report("The content must be a list of snippets in square brackets [ ]. No snippet of this file is loaded.");
+            return res;
+        }
+        const QJsonArray entries = doc.array();
+        for (int i = 0; i < entries.size(); ++i) {
+            if (!entries.at(i).isObject()) {
+                report(QString("Entry %1 is skipped, it must be enclosed in curly braces { }.").arg(i + 1));
+                continue;
+            }
+            const QJsonObject obj = entries.at(i).toObject();
             Snippet s;
             s.trigger     = obj.value("trigger").toString();
             s.description = obj.value("description").toString();
             s.body        = obj.value("body").toString();
-            if (!s.trigger.isEmpty() && !s.body.isEmpty())
-                res.insert(s.trigger, s);
+            if (s.trigger.isEmpty()) continue; // inactive entry (e.g. '_trigger') or comment like 'usage'
+            if (s.body.isEmpty()) {
+                report(QString("Snippet '%1' is skipped, it has no 'body'.").arg(s.trigger));
+                continue;
+            }
+            res.insert(s.trigger, s);
             if (s.body.startsWith("variable", Qt::CaseInsensitive)) {
                 QString sub = "Free ";
                 if (s.trigger.at(0).isLower()) sub = sub.toLower();
-                if (s.trigger.at(1).isUpper()) sub = sub.toUpper();
+                if (s.trigger.size() > 1 && s.trigger.at(1).isUpper()) sub = sub.toUpper();
                 s.trigger.prepend(sub);
                 s.body.prepend(sub);
                 res.insert(s.trigger, s);
@@ -1032,14 +1048,14 @@ void CodeCompleter::loadSnippets(const QString &userSnippetFile)
     };
 
     QHash<QString, Snippet> list;
-    list = parseData(getDefaultSnippets());
+    list = parseData(getDefaultSnippets(), QString());
 
     QFile file(userSnippetFile);
     if (file.open(QIODevice::ReadOnly)) {
         DEB() << "Reading user code snippets from " << userSnippetFile;
         QByteArray data = file.readAll();
         file.close();
-        for (const Snippet &snip : parseData(data))
+        for (const Snippet &snip : parseData(data, QFileInfo(userSnippetFile).fileName()))
             list.insert(snip.trigger, snip);
     }
     mSnippets = list.values();

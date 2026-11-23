@@ -441,8 +441,6 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
-    mFileMetaRepo.completer()->loadSnippets(CommonPaths::studioUserSnippets());
-
     // stack help under output
     if (tabifiedDockWidgets(ui->dockHelpView).contains(ui->dockProcessLog)) {
         ui->dockHelpView->setFloating(true);
@@ -483,6 +481,7 @@ MainWindow::MainWindow(QWidget *parent)
     // set up services
     search::SearchLocator::provide(mSearchDialog->search());
     SysLogLocator::provide(mSyslog);
+    mFileMetaRepo.completer()->loadSnippets(CommonPaths::studioUserSnippets());
     QTimer::singleShot(0, this, &MainWindow::initDelayedElements);
 
     mHistory.projects().clear();

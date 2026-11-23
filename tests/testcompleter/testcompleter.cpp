@@ -19,6 +19,10 @@
  */
 #include "testcompleter.h"
 #include "editors/codecompleter.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
+
+#include <QTemporaryDir>
 
 using namespace gams::studio;
 using namespace gams::studio::syntax;
@@ -151,3 +155,84 @@ void TestCompleter::testPut()
 
 
 QTEST_MAIN(TestCompleter)
+
+namespace {
+
+class LogCollector : public AbstractSystemLogger
+{
+public:
+    void append(const QString &msg, LogMsgType type) override {
+        if (type == LogMsgType::Error) errors << msg;
+    }
+    QStringList errors;
+};
+
+QStringList loadSnippetErrors(CodeCompleter *completer, const QString &file)
+{
+    LogCollector log;
+    SysLogLocator::provide(&log);
+    completer->loadSnippets(file);
+    SysLogLocator::provide(nullptr);
+    return log.errors;
+}
+
+} // namespace
+
+void TestCompleter::testSnippetErrors_data()
+{
+    QTest::addColumn<QByteArray>("content");
+    QTest::addColumn<QString>("error");     // part of the expected error, empty for no error
+
+    QTest::newRow("valid")
+            << QByteArray(R"([ { "trigger": "t1", "body": "x;" }, { "_trigger": "t2", "body": "Variable x;" } ])")
+            << QString();
+    QTest::newRow("missing comma")
+            << QByteArray("[\n  { \"trigger\": \"t1\", \"body\": \"x;\" }\n  { \"trigger\": \"t2\" } ]")
+            << QString("in line 3, column");
+    QTest::newRow("no list")
+            << QByteArray(R"({ "trigger": "t1", "body": "x;" })")
+            << QString("must be a list");
+    QTest::newRow("entry no object")
+            << QByteArray(R"([ "t1" ])")
+            << QString("Entry 1 is skipped");
+    QTest::newRow("no body")
+            << QByteArray(R"([ { "trigger": "t1" } ])")
+            << QString("'t1' is skipped");
+    QTest::newRow("one character variable trigger")
+            << QByteArray(R"([ { "trigger": "v", "body": "Variable x;" } ])")
+            << QString();
+}
+
+void TestCompleter::testSnippetErrors()
+{
+    QFETCH(QByteArray, content);
+    QFETCH(QString, error);
+
+    QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+    const QString fileName = dir.filePath("user_snippets.json");
+    QFile file(fileName);
+    QVERIFY(file.open(QIODevice::WriteOnly));
+    file.write(content);
+    file.close();
+
+    const QStringList errors = loadSnippetErrors(mCompleter, fileName);
+    if (error.isEmpty()) {
+        QVERIFY2(errors.isEmpty(), errors.join('\n').toUtf8());
+    } else {
+        QCOMPARE(errors.size(), 1);
+        QVERIFY2(errors.first().contains(error), errors.first().toUtf8());
+        QVERIFY2(errors.first().contains("user_snippets.json"), errors.first().toUtf8());
+    }
+}
+
+void TestCompleter::testSnippetTemplate()
+{
+    // a missing user file is created from the template, which must load without errors
+    QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+    const QString fileName = dir.filePath("user_snippets.json");
+    const QStringList errors = loadSnippetErrors(mCompleter, fileName);
+    QVERIFY(QFile::exists(fileName));
+    QVERIFY2(errors.isEmpty(), errors.join('\n').toUtf8());
+}

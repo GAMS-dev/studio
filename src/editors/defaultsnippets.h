@@ -524,30 +524,59 @@ static const char *defaultJson = R"([
 static const char *userJson = R"([
   {
     "usage": "
-     === How to define your own snippets ===
+    === How to define your own code snippets ===
 
-    Below you see two examples for code snippets currently inactive. Remove '_' before 'trigger' will make them
-    available in GAMS Studio.
+    Snippets defined here are added to the code completer of GAMS Studio. Studio reloads this file each time you
+    save it. If you delete it, Studio creates this template again on the next start.
 
-    1. The 'trigger' defines the text that will make the snippet available in the code completer. If the last character
-       is a digit it is ignored, this allows multiple definitions of the same keyword.
+    The examples at the end of this file are inactive. Remove the '_' before 'trigger' to activate one.
 
-    2. The 'description' is shown right after the keyword in the code completer to distinct multi defined keywords.
+    Each snippet is an entry with these fields:
 
-    3. The 'body' is the content of the snippet. After insertion the completer focuses placeholder 1 and switches
-       to the next with the TAB key. On ENTER the snippet control is left at the position of placeholder 0 if defined
-       or on the last placeholder otherwise.
+    1. 'trigger': the word you type to find the snippet in the code completer.
+       - Snippets are offered where a statement can start, not inside comments or strings.
+       - A digit at the end of the trigger isn't shown in the completer. Use it to define several variants of the
+         same word, e.g. 'display1' and 'display2', and tell them apart by their description.
+       - A snippet with the same trigger as a built-in snippet replaces it (see the example 'loop').
+         Built-in triggers are e.g. Set1, Set2, Parameter1, Parameter2, Variable1, Equation1, Model, loop, if,
+         for, while, solve, sum and $onEcho.
+       - Snippets whose body starts with 'Variable' are also offered as 'Free Variable'.
+
+    2. 'description': shown in the completer after the trigger, e.g. 'display - levels and marginals'.
+       It may be empty.
+
+    3. 'body': the text that is inserted. Write a line break as \n and indent with spaces.
+       Placeholders mark the parts you fill in after inserting the snippet:
+       - ${1:text} is placeholder 1 with the default text 'text'. ${2} is placeholder 2 without default text.
+       - After inserting, placeholder 1 is selected. TAB selects the next placeholder, SHIFT+TAB the previous one.
+       - ${0} is where the cursor goes when you are done: ENTER moves the cursor there and ends the snippet.
+         Without ${0}, ENTER ends the snippet at the last placeholder. ESC ends it where the cursor is.
+       - Use each number only once. The default text must not contain '}'.
+
+    If your snippets don't show up, check the JSON syntax of this file: the file is skipped as a whole if it isn't
+    valid. Entries are separated by commas, and inside a text a quote is written as \" and a backslash as \\.
+    Entries without 'trigger' or 'body' (like this one) are ignored.
   "
   },
   {
-    "_trigger": "example1",
-    "description": "",
-    "body": "example1 (${1:i} = ${2:1} to ${3:10},\n   ${4:statement};${0}\n);"
+    "_trigger": "display1",
+    "description": "values",
+    "body": "display ${1:p};${0}"
   },
   {
-    "_trigger": "example2",
-    "description": "",
-    "body": "example2 (${1:x}, ${2:y})${0}"
+    "_trigger": "display2",
+    "description": "levels and marginals",
+    "body": "display ${1:x}.l, ${2:x}.m;${0}"
+  },
+  {
+    "_trigger": "putFile",
+    "description": "write text to a file",
+    "body": "File ${1:fout} / '${2}' /;\nput ${3:fout};\nput '${4:text}' /;\nputClose;${0}"
+  },
+  {
+    "_trigger": "loop",
+    "description": "replaces the built-in loop snippet",
+    "body": "loop(${1:i}$(${2:condition}),\n   ${3:statement};${0}\n);"
   }
 ])";
 

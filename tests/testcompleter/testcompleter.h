@@ -45,6 +45,9 @@ private slots:
     void testDco();
     void testDeclaration();
     void testPut();
+    void testSnippetErrors_data();
+    void testSnippetErrors();
+    void testSnippetTemplate();
 
 };
 
