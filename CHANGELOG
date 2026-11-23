@@ -2,6 +2,7 @@ Version 1.26.1  *
 ==================
 - Improved stability of the Project Explorer
 - Fixed GAMS hanging or exiting unexpectedly when debugging with many breakpoints.
+- Changes to the user snippets file are applied immediately on save, without restarting Studio.
 
 Version 1.26.0
 ==================
