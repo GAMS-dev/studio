@@ -64,7 +64,7 @@ FileReferenceWidget::FileReferenceWidget(Reference* ref, ReferenceViewer *parent
 
     connect( mFileUsedModel, &FileUsedTreeModel::modelReset, this, &FileReferenceWidget::expandResetModel);
 
-    connect(ui->showFileOnceCheckBox, static_cast<void(QCheckBox::*)(Qt::CheckState)>(&QCheckBox::checkStateChanged), this, [=](Qt::CheckState state) {
+    connect(ui->showFileOnceCheckBox, static_cast<void(QCheckBox::*)(Qt::CheckState)>(&QCheckBox::checkStateChanged), this, [this](Qt::CheckState state) {
         mProxyModel->showFileOnceChanged(state==Qt::Checked);
         mFileUsedModel->resetModel();
         emit mReference->reloadFiledUsedTabFinished(state==Qt::Checked);

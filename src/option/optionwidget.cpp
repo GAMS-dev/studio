@@ -233,7 +233,7 @@ void OptionWidget::initDefinitionTreeView()
         selectSearchField();
     });
 
-    connect(ui->definitionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int groupindex) {
+    connect(ui->definitionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=, this](int groupindex) {
         definitionModel()->loadOptionFromGroup( groupModel->data(groupModel->index(groupindex, 1)).toInt() );
         optionModel()->on_groupDefinitionReloaded();
     });

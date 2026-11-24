@@ -122,7 +122,7 @@ ProjectContextMenu::ProjectContextMenu()
                 if (optFiles.contains(solverDefFileNames.value(it.key()))) { //there exists such a file
                     QString solver = it.key().toLower();
                     QAction* createSolverOption = newSolverOptionMenu->addAction(solver);
-                    connect(createSolverOption, &QAction::triggered, this, [=] { onAddNewSolverOptionFile(solver); });
+                    connect(createSolverOption, &QAction::triggered, this, [=, this] { onAddNewSolverOptionFile(solver); });
 
                     mAvailableSolvers << it.key();
                     mSolverOptionActions.insert(++addNewSolverOptActionBaseIndex, createSolverOption);
@@ -135,7 +135,7 @@ ProjectContextMenu::ProjectContextMenu()
                if (QString::compare("gams", solvername ,Qt::CaseInsensitive)==0)
                    continue;
                QAction* createSolverOption = newSolverOptionMenu->addAction(solvername);
-               connect(createSolverOption, &QAction::triggered, this, [=] { onAddNewSolverOptionFile(solvername); });
+               connect(createSolverOption, &QAction::triggered, this, [=, this] { onAddNewSolverOptionFile(solvername); });
 
                mAvailableSolvers << solvername;
                mSolverOptionActions.insert(++addNewSolverOptActionBaseIndex, createSolverOption);

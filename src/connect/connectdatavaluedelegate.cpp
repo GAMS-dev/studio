@@ -67,7 +67,7 @@ QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOpt
     mLastEditor = lineEdit;
     mIsLastEditorClosed = false;
 
-    connect(lineEdit, &QLineEdit::textChanged, this, [=](const QString &text) {
+    connect(lineEdit, &QLineEdit::textChanged, this, [this](const QString &text) {
         if (mOriginalText.isEmpty())
             mOriginalText = text;
         mLastText = text;
