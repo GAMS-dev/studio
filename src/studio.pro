@@ -30,6 +30,10 @@ OBJECTS_DIR=../objects
 MOC_DIR=../objects
 
 macx {
+    # Build for the host architecture only. Without it, a universal Qt adds -Xarch_x86_64 flags
+    # (e.g. for the precompiled header) that are unused on arm64 (and generate lots of warnings).
+    QMAKE_APPLE_DEVICE_ARCHS = $$QMAKE_HOST.arch
+
 # ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
 # ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
     ICON = ../icons/studio.icns

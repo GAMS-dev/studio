@@ -12,6 +12,9 @@ MOC_DIR=../../objects
 include(../gamsdependency.pri)
 
 macx {
+    # Same architecture as Studio (src/studio.pro), whose objects are linked into the tests
+    QMAKE_APPLE_DEVICE_ARCHS = $$QMAKE_HOST.arch
+
     HEADERS += ../../platform/macos/macospathfinder.h   \
                ../../platform/macos/macoscocoabridge.h
 
