@@ -57,7 +57,7 @@ void TextBlankOps::apply(Flags flags)
 
 void TextBlankOps::eolToSpace()
 {
-    auto lines = selectedLines();
+    auto lines = selectedLines(true);
     if (lines.first == lines.second) lines.second = lines.first.next();
     if (!lines.second.isValid()) return;
 
@@ -121,13 +121,13 @@ void TextBlankOps::forEachLine(const std::function<void(QTextCursor &, const QTe
     edit.endEditBlock();
 }
 
-QPair<QTextBlock, QTextBlock> TextBlankOps::selectedLines() const
+QPair<QTextBlock, QTextBlock> TextBlankOps::selectedLines(bool includeEndLine) const
 {
-    // A selection ending at the start of a line doesn't include that line
+    // A selection ending at the start of a line doesn't include that line (unless includeEndLine)
     QTextDocument *doc = mCursor.document();
     const QTextBlock first = doc->findBlock(mCursor.selectionStart());
     QTextBlock last = doc->findBlock(mCursor.selectionEnd());
-    if (mCursor.hasSelection() && last != first && mCursor.selectionEnd() == last.position())
+    if (!includeEndLine && mCursor.hasSelection() && last != first && mCursor.selectionEnd() == last.position())
         last = last.previous();
     return QPair(first, last);
 }

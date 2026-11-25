@@ -50,7 +50,7 @@ private:
     void eolToSpace();
     void tabToSpace();
     void forEachLine(const std::function<void(QTextCursor &, const QTextBlock &)> &fn);
-    QPair<QTextBlock, QTextBlock> selectedLines() const;
+    QPair<QTextBlock, QTextBlock> selectedLines(bool includeEndLine = false) const;
 
     QTextCursor mCursor;
     int mTabWidth;
