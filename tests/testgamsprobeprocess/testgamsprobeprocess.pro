@@ -7,11 +7,11 @@ INCLUDEPATH += $$SRCPATH            \
                $$SRCPATH/process
 
 HEADERS +=                                      \
-    testabstractprocess.h                       \
     $$SRCPATH/editors/abstractsystemlogger.h    \
     $$SRCPATH/editors/defaultsystemlogger.h     \
     $$SRCPATH/editors/SysLogLocator.h           \
     $$SRCPATH/process/abstractprocess.h         \
+    $$SRCPATH/process/gamsprobeprocess.h        \
     $$SRCPATH/commonpaths.h                     \
     $$SRCPATH/common.h                          \
     $$SRCPATH/exception.h

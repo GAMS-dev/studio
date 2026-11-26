@@ -41,7 +41,7 @@
 namespace gams {
 namespace studio {
 
-const float CColorDistScale = 1.9;
+const float CColorDistScale = 1.9f;
 
 SettingsDialog::SettingsDialog(MainWindow *parent)
     : QDialog(parent)
