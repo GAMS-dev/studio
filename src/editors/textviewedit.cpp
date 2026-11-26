@@ -390,10 +390,11 @@ void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
     if (mDragging && e->buttons() == Qt::LeftButton && !(e->modifiers() & CAnyModifier)) {
         mDragPos = e->pos();
         // the visible part of the viewport starts at mTopShift
-        qreal y = e->position().y() - mTopShift;
+        int y = mDragPos.y() - mTopShift;
+        int x = mDragPos.x();
         int visibleHeight = viewport()->height() - mTopShift;
         mScrollDelta = y < 0 ? y : (y < visibleHeight ? 0 : y - visibleHeight);
-        mHScrollDelta = e->position().x() < 0 ? e->position().x() : (e->position().x() < viewport()->width() ? 0 : e->position().x() - viewport()->width());
+        mHScrollDelta = x < 0 ? x : (x < viewport()->width() ? 0 : x - viewport()->width());
         if (mScrollDelta || mHScrollDelta) {
             // the timer repeats scrolling and extending the selection until the mouse is back or released
             int msec = autoScrollMs();
