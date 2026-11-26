@@ -168,9 +168,9 @@ void TextViewEdit::scrollStep()
         return;
     }
     if (mScrollDelta) {
-        int step = mScrollDelta > 0 ? 1 : -1;
-        step = step + mScrollDelta / 10;
-        mMapper.moveVisibleTopLine(step);
+        qreal d = mScrollDelta / 8.0;
+        int lines = qMax(1, qRound((2.0 + d * d) * scrollMs(mScrollDelta) / 1000.0));
+        mMapper.moveVisibleTopLine(mScrollDelta > 0 ? lines : -lines);
     }
     if (mHScrollDelta) {
         qreal overshoot = qAbs(mHScrollDelta) / 4;
@@ -197,8 +197,8 @@ void TextViewEdit::scrollStep()
 
 int TextViewEdit::scrollMs(int delta)
 {
-    int msec = 500 - qMin(delta*delta, 495);
-    return msec;
+    qreal d = delta / 8.0;
+    return qMax(20, qRound(1000.0 / (2.0 + d * d)));
 }
 
 void TextViewEdit::endDrag()
