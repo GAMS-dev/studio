@@ -5,6 +5,11 @@ Version 1.26.1  *
 - Changes to the user snippets file are applied immediately on save, without restarting Studio.
 - Fixed Reference and GDX files set in `gamsconfig.yaml` not being added to the project.
 - Fixed edge case issues in blank line operations.
+- Changes to the `LST Viewer`, the `Process Log`, and the viewer for large text files:
+  - Very long lines no longer slow down displaying, scrolling, and selecting text.
+  - Selecting text with the mouse now scrolls horizontally when dragging beyond the left or right border.
+  - Fixed the cursor position in the status bar not being updated when changing it with the mouse.
+  - Improved scrolling behavior on macOS.
 
 Version 1.26.0
 ==================
