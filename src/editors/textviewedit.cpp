@@ -173,7 +173,7 @@ void TextViewEdit::scrollStep()
         mMapper.moveVisibleTopLine(mScrollDelta > 0 ? lines : -lines);
     }
     if (mHScrollDelta) {
-        qreal overshoot = qAbs(mHScrollDelta) / 4;
+        qreal overshoot = qAbs(mHScrollDelta) / 4.0;
         int columns = qMax(1, qRound(overshoot * overshoot));
         emit scrollColumns(mHScrollDelta > 0 ? columns : -columns);
         emit topLineMoved(); // rebuilds the document if not done by scrollColumns (e.g. when only scrolled vertically)
