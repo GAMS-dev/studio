@@ -4,6 +4,7 @@ Version 1.26.1  *
 - Fixed GAMS hanging or exiting unexpectedly when debugging with many breakpoints.
 - Changes to the user snippets file are applied immediately on save, without restarting Studio.
 - Fixed Reference and GDX files set in `gamsconfig.yaml` not being added to the project.
+- Fixed edge case issues in blank line operations.
 
 Version 1.26.0
 ==================
