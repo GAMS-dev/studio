@@ -129,7 +129,7 @@ QPair<QTextBlock, QTextBlock> TextBlankOps::selectedLines(bool includeEndLine) c
     QTextBlock last = doc->findBlock(mCursor.selectionEnd());
     if (!includeEndLine && mCursor.hasSelection() && last != first && mCursor.selectionEnd() == last.position())
         last = last.previous();
-    return QPair(first, last);
+    return {first, last};
 }
 
 }
